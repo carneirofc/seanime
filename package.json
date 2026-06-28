@@ -1,0 +1,25 @@
+{
+  "name": "seanime-workspace",
+  "private": true,
+  "workspaces": [
+    "seanime-web",
+    "seanime-denshi"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names codegen,go,web --prefix-colors magenta,yellow,cyan \"npm run dev:codegen\" \"npm run dev:go\" \"npm run dev:web\"",
+    "codegen": "go generate ./codegen",
+    "dev:codegen": "nodemon --watch codegen --watch internal --ext go,mod,sum,json --ignore codegen/generated/** --ignore internal/events/endpoints.go --ignore seanime-web/src/api/generated/** --ignore \"seanime-web/src/app/(main)/_features/plugin/generated/**\" --exec \"npm run codegen\"",
+    "dev:go": "nodemon --watch main.go --watch internal --watch go.mod --watch go.sum --ext go,mod,sum,toml,json --ignore \"internal/**/*.json\" --exec \"powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\go-run-windows.ps1 -Port 43001\"",
+    "dev:web": "npm run dev --workspace seanime-web",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\build-seanime-web.ps1 -Target web -SkipInstall && npm run build:api",
+    "build:api": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\build-api.ps1 -Os windows",
+    "build:web": "npm run build --workspace seanime-web",
+    "build:denshi": "npm run build --workspace seanime-denshi",
+    "test:go": "go test ./..."
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "esbuild": "^0.27.4",
+    "nodemon": "^3.1.10"
+  }
+}

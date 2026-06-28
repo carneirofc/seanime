@@ -1,0 +1,10 @@
+procs:
+  backend:
+    shell: "go run . --datadir=\"C:\\Users\\claud\\__Code__\\seanime\\dummy-data\" --port=43000"
+    env:
+      GOARCH: amd64
+      GOOS: windows
+
+  frontend:
+    shell: "npm run dev"
+    cwd: seanime-web
