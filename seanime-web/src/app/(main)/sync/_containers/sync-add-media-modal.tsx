@@ -11,8 +11,8 @@ import { cn } from "@/components/ui/core/styling"
 import { Modal } from "@/components/ui/modal"
 import { useAtomValue } from "jotai/react"
 import React from "react"
+import { MdOutlineDownloadForOffline, MdOutlineSelectAll } from "react-icons/md"
 import { FaCircleCheck, FaRegCircleCheck } from "react-icons/fa6"
-import { MdOutlineDownloadForOffline } from "react-icons/md"
 
 type SyncAddMediaModalProps = {
     savedMediaIds: number[]
@@ -59,6 +59,7 @@ export function SyncAddMediaModal(props: SyncAddMediaModalProps) {
                 setSelectedMedia={setSelectedMedia}
                 savedMediaIds={savedMediaIds}
                 onSave={handleSave}
+                
             />
         </Modal>
     )
@@ -107,6 +108,21 @@ function MediaSelector(props: MediaSelectorProps) {
         })
     }
 
+    function onSelectAll() {
+
+        const allMedia = [
+            ...(animeLibraryCollection?.lists?.flatMap(n => n.entries) ?? []).map(e => ({ entry: e, type: "anime" })),
+            ...(mangaLibraryCollection?.lists?.flatMap(n => n.entries) ?? []).map(e => ({ entry: e, type: "manga" })),
+        ].filter(Boolean)
+
+        const newSelectedMedia = allMedia.filter(e => e.entry?.mediaId !== undefined).map(({ entry, type }) => ({
+            mediaId: entry?.mediaId as number,
+            type: type as "manga" | "anime",
+        }))
+
+        setSelectedMedia(newSelectedMedia)
+    }
+
     function handleBatchSelectAnime(listType: string, entries: (Anime_LibraryCollectionEntry | Manga_CollectionEntry)[], select: boolean) {
         const mediaIds = entries.filter(entry => !savedMediaIds.includes(entry.mediaId)).map(entry => entry.mediaId)
 
@@ -140,9 +156,17 @@ function MediaSelector(props: MediaSelectorProps) {
     return (
         <div className="space-y-4">
 
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
                 <div className="flex flex-1"></div>
 
+                <Button
+                    intent="white"
+                    onClick={onSelectAll}
+                    rounded
+                    leftIcon={<MdOutlineSelectAll className="text-2xl" />}
+                >
+                    Select all
+                </Button>
                 <Button
                     intent="white"
                     onClick={onSave}
