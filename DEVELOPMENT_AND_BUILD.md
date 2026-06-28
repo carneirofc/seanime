@@ -80,17 +80,45 @@ For development, you should be familiar with both Go and React.
    - Create a dummy `web` folder at the root containing at least one file, or simply do the _Building the Web Interface_ step of the build process. (This is required for the server to start.)
 
 2. **Run the server**:
-   ```bash
-   go run main.go --datadir="path/to/datadir"
-   ```
-
+    ```bash
+    go run main.go --datadir="path/to/datadir"
+    ```
+   
 	- This will generate all the files needed in the `path/to/datadir` directory.
-
+   
 3. **Configure the development server**:
-   - Change the port in the `config.toml` located in the development data directory to `43000`. The web interface will connect to this port during development. Change the host to `0.0.0.0` to allow connections from other devices.
+   - Change the port in the `config.toml` located in the development data directory to `43001`. The web interface will connect to this port during development. Change the host to `0.0.0.0` to allow connections from other devices.
    - Re-run the server with the updated configuration.
 
-   The server will be available at `http://127.0.0.1:43000`.
+   The server will be available at `http://127.0.0.1:43001`.
+
+#### Combined root workspace development
+
+If you want to run both the Go server and the web dev server from one terminal, use the repo root workspace:
+
+1. **Install workspace dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start the root development stack**:
+   ```bash
+   npm run dev
+   ```
+
+    This starts:
+    - a watched codegen process for Go handler/struct/plugin event changes
+    - a watched Go server process from the repository root on `127.0.0.1:43001`
+    - the `seanime-web` dev server
+
+    The combined command keeps the full development stack in the same terminal and reloads the Go server when Go source files change. The root workspace uses port `43001` for the Go server so it matches the web client's localhost development routing.
+
+3. **Run only codegen watch if needed**:
+   ```bash
+   npm run dev:codegen
+   ```
+
+   The codegen watcher reruns `go generate ./codegen` when relevant Go/codegen sources change and ignores generated output files to avoid watch loops.
 
 #### Web Interface Development
 
@@ -112,7 +140,7 @@ For development, you should be familiar with both Go and React.
    The development web interface will be accessible at `http://127.0.0.1:43210`.
 
 **Note**: During development, the web interface is served by the Next.js development server on port `43210`.
-The Next.js development environment is configured such that all requests are made to the Go server running on port `43000`.
+The Next.js development environment is configured such that localhost requests are made to the Go server running on port `43001`.
 
 ### Understanding the Codebase Architecture
 
@@ -120,7 +148,7 @@ The Next.js development environment is configured such that all requests are mad
 
 The backend follows a well-defined structure:
 
-1. **Routes Declaration**:
+1. **Routes Declaration**: 
    - All routes are registered in `internal/handlers/routes.go`
    - Each route is associated with a specific handler method
 
@@ -209,15 +237,15 @@ AniList mock fixtures are read-only during normal test runs. Set `SEANIME_TEST_R
 To avoid remembering the environment variable and basic auth checks, use the refresh wrapper:
 
 ```bash
-go run ./codegen/record_anilist_fixtures
+go run ./scripts/record_anilist_fixtures
 ```
 
 Notes:
 
 - It validates that `test/config.toml` exists, `flags.enable_anilist_tests=true`, and `provider.anilist_jwt` is set.
 - It defaults to refreshing `./internal/api/anilist` and sets `SEANIME_TEST_RECORD_ANILIST_FIXTURES=true` for the test process.
-- Pass packages to widen the refresh scope, for example `go run ./codegen/record_anilist_fixtures ./internal/api/anilist ./internal/library/scanner`.
-- Pass `-run` to target specific live refresh tests, for example `go run ./codegen/record_anilist_fixtures -run 'TestGetAnimeByIdLive|TestBaseAnime_FetchMediaTree_BaseAnimeLive'`.
+- Pass packages to widen the refresh scope, for example `go run ./scripts/record_anilist_fixtures ./internal/api/anilist ./internal/library/scanner`.
+- Pass `-run` to target specific live refresh tests, for example `go run ./scripts/record_anilist_fixtures -run 'TestGetAnimeByIdLive|TestBaseAnime_FetchMediaTree_BaseAnimeLive'`.
 
 #### Testing with Third-Party Apps
 

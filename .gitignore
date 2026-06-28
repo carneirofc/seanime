@@ -1,106 +1,122 @@
-.idea
-logs/
-*.db
-.run/
-testdata/
+# OS / editors
 .DS_Store
-*/.DS_Store
-.todo/
+.idea
+.vscode
+.cursor
+.junie
+.run/
+.venv/
 
-Dockerfile
-Dockerfile.dev
-dev.dockerfile
-.dockerignore
+# Logs
+*.log
+logs
+logs/
 
+# Go
 go.work
 .gocache
 .gotmp
 tmp-*
+dist-server
+scripts/build.go
+internal/extension_repo/**/test*.*
+internal/extension_repo/goja_plugin_test
 
-.github/*.md
-
+# Docker
+.dockerignore
+Dockerfile
+Dockerfile.dev
+dev.dockerfile
 _docker-compose.yml
 
-logs
+# Binaries / build artifacts
+*.db
+__debug*.exe
+seanime.exe
+seanime-server-nosystray-windows.exe
+seanime-server-systray-windows.exe
+seanime-server-systray-windows.exe~
+seanime-server-windows-senshi.exe
+
+# Windows / shell scripts (local helpers)
+*.sh
+*.ps1
+*.cmd
+
+# Local dev logs (helper output)
+.dev-logs/
+
+# Node / web build output
+/node_modules/
+out/
 web/
 !mobile/web/
 mobile/web/*
 !mobile/web/.gitkeep
 web-desktop/
 web-denshi/
-out/
-./assets/
 
+# seanime-web
+seanime-web/.next
+seanime-web/.pnp
+seanime-web/.pnp.js
+seanime-web/.tanstack
+seanime-web/.yarn/install-state.gz
+seanime-web/analyze
+seanime-web/build
+seanime-web/coverage
+seanime-web/dist
+seanime-web/node_modules
+seanime-web/out
+seanime-web/out-denshi
+seanime-web/out-desktop
+seanime-web/snapshot
+seanime-web/web
+seanime-web/*.pem
+seanime-web/*.tsbuildinfo
+seanime-web/.env*.local
+seanime-web/npm-debug.log*
+seanime-web/yarn-debug.log*
+seanime-web/yarn-error.log*
+seanime-web/CHANGELOG-priv.md
+seanime-web/TODO-priv.md
+seanime-web.code-workspace
+seanime-web-tr/
+seanime-webapp/public/test*
+
+# Tests
+testdata/
 test/testdata/**/*.json
 test/sample
 test/providers.json
 test/db.json
-test/providers.json
 test/config.json
 test/config.toml
-whats-new.md
-
 */mock_data.json
 
-TODO-priv.md
+# Dummy / local testing data
+dummy-data/
+local_testing
+seanime-desktop/dummy-data/config.toml
+seanime-desktop/dummy-data/logo.png
+seanime-desktop/tauri-pricate.txt
 
-##
-## Parser
-##
+# Codegen
+codegen/generated/hooks.mdx
+codegen/nonext/
+
+# Project-private / generated docs
+.gitignore
+.github/*.md
+./assets/
+.todo/
+TODO-priv.md
+whats-new.md
+magadex.txt
+docs/support-skills
 seanime-parser/.git
 
-##
-## Web App
-##
-seanime-web/node_modules
-seanime-web/dist
-seanime-web/out
-seanime-web/out-desktop
-seanime-web/out-denshi
-seanime-web/web
-seanime-web/.tanstack
-seanime-web/.next
-seanime-web/.idea
-seanime-web/.pnp
-seanime-web/.pnp.js
-seanime-web/.yarn/install-state.gz
-seanime-web/coverage
-seanime-web/build
-seanime-web/.DS_Store
-seanime-web/*.pem
-seanime-web/npm-debug.log*
-seanime-web/yarn-debug.log*
-seanime-web/yarn-error.log*
-seanime-web/.env*.local
-seanime-web/*.tsbuildinfo
-seanime-web/snapshot
-seanime-web/logs
-seanime-web/analyze
-seanime-web/TODO-priv.md
-seanime-web/CHANGELOG-priv.md
-
-seanime-webapp/public/test*
-
-codegen/generated/hooks.mdx
-
-
-internal/extension_repo/**/test*.*
-internal/extension_repo/goja_plugin_test
-
-*.sh
-
-seanime-web-tr/
-codegen/nonext/
-docs/support-skills
-
-local_testing
-dist-server
-scripts/build.go
-
-# editors, tools
-.junie
-.vscode
-.cursor
+# Agents / AI tooling
 .agents
 .claude
 .zed
@@ -114,3 +130,4 @@ skills*.json
 .github/prompts/
 .github/skills/
 *.agent.md
+*.original.md
