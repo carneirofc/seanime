@@ -33,12 +33,12 @@ func (g *GojaMangaProvider) GetSettings() (ret hibikemanga.Settings) {
 		ret = hibikemanga.Settings{}
 	})
 
-	res, err := g.callClassMethod(context.Background(), "getSettings")
+	method, err := g.callClassMethod(context.Background(), "getSettings")
 	if err != nil {
 		return
 	}
 
-	err = g.unmarshalValue(res, &ret)
+	err = g.unmarshalValue(method, &ret)
 	if err != nil {
 		return
 	}
@@ -49,12 +49,14 @@ func (g *GojaMangaProvider) GetSettings() (ret hibikemanga.Settings) {
 func (g *GojaMangaProvider) Search(opts hibikemanga.SearchOptions) (ret []*hibikemanga.SearchResult, err error) {
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".Search", &err)
 
-	res, err := g.callClassMethod(context.Background(), "search", structToMap(opts))
+	method, err := g.callClassMethod(context.Background(), "search", structToMap(opts))
+
+	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
 		return nil, err
 	}
 
-	err = g.unmarshalValue(res, &ret)
+	err = g.unmarshalValue(promiseRes, &ret)
 	if err != nil {
 		return nil, err
 	}
@@ -85,20 +87,19 @@ func (g *GojaMangaProvider) Search(opts hibikemanga.SearchOptions) (ret []*hibik
 func (g *GojaMangaProvider) FindChapters(id string) (ret []*hibikemanga.ChapterDetails, err error) {
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".FindChapters", &err)
 
-	res, err := g.callClassMethod(context.Background(), "findChapters", id)
+	method, err := g.callClassMethod(context.Background(), "findChapters", id)
+
+	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
 		return nil, err
 	}
 
-	err = g.unmarshalValue(res, &ret)
+	err = g.unmarshalValue(promiseRes, &ret)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the provider
-	for i := range ret {
-		ret[i].Provider = g.ext.ID
-	}
+	hibikemanga.NormalizeChapterProviders(ret, g.ext.ID)
 
 	return ret, nil
 }
@@ -106,12 +107,14 @@ func (g *GojaMangaProvider) FindChapters(id string) (ret []*hibikemanga.ChapterD
 func (g *GojaMangaProvider) FindChapterPages(id string) (ret []*hibikemanga.ChapterPage, err error) {
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".FindChapterPages", &err)
 
-	res, err := g.callClassMethod(context.Background(), "findChapterPages", id)
+	method, err := g.callClassMethod(context.Background(), "findChapterPages", id)
+
+	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
 		return nil, err
 	}
 
-	err = g.unmarshalValue(res, &ret)
+	err = g.unmarshalValue(promiseRes, &ret)
 	if err != nil {
 		return nil, err
 	}

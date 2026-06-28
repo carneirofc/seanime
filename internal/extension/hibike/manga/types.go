@@ -1,5 +1,7 @@
 package hibikemanga
 
+import "strings"
+
 type (
 	Provider interface {
 		// Search returns the search results for the given query.
@@ -13,8 +15,9 @@ type (
 	}
 
 	Settings struct {
-		SupportsMultiScanlator bool `json:"supportsMultiScanlator"`
-		SupportsMultiLanguage  bool `json:"supportsMultiLanguage"`
+		SupportsMultiScanlator bool   `json:"supportsMultiScanlator"`
+		SupportsMultiLanguage  bool   `json:"supportsMultiLanguage"`
+		BaseURL                string `json:"baseUrl,omitempty"`
 	}
 
 	SearchOptions struct {
@@ -38,18 +41,34 @@ type (
 		Year int `json:"year,omitempty"`
 		// URL of the manga cover image.
 		Image string `json:"image,omitempty"`
-		// Request headers for the cover image if proxying is required.
+		// Optional headers used when proxying the image through Seanime's image proxy.
 		ImageHeaders map[string]string `json:"imageHeaders,omitempty"`
 		// Indicates how well the chapter title matches the search query.
 		// It is a number from 0 to 1.
 		// Leave it empty if the comparison should be done by Seanime.
 		SearchRating float64 `json:"searchRating,omitempty"`
+		// URL of the manga page on the provider's website.
+		URL string `json:"url,omitempty"`
+	}
+
+	ChapterProviderOption struct {
+		// ID of the provider.
+		Provider string `json:"provider"`
+		// ID of the chapter on that provider.
+		ChapterID string `json:"chapterId"`
+		// Optional scanlator metadata for disambiguating alternate sources.
+		Scanlator string `json:"scanlator,omitempty"`
+		// Optional language metadata for disambiguating alternate sources.
+		Language string `json:"language,omitempty"`
 	}
 
 	ChapterDetails struct {
 		// "ID" of the extension.
 		// This should be the same as the extension ID and follow the same format.
 		Provider string `json:"provider"`
+		// SourceProvider is the provider label returned by the manga source itself.
+		// It is intended for display/filtering and should not be used to route page/download requests.
+		SourceProvider string `json:"sourceProvider,omitempty"`
 		// ID of the chapter, used to fetch the chapter pages.
 		// It can be a combination of keys separated by a delimiter. (Delimiters should not be slashes).
 		//	If the same ID has multiple languages, the language key should be included. (e.g., "one-piece-001$chapter-1$en").
@@ -78,6 +97,9 @@ type (
 		// Leave it empty if the date is not available.
 		UpdatedAt string `json:"updatedAt,omitempty"`
 
+		// AlternativeProviders lists equivalent chapters available from other mapped providers.
+		AlternativeProviders []ChapterProviderOption `json:"alternativeProviders,omitempty"`
+
 		// LocalIsPDF is true if the chapter is a single, readable PDF file.
 		LocalIsPDF bool `json:"localIsPDF,omitempty"`
 	}
@@ -97,3 +119,22 @@ type (
 		Buf []byte `json:"-"`
 	}
 )
+
+func NormalizeChapterProvider(chapter *ChapterDetails, provider string) {
+	if chapter == nil {
+		return
+	}
+
+	currentProvider := strings.TrimSpace(chapter.Provider)
+	if chapter.SourceProvider == "" && currentProvider != "" && currentProvider != provider {
+		chapter.SourceProvider = currentProvider
+	}
+
+	chapter.Provider = provider
+}
+
+func NormalizeChapterProviders(chapters []*ChapterDetails, provider string) {
+	for _, chapter := range chapters {
+		NormalizeChapterProvider(chapter, provider)
+	}
+}

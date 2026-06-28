@@ -5,6 +5,7 @@ declare type SearchResult = {
     year?: number
     image?: string
     imageHeaders?: { [key: string]: string }
+    url?: string
 }
 
 declare type ChapterDetails = {
@@ -13,10 +14,19 @@ declare type ChapterDetails = {
     title: string
     chapter: string
     index: number
+    sourceProvider?: string
     scanlator?: string
     language?: string
     rating?: number
     updatedAt?: string
+    alternativeProviders?: ChapterProviderOption[]
+}
+
+declare type ChapterProviderOption = {
+    provider: string
+    chapterId: string
+    scanlator?: string
+    language?: string
 }
 
 declare type ChapterPage = {

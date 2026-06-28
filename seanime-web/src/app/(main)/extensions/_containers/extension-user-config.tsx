@@ -58,7 +58,7 @@ function Content({ extension, userConfigError }: { extension: Extension_Extensio
             for (const field of extUserConfig.userConfig?.fields || []) {
                 if (extUserConfig.savedUserConfig?.values && field.name in extUserConfig.savedUserConfig?.values) {
                     setUserConfigFormValues(draft => {
-                        draft[field.name] = extUserConfig.savedUserConfig?.values?.[field.name] || field.default || ""
+                        draft[field.name] = extUserConfig.savedUserConfig?.values?.[field.name] ?? field.default ?? ""
                         return
                     })
                 }
@@ -70,7 +70,7 @@ function Content({ extension, userConfigError }: { extension: Extension_Extensio
         console.log("Saving user config", userConfigFormValues)
         let values: Record<string, string> = {}
         for (const field of extUserConfig?.userConfig?.fields || []) {
-            values[field.name] = userConfigFormValues[field.name] || field.default || ""
+            values[field.name] = userConfigFormValues[field.name] ?? field.default ?? ""
         }
         saveExtUserConfig({
             id: extension.id,
@@ -115,6 +115,20 @@ function Content({ extension, userConfigError }: { extension: Extension_Extensio
                                 return
                             })}
                             help={!!field.default ? `Default: ${field.default}` : undefined}
+                        />
+                    )
+                }
+                if (field.type === "password") {
+                    return (
+                        <TextInput
+                            key={field.name}
+                            label={field.label}
+                            type="password"
+                            value={userConfigFormValues[field.name] ?? ""}
+                            onValueChange={v => setUserConfigFormValues(draft => {
+                                draft[field.name] = v
+                                return
+                            })}
                         />
                     )
                 }

@@ -215,9 +215,10 @@ type SavedUserConfig struct {
 }
 
 const (
-	ConfigFieldTypeText   ConfigFieldType = "text"
-	ConfigFieldTypeSwitch ConfigFieldType = "switch"
-	ConfigFieldTypeSelect ConfigFieldType = "select"
+	ConfigFieldTypeText     ConfigFieldType = "text"
+	ConfigFieldTypeSwitch   ConfigFieldType = "switch"
+	ConfigFieldTypeSelect   ConfigFieldType = "select"
+	ConfigFieldTypePassword ConfigFieldType = "password"
 )
 
 type (

@@ -206,11 +206,12 @@ export function useRunExtensionPlaygroundCode() {
 }
 
 export function useGetExtensionUserConfig(id: string) {
+    const normalizedId = id.trim()
     return useServerQuery<ExtensionRepo_ExtensionUserConfig>({
-        endpoint: API_ENDPOINTS.EXTENSIONS.GetExtensionUserConfig.endpoint.replace("{id}", id),
+        endpoint: API_ENDPOINTS.EXTENSIONS.GetExtensionUserConfig.endpoint.replace("{id}", normalizedId),
         method: API_ENDPOINTS.EXTENSIONS.GetExtensionUserConfig.methods[0],
-        queryKey: [API_ENDPOINTS.EXTENSIONS.GetExtensionUserConfig.key, id],
-        enabled: true,
+        queryKey: [API_ENDPOINTS.EXTENSIONS.GetExtensionUserConfig.key, normalizedId],
+        enabled: normalizedId.length > 0,
         gcTime: 0,
     })
 }
