@@ -115,6 +115,10 @@ func migrateTables(db *gorm.DB) error {
 		&models.MediaMetadataParent{},
 		&models.LocalTorrent{},
 		//&models.MangaChapterContainer{},
+		// OAuth 2.0
+		&models.OAuthClient{},
+		&models.OAuthAuthCode{},
+		&models.OAuthAccessToken{},
 	)
 	if err != nil {
 
