@@ -114,6 +114,7 @@ export type AL_AnimeDetailsById_Media = {
     staff?: AL_AnimeDetailsById_Media_Staff
     startDate?: AL_AnimeDetailsById_Media_StartDate
     studios?: AL_AnimeDetailsById_Media_Studios
+    tags?: Array<AL_MTags>
     trailer?: AL_AnimeDetailsById_Media_Trailer
 }
 
@@ -776,6 +777,23 @@ export type AL_ListRecentAnime_Page_PageInfo = {
  * - Filename: client_gen.go
  * - Package: anilist
  */
+export type AL_MTags = {
+    id: number
+    name: string
+    category?: string
+    description?: string
+    isAdult?: boolean
+    isMediaSpoiler?: boolean
+    isGeneralSpoiler?: boolean
+    rank?: number
+    userId?: number
+}
+
+/**
+ * - Filepath: internal/api/anilist/client_gen.go
+ * - Filename: client_gen.go
+ * - Package: anilist
+ */
 export type AL_MangaCollection = {
     MediaListCollection?: AL_MangaCollection_MediaListCollection
 }
@@ -855,6 +873,7 @@ export type AL_MangaDetailsById_Media = {
     recommendations?: AL_MangaDetailsById_Media_Recommendations
     relations?: AL_MangaDetailsById_Media_Relations
     siteUrl?: string
+    tags?: Array<AL_MTags>
 }
 
 /**
@@ -1159,7 +1178,7 @@ export type AL_MediaSort = "ID" |
 export type AL_MediaStatus = "FINISHED" | "RELEASING" | "NOT_YET_RELEASED" | "CANCELLED" | "HIATUS"
 
 /**
- * - Filepath: internal/api/anilist/tags.go
+ * - Filepath: ..\internal\api\anilist\tags.go
  * - Filename: tags.go
  * - Package: anilist
  */
@@ -1938,7 +1957,7 @@ export type Continuity_UpdateWatchHistoryItemOptions = {
 }
 
 /**
- * - Filepath: internal/continuity/history.go
+ * - Filepath: ..\internal\continuity\history.go
  * - Filename: history.go
  * - Package: continuity
  */
@@ -2017,7 +2036,8 @@ export type INTERNAL_FeatureKey = "ManageOfflineMode" |
     "ManageDebrid" |
     "Proxy" |
     "ManageMangaSource" |
-    "PushRequests"
+    "PushRequests" |
+    "MCP"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Debrid
@@ -2267,7 +2287,7 @@ export type Extension_ConfigFieldSelectOption = {
  * - Filename: extension.go
  * - Package: extension
  */
-export type Extension_ConfigFieldType = "text" | "switch" | "select"
+export type Extension_ConfigFieldType = "text" | "switch" | "select" | "password"
 
 /**
  * - Filepath: internal/extension/extension.go
@@ -2669,6 +2689,22 @@ export type DirectorySelectorResponse = {
 }
 
 /**
+ * - Filepath: internal/handlers/disk_usage.go
+ * - Filename: disk_usage.go
+ * - Package: handlers
+ * @description
+ *  DiskUsageInfo contains disk usage metrics for a single path.
+ */
+export type DiskUsageInfo = {
+    path: string
+    totalGB: number
+    usedGB: number
+    freeGB: number
+    usedPct: number
+    freePct: number
+}
+
+/**
  * - Filepath: internal/handlers/download.go
  * - Filename: download.go
  * - Package: handlers
@@ -2676,6 +2712,17 @@ export type DirectorySelectorResponse = {
 export type DownloadReleaseResponse = {
     destination: string
     error?: string
+}
+
+/**
+ * - Filepath: internal/handlers/disk_usage.go
+ * - Filename: disk_usage.go
+ * - Package: handlers
+ * @description
+ *  LibraryDiskUsageResponse holds disk usage info for all library paths.
+ */
+export type LibraryDiskUsageResponse = {
+    paths?: Array<DiskUsageInfo>
 }
 
 /**
@@ -2965,6 +3012,7 @@ export type HibikeCustomSource_Settings = {
  */
 export type HibikeManga_ChapterDetails = {
     provider: string
+    sourceProvider?: string
     id: string
     url: string
     title: string
@@ -2974,6 +3022,7 @@ export type HibikeManga_ChapterDetails = {
     language?: string
     rating?: number
     updatedAt?: string
+    alternativeProviders?: Array<HibikeManga_ChapterProviderOption>
     localIsPDF?: boolean
 }
 
@@ -2994,6 +3043,18 @@ export type HibikeManga_ChapterPage = {
  * - Filename: types.go
  * - Package: hibikemanga
  */
+export type HibikeManga_ChapterProviderOption = {
+    provider: string
+    chapterId: string
+    scanlator?: string
+    language?: string
+}
+
+/**
+ * - Filepath: internal/extension/hibike/manga/types.go
+ * - Filename: types.go
+ * - Package: hibikemanga
+ */
 export type HibikeManga_SearchResult = {
     provider: string
     id: string
@@ -3003,6 +3064,7 @@ export type HibikeManga_SearchResult = {
     image?: string
     imageHeaders?: Record<string, string>
     searchRating?: number
+    url?: string
 }
 
 /**
@@ -3013,6 +3075,7 @@ export type HibikeManga_SearchResult = {
 export type HibikeManga_Settings = {
     supportsMultiScanlator: boolean
     supportsMultiLanguage: boolean
+    baseUrl?: string
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3304,6 +3367,7 @@ export type Manga_EntryListData = {
  */
 export type Manga_MangaLatestChapterNumberItem = {
     provider: string
+    sourceProvider: string
     scanlator: string
     language: string
     number: number
@@ -3359,7 +3423,7 @@ export type Manga_PageDimension = {
 }
 
 /**
- * - Filepath: internal/manga/download.go
+ * - Filepath: ..\internal\manga\download.go
  * - Filename: download.go
  * - Package: manga
  */
@@ -3706,6 +3770,8 @@ export type Models_AnilistSettings = {
     hideAudienceScore: boolean
     enableAdultContent: boolean
     blurAdultContent: boolean
+    splitAdultContent: boolean
+    hideMediaTagsSpoilers: boolean
     disableCacheLayer: boolean
 }
 
@@ -3817,14 +3883,14 @@ export type Models_HomeItem = {
 }
 
 /**
- * - Filepath: internal/database/models/models.go
+ * - Filepath: ..\internal\database\models\models.go
  * - Filename: models.go
  * - Package: models
  */
 export type Models_IntSlice = Array<number>
 
 /**
- * - Filepath: internal/database/models/models.go
+ * - Filepath: ..\internal\database\models\models.go
  * - Filename: models.go
  * - Package: models
  */
@@ -3891,6 +3957,7 @@ export type Models_MangaSettings = {
     defaultMangaProvider: string
     mangaAutoUpdateProgress: boolean
     mangaLocalSourceDirectory: string
+    mangaCacheDurationHours: number
 }
 
 /**
@@ -3993,6 +4060,25 @@ export type Models_NotificationSettings = {
  * - Filepath: internal/database/models/models.go
  * - Filename: models.go
  * - Package: models
+ * @description
+ *  OAuthClient represents a registered OAuth 2.0 client application.
+ */
+export type Models_OAuthClient = {
+    clientId: string
+    clientSecret: string
+    name: string
+    redirectUris: string
+    scopes: string
+    trusted: boolean
+    id: number
+    createdAt?: string
+    updatedAt?: string
+}
+
+/**
+ * - Filepath: internal/database/models/models.go
+ * - Filename: models.go
+ * - Package: models
  */
 export type Models_Settings = {
     library?: Models_LibrarySettings
@@ -4022,7 +4108,7 @@ export type Models_SilencedMediaEntry = {
 }
 
 /**
- * - Filepath: internal/database/models/models.go
+ * - Filepath: ..\internal\database\models\models.go
  * - Filename: models.go
  * - Package: models
  */
@@ -4194,7 +4280,7 @@ export type Nakama_NakamaAnimeLibrary = {
 }
 
 /**
- * - Filepath: internal/nakama/share.go
+ * - Filepath: ..\internal\nakama\share.go
  * - Filename: share.go
  * - Package: nakama
  */

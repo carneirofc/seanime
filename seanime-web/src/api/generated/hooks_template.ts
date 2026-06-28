@@ -789,6 +789,19 @@
 // }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// disk_usage
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// export function useGetLibraryDiskUsage() {
+//     return useServerQuery<LibraryDiskUsageResponse>({
+//         endpoint: API_ENDPOINTS.DISK_USAGE.GetLibraryDiskUsage.endpoint,
+//         method: API_ENDPOINTS.DISK_USAGE.GetLibraryDiskUsage.methods[0],
+//         queryKey: [API_ENDPOINTS.DISK_USAGE.GetLibraryDiskUsage.key],
+//         enabled: true,
+//     })
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // docs
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2064,6 +2077,83 @@
 //         endpoint: API_ENDPOINTS.NAKAMA.NakamaSendChatMessage.endpoint,
 //         method: API_ENDPOINTS.NAKAMA.NakamaSendChatMessage.methods[0],
 //         mutationKey: [API_ENDPOINTS.NAKAMA.NakamaSendChatMessage.key],
+//         onSuccess: async () => {
+// 
+//         },
+//     })
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// oauth
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// export function useOAuthListClients() {
+//     return useServerQuery<Array<Models_OAuthClient>>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthListClients.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthListClients.methods[0],
+//         queryKey: [API_ENDPOINTS.OAUTH.OAuthListClients.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useOAuthCreateClient() {
+//     return useServerMutation<Models_OAuthClient, OAuthCreateClient_Variables>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthCreateClient.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthCreateClient.methods[0],
+//         mutationKey: [API_ENDPOINTS.OAUTH.OAuthCreateClient.key],
+//         onSuccess: async () => {
+// 
+//         },
+//     })
+// }
+
+// export function useOAuthDeleteClient() {
+//     return useServerMutation<boolean>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthDeleteClient.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthDeleteClient.methods[0],
+//         mutationKey: [API_ENDPOINTS.OAUTH.OAuthDeleteClient.key],
+//         onSuccess: async () => {
+// 
+//         },
+//     })
+// }
+
+// export function useOAuthAuthorize() {
+//     return useServerQuery<boolean>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthAuthorize.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthAuthorize.methods[0],
+//         queryKey: [API_ENDPOINTS.OAUTH.OAuthAuthorize.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useOAuthApprove() {
+//     return useServerMutation<boolean, OAuthApprove_Variables>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthApprove.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthApprove.methods[0],
+//         mutationKey: [API_ENDPOINTS.OAUTH.OAuthApprove.key],
+//         onSuccess: async () => {
+// 
+//         },
+//     })
+// }
+
+// export function useOAuthToken() {
+//     return useServerMutation<boolean>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthToken.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthToken.methods[0],
+//         mutationKey: [API_ENDPOINTS.OAUTH.OAuthToken.key],
+//         onSuccess: async () => {
+// 
+//         },
+//     })
+// }
+
+// export function useOAuthRevoke() {
+//     return useServerMutation<boolean>({
+//         endpoint: API_ENDPOINTS.OAUTH.OAuthRevoke.endpoint,
+//         method: API_ENDPOINTS.OAUTH.OAuthRevoke.methods[0],
+//         mutationKey: [API_ENDPOINTS.OAUTH.OAuthRevoke.key],
 //         onSuccess: async () => {
 // 
 //         },

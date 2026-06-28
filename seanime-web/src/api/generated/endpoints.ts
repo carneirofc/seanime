@@ -685,6 +685,18 @@ export const API_ENDPOINTS = {
             endpoint: "/api/v1/discord/presence/cancel",
         },
     },
+    DISK_USAGE: {
+        /**
+         *  @description
+         *  Route returns disk usage for all configured library paths.
+         *  Returns total, used, and free disk space (in GB and percent) for each configured library path.
+         */
+        GetLibraryDiskUsage: {
+            key: "DISK-USAGE-get-library-disk-usage",
+            methods: ["GET"],
+            endpoint: "/api/v1/library/disk-usage",
+        },
+    },
     DOCS: {
         GetDocs: {
             key: "DOCS-get-docs",
@@ -1673,14 +1685,51 @@ export const API_ENDPOINTS = {
             endpoint: "/api/v1/nakama/watch-party/chat",
         },
     },
+    OAUTH: {
+        OAuthListClients: {
+            key: "OAUTH-o-auth-list-clients",
+            methods: ["GET"],
+            endpoint: "/api/v1/oauth/clients",
+        },
+        OAuthCreateClient: {
+            key: "OAUTH-o-auth-create-client",
+            methods: ["POST"],
+            endpoint: "/api/v1/oauth/clients",
+        },
+        OAuthDeleteClient: {
+            key: "OAUTH-o-auth-delete-client",
+            methods: ["DELETE"],
+            endpoint: "/api/v1/oauth/clients/:id",
+        },
+        OAuthAuthorize: {
+            key: "OAUTH-o-auth-authorize",
+            methods: ["GET"],
+            endpoint: "/api/v1/oauth/authorize",
+        },
+        OAuthApprove: {
+            key: "OAUTH-o-auth-approve",
+            methods: ["POST"],
+            endpoint: "/api/v1/oauth/approve",
+        },
+        OAuthToken: {
+            key: "OAUTH-o-auth-token",
+            methods: ["POST"],
+            endpoint: "/api/v1/oauth/token",
+        },
+        OAuthRevoke: {
+            key: "OAUTH-o-auth-revoke",
+            methods: ["POST"],
+            endpoint: "/api/v1/oauth/revoke",
+        },
+    },
     ONLINESTREAM: {
         /**
          *  @description
          *  Route returns the episode list for the given media and provider.
          *  It returns the episode list for the given media and provider.
          *  The episodes are cached using a file cache.
-         *  The episode list is just a list of episodes with no video sources, it's what the client uses to display the episodes and subsequently
-         *     fetch the sources. The episode list might be nil or empty if nothing could be found, but the media will always be returned.
+         *  The episode list is just a list of episodes with no video sources, it's what the client uses to display the episodes and subsequently fetch the sources.
+         *  The episode list might be nil or empty if nothing could be found, but the media will always be returned.
          */
         GetOnlineStreamEpisodeList: {
             key: "ONLINESTREAM-get-online-stream-episode-list",

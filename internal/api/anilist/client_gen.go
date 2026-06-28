@@ -35,6 +35,8 @@ type GithubGraphQLClient interface {
 	ListMangaAll(ctx context.Context, page *int, search *string, perPage *int, sort []*MediaSort, status []*MediaStatus, genres []*string, tags []*string, averageScoreGreater *int, startDateGreater *string, startDateLesser *string, format *MediaFormat, countryOfOrigin *string, interceptors ...clientv2.RequestInterceptor) (*ListMangaAll, error)
 	ViewerStats(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*ViewerStats, error)
 	StudioDetails(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*StudioDetails, error)
+	MediaTagCollection(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*MediaTagCollection, error)
+	GetMediaTagsByID(ctx context.Context, ids []int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error)
 	GetViewer(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetViewer, error)
 }
 
@@ -946,6 +948,73 @@ func (t *UserReleaseYearStats) GetChaptersRead() int {
 		t = &UserReleaseYearStats{}
 	}
 	return t.ChaptersRead
+}
+
+type MTags struct {
+	ID               int     "json:\"id\" graphql:\"id\""
+	Name             string  "json:\"name\" graphql:\"name\""
+	Category         *string "json:\"category,omitempty\" graphql:\"category\""
+	Description      *string "json:\"description,omitempty\" graphql:\"description\""
+	IsAdult          *bool   "json:\"isAdult,omitempty\" graphql:\"isAdult\""
+	IsMediaSpoiler   *bool   "json:\"isMediaSpoiler,omitempty\" graphql:\"isMediaSpoiler\""
+	IsGeneralSpoiler *bool   "json:\"isGeneralSpoiler,omitempty\" graphql:\"isGeneralSpoiler\""
+	Rank             *int    "json:\"rank,omitempty\" graphql:\"rank\""
+	UserID           *int    "json:\"userId,omitempty\" graphql:\"userId\""
+}
+
+func (t *MTags) GetID() int {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.ID
+}
+func (t *MTags) GetName() string {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.Name
+}
+func (t *MTags) GetCategory() *string {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.Category
+}
+func (t *MTags) GetDescription() *string {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.Description
+}
+func (t *MTags) GetIsAdult() *bool {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.IsAdult
+}
+func (t *MTags) GetIsMediaSpoiler() *bool {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.IsMediaSpoiler
+}
+func (t *MTags) GetIsGeneralSpoiler() *bool {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.IsGeneralSpoiler
+}
+func (t *MTags) GetRank() *int {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.Rank
+}
+func (t *MTags) GetUserID() *int {
+	if t == nil {
+		t = &MTags{}
+	}
+	return t.UserID
 }
 
 type BaseAnime_Trailer struct {
@@ -4328,6 +4397,7 @@ type AnimeDetailsById_Media struct {
 	Staff           *AnimeDetailsById_Media_Staff           "json:\"staff,omitempty\" graphql:\"staff\""
 	StartDate       *AnimeDetailsById_Media_StartDate       "json:\"startDate,omitempty\" graphql:\"startDate\""
 	Studios         *AnimeDetailsById_Media_Studios         "json:\"studios,omitempty\" graphql:\"studios\""
+	Tags            []*MTags                                "json:\"tags,omitempty\" graphql:\"tags\""
 	Trailer         *AnimeDetailsById_Media_Trailer         "json:\"trailer,omitempty\" graphql:\"trailer\""
 }
 
@@ -4426,6 +4496,12 @@ func (t *AnimeDetailsById_Media) GetStudios() *AnimeDetailsById_Media_Studios {
 		t = &AnimeDetailsById_Media{}
 	}
 	return t.Studios
+}
+func (t *AnimeDetailsById_Media) GetTags() []*MTags {
+	if t == nil {
+		t = &AnimeDetailsById_Media{}
+	}
+	return t.Tags
 }
 func (t *AnimeDetailsById_Media) GetTrailer() *AnimeDetailsById_Media_Trailer {
 	if t == nil {
@@ -6871,6 +6947,7 @@ type MangaDetailsById_Media struct {
 	Recommendations *MangaDetailsById_Media_Recommendations "json:\"recommendations,omitempty\" graphql:\"recommendations\""
 	Relations       *MangaDetailsById_Media_Relations       "json:\"relations,omitempty\" graphql:\"relations\""
 	SiteURL         *string                                 "json:\"siteUrl,omitempty\" graphql:\"siteUrl\""
+	Tags            []*MTags                                "json:\"tags,omitempty\" graphql:\"tags\""
 }
 
 func (t *MangaDetailsById_Media) GetCharacters() *MangaDetailsById_Media_Characters {
@@ -6920,6 +6997,12 @@ func (t *MangaDetailsById_Media) GetSiteURL() *string {
 		t = &MangaDetailsById_Media{}
 	}
 	return t.SiteURL
+}
+func (t *MangaDetailsById_Media) GetTags() []*MTags {
+	if t == nil {
+		t = &MangaDetailsById_Media{}
+	}
+	return t.Tags
 }
 
 type ListManga_Page_PageInfo struct {
@@ -7705,6 +7788,35 @@ func (t *StudioDetails_Studio) GetName() string {
 	return t.Name
 }
 
+type GetMediaTagsById_Page_Media struct {
+	ID   int      "json:\"id\" graphql:\"id\""
+	Tags []*MTags "json:\"tags,omitempty\" graphql:\"tags\""
+}
+
+func (t *GetMediaTagsById_Page_Media) GetID() int {
+	if t == nil {
+		t = &GetMediaTagsById_Page_Media{}
+	}
+	return t.ID
+}
+func (t *GetMediaTagsById_Page_Media) GetTags() []*MTags {
+	if t == nil {
+		t = &GetMediaTagsById_Page_Media{}
+	}
+	return t.Tags
+}
+
+type GetMediaTagsById_Page struct {
+	Media []*GetMediaTagsById_Page_Media "json:\"media,omitempty\" graphql:\"media\""
+}
+
+func (t *GetMediaTagsById_Page) GetMedia() []*GetMediaTagsById_Page_Media {
+	if t == nil {
+		t = &GetMediaTagsById_Page{}
+	}
+	return t.Media
+}
+
 type GetViewer_Viewer_Avatar struct {
 	Large  *string "json:\"large,omitempty\" graphql:\"large\""
 	Medium *string "json:\"medium,omitempty\" graphql:\"medium\""
@@ -8099,6 +8211,28 @@ func (t *StudioDetails) GetStudio() *StudioDetails_Studio {
 		t = &StudioDetails{}
 	}
 	return t.Studio
+}
+
+type MediaTagCollection struct {
+	MediaTagCollection []*MTags "json:\"MediaTagCollection,omitempty\" graphql:\"MediaTagCollection\""
+}
+
+func (t *MediaTagCollection) GetMediaTagCollection() []*MTags {
+	if t == nil {
+		t = &MediaTagCollection{}
+	}
+	return t.MediaTagCollection
+}
+
+type GetMediaTagsByID struct {
+	Page *GetMediaTagsById_Page "json:\"Page,omitempty\" graphql:\"Page\""
+}
+
+func (t *GetMediaTagsByID) GetPage() *GetMediaTagsById_Page {
+	if t == nil {
+		t = &GetMediaTagsByID{}
+	}
+	return t.Page
 }
 
 type GetViewer struct {
@@ -8789,6 +8923,9 @@ const AnimeDetailsByIDDocument = `query AnimeDetailsById ($id: Int) {
 		popularity
 		meanScore
 		description
+		tags {
+			... mTags
+		}
 		trailer {
 			id
 			site
@@ -8891,6 +9028,17 @@ const AnimeDetailsByIDDocument = `query AnimeDetailsById ($id: Int) {
 			}
 		}
 	}
+}
+fragment mTags on MediaTag {
+	id
+	name
+	category
+	description
+	isAdult
+	isMediaSpoiler
+	isGeneralSpoiler
+	rank
+	userId
 }
 fragment baseCharacter on Character {
 	id
@@ -9750,6 +9898,9 @@ const MangaDetailsByIDDocument = `query MangaDetailsById ($id: Int) {
 		id
 		duration
 		genres
+		tags {
+			... mTags
+		}
 		rankings {
 			context
 			type
@@ -9823,6 +9974,17 @@ const MangaDetailsByIDDocument = `query MangaDetailsById ($id: Int) {
 			}
 		}
 	}
+}
+fragment mTags on MediaTag {
+	id
+	name
+	category
+	description
+	isAdult
+	isMediaSpoiler
+	isGeneralSpoiler
+	rank
+	userId
 }
 fragment baseCharacter on Character {
 	id
@@ -10291,6 +10453,79 @@ func (c *Client) StudioDetails(ctx context.Context, id *int, interceptors ...cli
 	return &res, nil
 }
 
+const MediaTagCollectionDocument = `query MediaTagCollection {
+	MediaTagCollection {
+		... mTags
+	}
+}
+fragment mTags on MediaTag {
+	id
+	name
+	category
+	description
+	isAdult
+	isMediaSpoiler
+	isGeneralSpoiler
+	rank
+	userId
+}
+`
+
+func (c *Client) MediaTagCollection(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*MediaTagCollection, error) {
+	vars := map[string]any{}
+
+	var res MediaTagCollection
+	if err := c.Client.Post(ctx, "MediaTagCollection", MediaTagCollectionDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetMediaTagsByIDDocument = `query GetMediaTagsById ($ids: [Int!]!) {
+	Page {
+		media(id_in: $ids) {
+			id
+			tags {
+				... mTags
+			}
+		}
+	}
+}
+fragment mTags on MediaTag {
+	id
+	name
+	category
+	description
+	isAdult
+	isMediaSpoiler
+	isGeneralSpoiler
+	rank
+	userId
+}
+`
+
+func (c *Client) GetMediaTagsByID(ctx context.Context, ids []int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error) {
+	vars := map[string]any{
+		"ids": ids,
+	}
+
+	var res GetMediaTagsByID
+	if err := c.Client.Post(ctx, "GetMediaTagsById", GetMediaTagsByIDDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const GetViewerDocument = `query GetViewer {
 	Viewer {
 		name
@@ -10351,5 +10586,7 @@ var DocumentOperationNames = map[string]string{
 	ListMangaAllDocument:                 "ListMangaAll",
 	ViewerStatsDocument:                  "ViewerStats",
 	StudioDetailsDocument:                "StudioDetails",
+	MediaTagCollectionDocument:           "MediaTagCollection",
+	GetMediaTagsByIDDocument:             "GetMediaTagsById",
 	GetViewerDocument:                    "GetViewer",
 }

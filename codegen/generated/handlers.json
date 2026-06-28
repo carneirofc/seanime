@@ -3263,6 +3263,36 @@
     }
   },
   {
+    "name": "HandleGetLibraryDiskUsage",
+    "trimmedName": "GetLibraryDiskUsage",
+    "comments": [
+      "HandleGetLibraryDiskUsage",
+      "",
+      "\t@summary returns disk usage for all configured library paths.",
+      "\t@desc Returns total, used, and free disk space (in GB and percent) for each configured library path.",
+      "\t@route /api/v1/library/disk-usage [GET]",
+      "\t@returns handlers.LibraryDiskUsageResponse",
+      ""
+    ],
+    "filepath": "internal/handlers/disk_usage.go",
+    "filename": "disk_usage.go",
+    "api": {
+      "summary": "returns disk usage for all configured library paths.",
+      "descriptions": [
+        "Returns total, used, and free disk space (in GB and percent) for each configured library path."
+      ],
+      "endpoint": "/api/v1/library/disk-usage",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "handlers.LibraryDiskUsageResponse",
+      "returnGoType": "handlers.LibraryDiskUsageResponse",
+      "returnTypescriptType": "LibraryDiskUsageResponse"
+    }
+  },
+  {
     "name": "HandleGetDocs",
     "trimmedName": "GetDocs",
     "comments": [
@@ -8468,6 +8498,273 @@
     }
   },
   {
+    "name": "HandleOAuthListClients",
+    "trimmedName": "OAuthListClients",
+    "comments": [
+      "HandleOAuthListClients",
+      "",
+      "\t@summary returns all registered OAuth 2.0 clients.",
+      "\t@route /api/v1/oauth/clients [GET]",
+      "\t@returns []models.OAuthClient",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "returns all registered OAuth 2.0 clients.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/clients",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "[]models.OAuthClient",
+      "returnGoType": "models.OAuthClient",
+      "returnTypescriptType": "Array\u003cModels_OAuthClient\u003e"
+    }
+  },
+  {
+    "name": "HandleOAuthCreateClient",
+    "trimmedName": "OAuthCreateClient",
+    "comments": [
+      "HandleOAuthCreateClient",
+      "",
+      "\t@summary registers a new OAuth 2.0 client application.",
+      "\t@route /api/v1/oauth/clients [POST]",
+      "\t@returns models.OAuthClient",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "registers a new OAuth 2.0 client application.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/clients",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Name",
+          "jsonName": "name",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "RedirectURIs",
+          "jsonName": "redirectUris",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Scopes",
+          "jsonName": "scopes",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Trusted",
+          "jsonName": "trusted",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "models.OAuthClient",
+      "returnGoType": "models.OAuthClient",
+      "returnTypescriptType": "Models_OAuthClient"
+    }
+  },
+  {
+    "name": "HandleOAuthDeleteClient",
+    "trimmedName": "OAuthDeleteClient",
+    "comments": [
+      "HandleOAuthDeleteClient",
+      "",
+      "\t@summary deletes an OAuth 2.0 client and revokes all its tokens.",
+      "\t@route /api/v1/oauth/clients/:id [DELETE]",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "deletes an OAuth 2.0 client and revokes all its tokens.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/clients/:id",
+      "methods": [
+        "DELETE"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOAuthAuthorize",
+    "trimmedName": "OAuthAuthorize",
+    "comments": [
+      "HandleOAuthAuthorize (GET)",
+      "",
+      "\t@summary validates the authorization request and returns client details for the consent UI.",
+      "\t@route /api/v1/oauth/authorize [GET]",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "validates the authorization request and returns client details for the consent UI.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/authorize",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOAuthApprove",
+    "trimmedName": "OAuthApprove",
+    "comments": [
+      "HandleOAuthApprove (POST) — called by the SPA after the user consents.",
+      "",
+      "\t@summary issues an authorization code after the user grants consent.",
+      "\t@route /api/v1/oauth/approve [POST]",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "issues an authorization code after the user grants consent.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/approve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "ClientID",
+          "jsonName": "clientId",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "RedirectURI",
+          "jsonName": "redirectUri",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Scope",
+          "jsonName": "scope",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "State",
+          "jsonName": "state",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Approved",
+          "jsonName": "approved",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOAuthToken",
+    "trimmedName": "OAuthToken",
+    "comments": [
+      "HandleOAuthToken",
+      "",
+      "\t@summary exchanges an authorization code or refresh token for access/refresh tokens, or issues tokens directly for client_credentials.",
+      "\t@route /api/v1/oauth/token [POST]",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "exchanges an authorization code or refresh token for access/refresh tokens, or issues tokens directly for client_credentials.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/token",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOAuthRevoke",
+    "trimmedName": "OAuthRevoke",
+    "comments": [
+      "HandleOAuthRevoke",
+      "",
+      "\t@summary revokes an access or refresh token.",
+      "\t@route /api/v1/oauth/revoke [POST]",
+      ""
+    ],
+    "filepath": "internal/handlers/oauth.go",
+    "filename": "oauth.go",
+    "api": {
+      "summary": "revokes an access or refresh token.",
+      "descriptions": [],
+      "endpoint": "/api/v1/oauth/revoke",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleGetOnlineStreamEpisodeList",
     "trimmedName": "GetOnlineStreamEpisodeList",
     "comments": [
@@ -9919,6 +10216,33 @@
       "returns": "[]summary.ScanSummaryItem",
       "returnGoType": "summary.ScanSummaryItem",
       "returnTypescriptType": "Array\u003cSummary_ScanSummaryItem\u003e"
+    }
+  },
+  {
+    "name": "OAuthMiddleware",
+    "trimmedName": "OAuthMiddleware",
+    "comments": [
+      "OAuthMiddleware validates an OAuth 2.0 Bearer token when present.",
+      "If the token is valid it sets the \"oauth_authenticated\" context key so that",
+      "OptionalAuthMiddleware lets the request through without checking the server",
+      "password hash.",
+      "",
+      "Requests that carry no Authorization header are left untouched — they",
+      "continue to the existing X-Seanime-Token / HMAC-based auth.",
+      ""
+    ],
+    "filepath": "internal/handlers/server_oauth_middleware.go",
+    "filename": "server_oauth_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
     }
   },
   {

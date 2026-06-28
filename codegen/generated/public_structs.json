@@ -1367,6 +1367,97 @@
   {
     "filepath": "../internal/api/anilist/client_gen.go",
     "filename": "client_gen.go",
+    "name": "MTags",
+    "formattedName": "AL_MTags",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "ID",
+        "jsonName": "id",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Category",
+        "jsonName": "category",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Description",
+        "jsonName": "description",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsAdult",
+        "jsonName": "isAdult",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsMediaSpoiler",
+        "jsonName": "isMediaSpoiler",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsGeneralSpoiler",
+        "jsonName": "isGeneralSpoiler",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Rank",
+        "jsonName": "rank",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "UserID",
+        "jsonName": "userId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
     "name": "BaseAnime_Trailer",
     "formattedName": "AL_BaseAnime_Trailer",
     "package": "anilist",
@@ -6607,6 +6698,17 @@
         "comments": []
       },
       {
+        "name": "Tags",
+        "jsonName": "tags",
+        "goType": "[]MTags",
+        "typescriptType": "Array\u003cAL_MTags\u003e",
+        "usedTypescriptType": "AL_MTags",
+        "usedStructName": "anilist.MTags",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "Trailer",
         "jsonName": "trailer",
         "goType": "AnimeDetailsById_Media_Trailer",
@@ -10444,6 +10546,17 @@
         "required": false,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "goType": "[]MTags",
+        "typescriptType": "Array\u003cAL_MTags\u003e",
+        "usedTypescriptType": "AL_MTags",
+        "usedStructName": "anilist.MTags",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -11630,6 +11743,57 @@
   {
     "filepath": "../internal/api/anilist/client_gen.go",
     "filename": "client_gen.go",
+    "name": "GetMediaTagsById_Page_Media",
+    "formattedName": "AL_GetMediaTagsById_Page_Media",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "ID",
+        "jsonName": "id",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "goType": "[]MTags",
+        "typescriptType": "Array\u003cAL_MTags\u003e",
+        "usedTypescriptType": "AL_MTags",
+        "usedStructName": "anilist.MTags",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
+    "name": "GetMediaTagsById_Page",
+    "formattedName": "AL_GetMediaTagsById_Page",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "Media",
+        "jsonName": "media",
+        "goType": "[]GetMediaTagsById_Page_Media",
+        "typescriptType": "Array\u003cAL_GetMediaTagsById_Page_Media\u003e",
+        "usedTypescriptType": "AL_GetMediaTagsById_Page_Media",
+        "usedStructName": "anilist.GetMediaTagsById_Page_Media",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
     "name": "GetViewer_Viewer_Avatar",
     "formattedName": "AL_GetViewer_Viewer_Avatar",
     "package": "anilist",
@@ -12334,6 +12498,48 @@
         "typescriptType": "AL_StudioDetails_Studio",
         "usedTypescriptType": "AL_StudioDetails_Studio",
         "usedStructName": "anilist.StudioDetails_Studio",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
+    "name": "MediaTagCollection",
+    "formattedName": "AL_MediaTagCollection",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "MediaTagCollection",
+        "jsonName": "MediaTagCollection",
+        "goType": "[]MTags",
+        "typescriptType": "Array\u003cAL_MTags\u003e",
+        "usedTypescriptType": "AL_MTags",
+        "usedStructName": "anilist.MTags",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
+    "name": "GetMediaTagsByID",
+    "formattedName": "AL_GetMediaTagsByID",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "Page",
+        "jsonName": "Page",
+        "goType": "GetMediaTagsById_Page",
+        "typescriptType": "AL_GetMediaTagsById_Page",
+        "usedTypescriptType": "AL_GetMediaTagsById_Page",
+        "usedStructName": "anilist.GetMediaTagsById_Page",
         "required": false,
         "public": true,
         "comments": []
@@ -15006,7 +15212,7 @@
       }
     ],
     "comments": [
-      " Page of data (Used for internal use only)"
+      " Page of data. Limited to a max depth of 5000 entries. This is calculated as the page parameter multiplied by the perPage parameter."
     ]
   },
   {
@@ -18238,6 +18444,15 @@
         "comments": []
       },
       {
+        "name": "IsPinned",
+        "jsonName": "isPinned",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "IsPrivate",
         "jsonName": "isPrivate",
         "goType": "bool",
@@ -18692,7 +18907,7 @@
       }
     ],
     "comments": [
-      " Page of data"
+      " Page of data. Limited to a max depth of 5000 entries. This is calculated as the page parameter multiplied by the perPage parameter."
     ]
   },
   {
@@ -24876,7 +25091,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/api/anilist/tags.go",
+    "filepath": "..\\internal\\api\\anilist\\tags.go",
     "filename": "tags.go",
     "name": "MediaTagMap",
     "formattedName": "AL_MediaTagMap",
@@ -27900,7 +28115,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/continuity/history.go",
+    "filepath": "..\\internal\\continuity\\history.go",
     "filename": "history.go",
     "name": "WatchHistory",
     "formattedName": "Continuity_WatchHistory",
@@ -29351,9 +29566,9 @@
         "name": "Experimental",
         "jsonName": "Experimental",
         "goType": "INTERNAL_Config_Experimental",
-        "inlineStructType": "struct{\nBuiltinTorrentClient bool}",
+        "inlineStructType": "struct{\nBuiltinTorrentClient bool\nMCP bool}",
         "typescriptType": "INTERNAL_Config_Experimental",
-        "usedTypescriptType": "{ BuiltinTorrentClient: boolean; }",
+        "usedTypescriptType": "{ BuiltinTorrentClient: boolean; MCP: boolean; }",
         "usedStructName": "core.Config_Experimental",
         "required": true,
         "public": true,
@@ -29733,6 +29948,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "MCP",
+        "jsonName": "MCP",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -29827,7 +30051,8 @@
         "\"ManageDebrid\"",
         "\"Proxy\"",
         "\"ManageMangaSource\"",
-        "\"PushRequests\""
+        "\"PushRequests\"",
+        "\"MCP\""
       ]
     },
     "comments": []
@@ -30354,6 +30579,16 @@
         "required": false,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "ViewerUpdatedAt",
+        "jsonName": "viewerUpdatedAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": [],
@@ -30556,6 +30791,24 @@
       {
         "name": "BlurAdultContent",
         "jsonName": "blurAdultContent",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SplitAdultContent",
+        "jsonName": "splitAdultContent",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HideMediaTagsSpoilers",
+        "jsonName": "hideMediaTagsSpoilers",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": true,
@@ -30843,7 +31096,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/database/models/models.go",
+    "filepath": "..\\internal\\database\\models\\models.go",
     "filename": "models.go",
     "name": "LibraryPaths",
     "formattedName": "Models_LibraryPaths",
@@ -30959,7 +31212,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/database/models/models.go",
+    "filepath": "..\\internal\\database\\models\\models.go",
     "filename": "models.go",
     "name": "IntSlice",
     "formattedName": "Models_IntSlice",
@@ -31002,6 +31255,15 @@
         "jsonName": "mangaLocalSourceDirectory",
         "goType": "string",
         "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "CacheDurationHours",
+        "jsonName": "mangaCacheDurationHours",
+        "goType": "int",
+        "typescriptType": "number",
         "required": true,
         "public": true,
         "comments": []
@@ -33321,7 +33583,7 @@
     ]
   },
   {
-    "filepath": "../internal/database/models/models.go",
+    "filepath": "..\\internal\\database\\models\\models.go",
     "filename": "models.go",
     "name": "StringSlice",
     "formattedName": "Models_StringSlice",
@@ -33333,6 +33595,215 @@
       "declaredValues": null
     },
     "comments": null
+  },
+  {
+    "filepath": "../internal/database/models/models.go",
+    "filename": "models.go",
+    "name": "OAuthClient",
+    "formattedName": "Models_OAuthClient",
+    "package": "models",
+    "fields": [
+      {
+        "name": "ClientID",
+        "jsonName": "clientId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ClientSecret",
+        "jsonName": "clientSecret",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "RedirectURIs",
+        "jsonName": "redirectUris",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Scopes",
+        "jsonName": "scopes",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Trusted",
+        "jsonName": "trusted",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " OAuthClient represents a registered OAuth 2.0 client application."
+    ],
+    "embeddedStructNames": [
+      "models.BaseModel"
+    ]
+  },
+  {
+    "filepath": "../internal/database/models/models.go",
+    "filename": "models.go",
+    "name": "OAuthAuthCode",
+    "formattedName": "Models_OAuthAuthCode",
+    "package": "models",
+    "fields": [
+      {
+        "name": "Code",
+        "jsonName": "code",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ClientID",
+        "jsonName": "clientId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "RedirectURI",
+        "jsonName": "redirectUri",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Scope",
+        "jsonName": "scope",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ExpiresAt",
+        "jsonName": "expiresAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Used",
+        "jsonName": "used",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " OAuthAuthCode is a short-lived authorization code issued during the Authorization Code flow."
+    ],
+    "embeddedStructNames": [
+      "models.BaseModel"
+    ]
+  },
+  {
+    "filepath": "../internal/database/models/models.go",
+    "filename": "models.go",
+    "name": "OAuthAccessToken",
+    "formattedName": "Models_OAuthAccessToken",
+    "package": "models",
+    "fields": [
+      {
+        "name": "AccessToken",
+        "jsonName": "accessToken",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "RefreshToken",
+        "jsonName": "refreshToken",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ClientID",
+        "jsonName": "clientId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Scope",
+        "jsonName": "scope",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ExpiresAt",
+        "jsonName": "expiresAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Revoked",
+        "jsonName": "revoked",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " OAuthAccessToken is an issued access + refresh token pair."
+    ],
+    "embeddedStructNames": [
+      "models.BaseModel"
+    ]
   },
   {
     "filepath": "../internal/debrid/alldebrid/alldebrid.go",
@@ -40157,7 +40628,8 @@
       "declaredValues": [
         "\"text\"",
         "\"switch\"",
-        "\"select\""
+        "\"select\"",
+        "\"password\""
       ]
     },
     "comments": []
@@ -40338,6 +40810,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "BaseURL",
+        "jsonName": "baseUrl",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -40448,6 +40929,61 @@
         "required": false,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "URL",
+        "jsonName": "url",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/extension/hibike/manga/types.go",
+    "filename": "types.go",
+    "name": "ChapterProviderOption",
+    "formattedName": "HibikeManga_ChapterProviderOption",
+    "package": "hibikemanga",
+    "fields": [
+      {
+        "name": "Provider",
+        "jsonName": "provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterID",
+        "jsonName": "chapterId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Scanlator",
+        "jsonName": "scanlator",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Language",
+        "jsonName": "language",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -40465,6 +41001,15 @@
         "goType": "string",
         "typescriptType": "string",
         "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SourceProvider",
+        "jsonName": "sourceProvider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
         "public": true,
         "comments": []
       },
@@ -40545,6 +41090,17 @@
         "jsonName": "updatedAt",
         "goType": "string",
         "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AlternativeProviders",
+        "jsonName": "alternativeProviders",
+        "goType": "[]ChapterProviderOption",
+        "typescriptType": "Array\u003cHibikeManga_ChapterProviderOption\u003e",
+        "usedTypescriptType": "HibikeManga_ChapterProviderOption",
+        "usedStructName": "hibikemanga.ChapterProviderOption",
         "required": false,
         "public": true,
         "comments": []
@@ -44701,6 +45257,95 @@
     "comments": []
   },
   {
+    "filepath": "../internal/handlers/disk_usage.go",
+    "filename": "disk_usage.go",
+    "name": "DiskUsageInfo",
+    "formattedName": "DiskUsageInfo",
+    "package": "handlers",
+    "fields": [
+      {
+        "name": "Path",
+        "jsonName": "path",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "TotalGB",
+        "jsonName": "totalGB",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "UsedGB",
+        "jsonName": "usedGB",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "FreeGB",
+        "jsonName": "freeGB",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "UsedPct",
+        "jsonName": "usedPct",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "FreePct",
+        "jsonName": "freePct",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " DiskUsageInfo contains disk usage metrics for a single path."
+    ]
+  },
+  {
+    "filepath": "../internal/handlers/disk_usage.go",
+    "filename": "disk_usage.go",
+    "name": "LibraryDiskUsageResponse",
+    "formattedName": "LibraryDiskUsageResponse",
+    "package": "handlers",
+    "fields": [
+      {
+        "name": "Paths",
+        "jsonName": "paths",
+        "goType": "[]DiskUsageInfo",
+        "typescriptType": "Array\u003cDiskUsageInfo\u003e",
+        "usedTypescriptType": "DiskUsageInfo",
+        "usedStructName": "handlers.DiskUsageInfo",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " LibraryDiskUsageResponse holds disk usage info for all library paths."
+    ]
+  },
+  {
     "filepath": "../internal/handlers/docs.go",
     "filename": "docs.go",
     "name": "ApiDocsGroup",
@@ -45096,6 +45741,17 @@
         "required": false,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "Details",
+        "jsonName": "details",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": [
+          " Additional diagnostic details for debugging"
+        ]
       },
       {
         "name": "Data",
@@ -57689,7 +58345,7 @@
     ]
   },
   {
-    "filepath": "../internal/local/database_models.go",
+    "filepath": "..\\internal\\local\\database_models.go",
     "filename": "database_models.go",
     "name": "StringMap",
     "formattedName": "Local_StringMap",
@@ -57703,7 +58359,7 @@
     "comments": null
   },
   {
-    "filepath": "../internal/local/database_models.go",
+    "filepath": "..\\internal\\local\\database_models.go",
     "filename": "database_models.go",
     "name": "LocalMangaChapterContainers",
     "formattedName": "Local_LocalMangaChapterContainers",
@@ -58718,6 +59374,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "IncludeProviderAvailability",
+        "jsonName": "IncludeProviderAvailability",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -58732,6 +59397,15 @@
       {
         "name": "Provider",
         "jsonName": "provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SourceProvider",
+        "jsonName": "sourceProvider",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
@@ -59039,6 +59713,314 @@
     "comments": []
   },
   {
+    "filepath": "../internal/manga/diagnostics.go",
+    "filename": "diagnostics.go",
+    "name": "ProviderRequestLog",
+    "formattedName": "Manga_ProviderRequestLog",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Timestamp",
+        "jsonName": "timestamp",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "URL",
+        "jsonName": "url",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Method",
+        "jsonName": "method",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "StatusCode",
+        "jsonName": "statusCode",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "StatusText",
+        "jsonName": "statusText",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "DurationMs",
+        "jsonName": "durationMs",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Error",
+        "jsonName": "error",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "RequestHeaders",
+        "jsonName": "requestHeaders",
+        "goType": "map[string]string",
+        "typescriptType": "Record\u003cstring, string\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ResponseHeaders",
+        "jsonName": "responseHeaders",
+        "goType": "map[string]string",
+        "typescriptType": "Record\u003cstring, string\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ProviderRequestLog represents a single HTTP request made by a manga provider.",
+      " These entries are stored in-memory and exposed via the diagnostics API endpoint."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/diagnostics.go",
+    "filename": "diagnostics.go",
+    "name": "ProviderDiagnostics",
+    "formattedName": "Manga_ProviderDiagnostics",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "ProviderID",
+        "jsonName": "providerId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Logs",
+        "jsonName": "logs",
+        "goType": "[]ProviderRequestLog",
+        "typescriptType": "Array\u003cManga_ProviderRequestLog\u003e",
+        "usedTypescriptType": "Manga_ProviderRequestLog",
+        "usedStructName": "manga.ProviderRequestLog",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "mu",
+        "jsonName": "mu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "maxLogs",
+        "jsonName": "maxLogs",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ProviderDiagnostics holds the recent request log for a single manga provider."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/diagnostics.go",
+    "filename": "diagnostics.go",
+    "name": "DiagnosticsStore",
+    "formattedName": "Manga_DiagnosticsStore",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "store",
+        "jsonName": "store",
+        "goType": "sync.Map",
+        "typescriptType": "Map",
+        "usedTypescriptType": "Map",
+        "usedStructName": "sync.Map",
+        "required": false,
+        "public": false,
+        "comments": [
+          " map[string]*ProviderDiagnostics"
+        ]
+      },
+      {
+        "name": "maxLogs",
+        "jsonName": "maxLogs",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " DiagnosticsStore is a global thread-safe store for per-provider request diagnostics."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/diagnostics.go",
+    "filename": "diagnostics.go",
+    "name": "ProviderCacheInfo",
+    "formattedName": "Manga_ProviderCacheInfo",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Provider",
+        "jsonName": "provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "BucketType",
+        "jsonName": "bucketType",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "FileName",
+        "jsonName": "fileName",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "FilePath",
+        "jsonName": "filePath",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "FileSizeBytes",
+        "jsonName": "fileSizeBytes",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "KeyCount",
+        "jsonName": "keyCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Keys",
+        "jsonName": "keys",
+        "goType": "[]CacheKeyInfo",
+        "typescriptType": "Array\u003cManga_CacheKeyInfo\u003e",
+        "usedTypescriptType": "Manga_CacheKeyInfo",
+        "usedStructName": "manga.CacheKeyInfo",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ProviderCacheInfo describes a single manga cache bucket on disk for a specific provider+media."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/diagnostics.go",
+    "filename": "diagnostics.go",
+    "name": "CacheKeyInfo",
+    "formattedName": "Manga_CacheKeyInfo",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Key",
+        "jsonName": "key",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Expiration",
+        "jsonName": "expiration",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "UpdatedAt",
+        "jsonName": "updatedAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsExpired",
+        "jsonName": "isExpired",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " CacheKeyInfo describes a single key within a cache bucket file."
+    ]
+  },
+  {
     "filepath": "../internal/manga/download.go",
     "filename": "download.go",
     "name": "Downloader",
@@ -59175,7 +60157,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/manga/download.go",
+    "filepath": "..\\internal\\manga\\download.go",
     "filename": "download.go",
     "name": "MediaMap",
     "formattedName": "Manga_MediaMap",
@@ -59190,7 +60172,7 @@
     "comments": null
   },
   {
-    "filepath": "../internal/manga/download.go",
+    "filepath": "..\\internal\\manga\\download.go",
     "filename": "download.go",
     "name": "ProviderDownloadMap",
     "formattedName": "Manga_ProviderDownloadMap",
@@ -59516,10 +60498,23 @@
         "comments": []
       },
       {
-        "name": "cancelChannels",
-        "jsonName": "cancelChannels",
-        "goType": "map[DownloadID]",
-        "typescriptType": "Record\u003cDownloadID, any\u003e",
+        "name": "ctx",
+        "jsonName": "ctx",
+        "goType": "context.Context",
+        "typescriptType": "Context",
+        "usedTypescriptType": "Context",
+        "usedStructName": "context.Context",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "cancel",
+        "jsonName": "cancel",
+        "goType": "context.CancelFunc",
+        "typescriptType": "CancelFunc",
+        "usedTypescriptType": "CancelFunc",
+        "usedStructName": "context.CancelFunc",
         "required": false,
         "public": false,
         "comments": []
@@ -59534,17 +60529,6 @@
         "required": false,
         "public": false,
         "comments": []
-      },
-      {
-        "name": "cancelCh",
-        "jsonName": "cancelCh",
-        "goType": "",
-        "typescriptType": "any",
-        "required": true,
-        "public": false,
-        "comments": [
-          " Close to cancel the download process"
-        ]
       },
       {
         "name": "runCh",
@@ -59618,7 +60602,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/manga/downloader/chapter_downloader.go",
+    "filepath": "..\\internal\\manga\\downloader\\chapter_downloader.go",
     "filename": "chapter_downloader.go",
     "name": "Registry",
     "formattedName": "ChapterDownloader_Registry",
@@ -60426,6 +61410,43 @@
         "goType": "",
         "typescriptType": "any",
         "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/provider_match.go",
+    "filename": "provider_match.go",
+    "name": "GetMangaProviderMatchesOptions",
+    "formattedName": "Manga_GetMangaProviderMatchesOptions",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Provider",
+        "jsonName": "Provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Titles",
+        "jsonName": "Titles",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Year",
+        "jsonName": "Year",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
         "public": true,
         "comments": []
       }
@@ -62697,6 +63718,29 @@
       " A Tag structure represents a collection of metadata tags that can be applied",
       " to various targets within a Matroska file. Tags are used to store metadata",
       " like titles, descriptions, and other information about the content."
+    ]
+  },
+  {
+    "filepath": "../internal/mcp/server.go",
+    "filename": "server.go",
+    "name": "Server",
+    "formattedName": "Server",
+    "package": "mcp",
+    "fields": [
+      {
+        "name": "app",
+        "jsonName": "app",
+        "goType": "core.App",
+        "typescriptType": "INTERNAL_App",
+        "usedTypescriptType": "INTERNAL_App",
+        "usedStructName": "core.App",
+        "required": false,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " Server holds the dependencies the MCP tools need."
     ]
   },
   {
@@ -71150,7 +72194,7 @@
     "comments": []
   },
   {
-    "filepath": "../internal/nakama/share.go",
+    "filepath": "..\\internal\\nakama\\share.go",
     "filename": "share.go",
     "name": "NakamaCustomSourceMap",
     "formattedName": "Nakama_NakamaCustomSourceMap",
@@ -90957,6 +92001,15 @@
         "comments": []
       },
       {
+        "name": "animeProviderSmartSearchCaches",
+        "jsonName": "animeProviderSmartSearchCaches",
+        "goType": "",
+        "typescriptType": "any",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "settings",
         "jsonName": "settings",
         "goType": "RepositorySettings",
@@ -94997,6 +96050,17 @@
         "public": true,
         "comments": [
           " Only retry on timeout errors"
+        ]
+      },
+      {
+        "name": "RetryOnStatus",
+        "jsonName": "RetryOnStatus",
+        "goType": "[]int",
+        "typescriptType": "Array\u003cnumber\u003e",
+        "required": false,
+        "public": true,
+        "comments": [
+          " Also retry on these HTTP status codes (e.g., 429, 503)"
         ]
       }
     ],

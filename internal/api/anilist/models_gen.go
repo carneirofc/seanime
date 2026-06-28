@@ -492,7 +492,7 @@ type GenreStats struct {
 	TimeWatched *int `json:"timeWatched,omitempty"`
 }
 
-// Page of data (Used for internal use only)
+// Page of data. Limited to a max depth of 5000 entries. This is calculated as the page parameter multiplied by the perPage parameter.
 type InternalPage struct {
 	MediaSubmissions     []*MediaSubmission     `json:"mediaSubmissions,omitempty"`
 	CharacterSubmissions []*CharacterSubmission `json:"characterSubmissions,omitempty"`
@@ -1188,6 +1188,8 @@ type MessageActivity struct {
 	LikeCount int `json:"likeCount"`
 	// If the currently authenticated user liked the activity
 	IsLiked *bool `json:"isLiked,omitempty"`
+	// If the activity is pinned to the top of the users activity feed
+	IsPinned *bool `json:"isPinned,omitempty"`
 	// If the message is private and only viewable to the sender and recipients
 	IsPrivate *bool `json:"isPrivate,omitempty"`
 	// The url for the activity page on the AniList website
@@ -1239,7 +1241,7 @@ type NotificationOptionInput struct {
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
-// Page of data
+// Page of data. Limited to a max depth of 5000 entries. This is calculated as the page parameter multiplied by the perPage parameter.
 type Page struct {
 	// The pagination information
 	PageInfo        *PageInfo           `json:"pageInfo,omitempty"`
@@ -3126,13 +3128,13 @@ func (e MediaRelation) MarshalJSON() ([]byte, error) {
 type MediaSeason string
 
 const (
-	// Months December to February
+	// Predominantly started airing between January and March
 	MediaSeasonWinter MediaSeason = "WINTER"
-	// Months March to May
+	// Predominantly started airing between April and June
 	MediaSeasonSpring MediaSeason = "SPRING"
-	// Months June to August
+	// Predominantly started airing between July and September
 	MediaSeasonSummer MediaSeason = "SUMMER"
-	// Months September to November
+	// Predominantly started airing between October and November
 	MediaSeasonFall MediaSeason = "FALL"
 )
 
