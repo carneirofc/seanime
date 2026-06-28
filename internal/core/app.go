@@ -33,6 +33,7 @@ import (
 	"seanime/internal/mediaplayers/mpv"
 	"seanime/internal/mediaplayers/vlc"
 	"seanime/internal/mediastream"
+	"seanime/internal/mpvcore"
 	"seanime/internal/nakama"
 	"seanime/internal/nativeplayer"
 	"seanime/internal/onlinestream"
@@ -109,6 +110,7 @@ type (
 			Iina  *iina.Iina
 		}
 		MediaPlayerRepository *mediaplayer.Repository
+		MpvCore               *mpvcore.MpvCore
 
 		// Manga services
 		MangaRepository *manga.Repository
@@ -424,6 +426,7 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 		DirectStreamManager:           nil, // Initialized in App.initModulesOnce
 		NativePlayer:                  nil, // Initialized in App.initModulesOnce
 		VideoCore:                     nil, // Initialized in App.initModulesOnce
+		MpvCore:                       nil, // Initialization in App.initModulesOnce
 		NakamaManager:                 nil, // Initialized in App.initModulesOnce
 		LibraryExplorer:               nil, // Initialized in App.initModulesOnce
 		TorrentClientRepository:       nil, // Initialized in App.InitOrRefreshModules

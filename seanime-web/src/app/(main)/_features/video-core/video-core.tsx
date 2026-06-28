@@ -351,6 +351,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
     const settings = useAtomValue(vc_settings)
     const beautifyImage = useAtomValue(vc_beautifyImageAtom)
     const isPip = useAtomValue(vc_pip)
+    const fullscreen = useAtomValue(vc_isFullscreen)
     const skipOpeningTime = useAtomValue(vc_skipOpeningTime)
     const skipEndingTime = useAtomValue(vc_skipEndingTime)
     const pipManager = useAtomValue(vc_pipManager)
@@ -520,7 +521,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                                     filter: (settings.videoEnhancement.enabled && beautifyImage)
                                         ? `contrast(${settings.videoEnhancement.contrast}) saturate(${settings.videoEnhancement.saturation}) brightness(${settings.videoEnhancement.brightness})`
                                         : "none",
-                                    imageRendering: "crisp-edges",
+                                    imageRendering: "auto",
                                 }}
                             >
                                 {state.playbackInfo?.mkvMetadata?.subtitleTracks?.map(track => (
@@ -623,7 +624,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                         data-vc-element="loading-overlay"
                         className="w-full h-full absolute flex justify-center items-center flex-col space-y-4 bg-black rounded-md"
                     >
-                        {!inline && <FloatingButtons part="loading" onTerminateStream={onTerminateStream} />}
+                        {(!inline || fullscreen) && <FloatingButtons part="loading" onTerminateStream={onTerminateStream} />}
                         {state.loadingState && (
                             <LoadingSpinner
                                 title={state.loadingState || "Loading..."}
@@ -1022,8 +1023,13 @@ export function VideoCore(props: VideoCoreProps) {
             pipManager?.destroy?.()
             setPipManager(null)
             setPipElement(null)
-            fullscreenManager?.destroy?.()
-            setFullscreenManager(null)
+            // Keep the fullscreenManager alive during buffering or transitions to next episodes (when state.active is true).
+            // Only destroy and set it to null if the stream is terminated entirely
+            if (!state.active && fullscreenManager) {
+                fullscreenManager.exitFullscreen()
+                fullscreenManager.destroy()
+                setFullscreenManager(null)
+            }
             setInSightOpen(false)
             setInSightData(null)
             // setIsFullscreen(false)
@@ -1671,6 +1677,20 @@ export function VideoCore(props: VideoCoreProps) {
         }
     }, [state.active])
 
+
+    // Exit fullscreen and clean up fullscreen manager when the entire component is unmounted
+    React.useEffect(() => {
+        return () => {
+            setFullscreenManager(p => {
+                if (p) {
+                    p.exitFullscreen()
+                    p.destroy()
+                }
+                return null
+            })
+        }
+    }, [])
+
     const chapterCues = useMemo(() => {
             if (!duration || duration <= 1) return []
             // If we have MKV chapters, use them
@@ -1873,56 +1893,75 @@ function FloatingButtons(props: { part: "video" | "loading", onTerminateStream: 
     const { part, onTerminateStream } = props
     const fullscreen = useAtomValue(vc_isFullscreen)
     const [isMiniPlayer, setIsMiniPlayer] = useAtom(vc_miniPlayer)
-    if (fullscreen) return null
+    const fullscreenManager = useAtomValue(vc_fullscreenManager)
+
+    if (fullscreen && part === "video") return null
     const Content = () => (
         <>
-            {!isMiniPlayer && <>
-                <IconButton
-                    data-vc-element="floating-button-miniplayer"
-                    data-vc-for={part}
-                    icon={<FiMinimize2 className="text-2xl" />}
-                    intent="gray-basic"
-                    className="rounded-full absolute top-0 flex-none right-4 z-[999]"
-                    onClick={() => {
-                        startVideoCoreMiniPlayerTransition(() => {
-                            setIsMiniPlayer(true)
-                        })
-                    }}
-                />
-            </>}
+            {fullscreen ? (
+                <>
+                    <IconButton
+                        data-vc-element="floating-button-exit-fullscreen"
+                        data-vc-for={part}
+                        icon={<FiMinimize2 className="text-2xl" />}
+                        intent="gray-basic"
+                        className="rounded-full absolute top-0 flex-none right-4 z-[999]"
+                        onClick={() => {
+                            fullscreenManager?.exitFullscreen()
+                        }}
+                    />
+                </>
+            ) : (
+                <>
+                    {!isMiniPlayer && <>
+                        <IconButton
+                            data-vc-element="floating-button-miniplayer"
+                            data-vc-for={part}
+                            icon={<FiMinimize2 className="text-2xl" />}
+                            intent="gray-basic"
+                            className="rounded-full absolute top-0 flex-none right-4 z-[999]"
+                            onClick={() => {
+                                startVideoCoreMiniPlayerTransition(() => {
+                                    setIsMiniPlayer(true)
+                                })
+                            }}
+                        />
+                    </>}
 
-            {isMiniPlayer && <>
-                <IconButton
-                    data-vc-element="floating-button-expand"
-                    data-vc-for={part}
-                    type="button"
-                    intent="gray"
-                    size="sm"
-                    className={cn(
-                        "rounded-full text-2xl flex-none absolute z-[999] right-4 top-4 pointer-events-auto bg-black/30 hover:bg-black/40",
-                        isMiniPlayer && "text-xl",
-                    )}
-                    icon={<BiExpand />}
-                    onClick={() => {
-                        setIsMiniPlayer(false)
-                    }}
-                />
-                <IconButton
-                    data-vc-element="floating-button-terminate"
-                    data-vc-for={part}
-                    type="button"
-                    intent="alert-subtle"
-                    size="sm"
-                    className={cn(
-                        "rounded-full text-2xl flex-none absolute z-[999] left-4 top-4 pointer-events-auto",
-                        isMiniPlayer && "text-xl",
-                    )}
-                    icon={<BiX />}
-                    onClick={() => {
-                        onTerminateStream()
-                    }}
-                />
-            </>}
+                    {isMiniPlayer && <>
+                        <IconButton
+                            data-vc-element="floating-button-expand"
+                            data-vc-for={part}
+                            type="button"
+                            intent="gray"
+                            size="sm"
+                            className={cn(
+                                "rounded-full text-2xl flex-none absolute z-[999] right-4 top-4 pointer-events-auto bg-black/30 hover:bg-black/40",
+                                isMiniPlayer && "text-xl",
+                            )}
+                            icon={<BiExpand />}
+                            onClick={() => {
+                                setIsMiniPlayer(false)
+                            }}
+                        />
+                        <IconButton
+                            data-vc-element="floating-button-terminate"
+                            data-vc-for={part}
+                            type="button"
+                            intent="alert-subtle"
+                            size="sm"
+                            className={cn(
+                                "rounded-full text-2xl flex-none absolute z-[999] left-4 top-4 pointer-events-auto",
+                                isMiniPlayer && "text-xl",
+                            )}
+                            icon={<BiX />}
+                            onClick={() => {
+                                onTerminateStream()
+                            }}
+                        />
+                    </>}
+                </>
+            )}
         </>
     )
 

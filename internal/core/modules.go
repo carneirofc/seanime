@@ -24,6 +24,7 @@ import (
 	"seanime/internal/mediaplayers/mpv"
 	"seanime/internal/mediaplayers/vlc"
 	"seanime/internal/mediastream"
+	"seanime/internal/mpvcore"
 	"seanime/internal/nakama"
 	"seanime/internal/nativeplayer"
 	"seanime/internal/notifier"
@@ -151,10 +152,27 @@ func (a *App) initModulesOnce() {
 	a.MangaDownloader.Start()
 
 	// +---------------------+
-	// |     Video Core      |
+	// |      VideoCore      |
 	// +---------------------+
 
 	a.VideoCore = videocore.New(videocore.NewVideoCoreOptions{
+		WsEventManager:      a.WSEventManager,
+		Logger:              a.Logger,
+		ContinuityManager:   a.ContinuityManager,
+		MetadataProviderRef: a.MetadataProviderRef,
+		DiscordPresence:     a.DiscordPresence,
+		PlatformRef:         a.AnilistPlatformRef,
+		RefreshAnimeCollectionFunc: func() {
+			_, _ = a.RefreshAnimeCollection()
+		},
+		IsOfflineRef: a.IsOfflineRef(),
+	})
+
+	// +---------------------+
+	// |       MpvCore       |
+	// +---------------------+
+
+	a.MpvCore = mpvcore.New(mpvcore.NewMpvCoreOptions{
 		WsEventManager:      a.WSEventManager,
 		Logger:              a.Logger,
 		ContinuityManager:   a.ContinuityManager,

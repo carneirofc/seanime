@@ -2397,4 +2397,3 @@ export const API_ENDPOINTS = {
         },
     },
 } satisfies ApiEndpoints
-
