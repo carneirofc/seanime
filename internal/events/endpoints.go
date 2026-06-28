@@ -90,6 +90,7 @@ const (
 	GetLatestLogContentEndpoint                        = "STATUS-get-latest-log-content"
 	GetLatestUpdateEndpoint                            = "RELEASES-get-latest-update"
 	GetLibraryCollectionEndpoint                       = "ANIME-COLLECTION-get-library-collection"
+	GetLibraryDiskUsageEndpoint                        = "DISK-USAGE-get-library-disk-usage"
 	GetLibraryExplorerFileTreeEndpoint                 = "LIBRARY-EXPLORER-get-library-explorer-file-tree"
 	GetLocalFilesEndpoint                              = "LOCALFILES-get-local-files"
 	GetLocalMangaPageEndpoint                          = "MANGA-get-local-manga-page"
