@@ -32,8 +32,6 @@ func StartServer(dataDir string, cacheDir string, port int) {
 			Flags: flags,
 		}, nil)
 
-		app.InitLogging(false)
-
 		echoApp := core.NewEchoApp(app, &WebFS)
 
 		handlers.InitRoutes(app, echoApp)

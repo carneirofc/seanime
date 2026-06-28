@@ -92,13 +92,6 @@ func isTrustedHardenedOriginURL(parsed *url.URL) bool {
 		return true
 	}
 
-	scheme := strings.ToLower(parsed.Scheme)
-	isLocal := scheme == "capacitor" || scheme == "ionic" || scheme == "app" || scheme == "file"
-	if isLocal {
-		host := strings.ToLower(parsed.Hostname())
-		return host == "" || host == "localhost" || host == "-"
-	}
-
 	host := strings.ToLower(parsed.Hostname())
 	if host == "localhost" {
 		return true
@@ -175,7 +168,7 @@ func isTrustedRequestHost(req *http.Request) bool {
 		return false
 	}
 
-	return addr.IsLoopback() || addr.IsPrivate() || isTailscaleIP(addr)
+	return addr.IsLoopback() || addr.IsPrivate()
 }
 
 // isRequestPermitted determines if an HTTP request is permitted based on server password, access allowlist, and request origin metadata.
@@ -252,7 +245,7 @@ func isTrustedCORSOrigin(rawOrigin string, serverPassword string, accessAllowlis
 		return false
 	}
 
-	return addr.IsLoopback() || addr.IsPrivate() || isTailscaleIP(addr)
+	return addr.IsLoopback() || addr.IsPrivate()
 }
 
 func (h *Handler) trustedLocalRequestMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -554,13 +547,11 @@ func parseTrustedOrigin(rawOrigin string) (*url.URL, bool) {
 		return parsed, true
 	}
 
-	scheme := strings.ToLower(parsed.Scheme)
-	isLocal := scheme == "capacitor" || scheme == "ionic" || scheme == "app" || scheme == "file"
-	if parsed.Scheme != "http" && parsed.Scheme != "https" && !isLocal {
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
 		return nil, false
 	}
 
-	if parsed.Scheme != "file" && parsed.Hostname() == "" && parsed.Host != "-" {
+	if parsed.Hostname() == "" {
 		return nil, false
 	}
 
@@ -602,13 +593,6 @@ func isRequestFromTrustedOrigin(req *http.Request) bool {
 		return true
 	}
 
-	scheme := strings.ToLower(parsed.Scheme)
-	isLocal := scheme == "capacitor" || scheme == "ionic" || scheme == "app" || scheme == "file"
-	if isLocal {
-		host := strings.ToLower(parsed.Hostname())
-		return host == "" || host == "localhost" || host == "-"
-	}
-
 	if parsed.Scheme != "http" && parsed.Scheme != "https" {
 		return false
 	}
@@ -627,7 +611,7 @@ func isRequestFromTrustedOrigin(req *http.Request) bool {
 		return true
 	}
 
-	if !addr.IsPrivate() && !isTailscaleIP(addr) {
+	if !addr.IsPrivate() {
 		return false
 	}
 
@@ -661,7 +645,7 @@ func isTrustedLocalClient(view requestBoundaryView) bool {
 		return false
 	}
 
-	return view.clientIP.IsLoopback() || view.clientIP.IsPrivate() || isTailscaleIP(view.clientIP)
+	return view.clientIP.IsLoopback() || view.clientIP.IsPrivate()
 }
 
 func hasForwardedHeaders(req *http.Request) bool {
@@ -961,21 +945,4 @@ func defaultFFprobePaths() []string {
 	default:
 		return []string{"ffprobe"}
 	}
-}
-
-func isTailscaleIP(addr netip.Addr) bool {
-	if !addr.IsValid() {
-		return false
-	}
-	if addr.Is4() {
-		ip := addr.As4()
-		return ip[0] == 100 && ip[1] >= 64 && ip[1] <= 127
-	}
-	if addr.Is6() {
-		ip := addr.As16()
-		return ip[0] == 0xfd && ip[1] == 0x7a &&
-			ip[2] == 0x11 && ip[3] == 0x5c &&
-			ip[4] == 0xa1 && ip[5] == 0xe0
-	}
-	return false
 }

@@ -63,18 +63,6 @@ func TestRequestHasTrustedLocalOrigin(t *testing.T) {
 			reqHost: "192.168.1.20:43211",
 			want:    false,
 		},
-		{
-			name:    "allows tailscale origin",
-			origin:  "http://100.64.1.10:43211",
-			reqHost: "100.64.1.10:43211",
-			want:    true,
-		},
-		{
-			name:    "allows tailscale IPv6 origin",
-			origin:  "http://[fd7a:115c:a1e0::1]:43211",
-			reqHost: "[fd7a:115c:a1e0::1]:43211",
-			want:    true,
-		},
 	}
 
 	for _, tt := range tests {
@@ -194,16 +182,6 @@ func TestRequestHasTrustedLocalHost(t *testing.T) {
 			reqHost: "evil.example",
 			want:    false,
 		},
-		{
-			name:    "allows tailscale IPv4 host",
-			reqHost: "100.64.1.10:43211",
-			want:    true,
-		},
-		{
-			name:    "allows tailscale IPv6 host",
-			reqHost: "[fd7a:115c:a1e0::1]:43211",
-			want:    true,
-		},
 	}
 
 	for _, tt := range tests {
@@ -292,19 +270,6 @@ func TestCanAccessLocalServer(t *testing.T) {
 			reqHost:    "192.168.1.10:43211",
 			remoteAddr: "192.168.1.10:51111",
 			secureMode: security.SecureModeStrict,
-			want:       false,
-		},
-		{
-			name:       "allows passwordless tailscale host by default",
-			reqHost:    "100.64.1.10:43211",
-			remoteAddr: "100.64.1.10:51111",
-			want:       true,
-		},
-		{
-			name:       "rejects passwordless tailscale host in hardened mode",
-			reqHost:    "100.64.1.10:43211",
-			remoteAddr: "100.64.1.10:51111",
-			secureMode: security.SecureModeHardened,
 			want:       false,
 		},
 		{
@@ -411,17 +376,6 @@ func TestTrustedCORSOrigin(t *testing.T) {
 			name:       "rejects private lan origin in strict mode",
 			origin:     "http://192.168.1.10:43211",
 			secureMode: security.SecureModeStrict,
-			want:       false,
-		},
-		{
-			name:   "allows tailscale origin by default",
-			origin: "http://100.64.1.10:43211",
-			want:   true,
-		},
-		{
-			name:       "rejects tailscale origin in hardened mode",
-			origin:     "http://100.64.1.10:43211",
-			secureMode: security.SecureModeHardened,
 			want:       false,
 		},
 		{
