@@ -6,6 +6,7 @@ import { PageWrapper } from "@/components/shared/page-wrapper"
 import { cn } from "@/components/ui/core/styling"
 import { ThemeLibraryScreenBannerType, useThemeSettings } from "@/lib/theme/theme-hooks"
 import React from "react"
+import { OfflineLibraryToolbar } from "./offline-toolbar"
 
 export function OfflineAnimeLists() {
     const ts = useThemeSettings()
@@ -30,6 +31,11 @@ export function OfflineAnimeLists() {
                     )}
                 ></div>
             </>}
+            <OfflineLibraryToolbar
+                hasEntries={true}
+                isNakamaLibrary={false}
+                isStreamingOnly={false}
+            />
             <PageWrapper
                 className="pt-4 relative space-y-8"
             >
