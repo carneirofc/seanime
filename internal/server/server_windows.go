@@ -40,13 +40,21 @@ func addQuitItem() {
 
 func onReady(webFS *embed.FS, app *core.App, flags core.SeanimeFlags, selfupdater *updater.SelfUpdater) func() {
 	return func() {
+		buildTime := constants.BuildTime
+		if buildTime == "" {
+			buildTime = "unknown"
+		}
+
 		systray.SetTemplateIcon(icon.Data, icon.Data)
 		systray.SetTitle(fmt.Sprintf("Seanime v%s", constants.Version))
-		systray.SetTooltip(fmt.Sprintf("Seanime v%s", constants.Version))
+		systray.SetTooltip(fmt.Sprintf("Seanime v%s | Build %s", constants.Version, buildTime))
 		log.Trace().Msg("systray: App is ready")
 
 		// Menu items
-		systray.AddMenuItem("Seanime v"+constants.Version, "Seanime version")
+		mVersionInfo := systray.AddMenuItem("Seanime v"+constants.Version, "Seanime version")
+		mVersionInfo.Disable()
+		mBuildInfo := systray.AddMenuItem("Build: "+buildTime, "Build time")
+		mBuildInfo.Disable()
 		mWeb := systray.AddMenuItem(app.Config.GetServerURI("127.0.0.1"), "Open web interface")
 		mOpenLibrary := systray.AddMenuItem("Open Anime Library", "Open anime library")
 		mOpenDataDir := systray.AddMenuItem("Open Data Directory", "Open data directory")
