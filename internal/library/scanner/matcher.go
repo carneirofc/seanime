@@ -1178,7 +1178,20 @@ func (m *Matcher) applyMatcingRule(lf *anime.LocalFile) bool {
 		m.ScanSummaryLogger.LogPanic(lf, stackTrace)
 	})
 
-	for _, rule := range m.matchingRules {
+	// Iterate rules in config order (not the map's random order) so that when
+	// several rules match the same path the result is deterministic: the first
+	// rule the user defined wins.
+	if m.Config == nil {
+		return false
+	}
+	for _, cfgRule := range m.Config.Matching.Rules {
+		if cfgRule == nil {
+			continue
+		}
+		rule, ok := m.matchingRules[cfgRule.Pattern]
+		if !ok {
+			continue
+		}
 		if rule.regex.MatchString(lf.Path) {
 			lf.MediaId = rule.rule.MediaID
 
