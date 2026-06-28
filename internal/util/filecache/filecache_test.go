@@ -151,3 +151,53 @@ func TestCacherSetAndGet(t *testing.T) {
 	wg.Wait()
 
 }
+
+func TestGetPermFresh(t *testing.T) {
+	cacher, err := NewCacher(filepath.Join(t.TempDir(), "cache"))
+	if err != nil {
+		t.Fatalf("Failed to create cacher: %v", err)
+	}
+
+	bucket := NewPermanentBucket("perm")
+	value := struct{ Name string }{Name: "value"}
+
+	if err := cacher.SetPerm(bucket, "key", value); err != nil {
+		t.Fatalf("SetPerm failed: %v", err)
+	}
+
+	var out struct{ Name string }
+
+	// A generous maxAge serves the just-written entry from cache.
+	found, err := cacher.GetPermFresh(bucket, "key", &out, time.Hour)
+	if err != nil {
+		t.Fatalf("GetPermFresh failed: %v", err)
+	}
+	if !found || out != value {
+		t.Fatalf("expected fresh hit, got found=%v out=%v", found, out)
+	}
+
+	// A tiny maxAge treats the entry as stale -> miss (so the caller hits the network).
+	out = struct{ Name string }{}
+	found, err = cacher.GetPermFresh(bucket, "key", &out, time.Nanosecond)
+	if err != nil {
+		t.Fatalf("GetPermFresh (stale) failed: %v", err)
+	}
+	if found {
+		t.Fatalf("expected stale miss, got hit out=%v", out)
+	}
+
+	// A missing key is a miss regardless of maxAge.
+	found, _ = cacher.GetPermFresh(bucket, "absent", &out, time.Hour)
+	if found {
+		t.Fatalf("expected miss for absent key")
+	}
+
+	// maxAge <= 0 disables the age check (behaves like GetPerm).
+	found, err = cacher.GetPermFresh(bucket, "key", &out, 0)
+	if err != nil {
+		t.Fatalf("GetPermFresh (no age) failed: %v", err)
+	}
+	if !found || out != value {
+		t.Fatalf("expected hit with maxAge=0, got found=%v out=%v", found, out)
+	}
+}

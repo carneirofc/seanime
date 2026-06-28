@@ -138,6 +138,14 @@ const (
 	maxNonCollectionMediaCacheEntries = 50
 	// Collection update interval (refresh collection tracking every 30 minutes)
 	collectionUpdateInterval = 30 * time.Minute
+
+	// mediaReadCacheTTL bounds how long per-media reads (base anime/manga, details,
+	// relations) are served straight from the file cache without contacting AniList.
+	// Anime/manga metadata is effectively immutable, so a generous window avoids
+	// hammering the API — and the 429s that come with it — during library scans,
+	// which fan out a CompleteAnimeByID request for every node of every media tree.
+	// Collections stay network-first, so list/progress data is always fresh.
+	mediaReadCacheTTL = 24 * time.Hour
 )
 
 // addFailureRecord adds a new failure record to the tracking
@@ -490,6 +498,23 @@ func (c *CacheLayer) updateCollectionTracking() {
 			}
 		}
 	}()
+}
+
+// cacheFirstGet serves a recent cached value without contacting AniList when one
+// exists (fresh within mediaReadCacheTTL), otherwise it falls back to the
+// network-first path. This is used for immutable per-media reads so repeated
+// access (most importantly library scans fanning out media tree requests) does
+// not generate redundant AniList traffic and trip rate limiting (429).
+func cacheFirstGet[T any](c *CacheLayer, bucketName string, cacheKey string, networkFn func() (*T, error)) (*T, error) {
+	if ShouldCache.Load() {
+		var cached T
+		found, err := c.fileCacher.GetPermFresh(c.buckets[bucketName], cacheKey, &cached, mediaReadCacheTTL)
+		if err == nil && found {
+			c.logger.Trace().Str("bucket", bucketName).Str("key", cacheKey).Msg("anilist cache: Serving fresh entry from cache (cache-first)")
+			return &cached, nil
+		}
+	}
+	return networkFirstGet(c, bucketName, cacheKey, networkFn)
 }
 
 // networkFirstGet performs a network-first get operation with caching
@@ -872,7 +897,7 @@ func (c *CacheLayer) BaseAnimeByID(ctx context.Context, id *int, interceptors ..
 	}
 
 	cacheKey := c.generateCacheKey(id)
-	res, err := networkFirstGet(c, BaseAnimeBucket, cacheKey, func() (*anilist.BaseAnimeByID, error) {
+	res, err := cacheFirstGet(c, BaseAnimeBucket, cacheKey, func() (*anilist.BaseAnimeByID, error) {
 		return c.anilistClientRef.Get().BaseAnimeByID(ctx, id, interceptors...)
 	})
 
@@ -909,7 +934,7 @@ func (c *CacheLayer) CompleteAnimeByID(ctx context.Context, id *int, interceptor
 	}
 
 	cacheKey := c.generateCacheKey(id)
-	res, err := networkFirstGet(c, CompleteAnimeBucket, cacheKey, func() (*anilist.CompleteAnimeByID, error) {
+	res, err := cacheFirstGet(c, CompleteAnimeBucket, cacheKey, func() (*anilist.CompleteAnimeByID, error) {
 		return c.anilistClientRef.Get().CompleteAnimeByID(ctx, id, interceptors...)
 	})
 
@@ -931,7 +956,7 @@ func (c *CacheLayer) AnimeDetailsByID(ctx context.Context, id *int, interceptors
 	}
 
 	cacheKey := c.generateCacheKey(id)
-	res, err := networkFirstGet(c, AnimeDetailsBucket, cacheKey, func() (*anilist.AnimeDetailsByID, error) {
+	res, err := cacheFirstGet(c, AnimeDetailsBucket, cacheKey, func() (*anilist.AnimeDetailsByID, error) {
 		return c.anilistClientRef.Get().AnimeDetailsByID(ctx, id, interceptors...)
 	})
 
@@ -1095,7 +1120,7 @@ func (c *CacheLayer) BaseMangaByID(ctx context.Context, id *int, interceptors ..
 	}
 
 	cacheKey := c.generateCacheKey(id)
-	res, err := networkFirstGet(c, BaseMangaBucket, cacheKey, func() (*anilist.BaseMangaByID, error) {
+	res, err := cacheFirstGet(c, BaseMangaBucket, cacheKey, func() (*anilist.BaseMangaByID, error) {
 		return c.anilistClientRef.Get().BaseMangaByID(ctx, id, interceptors...)
 	})
 
@@ -1125,7 +1150,7 @@ func (c *CacheLayer) MangaDetailsByID(ctx context.Context, id *int, interceptors
 	}
 
 	cacheKey := c.generateCacheKey(id)
-	res, err := networkFirstGet(c, MangaDetailsBucket, cacheKey, func() (*anilist.MangaDetailsByID, error) {
+	res, err := cacheFirstGet(c, MangaDetailsBucket, cacheKey, func() (*anilist.MangaDetailsByID, error) {
 		return c.anilistClientRef.Get().MangaDetailsByID(ctx, id, interceptors...)
 	})
 

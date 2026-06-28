@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -11,9 +12,10 @@ import (
 
 // RetryConfig configures the retry behavior
 type RetryConfig struct {
-	MaxRetries  int
-	RetryDelay  time.Duration
-	TimeoutOnly bool // Only retry on timeout errors
+	MaxRetries    int
+	RetryDelay    time.Duration
+	TimeoutOnly   bool  // Only retry on timeout errors
+	RetryOnStatus []int // Also retry on these HTTP status codes (e.g., 429, 503)
 }
 
 // cloudFlareRoundTripper is a custom round tripper add the validated request headers.
@@ -39,9 +41,10 @@ func AddCloudFlareByPass(inner http.RoundTripper, options ...Options) http.Round
 	roundTripper := &cloudFlareRoundTripper{
 		inner: inner,
 		retry: &RetryConfig{
-			MaxRetries:  3,
-			RetryDelay:  2 * time.Second,
-			TimeoutOnly: true,
+			MaxRetries:    3,
+			RetryDelay:    2 * time.Second,
+			TimeoutOnly:   false,
+			RetryOnStatus: []int{429, 503},
 		},
 	}
 
@@ -65,7 +68,7 @@ func (ug *cloudFlareRoundTripper) RoundTrip(r *http.Request) (*http.Response, er
 			for header, value := range ug.options.Headers {
 				if _, ok := r.Header[header]; !ok {
 					if header == "User-Agent" {
-						r.Header.Set(header, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36")
+						r.Header.Set(header, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 					} else {
 						r.Header.Set(header, value)
 					}
@@ -87,17 +90,39 @@ func (ug *cloudFlareRoundTripper) RoundTrip(r *http.Request) (*http.Response, er
 			resp, err = ug.inner.RoundTrip(r)
 		}
 
-		// If successful or not a timeout error, return immediately
-		if err == nil || (ug.retry.TimeoutOnly && !errors.Is(err, http.ErrHandlerTimeout)) {
+		// Check if we should retry
+		shouldRetry := false
+		if err != nil {
+			if ug.retry.TimeoutOnly {
+				shouldRetry = errors.Is(err, http.ErrHandlerTimeout)
+			} else {
+				shouldRetry = true
+			}
+		} else if resp != nil && len(ug.retry.RetryOnStatus) > 0 {
+			for _, code := range ug.retry.RetryOnStatus {
+				if resp.StatusCode == code {
+					shouldRetry = true
+					break
+				}
+			}
+		}
+
+		// If successful and no retry needed, return immediately
+		if !shouldRetry {
 			return resp, err
 		}
 
-		lastErr = err
+		if err != nil {
+			lastErr = err
+		} else {
+			lastErr = fmt.Errorf("HTTP %d", resp.StatusCode)
+		}
 		attempts++
 
-		// If we have more retries, wait before next attempt
+		// If we have more retries, wait before next attempt (exponential backoff for status retries)
 		if attempts <= ug.retry.MaxRetries {
-			time.Sleep(ug.retry.RetryDelay)
+			delay := ug.retry.RetryDelay * time.Duration(attempts)
+			time.Sleep(delay)
 		}
 	}
 
@@ -119,7 +144,7 @@ func GetDefaultOptions() Options {
 		Headers: map[string]string{
 			"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
 			"Accept-Language": "en-US,en;q=0.5",
-			"User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+			"User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 		},
 	}
 }

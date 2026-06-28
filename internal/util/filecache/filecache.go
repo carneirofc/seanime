@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/goccy/go-json"
+	"github.com/samber/lo"
 )
 
 // CacheStore represents a single-process, file-based, key/value cache store.
@@ -122,7 +123,11 @@ func (c *Cacher) Set(bucket Bucket, key string, value interface{}) error {
 	}
 	store.mu.Lock()
 	defer store.mu.Unlock()
-	store.data[key] = &cacheItem{Value: value, Expiration: new(time.Now().Add(bucket.ttl))}
+	var expiration *time.Time
+	if bucket.ttl > 0 {
+		expiration = lo.ToPtr(time.Now().Add(bucket.ttl))
+	}
+	store.data[key] = &cacheItem{Value: value, Expiration: expiration}
 	return store.saveToFile()
 }
 
@@ -298,6 +303,33 @@ func (c *Cacher) GetPerm(bucket PermanentBucket, key string, out interface{}) (b
 	return true, json.Unmarshal(data, out)
 }
 
+// GetPermFresh retrieves the value for the given key only when it exists and was
+// last written within maxAge. It returns found=false for a missing entry or one
+// older than maxAge (a maxAge <= 0 disables the age check, matching GetPerm).
+// This lets callers serve a recent permanent entry without contacting the source.
+func (c *Cacher) GetPermFresh(bucket PermanentBucket, key string, out interface{}, maxAge time.Duration) (bool, error) {
+	store, err := c.getStore(bucket.name)
+	if err != nil {
+		return false, err
+	}
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	item, ok := store.data[key]
+	if !ok {
+		return false, nil
+	}
+	if maxAge > 0 {
+		if item.UpdatedAt == nil || time.Since(*item.UpdatedAt) > maxAge {
+			return false, nil
+		}
+	}
+	data, err := json.Marshal(item.Value)
+	if err != nil {
+		return false, err
+	}
+	return true, json.Unmarshal(data, out)
+}
+
 // DeletePerm deletes the value for the given key from the permanent bucket.
 func (c *Cacher) DeletePerm(bucket PermanentBucket, key string) error {
 	store, err := c.getStore(bucket.name)
@@ -404,6 +436,9 @@ func (c *Cacher) RemoveAllBy(filter func(filename string) bool) error {
 			}
 			if filter(e.Name()) {
 				_ = os.Remove(filepath.Join(c.dir, e.Name()))
+				// Evict the matching in-memory store so stale entries aren't
+				// served after the backing file is removed.
+				delete(c.stores, strings.TrimSuffix(e.Name(), ".cache"))
 			}
 		}
 	}
