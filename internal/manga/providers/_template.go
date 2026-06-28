@@ -1,10 +1,11 @@
 package manga_providers
 
 import (
-	"github.com/rs/zerolog"
 	"net/http"
 	"seanime/internal/util"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 type (
@@ -24,7 +25,7 @@ func NewTemplate(logger *zerolog.Logger) *Template {
 	return &Template{
 		Url:       "https://XXXXXX.com",
 		Client:    c,
-		UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+		UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 		logger:    logger,
 	}
 }

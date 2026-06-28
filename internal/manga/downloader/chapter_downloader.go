@@ -2,7 +2,9 @@ package chapter_downloader
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -22,7 +24,12 @@ import (
 	"github.com/rs/zerolog"
 	_ "golang.org/x/image/bmp"  // Register BMP format
 	_ "golang.org/x/image/tiff" // Register Tiff format
+	_ "golang.org/x/image/webp" // Register WebP format (common on modern manga providers)
 )
+
+// pageDownloadRetries is the number of times a single page download is retried
+// before the page (and therefore the chapter) is considered failed.
+const pageDownloadRetries = 3
 
 // 📁 cache/manga
 // └── 📁 {provider}_{mediaId}_{chapterId}_{chapterNumber}      <- Downloader generates
@@ -41,10 +48,12 @@ type (
 		downloadDir    string
 		mu             sync.Mutex
 		downloadMu     sync.Mutex
-		// cancelChannel is used to cancel some or all downloads.
-		cancelChannels      map[DownloadID]chan struct{}
+		// ctx/cancel control cancellation of in-flight downloads.
+		// They are guarded by mu. cancel() is called by Stop() and a fresh
+		// context is created by Run() once the previous one has been cancelled.
+		ctx                 context.Context
+		cancel              context.CancelFunc
 		queue               *Queue
-		cancelCh            chan struct{}   // Close to cancel the download process
 		runCh               chan *QueueInfo // Receives a signal to download the next item
 		chapterDownloadedCh chan DownloadID // Sends a signal when a chapter has been downloaded
 	}
@@ -90,18 +99,30 @@ type (
 
 func NewDownloader(opts *NewDownloaderOptions) *Downloader {
 	runCh := make(chan *QueueInfo, 1)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	d := &Downloader{
 		logger:              opts.Logger,
 		wsEventManager:      opts.WSEventManager,
 		downloadDir:         opts.DownloadDir,
-		cancelChannels:      make(map[DownloadID]chan struct{}),
+		ctx:                 ctx,
+		cancel:              cancel,
 		runCh:               runCh,
 		queue:               NewQueue(opts.Database, opts.Logger, opts.WSEventManager, runCh),
 		chapterDownloadedCh: make(chan DownloadID, 100),
 	}
 
 	return d
+}
+
+// currentCtx returns the active cancellation context for in-flight downloads.
+func (cd *Downloader) currentCtx() context.Context {
+	cd.mu.Lock()
+	defer cd.mu.Unlock()
+	if cd.ctx == nil {
+		return context.Background()
+	}
+	return cd.ctx
 }
 
 // Start spins up a goroutine that will listen to queue events.
@@ -163,25 +184,23 @@ func (cd *Downloader) Run() {
 
 	cd.logger.Debug().Msg("chapter downloader: Starting queue")
 
-	cd.cancelCh = make(chan struct{})
+	// Ensure a live (non-cancelled) context exists. A previous Stop() may have
+	// cancelled it, in which case we create a fresh one for upcoming downloads.
+	if cd.ctx == nil || cd.ctx.Err() != nil {
+		cd.ctx, cd.cancel = context.WithCancel(context.Background())
+	}
 
 	cd.queue.Run()
 }
 
-// Stop cancels the download process and stops the queue from running.
+// Stop cancels in-flight downloads and stops the queue from running.
 func (cd *Downloader) Stop() {
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
 
-	defer func() {
-		if r := recover(); r != nil {
-			cd.logger.Error().Msgf("chapter downloader: cancelCh is already closed")
-		}
-	}()
-
-	cd.cancelCh = make(chan struct{})
-
-	close(cd.cancelCh) // Cancel download process
+	if cd.cancel != nil {
+		cd.cancel() // Cancel in-flight downloads
+	}
 
 	cd.queue.Stop()
 }
@@ -241,6 +260,10 @@ func (cd *Downloader) downloadChapterImages(queueInfo *QueueInfo) (err error) {
 	// Download images
 	batchSize := calculateBatchSize(len(queueInfo.Pages))
 
+	// Snapshot the cancellation context once so all page goroutines observe the
+	// same channel (avoids a data race on the downloader's ctx field).
+	ctx := cd.currentCtx()
+
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, batchSize) // Semaphore to control concurrency
 	for _, page := range queueInfo.Pages {
@@ -252,7 +275,7 @@ func (cd *Downloader) downloadChapterImages(queueInfo *QueueInfo) (err error) {
 				wg.Done()
 			}()
 			select {
-			case <-cd.cancelCh:
+			case <-ctx.Done():
 				//cd.logger.Warn().Msg("chapter downloader: Download goroutine canceled")
 				return
 			default:
@@ -289,14 +312,15 @@ func (cd *Downloader) downloadPage(page *hibikemanga.ChapterPage, destination st
 
 	imgID := fmt.Sprintf("%02d", page.Index+1)
 
-	buf, err := manga_providers.GetImageByProxy(page.URL, page.Headers)
+	// Retry transient failures so a single network blip doesn't fail the whole chapter.
+	buf, err := manga_providers.GetImageByProxyWithRetry(page.URL, page.Headers, pageDownloadRetries)
 	if err != nil {
 		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to get image from URL %s", page.URL)
 		return
 	}
 
 	// Get the image format
-	width, height, format, err := util.DetectImageFormatAndDimensions(buf, page.URL)
+	config, format, err := image.DecodeConfig(bytes.NewReader(buf))
 	if err != nil {
 		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to decode image format from URL %s", page.URL)
 		return
@@ -324,8 +348,8 @@ func (cd *Downloader) downloadPage(page *hibikemanga.ChapterPage, destination st
 	cd.downloadMu.Lock()
 	(*registry)[page.Index] = PageInfo{
 		Index:       page.Index,
-		Width:       width,
-		Height:      height,
+		Width:       config.Width,
+		Height:      config.Height,
 		Filename:    filename,
 		OriginalURL: page.URL,
 		Size:        int64(len(buf)),

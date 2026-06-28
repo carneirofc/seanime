@@ -191,14 +191,14 @@ func (d *Downloader) DownloadChapter(opts DownloadChapterOptions) error {
 
 	chapterContainer, found := d.repository.getChapterContainerFromFilecache(opts.Provider, opts.MediaId)
 	if !found {
-		return errors.New("chapters not found")
+		return ErrNoChapters
 	}
 
 	// Find the chapter in the chapter container
 	// e.g. Wind-Breaker$0062
 	chapter, ok := chapterContainer.GetChapter(opts.ChapterId)
 	if !ok {
-		return errors.New("chapter not found")
+		return ErrChapterNotFound
 	}
 
 	// Fetch the chapter pages
