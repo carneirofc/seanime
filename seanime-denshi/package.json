@@ -1,6 +1,6 @@
 {
   "name": "seanime-denshi",
-  "version": "3.8.7",
+  "version": "3.8.3",
   "description": "Electron-based Desktop client for Seanime",
   "main": "src/main.js",
   "author": "5rahim <talkwithrahim@gmail.com>",
@@ -100,7 +100,7 @@
       "deleteAppDataOnUninstall": true,
       "shortcutName": "Seanime Denshi",
       "artifactName": "seanime-denshi-${version}_Windows_${arch}.${ext}",
-      "perMachine": true
+      "perMachine": false
     },
     "directories": {
       "buildResources": "assets",

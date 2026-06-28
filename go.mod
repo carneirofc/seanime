@@ -39,6 +39,7 @@ require (
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/mileusna/useragent v1.3.5
 	github.com/mmcdole/gofeed v1.3.0
+	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/ncruces/go-dns v1.3.2
 	github.com/neilotoole/streamcache v0.3.5
 	github.com/nwaples/rardecode/v2 v2.2.2
@@ -62,8 +63,15 @@ require (
 
 require (
 	github.com/RoaringBitmap/roaring/v2 v2.16.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/jsonschema-go v0.4.3 // indirect
+	github.com/segmentio/asm v1.1.3 // indirect
+	github.com/segmentio/encoding v0.5.4 // indirect
+	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
+	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	golang.org/x/mobile v0.0.0-20260602190626-68735029466e // indirect
 	golang.org/x/mod v0.36.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/tools v0.45.0 // indirect
 )
 
@@ -117,7 +125,6 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/btree v1.1.2 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20250423184734-337e5dd93bb4 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hekmon/cunits/v2 v2.1.0 // indirect
@@ -187,7 +194,6 @@ require (
 	github.com/wlynxg/anet v0.0.3 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
-	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.38.0 // indirect
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect

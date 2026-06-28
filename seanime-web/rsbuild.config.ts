@@ -27,7 +27,8 @@ export default defineConfig({
 
                 function processJassub() {
                     console.log("Running transpilation...")
-                    const source = path.resolve(__dirname, "node_modules/jassub/dist/worker/worker.js")
+                    const jassubRoot = path.dirname(require.resolve("jassub/package.json"))
+                    const source = path.join(jassubRoot, "dist/worker/worker.js")
                     const outDir = path.resolve(__dirname, "public", "jassub")
                     const outFile = path.join(outDir, "jassub-worker.js")
 
@@ -46,8 +47,8 @@ export default defineConfig({
                     })
 
                     // copy wasm files
-                    const wasmSource = path.resolve(__dirname, "node_modules/jassub/dist/wasm/jassub-worker.wasm")
-                    const wasmModernSource = path.resolve(__dirname, "node_modules/jassub/dist/wasm/jassub-worker-modern.wasm")
+                    const wasmSource = path.join(jassubRoot, "dist/wasm/jassub-worker.wasm")
+                    const wasmModernSource = path.join(jassubRoot, "dist/wasm/jassub-worker-modern.wasm")
                     fs.copyFileSync(wasmSource, path.join(outDir, "jassub-worker.wasm"))
                     fs.copyFileSync(wasmModernSource, path.join(outDir, "jassub-worker-modern.wasm"))
                     console.log("Finished transpiling")
@@ -58,7 +59,7 @@ export default defineConfig({
             include: /\.(?:jsx|tsx)$/,
             babelLoaderOptions(opts) {
                 opts.plugins ??= []
-                opts.plugins.push(["babel-plugin-react-compiler"])
+                opts.plugins.push(["babel-plugin-react-compiler", { runtimeModule: "react-compiler-runtime" }])
             },
         }),
     ].filter(Boolean),
@@ -66,7 +67,14 @@ export default defineConfig({
         entry: {
             index: "./src/main.tsx",
         },
-        define: publicVars,
+        define: {
+            ...publicVars,
+            "process.env.NEXT_PUBLIC_WS_DEBUG": JSON.stringify(process.env.NEXT_PUBLIC_WS_DEBUG ?? ""),
+            "process.env.NEXT_PUBLIC_DEBUG": JSON.stringify(process.env.NEXT_PUBLIC_DEBUG ?? ""),
+            "process.env.NEXT_PUBLIC_WS_RTT_WARN_MS": JSON.stringify(process.env.NEXT_PUBLIC_WS_RTT_WARN_MS ?? ""),
+            "process.env.NEXT_PUBLIC_API_DEBUG": JSON.stringify(process.env.NEXT_PUBLIC_API_DEBUG ?? ""),
+            "process.env.NEXT_PUBLIC_API_SLOW_MS": JSON.stringify(process.env.NEXT_PUBLIC_API_SLOW_MS ?? ""),
+        },
     },
     resolve: {
         alias: {
@@ -133,11 +141,14 @@ export default defineConfig({
                 },
             },
             module: {
+                noParse: /[\\/]jassub[\\/]dist[\\/]wasm[\\/]jassub-worker\.js$/,
                 rules: [
-                    { // stops circular deps warning
-                        test: /jassub\/dist\/.*\.js$/,
+                    { // stops circular deps warning (worker + pthread detection)
+                        test: /\.js$/,
+                        include: /[\\/]jassub[\\/]dist[\\/]/,
                         parser: {
                             worker: false,
+                            url: false,
                         },
                     },
                     { // don't emit these again
