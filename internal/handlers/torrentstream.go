@@ -9,7 +9,6 @@ import (
 	"seanime/internal/events"
 	hibiketorrent "seanime/internal/extension/hibike/torrent"
 	"seanime/internal/torrentstream"
-	"seanime/internal/util"
 
 	"github.com/labstack/echo/v4"
 )
@@ -54,7 +53,7 @@ func (h *Handler) HandleSaveTorrentstreamSettings(c echo.Context) error {
 
 	// Validate the download directory
 	if b.Settings.DownloadDir != "" {
-		dir, err := os.Stat(util.ResolvePhysicalPath(b.Settings.DownloadDir))
+		dir, err := os.Stat(b.Settings.DownloadDir)
 		if err != nil {
 			h.App.Logger.Error().Err(err).Msgf("torrentstream: Download directory %s does not exist", b.Settings.DownloadDir)
 			h.App.WSEventManager.SendEvent(events.ErrorToast, "Download directory does not exist")
