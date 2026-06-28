@@ -101,13 +101,13 @@ export function useEmptyMangaEntryCache() {
     })
 }
 
-export function useGetMangaEntryChapters(variables: Partial<GetMangaEntryChapters_Variables>) {
+export function useGetMangaEntryChapters(variables: Partial<GetMangaEntryChapters_Variables>, enabled?: boolean) {
     return useServerQuery<Manga_ChapterContainer, GetMangaEntryChapters_Variables>({
         endpoint: API_ENDPOINTS.MANGA.GetMangaEntryChapters.endpoint,
         method: API_ENDPOINTS.MANGA.GetMangaEntryChapters.methods[0],
         queryKey: [API_ENDPOINTS.MANGA.GetMangaEntryChapters.key, String(variables.mediaId), variables.provider],
         data: variables as GetMangaEntryChapters_Variables,
-        enabled: !!variables.mediaId && !!variables.provider,
+        enabled: enabled ?? (!!variables.mediaId && !!variables.provider),
         muteError: true,
     })
 }

@@ -1,10 +1,11 @@
 package manga
 
 import (
+	"bytes"
 	"errors"
+	"image"
 	_ "image/jpeg" // Register JPEG format
 	_ "image/png"  // Register PNG format
-	"io"
 	"net/http"
 	"seanime/internal/database/db"
 	"seanime/internal/database/models"
@@ -29,6 +30,7 @@ var (
 	ErrChapterNotFound      = errors.New("chapter not found")
 	ErrChapterNotDownloaded = errors.New("chapter not downloaded")
 	ErrNoTitlesProvided     = errors.New("no titles provided")
+	ErrMangaMatchRequired   = errors.New("select a source match before loading chapters")
 )
 
 type (
@@ -105,17 +107,21 @@ const (
 //
 // Note: Each bucket contains only 1 key-value pair.
 func (r *Repository) getFcProviderBucket(provider string, mediaId int, bucketType bucketType) filecache.Bucket {
-	return filecache.NewBucket("manga_"+provider+"_"+string(bucketType)+"_"+strconv.Itoa(mediaId), time.Hour*24*7)
+	var ttl time.Duration
+	if r.settings != nil && r.settings.Manga != nil && r.settings.Manga.CacheDurationHours > 0 {
+		ttl = time.Duration(r.settings.Manga.CacheDurationHours) * time.Hour
+	}
+	// ttl == 0 means no expiration
+	return filecache.NewBucket("manga_"+provider+"_"+string(bucketType)+"_"+strconv.Itoa(mediaId), ttl)
 }
 
 // EmptyMangaCache deletes all manga buckets associated with the given mediaId.
 func (r *Repository) EmptyMangaCache(mediaId int) (err error) {
-	// Empty the manga cache
+	// Empty the manga cache. RemoveAllBy now evicts the matching in-memory stores
+	// as well, so there's no need to clear every other cache in the process.
 	err = r.fileCacher.RemoveAllBy(func(filename string) bool {
 		return strings.HasPrefix(filename, "manga_") && strings.Contains(filename, strconv.Itoa(mediaId))
 	})
-
-	_ = r.fileCacher.Clear()
 	return
 }
 
@@ -160,20 +166,23 @@ func getImageNaturalSize(url string) (int, int, error) {
 	}
 	defer resp.Body.Close()
 
-	buf, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return getImageNaturalSizeB(buf)
-}
-
-func getImageNaturalSizeB(data []byte) (int, int, error) {
-	width, height, _, err := util.DetectImageFormatAndDimensions(data, "")
+	// Decode the image
+	img, _, err := image.DecodeConfig(resp.Body)
 	if err != nil {
 		return 0, 0, err
 	}
 
 	// Return the natural size
-	return width, height, nil
+	return img.Width, img.Height, nil
+}
+
+func getImageNaturalSizeB(data []byte) (int, int, error) {
+	// Decode the image
+	img, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return 0, 0, err
+	}
+
+	// Return the natural size
+	return img.Width, img.Height, nil
 }

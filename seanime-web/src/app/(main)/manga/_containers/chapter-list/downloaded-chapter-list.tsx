@@ -4,6 +4,7 @@
 
 
 import { Manga_ChapterContainer, Manga_Entry, Manga_MediaDownloadData } from "@/api/generated/types"
+import { useListMangaProviderExtensions } from "@/api/hooks/extensions.hooks"
 import { useDeleteMangaDownloadedChapters } from "@/api/hooks/manga_download.hooks"
 
 import { useSetCurrentChapter } from "@/app/(main)/manga/_lib/handle-chapter-reader"
@@ -39,6 +40,7 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
     } = props
 
     const { selectedProvider } = useSelectedMangaProvider(entry.mediaId)
+    const { data: providerExtensions } = useListMangaProviderExtensions()
 
     const [, setDownloadedChapterContainer] = useAtom(manga_downloadedChapterContainerAtom)
 
@@ -53,12 +55,19 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
 
     const downloadedOrQueuedChapters = useMangaEntryDownloadedChapters()
 
+    const providerNameMap = React.useMemo(() => {
+        return new Map(providerExtensions?.map(extension => [extension.id, extension.name]) ?? [])
+    }, [providerExtensions])
+
+    const getProviderLabel = React.useCallback((provider: string) => {
+        return providerNameMap.get(provider) || provider
+    }, [providerNameMap])
+
     /**
      * Transform downloadedOrQueuedChapters into a dynamic list based on the showQueued state
      */
     const tableData = React.useMemo(() => {
-        if (!showQueued) return downloadedOrQueuedChapters
-        return downloadedOrQueuedChapters.filter(chapter => chapter.queued)
+        return showQueued ? downloadedOrQueuedChapters.filter(chapter => chapter.queued) : downloadedOrQueuedChapters
     }, [data, downloadedOrQueuedChapters, showQueued])
 
     const chapterIdsToNumber = React.useMemo(() => {
@@ -86,9 +95,12 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
             },
         },
         {
-            accessorKey: "provider",
+            id: "provider",
             header: "Provider",
             size: 10,
+            enableSorting: true,
+            accessorFn: (row) => getProviderLabel(row.provider),
+            cell: ({ row }) => <span className="text-[--muted] text-sm">{getProviderLabel(row.original.provider)}</span>,
         },
         {
             accessorKey: "chapterId",
@@ -140,7 +152,7 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
                 )
             },
         },
-    ]), [tableData, entry?.mediaId, chapterIdsToNumber])
+    ]), [entry?.mediaId, chapterIdsToNumber, getProviderLabel])
 
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
 

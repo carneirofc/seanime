@@ -1,4 +1,9 @@
-import { HibikeManga_ChapterDetails, Manga_MediaDownloadData, Nullish } from "@/api/generated/types"
+import {
+    HibikeManga_ChapterDetails,
+    HibikeManga_ChapterProviderOption,
+    Manga_MediaDownloadData,
+    Nullish,
+} from "@/api/generated/types"
 import {
     useClearAllChapterDownloadQueue,
     useDownloadMangaChapters,
@@ -90,23 +95,45 @@ export function useMangaEntryDownloadData() {
 export function useHandleDownloadMangaChapter(mediaId: string | undefined | null) {
     const { selectedProvider } = useSelectedMangaProvider(mediaId)
 
-    const { mutate, isPending } = useDownloadMangaChapters(mediaId, selectedProvider)
+    const { mutateAsync, isPending } = useDownloadMangaChapters(mediaId, selectedProvider)
+
+    const downloadChapters = React.useCallback(async (
+        targets: Array<Pick<HibikeManga_ChapterDetails, "provider" | "id"> | HibikeManga_ChapterProviderOption>,
+    ) => {
+        if (!mediaId || targets.length === 0) return
+
+        const chapterIdsByProvider = targets.reduce<Record<string, string[]>>((acc, target) => {
+            const provider = target.provider
+            const chapterId = "chapterId" in target ? target.chapterId : target.id
+
+            if (!provider || !chapterId) return acc
+
+            if (!acc[provider]) {
+                acc[provider] = []
+            }
+
+            if (!acc[provider].includes(chapterId)) {
+                acc[provider].push(chapterId)
+            }
+
+            return acc
+        }, {})
+
+        const providers = Object.keys(chapterIdsByProvider)
+        if (providers.length === 0) return
+
+        await Promise.all(providers.map(provider => mutateAsync({
+            mediaId: Number(mediaId),
+            provider,
+            chapterIds: chapterIdsByProvider[provider],
+            startNow: false,
+        })))
+
+        toast.success(providers.length > 1 ? "Chapters added to download queue from multiple sources" : "Chapters added to download queue")
+    }, [mediaId, mutateAsync])
 
     return {
-        downloadChapters: (chapters: HibikeManga_ChapterDetails[]) => {
-            if (selectedProvider) {
-                mutate({
-                    mediaId: Number(mediaId),
-                    provider: selectedProvider,
-                    chapterIds: chapters.map(ch => ch.id),
-                    startNow: false,
-                }, {
-                    onSuccess: () => {
-                        toast.success("Chapters added to download queue")
-                    },
-                })
-            }
-        },
+        downloadChapters,
         isSendingDownloadRequest: isPending,
     }
 }
@@ -142,4 +169,3 @@ export function useHandleMangaChapterDownloadQueue() {
         isClearingDownloadQueue: isClearingQueue,
     }
 }
-

@@ -68,6 +68,15 @@ export function useMangaReaderUtils() {
 }
 
 export function useMangaDownloadDataUtils(data: Manga_MediaDownloadData | undefined, loading: boolean) {
+    const isProviderChapterDownloaded = React.useCallback((provider: string | undefined, chapterId: string | undefined) => {
+        if (!data || !provider || !chapterId) return false
+        return (data.downloaded[provider]?.findIndex(n => n.chapterId === chapterId) ?? -1) !== -1
+    }, [data])
+
+    const isProviderChapterQueued = React.useCallback((provider: string | undefined, chapterId: string | undefined) => {
+        if (!data || !provider || !chapterId) return false
+        return (data.queued[provider]?.findIndex(n => n.chapterId === chapterId) ?? -1) !== -1
+    }, [data])
 
     const isChapterLocal = React.useCallback((chapter: HibikeManga_ChapterDetails | undefined) => {
         if (!chapter) return false
@@ -75,14 +84,14 @@ export function useMangaDownloadDataUtils(data: Manga_MediaDownloadData | undefi
     }, [])
 
     const isChapterDownloaded = React.useCallback((chapter: HibikeManga_ChapterDetails | undefined) => {
-        if (!data || !chapter) return false
-        return (data?.downloaded[chapter.provider]?.findIndex(n => n.chapterId === chapter.id) ?? -1) !== -1
-    }, [data])
+        if (!chapter) return false
+        return isProviderChapterDownloaded(chapter.provider, chapter.id)
+    }, [isProviderChapterDownloaded])
 
     const isChapterQueued = React.useCallback((chapter: HibikeManga_ChapterDetails | undefined) => {
-        if (!data || !chapter) return false
-        return (data?.queued[chapter.provider]?.findIndex(n => n.chapterId === chapter.id) ?? -1) !== -1
-    }, [data])
+        if (!chapter) return false
+        return isProviderChapterQueued(chapter.provider, chapter.id)
+    }, [isProviderChapterQueued])
 
     const getProviderNumberOfDownloadedChapters = React.useCallback((provider: string) => {
         if (!data) return 0
@@ -91,6 +100,8 @@ export function useMangaDownloadDataUtils(data: Manga_MediaDownloadData | undefi
     return {
         isChapterDownloaded,
         isChapterQueued,
+        isProviderChapterDownloaded,
+        isProviderChapterQueued,
         getProviderNumberOfDownloadedChapters,
         showActionButtons: !loading,
         isChapterLocal,

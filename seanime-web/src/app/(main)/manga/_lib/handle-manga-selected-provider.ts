@@ -17,11 +17,39 @@ export const __manga_entryProviderAtom = atomWithStorage<Record<string, string>>
 export type MangaEntryFilters = {
     scanlators: string[]
     language: string
+    sourceProvider: string
 }
 export const __manga_entryFiltersAtom = atomWithStorage<Record<string, MangaEntryFilters>>("sea-manga-entry-filters",
     {},
     undefined,
     { getOnInit: true })
+
+function createDefaultMangaEntryFilters(): MangaEntryFilters {
+    return {
+        scanlators: [],
+        language: "",
+        sourceProvider: "",
+    }
+}
+
+export function getChapterScanlatorValues(scanlator: string | null | undefined): string[] {
+    if (!scanlator) return []
+
+    return Array.from(new Set(
+        scanlator
+            .split(",")
+            .map(value => value.trim())
+            .filter(Boolean),
+    ))
+}
+
+export function chapterMatchesScanlator(scanlator: string | null | undefined, selectedScanlator: string): boolean {
+    const normalizedSelection = selectedScanlator.trim()
+    if (!normalizedSelection) return true
+    if ((scanlator || "").trim() === normalizedSelection) return true
+
+    return getChapterScanlatorValues(scanlator).includes(normalizedSelection)
+}
 
 /**
  * Helper function to get the default provider from server status or available extensions
@@ -190,10 +218,7 @@ export function useSelectedMangaFilters(
     React.useLayoutEffect(() => {
         if (!isLoaded) return
 
-        const defaultFilters: MangaEntryFilters = {
-            scanlators: [],
-            language: "",
-        }
+        const defaultFilters = createDefaultMangaEntryFilters()
 
         if (!selectedProvider) {
             setStoredFilters(draft => {
@@ -205,7 +230,7 @@ export function useSelectedMangaFilters(
 
         // (Case 1) No filters have been chosen yet for this manga
         // -> Set the default filters
-        if (!storedFilters[key] && (selectedExtension?.settings?.supportsMultiScanlator || selectedExtension?.settings?.supportsMultiLanguage)) {
+        if (!storedFilters[key]) {
             setStoredFilters(draft => {
                 draft[key] = defaultFilters
                 return
@@ -216,7 +241,10 @@ export function useSelectedMangaFilters(
 
 
     return {
-        selectedFilters: storedFilters[key] || { scanlators: [], language: "" },
+        selectedFilters: {
+            ...createDefaultMangaEntryFilters(),
+            ...(storedFilters[key] ?? {}),
+        },
         setSelectedScanlator: ({ mId, scanlators }: { mId: Nullish<string | number>, scanlators: string[] }) => {
             if (!mId) return
             setStoredFilters(draft => {
@@ -228,6 +256,13 @@ export function useSelectedMangaFilters(
             if (!mId) return
             setStoredFilters(draft => {
                 draft[key]["language"] = language
+                return
+            })
+        },
+        setSelectedSourceProvider: ({ mId, sourceProvider }: { mId: Nullish<string | number>, sourceProvider: string }) => {
+            if (!mId) return
+            setStoredFilters(draft => {
+                draft[key]["sourceProvider"] = sourceProvider
                 return
             })
         },
@@ -246,10 +281,11 @@ export function useStoredMangaFilters(_extensions: ExtensionRepo_MangaProviderEx
             const mangaProvider = selectedProviders[mangaId]
             const extension = _extensions?.find(extension => extension.id === mangaProvider)
 
-            if (extension?.settings?.supportsMultiScanlator || extension?.settings?.supportsMultiLanguage) {
+            if (extension || mangaProvider) {
                 filters[mangaId] = {
                     scanlators: value.scanlators ?? [],
                     language: value.language ?? "",
+                    sourceProvider: value.sourceProvider ?? "",
                 }
             }
         })
@@ -280,33 +316,32 @@ export function getMangaEntryLatestChapterNumber(
 
     // If filters are set for this manga
     if (!!filters) {
-        // Find entry with matching scanlator & language
-        found = mangaLatestChapterNumbers?.find(item => {
-            return !!filters.scanlators[0] && !!filters.language &&
-                filters.scanlators[0] === item.scanlator && filters.language === item.language
-        })
+        const preferredScanlator = filters.scanlators[0] || ""
+        const preferredLanguage = filters.language || ""
+        const preferredSourceProvider = filters.sourceProvider || ""
 
-        // If no entry with matching scanlator & language is found, find entry with matching language
-        if (!found) {
-            // Get all entries with matching language
+        const findHighest = (
+            sourceProvider: string,
+            scanlator: string,
+            language: string,
+        ) => {
             const entries = mangaLatestChapterNumbers?.filter(item => {
-                return !!filters.language && filters.language === item.language
+                if (!!sourceProvider && item.sourceProvider !== sourceProvider) return false
+                if (!!scanlator && !chapterMatchesScanlator(item.scanlator, scanlator)) return false
+                if (!!language && item.language !== language) return false
+                return true
             }) ?? []
 
-            // Get the highest chapter number from all entries with matching language
-            found = sortBy(entries, "number").reverse()[0]
+            return sortBy(entries, "number").reverse()[0]
         }
 
-        // If no entry with matching language is found, find entry with matching scanlator
-        if (!found) {
-            // Get all entries with matching scanlator
-            const entries = mangaLatestChapterNumbers?.filter(item => {
-                return !!filters.scanlators[0] && filters.scanlators[0] === item.scanlator
-            }) ?? []
-
-            // Get the highest chapter number from all entries with matching scanlator
-            found = sortBy(entries, "number").reverse()[0]
-        }
+        found = findHighest(preferredSourceProvider, preferredScanlator, preferredLanguage)
+            || findHighest(preferredSourceProvider, "", preferredLanguage)
+            || findHighest(preferredSourceProvider, preferredScanlator, "")
+            || findHighest("", preferredScanlator, preferredLanguage)
+            || findHighest("", "", preferredLanguage)
+            || findHighest("", preferredScanlator, "")
+            || findHighest(preferredSourceProvider, "", "")
     }
 
     // If no filters are set or no entry is found for the filters, get the highest chapter number
@@ -317,9 +352,10 @@ export function getMangaEntryLatestChapterNumber(
         }, 0)
         found = {
             provider: provider,
+            sourceProvider: "",
             language: "",
             scanlator: "",
-            number: highestChapterNumber,
+            number: highestChapterNumber || 0,
         }
     }
 

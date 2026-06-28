@@ -1,6 +1,7 @@
 import { Manga_Collection, Manga_MangaLatestChapterNumberItem } from "@/api/generated/types"
 import { useListMangaProviderExtensions } from "@/api/hooks/extensions.hooks"
 import { useGetMangaCollection, useGetMangaLatestChapterNumbersMap } from "@/api/hooks/manga.hooks"
+import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { CollectionParams, DEFAULT_COLLECTION_PARAMS, filterCollectionEntries, filterMangaCollectionEntries } from "@/lib/helpers/filtering"
 import { useRouter } from "@/lib/navigation"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
@@ -17,6 +18,8 @@ export const MANGA_LIBRARY_DEFAULT_PARAMS: CollectionParams<"manga"> = {
 }
 
 export const __mangaLibrary_unreadOnlyAtom = atomWithStorage("sea-manga-library-unread-only", false, undefined, { getOnInit: true })
+
+export const __mangaLibrary_isAdultAtom = atomWithStorage("sea-manga-library-is-adult", false, undefined, { getOnInit: true })
 
 export const __mangaLibrary_paramsAtom = atomWithImmer<CollectionParams<"manga">>(MANGA_LIBRARY_DEFAULT_PARAMS)
 
@@ -37,7 +40,7 @@ export const __mangaLibrary_latestChapterNumbersAtom = atomWithImmer<{
  */
 export function useHandleMangaCollection() {
     const router = useRouter()
-    const { data, isLoading, isError } = useGetMangaCollection()
+    const { data, isLoading, isError, refetch } = useGetMangaCollection()
 
     // const { data: chapterCounts } = useGetMangaChapterCountMap()
     const { data: latestChapterNumbers } = useGetMangaLatestChapterNumbersMap()
@@ -65,14 +68,17 @@ export function useHandleMangaCollection() {
         }
     }, [storedProviders, storedFilters, latestChapterNumbers])
 
+    const serverStatus = useServerStatus()
     const [params, setParams] = useAtom(__mangaLibrary_paramsAtom)
     const [unreadOnly, setUnreadOnly] = useAtom(__mangaLibrary_unreadOnlyAtom)
+    const [isAdult, setIsAdult] = useAtom(__mangaLibrary_isAdultAtom)
 
     const mountedRef = React.useRef(false)
     React.useEffect(() => {
         if (mountedRef.current) return
         setParams(draft => {
             draft.unreadOnly = unreadOnly
+            draft.isAdult = isAdult
             return
         })
         setTimeout(() => {
@@ -83,10 +89,10 @@ export function useHandleMangaCollection() {
     // Reset params when data changes
     React.useEffect(() => {
         if (!!data) {
-            const defaultParams = { ...MANGA_LIBRARY_DEFAULT_PARAMS, unreadOnly }
+            const defaultParams = { ...MANGA_LIBRARY_DEFAULT_PARAMS, unreadOnly, isAdult }
             setParams(defaultParams)
         }
-    }, [data, unreadOnly])
+    }, [data, unreadOnly, isAdult])
 
     // Sync unreadOnly to persistent storage when params change
     React.useEffect(() => {
@@ -94,6 +100,13 @@ export function useHandleMangaCollection() {
             setUnreadOnly(params.unreadOnly)
         }
     }, [params.unreadOnly])
+
+    // Sync isAdult to persistent storage when params change
+    React.useEffect(() => {
+        if (mountedRef.current && params.isAdult !== isAdult) {
+            setIsAdult(params.isAdult)
+        }
+    }, [params.isAdult])
 
     const genres = React.useMemo(() => {
         const genresSet = new Set<string>()
@@ -107,6 +120,11 @@ export function useHandleMangaCollection() {
         return Array.from(genresSet)?.sort((a, b) => a.localeCompare(b))
     }, [data])
 
+    const configs = React.useMemo(() => ({
+        enableAdultContent: serverStatus?.settings?.anilist?.enableAdultContent || false,
+        splitAdultContent: serverStatus?.settings?.anilist?.splitAdultContent || false,
+    }), [serverStatus?.settings?.anilist?.enableAdultContent, serverStatus?.settings?.anilist?.splitAdultContent])
+
     const sortedCollection = React.useMemo(() => {
         if (!data || !data.lists) return data
 
@@ -114,12 +132,12 @@ export function useHandleMangaCollection() {
             if (!obj) return obj
 
             const newParams = { ...params, sorting: mangaLibraryCollectionDefaultSorting as any }
-            let arr = filterMangaCollectionEntries(obj.entries, newParams, true, storedProviders, storedFilters, latestChapterNumbers)
+            let arr = filterMangaCollectionEntries(obj.entries, newParams, configs.enableAdultContent, configs.splitAdultContent, storedProviders, storedFilters, latestChapterNumbers)
 
             // Reset `unreadOnly` if it's about to make the list disappear
             if (arr.length === 0 && newParams.unreadOnly) {
                 const newParams = { ...params, unreadOnly: false, sorting: mangaLibraryCollectionDefaultSorting as any }
-                arr = filterMangaCollectionEntries(obj.entries, newParams, true, storedProviders, storedFilters, latestChapterNumbers)
+                arr = filterMangaCollectionEntries(obj.entries, newParams, configs.enableAdultContent, configs.splitAdultContent, storedProviders, storedFilters, latestChapterNumbers)
             }
 
             return {
@@ -138,7 +156,7 @@ export function useHandleMangaCollection() {
                 // data.lists.find(n => n.type === "DROPPED"), // DO NOT SHOW THIS LIST IN MANGA VIEW
             ].filter(Boolean),
         } as Manga_Collection
-    }, [data, params, storedProviders, storedFilters, latestChapterNumbers])
+    }, [data, params, configs, storedProviders, storedFilters, latestChapterNumbers])
 
     const filteredCollection = React.useMemo(() => {
         if (!data || !data.lists) return data
@@ -147,7 +165,7 @@ export function useHandleMangaCollection() {
             if (!obj) return obj
 
             const newParams = { ...params, sorting: mangaLibraryCollectionDefaultSorting as any }
-            const arr = filterCollectionEntries("manga", obj.entries, newParams, true)
+            const arr = filterCollectionEntries("manga", obj.entries, newParams, configs.enableAdultContent, configs.splitAdultContent)
             return {
                 type: obj.type,
                 status: obj.status,
@@ -163,7 +181,7 @@ export function useHandleMangaCollection() {
                 // data.lists.find(n => n.type === "DROPPED"), // DO NOT SHOW THIS LIST IN MANGA VIEW
             ].filter(Boolean),
         } as Manga_Collection
-    }, [data, params])
+    }, [data, params, configs])
 
     const libraryGenres = React.useMemo(() => {
         const allGenres = filteredCollection?.lists?.flatMap(l => {
@@ -179,6 +197,8 @@ export function useHandleMangaCollection() {
         filteredMangaCollection: filteredCollection,
         mangaCollectionGenres: libraryGenres,
         mangaCollectionLoading: isLoading,
+        mangaCollectionIsError: isError,
+        refetchMangaCollection: refetch,
         storedFilters,
         storedProviders,
     }

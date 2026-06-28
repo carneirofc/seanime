@@ -1,11 +1,10 @@
 import { HibikeManga_ChapterPage, Manga_PageContainer } from "@/api/generated/types"
 import { useMangaReaderUtils } from "@/app/(main)/manga/_lib/handle-manga-utils"
-import { IconButton } from "@/components/ui/button"
+import { SeaImageRetryButton } from "@/components/shared/sea-image"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { logger } from "@/lib/helpers/debug"
 import { HIDE_IMAGES } from "@/types/constants.ts"
 import React from "react"
-import { FaRedo } from "react-icons/fa"
 import { useUpdateEffect } from "react-use"
 
 type ChapterPageProps = {
@@ -93,7 +92,7 @@ export function ChapterPage(props: ChapterPageProps) {
                         id="retry-container"
                         tabIndex={-1}
                     >
-                        <IconButton intent="white" icon={<FaRedo id="retry-icon" />} onClick={retry} id="retry-button" tabIndex={-1} />
+                        <SeaImageRetryButton onClick={retry} id="retry-button" tabIndex={-1} />
                     </div>}
                 {isReady && <img
                     data-chapter-page-image

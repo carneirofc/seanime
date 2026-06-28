@@ -121,8 +121,7 @@ export function MangaHorizontalReader({ pageContainer }: MangaHorizontalReaderPr
     const onPageWrapperClick = React.useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!pageWrapperRef.current) return
 
-        if ((e.target as HTMLElement).id === "retry-button") return
-        if ((e.target as HTMLElement).id === "retry-icon") return
+        if ((e.target as HTMLElement).closest("[data-proxied-image-retry-button]")) return
 
         const { clientX } = e.nativeEvent
         const divWidth = pageWrapperRef.current.offsetWidth

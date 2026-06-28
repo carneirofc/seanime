@@ -121,6 +121,15 @@ export function MangaSettings(props: MangaSettingsProps) {
                 />
             </SettingsCard>
 
+            <SettingsCard title="Cache" description="Control how long manga provider data is cached.">
+                <Field.Number
+                    name="mangaCacheDurationHours"
+                    label="Cache Duration (hours)"
+                    help="How long manga provider data (chapters, pages) is cached. Set to 0 for no expiration (default)."
+                    min={0}
+                />
+            </SettingsCard>
+
             <ConfirmationDialog {...confirmDialog} />
 
             <SettingsSubmitButton isPending={isPending} />

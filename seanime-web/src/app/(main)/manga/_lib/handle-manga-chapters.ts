@@ -1,9 +1,14 @@
-import { useGetMangaEntryChapters } from "@/api/hooks/manga.hooks"
+import { HibikeManga_ChapterDetails, HibikeManga_SearchResult } from "@/api/generated/types"
+import { useGetMangaEntryChapters, useGetMangaMapping } from "@/api/hooks/manga.hooks"
 import { useHandleMangaProviderExtensions } from "@/app/(main)/manga/_lib/handle-manga-providers"
-import { useSelectedMangaFilters, useSelectedMangaProvider } from "@/app/(main)/manga/_lib/handle-manga-selected-provider"
+import {
+    chapterMatchesScanlator,
+    getChapterScanlatorValues,
+    useSelectedMangaFilters,
+    useSelectedMangaProvider,
+} from "@/app/(main)/manga/_lib/handle-manga-selected-provider"
 import { LANGUAGES_LIST } from "@/app/(main)/manga/_lib/language-map"
 import uniq from "lodash/uniq"
-import uniqBy from "lodash/uniqBy"
 import React from "react"
 
 export function useHandleMangaChapters(
@@ -29,98 +34,134 @@ export function useHandleMangaChapters(
      * 3. Fetch the chapters for this entry
      */
     const {
+        data: existingMapping,
+        isLoading: mappingLoading,
+    } = useGetMangaMapping({
+        provider: selectedProvider || undefined,
+        mediaId: Number(mediaId),
+    })
+
+    const sourceMatchRequired = !!mediaId && !!selectedProvider && !mappingLoading && !existingMapping?.mangaId
+
+    const sourceMatchCandidates: HibikeManga_SearchResult[] = []
+    const sourceMatchCandidatesLoading = false
+    const sourceMatchCandidatesError = false
+    const sourceMatchCandidatesErrorObj = undefined
+
+    const {
         data: chapterContainer,
-        isLoading: chapterContainerLoading,
+        isLoading: rawChapterContainerLoading,
         isError: chapterContainerError,
+        error: chapterContainerErrorObj,
     } = useGetMangaEntryChapters({
         mediaId: Number(mediaId),
         provider: selectedProvider || undefined,
-    })
+    }, !!existingMapping?.mangaId)
 
+    // Extract the detailed error message from the server response
+    const chapterContainerErrorMessage = React.useMemo(() => {
+        if (!chapterContainerError || !chapterContainerErrorObj) return undefined
+        const serverError = (chapterContainerErrorObj as any)?.response?.data?.error
+        if (typeof serverError === "string") return serverError
+        return chapterContainerErrorObj?.message || "Unknown error"
+    }, [chapterContainerError, chapterContainerErrorObj])
 
-    const _scanlatorOptions = React.useMemo(() => {
-        if (!selectedExtension) return []
-        if (!selectedExtension.settings?.supportsMultiScanlator) return []
+    const sourceMatchCandidatesErrorMessage: string | undefined = undefined
 
-        const scanlators = uniq(chapterContainer?.chapters?.map(chapter => chapter.scanlator)?.filter(Boolean) || [])
-        return scanlators.map(scanlator => ({ value: scanlator, label: scanlator }))
-    }, [selectedExtension, chapterContainer])
-
-    const _languageOptions = React.useMemo(() => {
-        if (!selectedExtension) return []
-        if (!selectedExtension.settings?.supportsMultiLanguage) return []
-
-        const languages = chapterContainer?.chapters?.map(chapter => {
-            const language = chapter.language
-            if (!language) return null
-            return {
-                language: language,
-                scanlator: chapter.scanlator,
-            }
-        })?.filter(Boolean) || []
-
-        return languages.map(lang => ({ value: lang, label: ((LANGUAGES_LIST as any)[lang.language as any] as any)?.nativeName || lang }))
-    }, [selectedExtension, chapterContainer])
-
+    const chapterContainerLoading = mappingLoading
+        || (sourceMatchRequired && sourceMatchCandidatesLoading)
+        || rawChapterContainerLoading
 
     /**
      * 4. Filters
      */
-    const { setSelectedScanlator, setSelectedLanguage, selectedFilters } = useSelectedMangaFilters(
+    const {
+        setSelectedScanlator,
+        setSelectedLanguage,
+        setSelectedSourceProvider,
+        selectedFilters,
+    } = useSelectedMangaFilters(
         mediaId,
         selectedExtension,
         selectedProvider,
-        // languageOptions.map(n => n.value),
-        // scanlatorOptions.map(n => n.value),
         !chapterContainerLoading,
     )
 
     /**
-     * 5. Filter chapters based on language and scanlator
+     * 5. Filter chapters based on source provider, language and scanlator
      */
+    const matchesSelectedFilters = React.useCallback((
+        chapter: HibikeManga_ChapterDetails,
+        omit: Array<"sourceProvider" | "language" | "scanlator"> = [],
+    ) => {
+        if (!chapter) return false
+
+        if (!omit.includes("sourceProvider") && selectedFilters.sourceProvider) {
+            if (chapter.sourceProvider !== selectedFilters.sourceProvider) return false
+        }
+
+        if (!omit.includes("language") && selectedExtension?.settings?.supportsMultiLanguage && selectedFilters.language) {
+            if (chapter.language !== selectedFilters.language) return false
+        }
+
+        if (!omit.includes("scanlator") && selectedFilters.scanlators[0]) {
+            if (!chapterMatchesScanlator(chapter.scanlator, selectedFilters.scanlators[0])) return false
+        }
+
+        return true
+    }, [selectedExtension, selectedFilters])
+
     const filteredChapterContainer = React.useMemo(() => {
         if (!chapterContainer) return chapterContainer
 
-        const filteredChapters = chapterContainer.chapters?.filter(ch => {
-            if (selectedExtension?.settings?.supportsMultiLanguage && selectedFilters.language) {
-                if (ch.language !== selectedFilters.language) return false
-            }
-            if (selectedExtension?.settings?.supportsMultiScanlator && selectedFilters.scanlators[0]) {
-                if (ch.scanlator !== selectedFilters.scanlators[0]) return false
-            }
-            return true
-        })
+        const filteredChapters = chapterContainer.chapters?.filter(ch => matchesSelectedFilters(ch))
 
         return {
             ...chapterContainer,
             chapters: filteredChapters,
         }
-    }, [chapterContainer, selectedExtension, selectedFilters])
+    }, [chapterContainer, matchesSelectedFilters])
 
-    // Filter language options based on scanlator
+    const sourceProviderOptions = React.useMemo(() => {
+        const sourceProviders = uniq(chapterContainer?.chapters
+            ?.filter(chapter => matchesSelectedFilters(chapter, ["sourceProvider"]))
+            ?.map(chapter => chapter.sourceProvider)
+            ?.filter(Boolean) || [])
+
+        return sourceProviders.map(sourceProvider => ({ value: sourceProvider, label: sourceProvider }))
+    }, [chapterContainer, matchesSelectedFilters])
+
+    React.useEffect(() => {
+        if (!selectedFilters.sourceProvider) return
+        if (sourceProviderOptions.some(option => option.value === selectedFilters.sourceProvider)) return
+
+        setSelectedSourceProvider({
+            mId: mediaId,
+            sourceProvider: "",
+        })
+    }, [mediaId, selectedFilters.sourceProvider, setSelectedSourceProvider, sourceProviderOptions])
+
     const languageOptions = React.useMemo(() => {
-        return uniqBy(_languageOptions.filter(lang => {
-            if (!!selectedFilters?.scanlators?.[0]?.length) {
-                return lang.value.scanlator === selectedFilters.scanlators[0]
-            }
-            return true
-        })?.map(lang => ({ value: lang.value.language, label: lang.label })) || [], "value")
-            ?.filter(n => typeof n.label === "string" && typeof n.value === "string")
-    }, [_languageOptions, selectedFilters])
+        if (!selectedExtension?.settings?.supportsMultiLanguage) return []
 
-    // Filter scanlator options based on language
+        const languages = uniq(chapterContainer?.chapters
+            ?.filter(chapter => matchesSelectedFilters(chapter, ["language"]))
+            ?.map(chapter => chapter.language)
+            ?.filter(Boolean) || [])
+
+        return languages.map(language => ({
+            value: language,
+            label: ((LANGUAGES_LIST as any)[language as any] as any)?.nativeName || language,
+        }))
+    }, [chapterContainer, matchesSelectedFilters, selectedExtension])
+
     const scanlatorOptions = React.useMemo(() => {
-        return uniqBy(_scanlatorOptions.filter(scanlator => {
-            if (!!selectedFilters?.language?.length) {
-                return _languageOptions.filter(n =>
-                    n.value.scanlator === scanlator.value
-                    && n.value.language === selectedFilters.language,
-                ).length > 0
-            }
-            return true
-        })?.map(scanlator => ({ value: scanlator.value, label: scanlator.label })) || [], "value")
-            ?.filter(n => typeof n.label === "string" && typeof n.value === "string")
-    }, [_scanlatorOptions, selectedFilters, _languageOptions])
+        const scanlators = uniq(chapterContainer?.chapters
+            ?.filter(chapter => matchesSelectedFilters(chapter, ["scanlator"]))
+            ?.flatMap(chapter => getChapterScanlatorValues(chapter.scanlator)) || [])
+
+        return scanlators.map(scanlator => ({ value: scanlator, label: scanlator }))
+    }, [chapterContainer, matchesSelectedFilters])
 
     return {
         selectedExtension,
@@ -134,11 +175,18 @@ export function useHandleMangaChapters(
         selectedFilters,
         setSelectedLanguage,
         setSelectedScanlator,
+        setSelectedSourceProvider,
+        sourceProviderOptions,
         languageOptions,
         scanlatorOptions,
         // Chapters
         chapterContainer: filteredChapterContainer,
         chapterContainerLoading,
         chapterContainerError,
+        chapterContainerErrorMessage,
+        sourceMatchRequired,
+        sourceMatchCandidates: sourceMatchCandidates ?? [],
+        sourceMatchCandidatesErrorMessage,
+        sourceMatchCandidatesLoading,
     }
 }

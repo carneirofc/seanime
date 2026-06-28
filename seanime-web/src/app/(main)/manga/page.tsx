@@ -3,6 +3,7 @@ import { MediaEntryPageLoadingDisplay } from "@/app/(main)/_features/media/_comp
 import { MangaLibraryHeader } from "@/app/(main)/manga/_components/library-header"
 import { useHandleMangaCollection } from "@/app/(main)/manga/_lib/handle-manga-collection"
 import { MangaLibraryView } from "@/app/(main)/manga/_screens/manga-library-view"
+import { LuffyError } from "@/components/shared/luffy-error"
 import { cn } from "@/components/ui/core/styling"
 import { ThemeLibraryScreenBannerType, useThemeSettings } from "@/lib/theme/theme-hooks"
 import { __isDesktop__ } from "@/types/constants"
@@ -14,6 +15,8 @@ export default function Page() {
         mangaCollection,
         filteredMangaCollection,
         mangaCollectionLoading,
+        mangaCollectionIsError,
+        refetchMangaCollection,
         storedFilters,
         storedProviders,
         mangaCollectionGenres,
@@ -22,7 +25,18 @@ export default function Page() {
 
     const ts = useThemeSettings()
 
-    if (!mangaCollection || mangaCollectionLoading) return <MediaEntryPageLoadingDisplay />
+    if (mangaCollectionLoading) return <MediaEntryPageLoadingDisplay />
+    if (mangaCollectionIsError) {
+        return (
+            <LuffyError
+                title="Unable to load manga library"
+                reset={() => refetchMangaCollection()}
+            >
+                <p>Please check the server connection and try again.</p>
+            </LuffyError>
+        )
+    }
+    if (!mangaCollection) return <MediaEntryPageLoadingDisplay />
 
     return (
         <div

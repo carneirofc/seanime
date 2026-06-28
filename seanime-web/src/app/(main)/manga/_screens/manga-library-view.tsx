@@ -7,6 +7,7 @@ import { PluginMangaLibraryDropdownItems } from "@/app/(main)/_features/plugin/a
 import { PluginWebviewSlot } from "@/app/(main)/_features/plugin/webview/plugin-webviews"
 import { SeaCommandInjectableItem, useSeaCommandInject } from "@/app/(main)/_features/sea-command/use-inject"
 import { seaCommand_compareMediaTitles } from "@/app/(main)/_features/sea-command/utils"
+import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { __mangaLibraryHeaderImageAtom, __mangaLibraryHeaderMangaAtom } from "@/app/(main)/manga/_components/library-header"
 import { __mangaLibrary_paramsAtom, __mangaLibrary_paramsInputAtom } from "@/app/(main)/manga/_lib/handle-manga-collection"
 import { LuffyError } from "@/components/shared/luffy-error"
@@ -17,6 +18,8 @@ import { Button, IconButton } from "@/components/ui/button"
 import { Carousel, CarouselContent, CarouselDotButtons } from "@/components/ui/carousel"
 import { cn } from "@/components/ui/core/styling"
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { RiEyeCloseLine } from "react-icons/ri"
+import { TbRating18Plus } from "react-icons/tb"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useRouter } from "@/lib/navigation"
 import { getMangaCollectionTitle } from "@/lib/server/utils"
@@ -246,6 +249,7 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
 }) => {
 
     const ts = useThemeSettings()
+    const serverStatus = useServerStatus()
     const [currentHeaderImage, setCurrentHeaderImage] = useAtom(__mangaLibraryHeaderImageAtom)
     const headerManga = useAtomValue(__mangaLibraryHeaderMangaAtom)
     const [params, setParams] = useAtom(__mangaLibrary_paramsAtom)
@@ -351,6 +355,19 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                     >
                         <LuBookOpenCheck /> {params.unreadOnly ? "Show all" : "Unread chapters only"}
                     </DropdownMenuItem>
+                    {serverStatus?.settings?.anilist?.enableAdultContent && serverStatus?.settings?.anilist?.splitAdultContent && (
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setParams(draft => {
+                                    draft.isAdult = !draft.isAdult
+                                    return
+                                })
+                            }}
+                        >
+                            {params.isAdult ? <RiEyeCloseLine /> : <TbRating18Plus className="text-pink-500" />}
+                            {params.isAdult ? "Show safe content" : "Adult content"}
+                        </DropdownMenuItem>
+                    )}
                     <PluginMangaLibraryDropdownItems />
                 </DropdownMenu>}
 
@@ -452,7 +469,7 @@ function GenreSelector({
                     isCurrent: params!.genre?.includes(genre) ?? false,
                     onClick: () => setParams(draft => {
                         if (draft.genre?.includes(genre)) {
-                            draft.genre = draft.genre?.filter(g => g !== genre)
+                            draft.genre = draft.genre?.filter((g: string) => g !== genre)
                         } else {
                             draft.genre = [...(draft.genre || []), genre]
                         }

@@ -41,10 +41,11 @@ func getMangaChapterContainerCacheKey(provider string, mediaId int) string {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type GetMangaChapterContainerOptions struct {
-	Provider string
-	MediaId  int
-	Titles   []*string
-	Year     int
+	Provider                    string
+	MediaId                     int
+	Titles                      []*string
+	Year                        int
+	IncludeProviderAvailability bool
 }
 
 // GetMangaChapterContainer returns the ChapterContainer for a manga entry based on the provider.
@@ -128,6 +129,10 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 		}
 		container = ev.ChapterContainer
 
+		if opts.IncludeProviderAvailability {
+			r.attachAlternativeProviders(container, opts)
+		}
+
 		return container, nil
 	}
 
@@ -148,57 +153,11 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 	}
 
 	if mangaId == "" {
-		// +---------------------+
-		// |       Search        |
-		// +---------------------+
-
-		r.logger.Trace().Msg("manga: Searching for manga")
-
-		if titles == nil {
-			return nil, ErrNoTitlesProvided
-		}
-
-		titles = lo.Filter(titles, func(title *string, _ int) bool {
-			return util.IsMostlyLatinString(*title)
-		})
-
-		var searchRes []*hibikemanga.SearchResult
-
-		var err error
-		for _, title := range titles {
-			var _searchRes []*hibikemanga.SearchResult
-
-			_searchRes, err = providerExtension.GetProvider().Search(hibikemanga.SearchOptions{
-				Query: *title,
-				Year:  opts.Year,
-			})
-			if err == nil {
-
-				HydrateSearchResultSearchRating(_searchRes, title)
-
-				searchRes = append(searchRes, _searchRes...)
-			} else {
-				r.logger.Warn().Err(err).Msg("manga: Search failed")
-			}
-		}
-
-		if len(searchRes) == 0 {
-			r.logger.Error().Msg("manga: No search results found")
-			if err != nil {
-				return nil, fmt.Errorf("%w, %w", ErrNoResults, err)
-			} else {
-				return nil, ErrNoResults
-			}
-		}
-
-		// Overwrite the provider just in case
-		for _, res := range searchRes {
-			res.Provider = provider
-		}
-
-		bestRes := GetBestSearchResult(searchRes)
-
-		mangaId = bestRes.ID
+		r.logger.Debug().
+			Str("provider", provider).
+			Int("mediaId", mediaId).
+			Msg("manga: Match selection required before loading chapters")
+		return nil, ErrMangaMatchRequired
 	}
 
 	// +---------------------+
@@ -208,13 +167,10 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 	chapterList, err := providerExtension.GetProvider().FindChapters(mangaId)
 	if err != nil {
 		r.logger.Error().Err(err).Msg("manga: Failed to get chapters")
-		return nil, ErrNoChapters
+		return nil, fmt.Errorf("%w: %w", ErrNoChapters, err)
 	}
 
-	// Overwrite the provider just in case
-	for _, chapter := range chapterList {
-		chapter.Provider = provider
-	}
+	hibikemanga.NormalizeChapterProviders(chapterList, provider)
 
 	container = &ChapterContainer{
 		MediaId:  mediaId,
@@ -240,8 +196,188 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 		}
 	}
 
+	if opts.IncludeProviderAvailability {
+		r.attachAlternativeProviders(container, opts)
+	}
+
 	r.logger.Info().Str("bucket", containerBucket.Name()).Msg("manga: Retrieved chapters")
 	return container, nil
+}
+
+func (r *Repository) attachAlternativeProviders(container *ChapterContainer, opts *GetMangaChapterContainerOptions) {
+	if container == nil || len(container.Chapters) == 0 {
+		return
+	}
+
+	alternativeContainers := r.getAlternativeChapterContainers(opts)
+	if len(alternativeContainers) == 0 {
+		for _, chapter := range container.Chapters {
+			if chapter != nil {
+				chapter.AlternativeProviders = nil
+			}
+		}
+		return
+	}
+
+	attachAlternativeProvidersToContainer(container, alternativeContainers)
+}
+
+func (r *Repository) getAlternativeChapterContainers(opts *GetMangaChapterContainerOptions) []*ChapterContainer {
+	providerIDs := make([]string, 0)
+
+	extension.RangeExtensions[extension.MangaProviderExtension](r.extensionBankRef.Get(), func(id string, _ extension.MangaProviderExtension) bool {
+		if id == opts.Provider {
+			return true
+		}
+
+		if _, found := r.db.GetMangaMapping(id, opts.MediaId); !found {
+			return true
+		}
+
+		providerIDs = append(providerIDs, id)
+		return true
+	})
+
+	if len(providerIDs) == 0 {
+		return nil
+	}
+
+	resultsCh := make(chan *ChapterContainer, len(providerIDs))
+	wg := sync.WaitGroup{}
+
+	for _, providerID := range providerIDs {
+		wg.Add(1)
+		go func(providerID string) {
+			defer wg.Done()
+
+			container, err := r.GetMangaChapterContainer(&GetMangaChapterContainerOptions{
+				Provider: providerID,
+				MediaId:  opts.MediaId,
+				Titles:   opts.Titles,
+				Year:     opts.Year,
+			})
+			if err != nil {
+				r.logger.Debug().
+					Err(err).
+					Str("provider", providerID).
+					Int("mediaId", opts.MediaId).
+					Msg("manga: Skipping alternative provider availability")
+				return
+			}
+
+			if container == nil || len(container.Chapters) == 0 {
+				return
+			}
+
+			resultsCh <- container
+		}(providerID)
+	}
+
+	wg.Wait()
+	close(resultsCh)
+
+	ret := make([]*ChapterContainer, 0, len(providerIDs))
+	for container := range resultsCh {
+		ret = append(ret, container)
+	}
+
+	return ret
+}
+
+func attachAlternativeProvidersToContainer(primary *ChapterContainer, alternatives []*ChapterContainer) {
+	if primary == nil {
+		return
+	}
+
+	exactMatches := make(map[string][]hibikemanga.ChapterProviderOption)
+	chapterMatches := make(map[string][]hibikemanga.ChapterProviderOption)
+
+	for _, alternative := range alternatives {
+		if alternative == nil {
+			continue
+		}
+
+		for _, chapter := range alternative.Chapters {
+			exactKey, chapterKey := getAlternativeProviderMatchKeys(chapter)
+			if chapterKey == "" {
+				continue
+			}
+
+			option := hibikemanga.ChapterProviderOption{
+				Provider:  chapter.Provider,
+				ChapterID: chapter.ID,
+				Scanlator: chapter.Scanlator,
+				Language:  chapter.Language,
+			}
+
+			if exactKey != "" {
+				exactMatches[exactKey] = appendUniqueChapterProviderOption(exactMatches[exactKey], option)
+			}
+			chapterMatches[chapterKey] = appendUniqueChapterProviderOption(chapterMatches[chapterKey], option)
+		}
+	}
+
+	for _, chapter := range primary.Chapters {
+		if chapter == nil {
+			continue
+		}
+
+		exactKey, chapterKey := getAlternativeProviderMatchKeys(chapter)
+
+		var matches []hibikemanga.ChapterProviderOption
+		if exactKey != "" {
+			matches = append(matches, exactMatches[exactKey]...)
+		}
+		if len(matches) == 0 && chapterKey != "" {
+			matches = append(matches, chapterMatches[chapterKey]...)
+		}
+
+		sortChapterProviderOptions(matches)
+		chapter.AlternativeProviders = matches
+	}
+}
+
+func getAlternativeProviderMatchKeys(chapter *hibikemanga.ChapterDetails) (exact string, chapterOnly string) {
+	if chapter == nil {
+		return "", ""
+	}
+
+	chapterNumber := strings.TrimSpace(chapter.Chapter)
+	if chapterNumber == "" {
+		return "", ""
+	}
+
+	normalizedChapter := strings.ToLower(manga_providers.GetNormalizedChapter(chapterNumber))
+	if normalizedChapter == "" {
+		return "", ""
+	}
+
+	language := strings.ToLower(strings.TrimSpace(chapter.Language))
+	scanlator := strings.ToLower(strings.TrimSpace(chapter.Scanlator))
+
+	return fmt.Sprintf("%s|%s|%s", normalizedChapter, language, scanlator), normalizedChapter
+}
+
+func appendUniqueChapterProviderOption(
+	options []hibikemanga.ChapterProviderOption,
+	option hibikemanga.ChapterProviderOption,
+) []hibikemanga.ChapterProviderOption {
+	for _, existing := range options {
+		if existing.Provider == option.Provider && existing.ChapterID == option.ChapterID {
+			return options
+		}
+	}
+
+	return append(options, option)
+}
+
+func sortChapterProviderOptions(options []hibikemanga.ChapterProviderOption) {
+	slices.SortFunc(options, func(a, b hibikemanga.ChapterProviderOption) int {
+		if diff := cmp.Compare(a.Provider, b.Provider); diff != 0 {
+			return diff
+		}
+		return cmp.Compare(a.ChapterID, b.ChapterID)
+	})
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,12 +386,11 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 func (r *Repository) RefreshChapterContainers(mangaCollection *anilist.MangaCollection, selectedProviderMap map[int]string) (err error) {
 	defer util.HandlePanicInModuleWithError("manga/RefreshChapterContainers", &err)
 
-	// first, delete all chapter containers in the cache
+	// first, delete all chapter containers in the cache (RemoveAllBy also evicts
+	// the matching in-memory stores)
 	err = r.fileCacher.RemoveAllBy(func(filename string) bool {
 		return strings.HasPrefix(filename, "manga_")
 	})
-	// clear all stores
-	_ = r.fileCacher.Clear()
 
 	mangaLatestChapterNumberMap.Delete(ChapterCountMapCacheKey)
 
@@ -324,16 +459,17 @@ const ChapterCountMapCacheKey = 1
 var mangaLatestChapterNumberMap = result.NewMap[int, map[int][]MangaLatestChapterNumberItem]()
 
 type MangaLatestChapterNumberItem struct {
-	Provider  string `json:"provider"`
-	Scanlator string `json:"scanlator"`
-	Language  string `json:"language"`
-	Number    int    `json:"number"`
+	Provider       string `json:"provider"`
+	SourceProvider string `json:"sourceProvider"`
+	Scanlator      string `json:"scanlator"`
+	Language       string `json:"language"`
+	Number         int    `json:"number"`
 }
 
 // GetMangaLatestChapterNumbersMap retrieves the latest chapter number for all manga entries.
 // It scans the cache directory for chapter containers and counts the number of chapters fetched from the provider for each manga.
 //
-// Unlike [GetMangaLatestChapterNumberMap], it will segregate the chapter numbers by scanlator and language.
+// Unlike [GetMangaLatestChapterNumberMap], it will segregate the chapter numbers by source provider, scanlator and language.
 func (r *Repository) GetMangaLatestChapterNumbersMap() (ret map[int][]MangaLatestChapterNumberItem, err error) {
 	defer util.HandlePanicInModuleThen("manga/GetMangaLatestChapterNumbersMap", func() {})
 	ret = make(map[int][]MangaLatestChapterNumberItem)
@@ -369,34 +505,40 @@ func (r *Repository) GetMangaLatestChapterNumbersMap() (ret map[int][]MangaLates
 			continue
 		}
 
-		// Create groups
-		groupByScanlator := lo.GroupBy(container.Chapters, func(c *hibikemanga.ChapterDetails) string {
-			return c.Scanlator
+		groupBySourceProvider := lo.GroupBy(container.Chapters, func(c *hibikemanga.ChapterDetails) string {
+			return c.SourceProvider
 		})
 
-		for scanlator, chapters := range groupByScanlator {
-			groupByLanguage := lo.GroupBy(chapters, func(c *hibikemanga.ChapterDetails) string {
-				return c.Language
+		for sourceProvider, sourceChapters := range groupBySourceProvider {
+			groupByScanlator := lo.GroupBy(sourceChapters, func(c *hibikemanga.ChapterDetails) string {
+				return c.Scanlator
 			})
 
-			for language, chapters := range groupByLanguage {
-				lastChapter := slices.MaxFunc(chapters, func(a *hibikemanga.ChapterDetails, b *hibikemanga.ChapterDetails) int {
-					return cmp.Compare(a.Index, b.Index)
+			for scanlator, chapters := range groupByScanlator {
+				groupByLanguage := lo.GroupBy(chapters, func(c *hibikemanga.ChapterDetails) string {
+					return c.Language
 				})
 
-				chapterNumFloat, _ := strconv.ParseFloat(lastChapter.Chapter, 32)
-				chapterCount := int(math.Floor(chapterNumFloat))
+				for language, chapters := range groupByLanguage {
+					lastChapter := slices.MaxFunc(chapters, func(a *hibikemanga.ChapterDetails, b *hibikemanga.ChapterDetails) int {
+						return cmp.Compare(a.Index, b.Index)
+					})
 
-				if _, ok := ret[mediaId]; !ok {
-					ret[mediaId] = []MangaLatestChapterNumberItem{}
+					chapterNumFloat, _ := strconv.ParseFloat(lastChapter.Chapter, 32)
+					chapterCount := int(math.Floor(chapterNumFloat))
+
+					if _, ok := ret[mediaId]; !ok {
+						ret[mediaId] = []MangaLatestChapterNumberItem{}
+					}
+
+					ret[mediaId] = append(ret[mediaId], MangaLatestChapterNumberItem{
+						Provider:       provider,
+						SourceProvider: sourceProvider,
+						Scanlator:      scanlator,
+						Language:       language,
+						Number:         chapterCount,
+					})
 				}
-
-				ret[mediaId] = append(ret[mediaId], MangaLatestChapterNumberItem{
-					Provider:  provider,
-					Scanlator: scanlator,
-					Language:  language,
-					Number:    chapterCount,
-				})
 			}
 		}
 	}
@@ -434,18 +576,6 @@ func parseChapterFileName(dirName string) (provider string, mId int, ok bool) {
 	}
 
 	return provider, mId, true
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-func GetBestSearchResult(searchRes []*hibikemanga.SearchResult) *hibikemanga.SearchResult {
-	bestRes := searchRes[0]
-	for _, res := range searchRes {
-		if res.SearchRating > bestRes.SearchRating {
-			bestRes = res
-		}
-	}
-	return bestRes
 }
 
 // HydrateSearchResultSearchRating rates the search results based on the provided title

@@ -3,6 +3,7 @@ import {
     AnimeEntryRankings,
     MediaEntryAudienceScore,
     MediaEntryGenresList,
+    MediaEntryTagList,
 } from "@/app/(main)/_features/media/_components/media-entry-metadata-components"
 import {
     MediaPageHeader,
@@ -33,7 +34,6 @@ export function MetaSection(props: { entry: Manga_Entry | undefined, details: AL
     const ts = useThemeSettings()
 
     if (!entry?.media) return null
-
     const Details = () => (
         <>
             <div
@@ -46,6 +46,8 @@ export function MetaSection(props: { entry: Manga_Entry | undefined, details: AL
 
                 {(detailsLoading && !details) ? <Skeleton className="h-6 w-52 rounded-full opacity-60" /> :
                     <MediaEntryGenresList genres={details?.genres} type="manga" />}
+
+                {!detailsLoading && <MediaEntryTagList tags={details?.tags} className="w-full" />}
             </div>
 
             <AnimeEntryRankings rankings={details?.rankings} />
