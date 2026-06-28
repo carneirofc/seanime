@@ -1,8 +1,10 @@
+import { useGetLibraryDiskUsage } from "@/api/hooks/library.hooks"
 import { SettingsCard } from "@/app/(main)/settings/_components/settings-card"
 import { SettingsSubmitButton } from "@/app/(main)/settings/_components/settings-submit-button"
 import { DataSettings } from "@/app/(main)/settings/_containers/data-settings"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Field } from "@/components/ui/form"
+import { ProgressBar } from "@/components/ui/progress-bar"
 import { Separator } from "@/components/ui/separator"
 import { javascript } from "@codemirror/lang-javascript"
 import { vscodeDark } from "@uiw/codemirror-theme-vscode"
@@ -24,6 +26,8 @@ export function AnimeLibrarySettings(props: LibrarySettingsProps) {
 
     return (
         <div className="space-y-4">
+
+            <DiskUsageCard />
 
             <SettingsCard>
                 <Field.DirectorySelector
@@ -133,6 +137,40 @@ export function AnimeLibrarySettings(props: LibrarySettingsProps) {
             <SettingsSubmitButton isPending={isPending} />
 
         </div>
+    )
+}
+
+function DiskUsageCard() {
+    const { data, isLoading } = useGetLibraryDiskUsage()
+
+    if (isLoading || !data?.paths?.length) return null
+
+    return (
+        <SettingsCard>
+            <p className="font-medium text-sm mb-3">Disk usage</p>
+            <div className="space-y-4">
+                {data.paths.map((info) => (
+                    <div key={info.path} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-[--muted] truncate max-w-[60%]" title={info.path}>{info.path}</span>
+                            <span className="text-[--muted] shrink-0">
+                                {info.usedGB.toFixed(1)} GB / {info.totalGB.toFixed(1)} GB
+                                &nbsp;·&nbsp;
+                                <span className={info.usedPct > 90 ? "text-red-400" : info.usedPct > 75 ? "text-yellow-400" : "text-green-400"}>
+                                    {info.usedPct.toFixed(1)}% used
+                                </span>
+                            </span>
+                        </div>
+                        <ProgressBar
+                            value={info.usedPct}
+                            size="sm"
+                            indicatorClass={info.usedPct > 90 ? "bg-red-500" : info.usedPct > 75 ? "bg-yellow-500" : "bg-green-500"}
+                        />
+                        <p className="text-xs text-[--muted]">{info.freeGB.toFixed(1)} GB free ({info.freePct.toFixed(1)}%)</p>
+                    </div>
+                ))}
+            </div>
+        </SettingsCard>
     )
 }
 
