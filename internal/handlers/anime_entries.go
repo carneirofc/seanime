@@ -11,6 +11,7 @@ import (
 	"seanime/internal/library/anime"
 	"seanime/internal/library/scanner"
 	"seanime/internal/library/summary"
+	"seanime/internal/platforms/shared_platform"
 	"seanime/internal/util"
 	"seanime/internal/util/limiter"
 	"seanime/internal/util/result"
@@ -294,13 +295,14 @@ func (h *Handler) HandleFetchAnimeEntrySuggestions(c echo.Context) error {
 
 	h.App.Logger.Info().Str("title", title).Msg("handlers: Fetching anime suggestions")
 
+	page, perPage := 1, 8
 	res, err := anilist.ListAnimeM(
-		h.App.AnilistPlatformRef.Get().GetAnilistClient(),
-		new(1),
+		shared_platform.NewCacheLayer(h.App.AnilistClientRef),
+		&page,
 		&title,
-		new(8),
+		&perPage,
 		nil,
-		[]*anilist.MediaStatus{new(anilist.MediaStatusFinished), new(anilist.MediaStatusReleasing), new(anilist.MediaStatusCancelled), new(anilist.MediaStatusHiatus)},
+		[]*anilist.MediaStatus{lo.ToPtr(anilist.MediaStatusFinished), lo.ToPtr(anilist.MediaStatusReleasing), lo.ToPtr(anilist.MediaStatusCancelled), lo.ToPtr(anilist.MediaStatusHiatus)},
 		nil,
 		nil,
 		nil,
