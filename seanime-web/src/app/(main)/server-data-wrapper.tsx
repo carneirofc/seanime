@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card"
 import { defineSchema, Field, Form } from "@/components/ui/form"
 import { logger } from "@/lib/helpers/debug"
 import { usePathname, useRouter } from "@/lib/navigation"
-import { ANILIST_OAUTH_URL, ANILIST_PIN_URL } from "@/lib/server/config"
+import { ANILIST_PIN_URL, getAnilistAuthorizeUrl } from "@/lib/server/config"
 import { WSEvents } from "@/lib/server/ws-events"
 import { __isDesktop__ } from "@/types/constants"
 import { useQueryClient } from "@tanstack/react-query"
@@ -135,7 +135,7 @@ export function ServerDataWrapper(props: ServerDataWrapperProps) {
         return <LuffyError title="Transcoding not enabled" />
     }
 
-    if (!currentServerStatus.user && host === "127.0.0.1:43211" && !__isDesktop__) {
+    if (!currentServerStatus.user && (host === "127.0.0.1:43211" || host === "127.0.0.1:43210") && !__isDesktop__) {
         return <div className="container max-w-3xl py-10">
             <Card className="md:py-10">
                 <AppLayoutStack>
@@ -146,10 +146,7 @@ export function ServerDataWrapper(props: ServerDataWrapperProps) {
                         <h3>Welcome!</h3>
                         <Button
                             onClick={() => {
-                                const url = currentServerStatus.anilistClientId
-                                    ? `https://anilist.co/api/v2/oauth/authorize?client_id=${currentServerStatus.anilistClientId}&response_type=token`
-                                    : ANILIST_OAUTH_URL
-                                window.open(url, "_self")
+                                window.open(getAnilistAuthorizeUrl(currentServerStatus.anilistClientId), "_self")
                             }}
                             leftIcon={<svg
                                 xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="24" height="24"

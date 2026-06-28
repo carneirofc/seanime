@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"seanime/internal/api/anilist"
 	"seanime/internal/continuity"
 	"seanime/internal/database/db"
@@ -36,10 +37,11 @@ import (
 	"seanime/internal/torrents/torrent"
 	"seanime/internal/torrentstream"
 	"seanime/internal/user"
-	"seanime/internal/util"
 	"seanime/internal/videocore"
+	"time"
 
 	"github.com/cli/browser"
+	"github.com/goccy/go-json"
 	"github.com/rs/zerolog"
 )
 
@@ -47,8 +49,6 @@ import (
 // This function is called once after the App instance is created.
 // The settings of these modules will be set/refreshed in InitOrRefreshModules.
 func (a *App) initModulesOnce() {
-
-	_, _ = util.InitIOSDocumentsDir()
 
 	a.LocalManager.SetRefreshAnilistCollectionsFunc(func() {
 		_, _ = a.RefreshAnimeCollection()
@@ -769,12 +769,21 @@ func (a *App) InitOrRefreshAnilistData() {
 	acc, err := a.Database.GetAccount()
 	if err != nil || acc.Username == "" {
 		a.ServerReady = true
+		a.Logger.Info().Msg("app: Server ready (no AniList account found, using simulated user)")
 		currUser = user.NewSimulatedUser() // Create a simulated user if no account is found
 	} else {
 		currUser, err = user.NewUser(acc)
 		if err != nil {
 			a.Logger.Error().Err(err).Msg("app: Failed to create user from account")
 			return
+		}
+
+		// Try to refresh AniList viewer data (user info + avatar) on startup.
+		// This is best-effort and should not block startup if it fails.
+		if refreshedUser, refreshErr := a.refreshAnilistViewerData(acc); refreshErr != nil {
+			a.Logger.Warn().Err(refreshErr).Msg("app: Failed to refresh AniList viewer data on startup")
+		} else if refreshedUser != nil {
+			currUser = refreshedUser
 		}
 	}
 
@@ -786,17 +795,19 @@ func (a *App) InitOrRefreshAnilistData() {
 	a.Logger.Info().Msg("app: Authenticated to AniList")
 
 	go func() {
-		_, err = a.RefreshAnimeCollection()
-		if err != nil {
-			a.Logger.Error().Err(err).Msg("app: Failed to fetch Anilist anime collection")
+		started := time.Now()
+		a.Logger.Info().Msg("app: Initial AniList collection refresh started")
+
+		if _, err := a.RefreshAnimeCollection(); err != nil {
+			a.Logger.Error().Err(err).Msg("app: Failed to fetch AniList anime collection")
 		}
 
 		a.ServerReady = true
 		a.WSEventManager.SendEvent(events.ServerReady, nil)
+		a.Logger.Info().Dur("duration", time.Since(started)).Msg("app: Server ready after AniList refresh")
 
-		_, err = a.RefreshMangaCollection()
-		if err != nil {
-			a.Logger.Error().Err(err).Msg("app: Failed to fetch Anilist manga collection")
+		if _, err := a.RefreshMangaCollection(); err != nil {
+			a.Logger.Error().Err(err).Msg("app: Failed to fetch AniList manga collection")
 		}
 	}()
 
@@ -805,6 +816,52 @@ func (a *App) InitOrRefreshAnilistData() {
 	}(currUser.Viewer.Name)
 
 	a.Logger.Info().Msg("app: Fetched Anilist data")
+}
+
+func (a *App) refreshAnilistViewerData(acc *models.Account) (*user.User, error) {
+	if acc == nil || acc.Token == "" || a.AnilistClientRef == nil || !a.AnilistClientRef.IsPresent() {
+		return nil, nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	getViewer, err := a.AnilistClientRef.Get().GetViewer(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if getViewer == nil || getViewer.Viewer.Name == "" {
+		return nil, nil
+	}
+
+	viewerBytes, err := json.Marshal(getViewer.Viewer)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UTC()
+
+	acc.Username = getViewer.Viewer.Name
+	acc.Viewer = viewerBytes
+	acc.ViewerUpdatedAt = &now
+	acc.UpdatedAt = now
+
+	savedAcc, err := a.Database.UpsertAccount(acc)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshedUser, err := user.NewUser(savedAcc)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Logger.Info().
+		Str("username", refreshedUser.Viewer.Name).
+		Time("viewer_updated_at", now).
+		Msg("app: Refreshed AniList viewer data")
+
+	return refreshedUser, nil
 }
 
 func (a *App) performActionsOnce() {

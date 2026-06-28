@@ -21,9 +21,10 @@ type Token struct {
 
 type Account struct {
 	BaseModel
-	Username string `gorm:"column:username" json:"username"`
-	Token    string `gorm:"column:token" json:"token"`
-	Viewer   []byte `gorm:"column:viewer" json:"viewer"`
+	Username        string     `gorm:"column:username" json:"username"`
+	Token           string     `gorm:"column:token" json:"token"`
+	Viewer          []byte     `gorm:"column:viewer" json:"viewer"`
+	ViewerUpdatedAt *time.Time `gorm:"column:viewer_updated_at" json:"viewerUpdatedAt"`
 }
 
 // +---------------------+

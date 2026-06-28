@@ -1,4 +1,4 @@
-import { useRefreshAnimeCollection } from "@/api/hooks/anilist.hooks"
+import { useGetAniListStats, useRefreshAnimeCollection } from "@/api/hooks/anilist.hooks"
 import { useLogout } from "@/api/hooks/auth.hooks"
 import { useGetExtensionUpdateData as useGetExtensionUpdateData, usePluginWithIssuesCount } from "@/api/hooks/extensions.hooks"
 import { isLoginModalOpenAtom } from "@/app/(main)/_atoms/server-status.atoms"
@@ -19,14 +19,14 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button, IconButton } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
-import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Popover } from "@/components/ui/popover"
 import { defineSchema, Field, Form } from "@/components/ui/form"
 import { HoverCard } from "@/components/ui/hover-card"
 import { Modal } from "@/components/ui/modal"
 import { VerticalMenu, VerticalMenuItem } from "@/components/ui/vertical-menu"
 import { openTab } from "@/lib/helpers/browser"
 import { usePathname, useRouter } from "@/lib/navigation"
-import { ANILIST_OAUTH_URL, ANILIST_PIN_URL } from "@/lib/server/config"
+import { ANILIST_PIN_URL, getAnilistAuthorizeUrl } from "@/lib/server/config"
 import { TORRENT_CLIENT, TORRENT_PROVIDER } from "@/lib/server/settings"
 import { WSEvents } from "@/lib/server/ws-events"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
@@ -37,7 +37,7 @@ import { BiChevronRight, BiExtension, BiLogIn, BiLogOut } from "react-icons/bi"
 import { FiLogIn, FiSearch } from "react-icons/fi"
 import { HiOutlineServerStack } from "react-icons/hi2"
 import { IoCloudOfflineOutline, IoHomeOutline } from "react-icons/io5"
-import { LuBookOpen, LuCalendar, LuCompass, LuRefreshCw, LuRss, LuSettings } from "react-icons/lu"
+import { LuBookOpen, LuCalendar, LuCompass, LuExternalLink, LuRefreshCw, LuRss, LuSettings } from "react-icons/lu"
 import { MdOutlineConnectWithoutContact } from "react-icons/md"
 import { PiArrowCircleLeftDuotone, PiArrowCircleRightDuotone } from "react-icons/pi"
 import { RiListCheck3 } from "react-icons/ri"
@@ -600,12 +600,16 @@ function SidebarFooter({ isCollapsed, onLogout }: { isCollapsed: boolean, onLogo
 function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: boolean, expandedSidebar: boolean, onLogout: () => void }) {
     const ctx = useAppSidebarContext()
     const user = useCurrentUser()
+    const serverStatus = useServerStatus()
     const router = useRouter()
     const avatarSrc = useResolvedAnilistAvatarSrc(user?.viewer?.avatar)
 
-    const [dropdownOpen, setDropdownOpen] = React.useState(false)
+    const [popoverOpen, setPopoverOpen] = React.useState(false)
     const [loginModal, setLoginModal] = useAtom(isLoginModalOpenAtom)
     const [loggingIn, setLoggingIn] = React.useState(false)
+
+    // Fetch stats only when popover is open and user is authenticated
+    const { data: stats } = useGetAniListStats(!user?.isSimulated && popoverOpen)
 
     // Sign out
     const confirmSignOut = useConfirmationDialog({
@@ -615,6 +619,14 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
             onLogout()
         },
     })
+
+    const anilistProfileUrl = user?.viewer?.name
+        ? `https://anilist.co/user/${user.viewer.name}`
+        : "https://anilist.co"
+
+    const hoursWatched = stats?.animeStats?.minutesWatched != null
+        ? Math.floor(stats.animeStats.minutesWatched / 60)
+        : null
 
     return (
         <>
@@ -629,32 +641,90 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                             {
                                 iconType: FiLogIn,
                                 name: "Login",
-                                onClick: () => openTab(ANILIST_OAUTH_URL),
+                                onClick: () => openTab(getAnilistAuthorizeUrl(serverStatus?.anilistClientId)),
                             },
                         ]}
                     />
                 </div>
             )}
             {!!user && <div className="flex w-full gap-2 flex-col">
-                <DropdownMenu
-                    trigger={<div
-                        className={cn(
-                            "w-full flex p-2 pt-1 items-center space-x-3",
-                            { "hidden": ctx.isBelowBreakpoint },
-                        )}
-                    >
-                        <Avatar size="sm" className="cursor-pointer" src={avatarSrc || undefined} />
-                        {expandedSidebar && <p className="truncate text-sm text-[--muted]">{user?.viewer?.name}</p>}
-                    </div>}
-                    open={dropdownOpen}
-                    onOpenChange={setDropdownOpen}
+                <Popover
+                    trigger={
+                        <div
+                            className={cn(
+                                "w-full flex p-2 pt-1 items-center space-x-3 cursor-pointer rounded-lg hover:bg-white/5 transition-colors",
+                                { "hidden": ctx.isBelowBreakpoint },
+                            )}
+                        >
+                            <Avatar size="sm" src={avatarSrc || undefined} />
+                            {expandedSidebar && <p className="truncate text-sm text-[--muted]">{user?.viewer?.name}</p>}
+                        </div>
+                    }
+                    open={popoverOpen}
+                    onOpenChange={setPopoverOpen}
+                    align="start"
+                    side="top"
+                    sideOffset={8}
+                    className="w-[260px] p-3 space-y-3"
                 >
-                    {!user.isSimulated ? <DropdownMenuItem onClick={confirmSignOut.open}>
-                        <BiLogOut /> Sign out
-                    </DropdownMenuItem> : <DropdownMenuItem onClick={() => setLoginModal(true)}>
-                        <BiLogIn /> Log in with AniList
-                    </DropdownMenuItem>}
-                </DropdownMenu>
+                    {/* Header: avatar + name */}
+                    <div className="flex items-center gap-3">
+                        <Avatar
+                            size="md"
+                            src={user?.viewer?.avatar?.large || user?.viewer?.avatar?.medium || undefined}
+                        />
+                        <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-sm leading-tight truncate">
+                                {user?.viewer?.name ?? "Guest"}
+                            </p>
+                            {user?.isSimulated ? (
+                                <p className="text-xs text-[--muted]">Not signed in</p>
+                            ) : (
+                                <SeaLink href={anilistProfileUrl} target="_blank" className="text-xs text-[--muted] hover:text-[--brand] flex items-center gap-1 w-fit">
+                                    AniList <LuExternalLink className="size-3" />
+                                </SeaLink>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Stats */}
+                    {!user?.isSimulated && (
+                        <div className="grid grid-cols-3 gap-1.5 text-center">
+                            {[
+                                { label: "Anime", value: stats?.animeStats?.count },
+                                { label: "Episodes", value: stats?.animeStats?.episodesWatched },
+                                { label: "Hours", value: hoursWatched },
+                                { label: "Manga", value: stats?.mangaStats?.count },
+                                { label: "Chapters", value: stats?.mangaStats?.chaptersRead },
+                                { label: "Score", value: stats?.animeStats?.meanScore },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="rounded-md bg-[--subtle] py-1.5 px-1">
+                                    <p className="text-[10px] text-[--muted]">{label}</p>
+                                    <p className="font-semibold text-xs mt-0.5">{value ?? "—"}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="border-t border-[--border] pt-2 flex flex-col gap-0.5">
+                        {!user?.isSimulated ? (
+                            <button
+                                className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-red-500/10 text-red-400 transition-colors text-left"
+                                onClick={() => { confirmSignOut.open(); setPopoverOpen(false) }}
+                            >
+                                <BiLogOut className="shrink-0" /> Sign out
+                            </button>
+                        ) : (
+                            <button
+                                className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white/5 transition-colors text-left"
+                                onClick={() => { setLoginModal(true); setPopoverOpen(false) }}
+                            >
+                                <BiLogIn className="shrink-0" /> Log in with AniList
+                            </button>
+                        )}
+                    </div>
+                </Popover>
             </div>}
 
             <Modal
