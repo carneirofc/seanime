@@ -1,4 +1,4 @@
-import { AL_AnimeDetailsById_Media_Rankings, AL_MangaDetailsById_Media_Rankings } from "@/api/generated/types"
+import { AL_AnimeDetailsById_Media_Rankings, AL_MangaDetailsById_Media_Rankings, AL_MTags } from "@/api/generated/types"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { SeaLink } from "@/components/shared/sea-link"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,32 @@ import React from "react"
 import { AiOutlineHeart, AiOutlineStar } from "react-icons/ai"
 import { BiHeart, BiHide } from "react-icons/bi"
 import { LuTrophy } from "react-icons/lu"
+
+type MediaEntryTagListProps = {
+    tags?: Array<AL_MTags> | null | undefined
+    className?: string
+}
+
+export function MediaEntryTagList(props: MediaEntryTagListProps) {
+    const { tags, className } = props
+
+    if (!tags || tags.length === 0) return null
+
+    return (
+        <div className={cn("flex flex-wrap gap-2", className)}>
+            {tags.filter(t => !t.isMediaSpoiler && !t.isGeneralSpoiler).map(tag => (
+                <Badge
+                    key={tag.id}
+                    size="sm"
+                    intent="gray"
+                    className="opacity-75 hover:opacity-100 transition-all border-transparent bg-transparent hover:bg-transparent hover:text-white px-0"
+                >
+                    {tag.name}
+                </Badge>
+            ))}
+        </div>
+    )
+}
 
 type MediaEntryGenresListProps = {
     genres?: Array<string | null> | null | undefined

@@ -7,6 +7,7 @@ import {
     AnimeEntryRankings,
     MediaEntryAudienceScore,
     MediaEntryGenresList,
+    MediaEntryTagList,
 } from "@/app/(main)/_features/media/_components/media-entry-metadata-components"
 import {
     MediaPageHeader,
@@ -161,6 +162,8 @@ export function MetaSection(props: { entry: Anime_Entry, details: AL_AnimeDetail
 
                         {(detailsLoading && !details) ? <Skeleton className="h-6 w-52 rounded-full opacity-60" /> :
                             <MediaEntryGenresList genres={details?.genres} />}
+
+                        {!detailsLoading && <MediaEntryTagList tags={details?.tags} className="w-full" />}
 
                         <div
                             data-anime-meta-section-rankings-container

@@ -20,11 +20,15 @@ import React from "react"
 import { AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai"
 import { BiCog } from "react-icons/bi"
 import { FaCheck, FaFlag } from "react-icons/fa6"
-import { __anilist_userAnimeListDataAtom } from "../../_atoms/anilist.atoms"
+import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
+import { __anilist_userAnimeListDataAtom, __anilist_userAnimeMediaAtom } from "../../_atoms/anilist.atoms"
+import { TbRating18Plus } from "react-icons/tb"
+import { RiEyeCloseLine } from "react-icons/ri"
 
 type CalendarParams = {
     indicateWatchedEpisodes: boolean
     listStatuses: AL_MediaListStatus[]
+    isAdult: boolean
 }
 
 const MAX_EVENT_COUNT = 4
@@ -34,6 +38,7 @@ export const calendarDisableAnimations = atomWithStorage("sea-calendar-disable-a
 export const calendarParamsAtom = atomWithStorage("sea-release-calendar-params", {
     indicateWatchedEpisodes: true,
     listStatuses: ["PLANNING", "CURRENT", "COMPLETED", "PAUSED"] as AL_MediaListStatus[],
+    isAdult: false,
 })
 
 type ScheduleCalendarProps = {
@@ -50,6 +55,8 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
     } = props
 
     const anilistListData = useAtomValue(__anilist_userAnimeListDataAtom)
+    const allUserMedia = useAtomValue(__anilist_userAnimeMediaAtom)
+    const serverStatus = useServerStatus()
 
     const { data: _schedule } = useGetAnimeCollectionSchedule({ enabled: !items })
     const schedule = items ?? _schedule
@@ -88,6 +95,12 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
         return calendarParams.listStatuses.includes(entry.status)
     }
 
+    function isAdultContentIncluded(mediaId: number) {
+        if (!serverStatus?.settings?.anilist?.enableAdultContent || !serverStatus?.settings?.anilist?.splitAdultContent) return true
+        const media = allUserMedia?.find(m => m.id === mediaId)
+        return (media?.isAdult ?? false) === calendarParams.isAdult
+    }
+
     function isEpisodeWatched(mediaId: number, episodeNumber: number) {
         const entry = anilistListData[String(mediaId)]
         if (!entry || !entry.progress) return false
@@ -105,7 +118,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
         let day = startOfCalendar
 
         while (day <= endOfCalendar) {
-            let events = schedule?.filter(item => isSameLocalDay(new Date(item.dateTime!), day) && isStatusIncluded(item.mediaId))?.map(item => {
+            let events = schedule?.filter(item => isSameLocalDay(new Date(item.dateTime!), day) && isStatusIncluded(item.mediaId) && isAdultContentIncluded(item.mediaId))?.map(item => {
                 return {
                     id: String(item.mediaId) + "-" + String(item.episodeNumber) + "-" + String(item.dateTime),
                     name: item.title,
@@ -219,6 +232,21 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
                             onValueChange={v => setAnimationDisabled(v)}
                             data-schedule-calendar-header-settings-popover-disable-animations
                         />
+                        {serverStatus?.settings?.anilist?.enableAdultContent && serverStatus?.settings?.anilist?.splitAdultContent && (
+                            <>
+                                <Separator />
+                                <Switch
+                                    label={calendarParams.isAdult ? "Showing adult content" : "Adult content"}
+                                    side="right"
+                                    value={calendarParams.isAdult}
+                                    onValueChange={v => setCalendarParams(draft => {
+                                        draft.isAdult = v
+                                        return
+                                    })}
+                                    data-schedule-calendar-header-settings-popover-adult-content
+                                />
+                            </>
+                        )}
                     </Popover>
                 </header>
                 <div

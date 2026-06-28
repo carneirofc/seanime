@@ -11,6 +11,7 @@ import { useSetAtom } from "jotai"
 import { useAtom } from "jotai/react"
 import { AnimatePresence } from "motion/react"
 import React from "react"
+import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 
 
 type LibraryViewProps = {
@@ -42,6 +43,7 @@ export function LibraryView(props: LibraryViewProps) {
 
     const ts = useThemeSettings()
 
+    const serverStatus = useServerStatus()
     const [params, setParams] = useAtom(__mainLibrary_paramsAtom)
 
     if (isLoading) return <React.Fragment>
@@ -56,14 +58,14 @@ export function LibraryView(props: LibraryViewProps) {
                 {(type === "carousel" ? [2] : [1, 2, 3, 4, 5, 6, 7, 8])?.map((_, idx) => {
                     return <Skeleton
                         key={idx} className={cn(
-                        "h-[22rem] min-[2000px]:h-[24rem] col-span-1 aspect-[6/7] flex-none rounded-[--radius-md] relative overflow-hidden",
-                        "[&:nth-child(8)]:hidden min-[2000px]:[&:nth-child(8)]:block",
-                        "[&:nth-child(7)]:hidden 2xl:[&:nth-child(7)]:block",
-                        "[&:nth-child(6)]:hidden xl:[&:nth-child(6)]:block",
-                        "[&:nth-child(5)]:hidden xl:[&:nth-child(5)]:block",
-                        "[&:nth-child(4)]:hidden lg:[&:nth-child(4)]:block",
-                        "[&:nth-child(3)]:hidden md:[&:nth-child(3)]:block",
-                    )}
+                            "h-[22rem] min-[2000px]:h-[24rem] col-span-1 aspect-[6/7] flex-none rounded-[--radius-md] relative overflow-hidden",
+                            "[&:nth-child(8)]:hidden min-[2000px]:[&:nth-child(8)]:block",
+                            "[&:nth-child(7)]:hidden 2xl:[&:nth-child(7)]:block",
+                            "[&:nth-child(6)]:hidden xl:[&:nth-child(6)]:block",
+                            "[&:nth-child(5)]:hidden xl:[&:nth-child(5)]:block",
+                            "[&:nth-child(4)]:hidden lg:[&:nth-child(4)]:block",
+                            "[&:nth-child(3)]:hidden md:[&:nth-child(3)]:block",
+                        )}
                     />
                 })}
             </div>
@@ -80,6 +82,7 @@ export function LibraryView(props: LibraryViewProps) {
 
             <PageWrapper key="library-collection-lists" className="px-4 space-y-8 relative z-[4]" data-library-collection-lists-container>
                 <AnimatePresence mode="wait" initial={false}>
+
                     {!params.genre?.length ?
                         <LibraryCollectionLists
                             key="library-collection-lists"
@@ -126,7 +129,7 @@ function GenreSelector({
                         isCurrent: params!.genre?.includes(genre) ?? false,
                         onClick: () => setParams(draft => {
                             if (draft.genre?.includes(genre)) {
-                                draft.genre = draft.genre?.filter(g => g !== genre)
+                                draft.genre = draft.genre?.filter((g: string) => g !== genre)
                             } else {
                                 draft.genre = [...(draft.genre || []), genre]
                             }

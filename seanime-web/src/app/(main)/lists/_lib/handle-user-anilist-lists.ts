@@ -66,6 +66,7 @@ export function useHandleUserAnilistLists(debouncedSearchInput: string, type?: "
                 obj?.entries,
                 params,
                 serverStatus?.settings?.anilist?.enableAdultContent,
+                serverStatus?.settings?.anilist?.splitAdultContent,
                 mediaTagMap,
             )
             return {
@@ -75,7 +76,7 @@ export function useHandleUserAnilistLists(debouncedSearchInput: string, type?: "
                 entries: arr,
             }
         }).filter(Boolean) ?? []
-    }, [lists, debouncedParams, mediaTagMap, selectedType, serverStatus?.settings?.anilist?.enableAdultContent])
+    }, [lists, debouncedParams, mediaTagMap, selectedType, serverStatus?.settings?.anilist?.enableAdultContent, serverStatus?.settings?.anilist?.splitAdultContent])
 
     const filteredLists: AL_AnimeCollection_MediaListCollection_Lists[] = React.useMemo(() => {
         return _filteredLists?.map(obj => {
