@@ -326,7 +326,7 @@ function ReleaseGroupsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            const index = draft.releaseGroups.findIndex(rg => rg.id === id)
+            const index = draft.releaseGroups.findIndex((rg: ReleaseGroupType) => rg.id === id)
             if (index !== -1) {
                 draft.releaseGroups.splice(index, 1)
             }
@@ -336,7 +336,7 @@ function ReleaseGroupsSortableField() {
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.releaseGroups.findIndex(rg => rg.id === id)
+            const index = draft.releaseGroups.findIndex((rg: ReleaseGroupType) => rg.id === id)
             if (index !== -1) {
                 draft.releaseGroups[index].value = value
             }
@@ -445,7 +445,7 @@ function ResolutionsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            const index = draft.resolutions.findIndex(r => r.id === id)
+            const index = draft.resolutions.findIndex((r: ResolutionType) => r.id === id)
             if (index !== -1) {
                 draft.resolutions.splice(index, 1)
             }
@@ -455,7 +455,7 @@ function ResolutionsSortableField() {
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.resolutions.findIndex(r => r.id === id)
+            const index = draft.resolutions.findIndex((r: ResolutionType) => r.id === id)
             if (index !== -1) {
                 draft.resolutions[index].value = value
             }
@@ -559,7 +559,7 @@ function ConditionsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            const index = draft.conditions.findIndex(c => c.id === id)
+            const index = draft.conditions.findIndex((c: ConditionType) => c.id === id)
             if (index !== -1) {
                 draft.conditions.splice(index, 1)
             }
@@ -569,7 +569,7 @@ function ConditionsSortableField() {
 
     const handleUpdateField = <K extends keyof ConditionType>(id: string, fieldName: K, value: ConditionType[K]) => {
         setFormData(draft => {
-            const condition = draft.conditions.find(c => c.id === id)
+            const condition = draft.conditions.find((c: ConditionType) => c.id === id)
             if (condition) {
                 condition[fieldName] = value
             }

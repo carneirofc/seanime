@@ -457,7 +457,7 @@ function GenreSelector({ genres }: { genres: string[] }) {
                     isCurrent: params!.genre?.includes(genre) ?? false,
                     onClick: () => setParams(draft => {
                         if (draft.genre?.includes(genre)) {
-                            draft.genre = draft.genre?.filter(g => g !== genre)
+                            draft.genre = draft.genre?.filter((g: string) => g !== genre)
                         } else {
                             draft.genre = [...(draft.genre || []), genre]
                         }

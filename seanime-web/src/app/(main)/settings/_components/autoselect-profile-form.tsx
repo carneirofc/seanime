@@ -560,14 +560,14 @@ function ProvidersFieldControlled() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.providers = draft.providers.filter(item => item.id !== id)
+            draft.providers = draft.providers.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     // Filter out providers that are no longer installed
     React.useEffect(() => {
         setFormData(draft => {
-            draft.providers = draft.providers.filter(p => availableProviderIds.has(p.value))
+            draft.providers = draft.providers.filter((p: SortableItem) => availableProviderIds.has(p.value))
         })
     }, [availableProviderIds, setFormData])
 
@@ -632,13 +632,13 @@ function ReleaseGroupsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.releaseGroups = draft.releaseGroups.filter(item => item.id !== id)
+            draft.releaseGroups = draft.releaseGroups.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.releaseGroups.findIndex(item => item.id === id)
+            const index = draft.releaseGroups.findIndex((item: SortableItem) => item.id === id)
             if (index !== -1) {
                 draft.releaseGroups[index].value = value
             }
@@ -732,13 +732,13 @@ function ResolutionsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.resolutions = draft.resolutions.filter(item => item.id !== id)
+            draft.resolutions = draft.resolutions.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.resolutions.findIndex(item => item.id === id)
+            const index = draft.resolutions.findIndex((item: SortableItem) => item.id === id)
             if (index !== -1) {
                 draft.resolutions[index].value = value
             }
@@ -832,13 +832,13 @@ function ExcludeTermsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.excludeTerms = draft.excludeTerms.filter(item => item.id !== id)
+            draft.excludeTerms = draft.excludeTerms.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.excludeTerms.findIndex(item => item.id === id)
+            const index = draft.excludeTerms.findIndex((item: SortableItem) => item.id === id)
             if (index !== -1) {
                 draft.excludeTerms[index].value = value
             }
@@ -908,13 +908,13 @@ function PreferredLanguagesSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.preferredLanguages = draft.preferredLanguages.filter(item => item.id !== id)
+            draft.preferredLanguages = draft.preferredLanguages.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.preferredLanguages.findIndex(item => item.id === id)
+            const index = draft.preferredLanguages.findIndex((item: SortableItem) => item.id === id)
             if (index !== -1) {
                 draft.preferredLanguages[index].value = value
             }
@@ -1008,13 +1008,13 @@ function PreferredCodecsSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.preferredCodecs = draft.preferredCodecs.filter(item => item.id !== id)
+            draft.preferredCodecs = draft.preferredCodecs.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.preferredCodecs.findIndex(item => item.id === id)
+            const index = draft.preferredCodecs.findIndex((item: SortableItem) => item.id === id)
             if (index !== -1) {
                 draft.preferredCodecs[index].value = value
             }
@@ -1108,13 +1108,13 @@ function PreferredSourcesSortableField() {
 
     const handleRemove = (id: string) => {
         setFormData(draft => {
-            draft.preferredSources = draft.preferredSources.filter(item => item.id !== id)
+            draft.preferredSources = draft.preferredSources.filter((item: SortableItem) => item.id !== id)
         })
     }
 
     const handleUpdate = (id: string, value: string) => {
         setFormData(draft => {
-            const index = draft.preferredSources.findIndex(item => item.id === id)
+            const index = draft.preferredSources.findIndex((item: SortableItem) => item.id === id)
             if (index !== -1) {
                 draft.preferredSources[index].value = value
             }

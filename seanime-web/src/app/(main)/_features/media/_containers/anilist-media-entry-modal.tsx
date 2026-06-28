@@ -85,7 +85,7 @@ function IsomorphicPopover(props: PopoverProps & ModalProps & { media?: AL_BaseA
 
 export const AnilistMediaEntryModal = (props: AnilistMediaEntryModalProps) => {
     const [open, toggle] = useToggle(false)
-    const [repeat, setRepeat] = React.useState<number | "">(0)
+    const [repeat, setRepeat] = React.useState(0)
 
     const { children, media, listData, hideButton, type = "anime", forceModal, ...rest } = props
 
@@ -102,11 +102,10 @@ export const AnilistMediaEntryModal = (props: AnilistMediaEntryModalProps) => {
     }, [listData])
 
     const handleSubmit = React.useCallback((data: z.infer<typeof mediaListDataSchema>) => {
-        const normalizedRepeat = repeat === "" ? 0 : repeat
-        if (normalizedRepeat !== (listData?.repeat ?? 0)) {
+        if (repeat !== (listData?.repeat ?? 0)) {
             mutateRepeat({
                 mediaId: media?.id || 0,
-                repeat: normalizedRepeat,
+                repeat: repeat,
             })
         }
         mutate({
@@ -202,8 +201,8 @@ export const AnilistMediaEntryModal = (props: AnilistMediaEntryModalProps) => {
 function Content(props: AnilistMediaEntryModalProps & {
     open: boolean
     onToggle: (open: boolean) => void
-    repeat: number | ""
-    setRepeat: (repeat: number | "") => void
+    repeat: number
+    setRepeat: (repeat: number) => void
     handleSubmit: (data: z.infer<typeof mediaListDataSchema>) => void
     deleteEntry: any
     isEditing: boolean
@@ -326,7 +325,7 @@ function Content(props: AnilistMediaEntryModalProps & {
                         min={0}
                         max={1000}
                         value={repeat}
-                        onValueChange={(value, valueAsString) => setRepeat(valueAsString === "" ? "" : value)}
+                        onValueChange={setRepeat}
                         formatOptions={{
                             maximumFractionDigits: 0,
                             minimumFractionDigits: 0,
