@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"seanime/internal/events"
 	"seanime/internal/manga"
 	chapter_downloader "seanime/internal/manga/downloader"
@@ -30,19 +31,35 @@ func (h *Handler) HandleDownloadMangaChapters(c echo.Context) error {
 
 	h.App.WSEventManager.SendEvent(events.InfoToast, "Adding chapters to download queue...")
 
-	// Add chapters to the download queue
-	for _, chapterId := range b.ChapterIds {
-		err := h.App.MangaDownloader.DownloadChapter(manga.DownloadChapterOptions{
-			Provider:  b.Provider,
-			MediaId:   b.MediaId,
-			ChapterId: chapterId,
-			StartNow:  b.StartNow,
-		})
-		if err != nil {
-			return h.RespondWithError(c, err)
+	// Queueing fetches the page list from the provider for every chapter, which is
+	// slow and network-bound. Do it in the background so the request returns promptly,
+	// and keep going if a single chapter fails instead of aborting the whole batch.
+	go func() {
+		chapterIds := b.ChapterIds
+		var failed int
+		for _, chapterId := range chapterIds {
+			err := h.App.MangaDownloader.DownloadChapter(manga.DownloadChapterOptions{
+				Provider:  b.Provider,
+				MediaId:   b.MediaId,
+				ChapterId: chapterId,
+				StartNow:  b.StartNow,
+			})
+			if err != nil {
+				failed++
+				h.App.Logger.Error().Err(err).Str("chapterId", chapterId).Msg("manga: Failed to queue chapter for download")
+			}
+			time.Sleep(400 * time.Millisecond) // Sleep to avoid rate limiting
 		}
-		time.Sleep(400 * time.Millisecond) // Sleep to avoid rate limiting
-	}
+
+		switch {
+		case failed == len(chapterIds):
+			h.App.WSEventManager.SendEvent(events.ErrorToast, "Failed to add chapters to the download queue")
+		case failed > 0:
+			h.App.WSEventManager.SendEvent(events.WarningToast, fmt.Sprintf("Added chapters to the download queue (%d failed)", failed))
+		default:
+			h.App.WSEventManager.SendEvent(events.SuccessToast, "Added chapters to the download queue")
+		}
+	}()
 
 	return h.RespondWithData(c, true)
 }
