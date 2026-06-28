@@ -76,6 +76,7 @@ type (
 
 func (r *Repository) SearchAnime(ctx context.Context, opts AnimeSearchOptions) (ret *SearchData, retErr error) {
 	defer util.HandlePanicInModuleWithError("torrents/torrent/SearchAnime", &retErr)
+	var torrents []*hibiketorrent.AnimeTorrent
 
 	requestedEvent := &TorrentSearchRequestedEvent{Options: opts}
 	_ = hook.GlobalHookManager.OnTorrentSearchRequested().Trigger(requestedEvent)
@@ -139,44 +140,27 @@ func (r *Repository) SearchAnime(ctx context.Context, opts AnimeSearchOptions) (
 		},
 	}
 
-	var searchCacheKey string
-	switch opts.Type {
-	case AnimeSearchTypeSmart:
-		searchCacheKey = fmt.Sprintf("m%d-%s-%d-%s-%t-%t", opts.Media.GetID(), opts.Query, opts.EpisodeNumber, opts.Resolution, opts.BestReleases, opts.Batch)
-	case AnimeSearchTypeSimple:
-		searchCacheKey = fmt.Sprintf("s%d-%s", opts.Media.GetID(), opts.Query)
-	}
+	smartQueryKey := fmt.Sprintf("%d-%s-%d-%s-%t-%t", opts.Media.GetID(), opts.Query, opts.EpisodeNumber, opts.Resolution, opts.BestReleases, opts.Batch)
+	simpleQueryKey := fmt.Sprintf("%d-%s", opts.Media.GetID(), opts.Query)
 
-	var cacheHit bool
-	if searchCacheKey != "" {
+	if opts.Type == AnimeSearchTypeSmart {
+		cache := getAnimeSearchCache(r.animeProviderSmartSearchCaches, providerCacheKey)
+		// Check the cache
+		data, found := cache.Get(smartQueryKey)
+		if found {
+			r.logger.Debug().Str("provider", providerCacheKey).Str("type", string(opts.Type)).Msg("torrent search: Cache HIT")
+			return data, nil
+		}
+	} else if opts.Type == AnimeSearchTypeSimple {
 		cache := getAnimeSearchCache(r.animeProviderSearchCaches, providerCacheKey)
-		ret, cacheHit = cache.Get(searchCacheKey)
+		// Check the cache
+		data, found := cache.Get(simpleQueryKey)
+		if found {
+			r.logger.Debug().Str("provider", providerCacheKey).Str("type", string(opts.Type)).Msg("torrent search: Cache HIT")
+			return data, nil
+		}
 	}
 
-	if cacheHit {
-		r.logger.Debug().Str("provider", providerCacheKey).Str("type", string(opts.Type)).Msg("torrent search: Cache HIT")
-
-		if len(ret.Previews) == 0 && opts.Type == AnimeSearchTypeSmart && !opts.SkipPreviews {
-			previews, err := r.generatePreviews(ctx, ret.Torrents, opts.Media, animeMetadata, &opts)
-			if err != nil {
-				return nil, err
-			}
-
-			ret = new(*ret)
-			ret.Previews = previews
-			if searchCacheKey != "" {
-				cache := getAnimeSearchCache(r.animeProviderSearchCaches, providerCacheKey)
-				cache.Set(searchCacheKey, ret)
-			}
-		}
-
-		if ret != nil {
-			ret = new(*ret)
-		}
-		return
-	}
-
-	var torrents []*hibiketorrent.AnimeTorrent
 	anidbAID := 0
 	anidbEID := 0
 	if animeMetadata.IsPresent() {
@@ -217,8 +201,14 @@ func (r *Repository) SearchAnime(ctx context.Context, opts AnimeSearchOptions) (
 				query = util.CleanMediaTitle(opts.Media.GetRomajiTitleSafe())
 			}
 
+			//// Force simple search if Animap media is absent
+			//if opts.Type == AnimeSearchTypeSmart && animeMetadata.IsAbsent() {
+			//	opts.Type = AnimeSearchTypeSimple
+			//}
+
 			switch searchType {
 			case AnimeSearchTypeSmart:
+				// Check for context cancellation before making the request
 				select {
 				case <-ctx.Done():
 					return
@@ -246,6 +236,7 @@ func (r *Repository) SearchAnime(ctx context.Context, opts AnimeSearchOptions) (
 				return
 			case AnimeSearchTypeSimple:
 
+				// Check for context cancellation before making the request
 				select {
 				case <-ctx.Done():
 					return
@@ -336,7 +327,50 @@ func (r *Repository) SearchAnime(ctx context.Context, opts AnimeSearchOptions) (
 	}
 	wg.Wait()
 
-	// sort by seeders, put best releases on top
+	//
+	// Previews
+	//
+	previews := make([]*Preview, 0)
+
+	if opts.Type == AnimeSearchTypeSmart && !opts.SkipPreviews {
+		wg := sync.WaitGroup{}
+		wg.Add(len(torrents))
+		mu := sync.Mutex{}
+		for _, t := range torrents {
+			go func(t *hibiketorrent.AnimeTorrent) {
+				defer wg.Done()
+
+				// Check for context cancellation in each goroutine
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+
+				preview := r.createAnimeTorrentPreview(createAnimeTorrentPreviewOptions{
+					torrent:       t,
+					media:         opts.Media,
+					animeMetadata: animeMetadata,
+					searchOpts:    &opts,
+				})
+				if preview != nil {
+					mu.Lock()
+					previews = append(previews, preview)
+					mu.Unlock()
+				}
+			}(t)
+		}
+		wg.Wait()
+
+		// Check if context was cancelled during preview creation
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+	}
+
+	// sort both by seeders, put best releases on top
 	slices.SortFunc(torrents, func(i, j *hibiketorrent.AnimeTorrent) int {
 		if i.IsBestRelease != j.IsBestRelease {
 			if i.IsBestRelease {
@@ -346,84 +380,6 @@ func (r *Repository) SearchAnime(ctx context.Context, opts AnimeSearchOptions) (
 		}
 		return cmp.Compare(j.Seeders, i.Seeders)
 	})
-
-	ret = &SearchData{
-		Torrents:                 torrents,
-		TorrentMetadata:          torrentMetadata,
-		IncludedSpecialProviders: includedProviderIds,
-		AnimeMetadata:            animeMetadata.OrEmpty(),
-	}
-
-	// Previews
-	if opts.Type == AnimeSearchTypeSmart && !opts.SkipPreviews {
-		previews, err := r.generatePreviews(ctx, ret.Torrents, opts.Media, animeMetadata, &opts)
-		if err != nil {
-			return nil, err
-		}
-		ret.Previews = previews
-	}
-
-	searchEvent := &TorrentSearchEvent{
-		Options:    opts,
-		SearchData: ret,
-	}
-	_ = hook.GlobalHookManager.OnTorrentSearch().Trigger(searchEvent)
-	if searchEvent.SearchData != nil {
-		ret = searchEvent.SearchData
-		sortSearchData(ret)
-	}
-
-	if searchCacheKey != "" {
-		cache := getAnimeSearchCache(r.animeProviderSearchCaches, providerCacheKey)
-		cache.Set(searchCacheKey, ret)
-	}
-
-	if ret != nil {
-		ret = new(*ret)
-	}
-
-	return
-}
-
-func (r *Repository) generatePreviews(ctx context.Context, torrents []*hibiketorrent.AnimeTorrent, media *anilist.BaseAnime, animeMetadata mo.Option[*metadata.AnimeMetadata], searchOpts *AnimeSearchOptions) ([]*Preview, error) {
-	var previews []*Preview
-	wg := sync.WaitGroup{}
-	wg.Add(len(torrents))
-	mu := sync.Mutex{}
-	for _, t := range torrents {
-		go func(t *hibiketorrent.AnimeTorrent) {
-			defer wg.Done()
-
-			// Check for context cancellation in each goroutine
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
-
-			preview := r.createAnimeTorrentPreview(createAnimeTorrentPreviewOptions{
-				torrent:       t,
-				media:         media,
-				animeMetadata: animeMetadata,
-				searchOpts:    searchOpts,
-			})
-			if preview != nil {
-				mu.Lock()
-				previews = append(previews, preview)
-				mu.Unlock()
-			}
-		}(t)
-	}
-	wg.Wait()
-
-	// Check if context was cancelled during preview creation
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-	}
-
-	// sort by seeders, put best releases on top
 	previews = lo.Filter(previews, func(p *Preview, _ int) bool {
 		return p != nil && p.Torrent != nil
 	})
@@ -437,7 +393,38 @@ func (r *Repository) generatePreviews(ctx context.Context, torrents []*hibiketor
 		return cmp.Compare(j.Torrent.Seeders, i.Torrent.Seeders)
 	})
 
-	return previews, nil
+	ret = &SearchData{
+		Torrents:                 torrents,
+		Previews:                 previews,
+		TorrentMetadata:          torrentMetadata,
+		IncludedSpecialProviders: includedProviderIds,
+	}
+
+	if animeMetadata.IsPresent() {
+		ret.AnimeMetadata = animeMetadata.MustGet()
+	}
+
+	searchEvent := &TorrentSearchEvent{
+		Options:    opts,
+		SearchData: ret,
+	}
+	_ = hook.GlobalHookManager.OnTorrentSearch().Trigger(searchEvent)
+	if searchEvent.SearchData != nil {
+		ret = searchEvent.SearchData
+	}
+	sortSearchData(ret)
+
+	// Store the data in the cache
+	switch opts.Type {
+	case AnimeSearchTypeSmart:
+		cache := getAnimeSearchCache(r.animeProviderSmartSearchCaches, providerCacheKey)
+		cache.Set(smartQueryKey, ret)
+	case AnimeSearchTypeSimple:
+		cache := getAnimeSearchCache(r.animeProviderSearchCaches, providerCacheKey)
+		cache.Set(simpleQueryKey, ret)
+	}
+
+	return
 }
 
 func (r *Repository) getAnimeSearchProviders(provider string) ([]extension.AnimeTorrentProviderExtension, string, error) {
@@ -498,7 +485,6 @@ func sortSearchData(data *SearchData) {
 		return
 	}
 
-	// sort both by seeders, put best releases on top
 	slices.SortFunc(data.Torrents, func(i, j *hibiketorrent.AnimeTorrent) int {
 		if i.IsBestRelease != j.IsBestRelease {
 			if i.IsBestRelease {

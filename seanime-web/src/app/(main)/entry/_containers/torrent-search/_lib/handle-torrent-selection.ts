@@ -39,7 +39,6 @@ export function useTorrentSearchSelection({ type = "download", entry }: { type: 
 
     const onTorrentValidated = () => {
         const torrent = selectedTorrents[0]
-        console.log("onTorrentValidated", torrentSearchStreamEpisode)
         // User manually selected a torrent
         if (type === "torrentstream-select") {
             if (!!torrent && !!torrentSearchStreamEpisode?.aniDBEpisode) {
