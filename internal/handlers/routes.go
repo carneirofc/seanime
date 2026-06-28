@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"seanime/internal/core"
+	"seanime/internal/mcp"
 	util "seanime/internal/util/proxies"
 	"strings"
 	"time"
@@ -134,6 +135,13 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 
 	v1.GET("/proxy", h.VideoProxy)
 	v1.HEAD("/proxy", h.VideoProxy)
+
+	// Read-only Model Context Protocol server (opt-in via experimental.mcp).
+	if app.Config.Experimental.MCP && app.FeatureManager.IsEnabled(core.MCP) {
+		mcpHandler := mcp.NewServer(app).Handler()
+		v1.Any("/mcp", echo.WrapHandler(mcpHandler))
+		app.Logger.Warn().Msg("app: [Feature flag] MCP server enabled at /api/v1/mcp")
+	}
 
 	v1.GET("/status", h.HandleGetStatus)
 	v1.GET("/status/home-items", h.HandleGetHomeItems)

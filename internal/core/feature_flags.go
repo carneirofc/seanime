@@ -58,6 +58,8 @@ const (
 	Proxy             FeatureKey = "Proxy"
 	ManageMangaSource FeatureKey = "ManageMangaSource"
 	PushRequests      FeatureKey = "PushRequests"
+	// MCP gates the read-only Model Context Protocol server.
+	MCP FeatureKey = "MCP"
 )
 
 func NewFeatureManager(logger *zerolog.Logger, flags SeanimeFlags) *FeatureManager {
@@ -99,6 +101,7 @@ func NewFeatureManager(logger *zerolog.Logger, flags SeanimeFlags) *FeatureManag
 			Transcode,
 			ManageMangaSource,
 			PushRequests,
+			MCP,
 		}
 	}
 

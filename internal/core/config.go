@@ -70,6 +70,8 @@ type Config struct {
 	}
 	Experimental struct {
 		BuiltinTorrentClient bool
+		// MCP exposes a read-only Model Context Protocol server at /api/v1/mcp.
+		MCP bool
 	}
 }
 
