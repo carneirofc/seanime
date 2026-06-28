@@ -59,6 +59,7 @@ export function useHandleDetailedLibraryCollection({ enabled = true }: { enabled
             const arr = filterAnimeCollectionEntries(obj.entries,
                 paramsToDebounce,
                 serverStatus?.settings?.anilist?.enableAdultContent,
+                serverStatus?.settings?.anilist?.splitAdultContent,
                 data.continueWatchingList,
                 watchHistory,
                 animeTagMap)
@@ -97,6 +98,7 @@ export function useHandleDetailedLibraryCollection({ enabled = true }: { enabled
         return filterAnimeCollectionEntries(entries,
             paramsToDebounce,
             serverStatus?.settings?.anilist?.enableAdultContent,
+            serverStatus?.settings?.anilist?.splitAdultContent,
             data.continueWatchingList,
             watchHistory,
             animeTagMap)
@@ -109,7 +111,15 @@ export function useHandleDetailedLibraryCollection({ enabled = true }: { enabled
     const continueWatchingList = React.useMemo(() => {
         if (!data?.continueWatchingList) return []
 
-        if (!serverStatus?.settings?.anilist?.enableAdultContent || serverStatus?.settings?.anilist?.blurAdultContent) {
+        const enableAdultContent = serverStatus?.settings?.anilist?.enableAdultContent
+        const splitAdultContent = serverStatus?.settings?.anilist?.splitAdultContent
+        const blurAdultContent = serverStatus?.settings?.anilist?.blurAdultContent
+
+        if (enableAdultContent && splitAdultContent && !blurAdultContent) {
+            return data.continueWatchingList.filter(entry => (entry.baseAnime?.isAdult ?? false) === paramsToDebounce.isAdult)
+        }
+
+        if (!enableAdultContent || blurAdultContent) {
             return data.continueWatchingList.filter(entry => entry.baseAnime?.isAdult === false)
         }
 
@@ -117,7 +127,9 @@ export function useHandleDetailedLibraryCollection({ enabled = true }: { enabled
     }, [
         data?.continueWatchingList,
         serverStatus?.settings?.anilist?.enableAdultContent,
+        serverStatus?.settings?.anilist?.splitAdultContent,
         serverStatus?.settings?.anilist?.blurAdultContent,
+        paramsToDebounce.isAdult,
     ])
 
     const libraryGenres = React.useMemo(() => {

@@ -61,10 +61,12 @@ type Settings struct {
 
 type AnilistSettings struct {
 	//AnilistClientId    string `gorm:"column:anilist_client_id" json:"anilistClientId"`
-	HideAudienceScore  bool `gorm:"column:hide_audience_score" json:"hideAudienceScore"`
-	EnableAdultContent bool `gorm:"column:enable_adult_content" json:"enableAdultContent"`
-	BlurAdultContent   bool `gorm:"column:blur_adult_content" json:"blurAdultContent"`
-	DisableCacheLayer  bool `gorm:"column:disable_cache_layer" json:"disableCacheLayer"`
+	HideAudienceScore     bool `gorm:"column:hide_audience_score" json:"hideAudienceScore"`
+	EnableAdultContent    bool `gorm:"column:enable_adult_content" json:"enableAdultContent"`
+	BlurAdultContent      bool `gorm:"column:blur_adult_content" json:"blurAdultContent"`
+	SplitAdultContent     bool `gorm:"column:split_adult_content" json:"splitAdultContent"`
+	HideMediaTagsSpoilers bool `gorm:"column:hide_media_tags_spoilers" json:"hideMediaTagsSpoilers"`
+	DisableCacheLayer     bool `gorm:"column:disable_cache_layer" json:"disableCacheLayer"`
 }
 
 type LibrarySettings struct {

@@ -191,16 +191,19 @@ export function filterListEntries<T extends AL_MangaCollection_MediaListCollecti
     entries: T | null | undefined,
     params: CollectionParams<V>,
     showAdultContent: boolean | undefined,
+    splitAdultContent?: boolean,
     mediaTagMap?: Record<number, Array<string>> | null,
 ) {
     if (!entries) return []
     let arr = [...entries]
 
-    // Filter by isAdult
-    if (!!arr && params.isAdult) arr = arr.filter(n => n.media?.isAdult)
-
-    // Filter by showAdultContent
-    if (!showAdultContent) arr = arr.filter(n => !n.media?.isAdult)
+    if (!showAdultContent) {
+        arr = arr.filter(n => !n.media?.isAdult)
+    } else if (splitAdultContent) {
+        arr = arr.filter(n => (n.media?.isAdult ?? false) === params.isAdult)
+    } else if (params.isAdult) {
+        arr = arr.filter(n => n.media?.isAdult)
+    }
 
     // Filter by format
     if (!!arr && !!params.format) arr = arr.filter(n => n.media?.format === params.format)
@@ -295,16 +298,19 @@ export function filterCollectionEntries<T extends Anime_LibraryCollectionEntry[]
     entries: T | null | undefined,
     params: CollectionParams<V>,
     showAdultContent: boolean | undefined,
+    splitAdultContent?: boolean,
     mediaTagMap?: Record<number, Array<string>> | null,
 ) {
     if (!entries) return []
     let arr = [...entries]
 
-    // Filter by isAdult
-    if (!!arr && params.isAdult) arr = arr.filter(n => n.media?.isAdult)
-
-    // Filter by showAdultContent
-    if (!showAdultContent) arr = arr.filter(n => !n.media?.isAdult)
+    if (!showAdultContent) {
+        arr = arr.filter(n => !n.media?.isAdult)
+    } else if (splitAdultContent) {
+        arr = arr.filter(n => (n.media?.isAdult ?? false) === params.isAdult)
+    } else if (params.isAdult) {
+        arr = arr.filter(n => n.media?.isAdult)
+    }
 
     // Filter by format
     if (!!arr && !!params.format) arr = arr.filter(n => n.media?.format === params.format)
@@ -394,11 +400,12 @@ export function filterAnimeCollectionEntries<T extends Anime_LibraryCollectionEn
     entries: T | null | undefined,
     params: CollectionParams<"anime">,
     showAdultContent: boolean | undefined,
+    splitAdultContent: boolean | undefined,
     continueWatchingList: Anime_Episode[] | null | undefined,
     watchHistory: Continuity_WatchHistory | null | undefined,
     mediaTagMap?: Record<number, Array<string>> | null,
 ) {
-    let arr = filterCollectionEntries("anime", entries, params, showAdultContent, mediaTagMap)
+    let arr = filterCollectionEntries("anime", entries, params, showAdultContent, splitAdultContent, mediaTagMap)
 
     if (params.continueWatchingOnly) {
         arr = arr.filter(n => continueWatchingList?.findIndex(e => e.baseAnime?.id === n.media?.id) !== -1)
@@ -455,12 +462,13 @@ export function filterMangaCollectionEntries<T extends Anime_LibraryCollectionEn
     entries: T | null | undefined,
     params: CollectionParams<"manga">,
     showAdultContent: boolean | undefined,
+    splitAdultContent: boolean | undefined,
     storedProviders: Record<string, string> | null | undefined,
     storedProviderFilters: Record<number, MangaEntryFilters> | null | undefined,
     latestChapterNumbers: Record<number, Manga_MangaLatestChapterNumberItem[]> | null | undefined,
 ) {
     if (!latestChapterNumbers || !storedProviders || !storedProviderFilters) return []
-    let arr = filterCollectionEntries("manga", entries, params, showAdultContent)
+    let arr = filterCollectionEntries("manga", entries, params, showAdultContent, splitAdultContent)
 
 
     if (params.unreadOnly) {

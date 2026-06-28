@@ -1,0 +1,28 @@
+fragment mTags on MediaTag {
+    id
+    name
+    category
+    description
+    isAdult
+    isMediaSpoiler
+    isGeneralSpoiler
+    rank
+    userId
+}
+
+query MediaTagCollection {
+  MediaTagCollection {
+    ...mTags
+  }
+}
+
+query GetMediaTagsById($ids: [Int!]!) {
+  Page {
+    media(id_in: $ids) {
+      id
+      tags {
+        ...mTags
+      }
+    }
+  }
+}

@@ -11,6 +11,9 @@ import { getLibraryCollectionTitle } from "@/lib/server/utils"
 import { useAtom } from "jotai/react"
 import React from "react"
 import { LuListFilter } from "react-icons/lu"
+import { RiEyeCloseLine } from "react-icons/ri"
+import { TbRating18Plus } from "react-icons/tb"
+import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 
 export function LibraryCollectionLists({ collectionList, isLoading, streamingMediaIds, showStatuses, type }: {
     collectionList: Anime_LibraryCollectionList[],
@@ -111,8 +114,8 @@ export const LibraryCollectionListItem = React.memo(({ list, streamingMediaIds, 
 }) => {
 
     const isCurrentlyWatching = list.type === "CURRENT"
-
     const [params, setParams] = useAtom(__mainLibrary_paramsAtom)
+    const serverStatus = useServerStatus()
 
     if (!!showStatuses && !!list.type && !showStatuses.includes(list.type)) return null
 
@@ -143,6 +146,19 @@ export const LibraryCollectionListItem = React.memo(({ list, streamingMediaIds, 
                     >
                         {params.continueWatchingOnly ? "Show all" : "Show unwatched only"}
                     </DropdownMenuItem>
+                    {serverStatus?.settings?.anilist?.enableAdultContent && serverStatus?.settings?.anilist?.splitAdultContent && (
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setParams(draft => {
+                                    draft.isAdult = !draft.isAdult
+                                    return
+                                })
+                            }}
+                        >
+                            {params.isAdult ? <RiEyeCloseLine /> : <TbRating18Plus className="text-pink-500" />}
+                            {params.isAdult ? "Show safe content" : "Adult content"}
+                        </DropdownMenuItem>
+                    )}
                 </DropdownMenu>}
             </div>
             {type === "grid" && <MediaCardLazyGrid
@@ -179,6 +195,10 @@ export const LibraryCollectionEntryItem = React.memo(({ entry, streamingMediaIds
     streamingMediaIds: number[],
     type: "carousel" | "grid"
 }) => {
+
+    const serverStatus = useServerStatus()
+
+
     return (
         <MediaEntryCard
             media={entry.media!}
@@ -186,7 +206,7 @@ export const LibraryCollectionEntryItem = React.memo(({ entry, streamingMediaIds
             libraryData={entry.libraryData}
             nakamaLibraryData={entry.nakamaLibraryData}
             showListDataButton
-            withAudienceScore={false}
+            withAudienceScore={!(serverStatus?.settings?.anilist?.hideAudienceScore)}
             type="anime"
             containerClassName={type === "carousel" ? "basis-[200px] md:basis-[250px] mx-2 mt-8 mb-0" : undefined}
             showLibraryBadge={!!streamingMediaIds?.length && !streamingMediaIds.includes(entry.mediaId) && entry.listData?.status === "CURRENT"}

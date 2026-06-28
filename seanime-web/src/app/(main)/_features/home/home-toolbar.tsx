@@ -20,9 +20,12 @@ import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Tooltip } from "@/components/ui/tooltip"
 import { TORRENT_PROVIDER } from "@/lib/server/settings"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
+import { __mainLibrary_paramsAtom } from "@/app/(main)/_features/anime-library/_lib/handle-library-collection"
 import { useAtom, useSetAtom } from "jotai/react"
 import React from "react"
 import { BiCollection, BiDotsVerticalRounded, BiFolder } from "react-icons/bi"
+import { RiEyeCloseLine } from "react-icons/ri"
+import { TbRating18Plus } from "react-icons/tb"
 import { HiExclamation } from "react-icons/hi"
 import { IoHome, IoLibraryOutline, IoLibrarySharp } from "react-icons/io5"
 import { LuSearch } from "react-icons/lu"
@@ -72,6 +75,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
     const { data: allExtensions, isLoading: isExtensionsLoading } = useGetAllExtensions(false)
 
     const [homeView, setHomeView] = useAtom(__home_currentView)
+    const [libraryParams, setLibraryParams] = useAtom(__mainLibrary_paramsAtom)
 
     const { mutate: openInExplorer } = useOpenInExplorer()
 
@@ -263,6 +267,19 @@ export function HomeToolbar(props: HomeToolbarProps) {
                         {/*{!(isStreamingOnly || isNakamaLibrary) && <PlayRandomEpisodeButton />}*/}
 
                         <PluginAnimeLibraryDropdownItems />
+                        {serverStatus?.settings?.anilist?.enableAdultContent && serverStatus?.settings?.anilist?.splitAdultContent && (
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setLibraryParams(draft => {
+                                        draft.isAdult = !draft.isAdult
+                                        return
+                                    })
+                                }}
+                            >
+                                {libraryParams.isAdult ? <RiEyeCloseLine /> : <TbRating18Plus className="text-pink-500" />}
+                                {libraryParams.isAdult ? "Show safe content" : "Adult content"}
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenu>}
 
             </div>

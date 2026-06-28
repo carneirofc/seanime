@@ -185,6 +185,17 @@ export function ServerSettings(props: ServerSettingsProps) {
                     help="If disabled, adult content will be hidden from search results and your library."
                     icon={<TbRating18Plus className="" />}
                 />
+
+                <Field.Switch
+                    side="right"
+                    name="splitAdultContent"
+                    label="Split adult content"
+                    help="If disabled, adult content will be mixed with regular content in your library."
+                    fieldClass={cn(
+                        !f.watch("enableAdultContent") && "opacity-50",
+                    )}
+                />
+
                 {f.watch("enableAdultContent") && <div className="space-y-1 pl-4 border-l border-[--border] ml-2">
                     <Field.Switch
                         side="right"

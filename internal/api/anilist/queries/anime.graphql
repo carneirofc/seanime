@@ -117,6 +117,9 @@ query AnimeDetailsById ($id: Int) {
     popularity
     meanScore
     description
+    tags {
+      ...mTags
+    }
     trailer {
       id
       site
@@ -316,7 +319,7 @@ query ListRecentAnime ($page: Int, $perPage: Int, $airingAt_greater: Int, $airin
       episode
       timeUntilAiring
       media {
-        ... baseAnime
+        ...baseAnime
       }
     }
   }

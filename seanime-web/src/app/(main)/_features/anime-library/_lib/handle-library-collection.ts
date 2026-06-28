@@ -2,6 +2,7 @@ import { Anime_LibraryCollectionList } from "@/api/generated/types"
 import { useGetLibraryCollection } from "@/api/hooks/anime_collection.hooks"
 import { useGetContinuityWatchHistory } from "@/api/hooks/continuity.hooks"
 import { animeLibraryCollectionAtom } from "@/app/(main)/_atoms/anime-library-collection.atoms"
+import { __library_viewAtom, __library_viewStateAtom } from "./library-view.atoms"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import {
     CollectionParams,
@@ -11,7 +12,7 @@ import {
 } from "@/lib/helpers/filtering.ts"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
 import { atomWithImmer } from "jotai-immer"
-import { useAtomValue, useSetAtom } from "jotai/react"
+import { useAtom, useAtomValue, useSetAtom } from "jotai/react"
 import React from "react"
 
 export const MAIN_LIBRARY_DEFAULT_PARAMS: CollectionParams<"anime"> = {
@@ -26,8 +27,12 @@ export const __mainLibrary_paramsInputAtom = atomWithImmer<CollectionParams<"ani
 
 export function useHandleLibraryCollection() {
     const serverStatus = useServerStatus()
+    const view = useAtomValue(__library_viewAtom)
 
     const atom_setLibraryCollection = useSetAtom(animeLibraryCollectionAtom)
+    const [viewState, setViewState] = useAtom(__library_viewStateAtom)
+    const setActualParams = useSetAtom(__mainLibrary_paramsInputAtom)
+
 
     const { animeLibraryCollectionDefaultSorting, continueWatchingDefaultSorting } = useThemeSettings()
 
@@ -84,6 +89,18 @@ export function useHandleLibraryCollection() {
      */
     const params = useAtomValue(__mainLibrary_paramsAtom)
 
+    React.useEffect(() => {
+        setActualParams(prev => {
+            prev.isAdult = viewState.isAdult
+        })
+
+    }, [view, atom_setLibraryCollection, viewState.isAdult])
+
+    const configs = React.useMemo(() => ({
+        enableAdultContent: serverStatus?.settings?.anilist?.enableAdultContent || false,
+        splitAdultContent: serverStatus?.settings?.anilist?.splitAdultContent || false,
+    }), [serverStatus?.settings?.anilist?.enableAdultContent, serverStatus?.settings?.anilist?.splitAdultContent, params])
+
     /**
      * Sort the collection
      * - This is displayed when there's no filters applied
@@ -117,6 +134,10 @@ export function useHandleLibraryCollection() {
             //
             let sortingParams = {
                 ...DEFAULT_ANIME_COLLECTION_PARAMS,
+
+                isAdult: params.isAdult,
+                tags: params.tags,
+
                 continueWatchingOnly: params.continueWatchingOnly,
                 sorting: animeLibraryCollectionDefaultSorting as any,
             } as CollectionParams<"anime">
@@ -128,10 +149,12 @@ export function useHandleLibraryCollection() {
                     continueWatchingList = [...continueWatchingList, entry]
                 }
             }
+
             let arr = filterAnimeCollectionEntries(
                 obj.entries,
                 sortingParams,
-                serverStatus?.settings?.anilist?.enableAdultContent,
+                configs.enableAdultContent,
+                configs.splitAdultContent,
                 continueWatchingList,
                 watchHistory,
             )
@@ -148,7 +171,8 @@ export function useHandleLibraryCollection() {
                 arr = filterAnimeCollectionEntries(
                     obj.entries,
                     sortingParams,
-                    serverStatus?.settings?.anilist?.enableAdultContent,
+                    configs.enableAdultContent,
+                    configs.splitAdultContent,
                     continueWatchingList,
                     watchHistory,
                 )
@@ -167,7 +191,7 @@ export function useHandleLibraryCollection() {
             _lists.find(n => n.type === "COMPLETED"),
             _lists.find(n => n.type === "DROPPED"),
         ].filter(Boolean)
-    }, [data, params, animeLibraryCollectionDefaultSorting, serverStatus?.settings?.anilist?.enableAdultContent])
+    }, [data, params, animeLibraryCollectionDefaultSorting, configs, view])
 
     /**
      * Filter the collection
@@ -184,7 +208,8 @@ export function useHandleLibraryCollection() {
             } as CollectionParams<"anime">
             const arr = filterAnimeCollectionEntries(obj.entries,
                 paramsToApply,
-                serverStatus?.settings?.anilist?.enableAdultContent,
+                configs.enableAdultContent,
+                configs.splitAdultContent,
                 data.continueWatchingList,
                 watchHistory)
             return {
@@ -200,7 +225,7 @@ export function useHandleLibraryCollection() {
             _lists.find(n => n.type === "COMPLETED"),
             _lists.find(n => n.type === "DROPPED"),
         ].filter(Boolean)
-    }, [data, params, serverStatus?.settings?.anilist?.enableAdultContent, watchHistory])
+    }, [data, params, configs, watchHistory])
 
     /**
      * Sort the continue watching list
@@ -220,8 +245,11 @@ export function useHandleLibraryCollection() {
         const entries = sortedCollection.flatMap(n => n.entries)
 
         list = sortContinueWatchingEntries(list, continueWatchingDefaultSorting as any, entries, watchHistory)
+        if (configs.enableAdultContent && configs.splitAdultContent && !serverStatus?.settings?.anilist?.blurAdultContent) {
+            return list.filter(entry => entry.baseAnime?.isAdult === params.isAdult)
+        }
 
-        if (!serverStatus?.settings?.anilist?.enableAdultContent || serverStatus?.settings?.anilist?.blurAdultContent) {
+        if (!configs.enableAdultContent || serverStatus?.settings?.anilist?.blurAdultContent || configs.splitAdultContent) {
             return list.filter(entry => entry.baseAnime?.isAdult === false)
         }
 
@@ -231,7 +259,7 @@ export function useHandleLibraryCollection() {
         sortedCollection,
         data?.continueWatchingList,
         continueWatchingDefaultSorting,
-        serverStatus?.settings?.anilist?.enableAdultContent,
+        configs,
         serverStatus?.settings?.anilist?.blurAdultContent,
         watchHistory,
     ])
