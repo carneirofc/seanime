@@ -438,9 +438,13 @@ func (ap *AnilistPlatform) refreshAnimeCollection(ctx context.Context) error {
 		return errors.New("anilist: Username is not set")
 	}
 
+	started := time.Now()
+	ap.logger.Info().Msg("anilist platform: Refreshing anime collection")
+
 	// Else, get the collection from Anilist
 	collection, err := ap.anilistClient.AnimeCollection(ctx, userName)
 	if err != nil {
+		ap.logger.Error().Err(err).Dur("duration", time.Since(started)).Msg("anilist platform: Failed to refresh anime collection")
 		return err
 	}
 
@@ -459,6 +463,23 @@ func (ap *AnilistPlatform) refreshAnimeCollection(ctx context.Context) error {
 
 	// Save the collection to App
 	ap.animeCollection = mo.Some(collection)
+
+	listCount := 0
+	entryCount := 0
+	if collection != nil && collection.MediaListCollection != nil {
+		listCount = len(collection.MediaListCollection.Lists)
+		for _, list := range collection.MediaListCollection.Lists {
+			if list == nil || list.Entries == nil {
+				continue
+			}
+			entryCount += len(list.Entries)
+		}
+	}
+	ap.logger.Info().
+		Int("lists", listCount).
+		Int("entries", entryCount).
+		Dur("duration", time.Since(started)).
+		Msg("anilist platform: Anime collection refreshed")
 
 	return nil
 }
@@ -580,8 +601,12 @@ func (ap *AnilistPlatform) refreshMangaCollection(ctx context.Context) error {
 		return errors.New("anilist: Username is not set")
 	}
 
+	started := time.Now()
+	ap.logger.Info().Msg("anilist platform: Refreshing manga collection")
+
 	collection, err := ap.anilistClient.MangaCollection(ctx, userName)
 	if err != nil {
+		ap.logger.Error().Err(err).Dur("duration", time.Since(started)).Msg("anilist platform: Failed to refresh manga collection")
 		return err
 	}
 
@@ -604,6 +629,23 @@ func (ap *AnilistPlatform) refreshMangaCollection(ctx context.Context) error {
 
 	// Save the collection to App
 	ap.mangaCollection = mo.Some(collection)
+
+	listCount := 0
+	entryCount := 0
+	if collection != nil && collection.MediaListCollection != nil {
+		listCount = len(collection.MediaListCollection.Lists)
+		for _, list := range collection.MediaListCollection.Lists {
+			if list == nil || list.Entries == nil {
+				continue
+			}
+			entryCount += len(list.Entries)
+		}
+	}
+	ap.logger.Info().
+		Int("lists", listCount).
+		Int("entries", entryCount).
+		Dur("duration", time.Since(started)).
+		Msg("anilist platform: Manga collection refreshed")
 
 	return nil
 }
