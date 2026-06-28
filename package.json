@@ -13,6 +13,8 @@
     "dev:web": "npm run dev --workspace seanime-web",
     "build": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\build-seanime-web.ps1 -Target web -SkipInstall && npm run build:api",
     "build:api": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\build-api.ps1 -Os windows",
+    "build:install": "npm run build && npm run install:windows",
+    "install:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\install-windows.ps1",
     "build:web": "npm run build --workspace seanime-web",
     "build:denshi": "npm run build --workspace seanime-denshi",
     "test:go": "go test ./..."

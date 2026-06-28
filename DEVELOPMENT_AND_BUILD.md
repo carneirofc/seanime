@@ -59,6 +59,36 @@ Choose the appropriate command based on your target platform:
 
 **Important**: The web interface must be built first before building the server.
 
+### 3. Installing on Windows
+
+After building, you can install the server for the current user with the bundled
+installer script. It copies the binary into an install directory, creates the data
+directory, and optionally adds a Start Menu/Desktop shortcut and a PATH entry.
+
+Build and install in one step:
+
+```bash
+npm run build:install
+```
+
+Or install an already-built binary:
+
+```bash
+npm run install:windows
+```
+
+The installer (`install-windows.ps1`) accepts options when invoked directly, e.g.:
+
+```powershell
+# Build first, install to a custom directory, add to PATH and create a desktop shortcut
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1 `
+    -BuildFirst -InstallDir "D:\Apps\Seanime" -AddToPath -DesktopShortcut
+```
+
+By default it installs to `%LOCALAPPDATA%\Programs\Seanime`, uses
+`<InstallDir>\seanime_data_dir` as the data directory, and looks for the binary
+produced by `npm run build` at `dist\seanime-windows-amd64.exe`.
+
 ---
 
 ## Development Guide

@@ -42,6 +42,8 @@ seanime-server-windows-senshi.exe
 *.sh
 *.ps1
 *.cmd
+# ...but keep the tracked Windows installer that is part of the build
+!install-windows.ps1
 
 # Local dev logs (helper output)
 .dev-logs/
