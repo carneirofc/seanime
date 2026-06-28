@@ -1,5 +1,34 @@
 import { HIDE_IMAGES } from "@/types/constants"
-import React, { forwardRef, useEffect, useState } from "react"
+import { IconButton, IconButtonProps } from "@/components/ui/button"
+import { cn } from "@/components/ui/core/styling"
+import { getImageProxyFallbackUrl, isImageProxyUrl } from "@/lib/server/assets"
+import React, { forwardRef, useEffect, useRef, useState } from "react"
+import { LuRefreshCw } from "react-icons/lu"
+
+const DEFAULT_FALLBACK_IMAGE = "/no-cover.png"
+const IMAGE_PROXY_RETRY_DELAY_MS = 1000
+const IMAGE_PROXY_MAX_RETRIES = 2
+
+function withImageRetryNonce(src: string, nonce: number) {
+    if (!nonce) {
+        return src
+    }
+
+    try {
+        const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost"
+        const parsed = new URL(src, baseUrl)
+        parsed.searchParams.set("__sea_image_retry", `${nonce}`)
+
+        if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(src)) {
+            return parsed.toString()
+        }
+
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`
+    } catch {
+        const separator = src.includes("?") ? "&" : "?"
+        return `${src}${separator}__sea_image_retry=${nonce}`
+    }
+}
 
 type ImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
     fill?: boolean
@@ -12,19 +41,62 @@ type ImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
     allowGif?: boolean
 }
 
+export type SeaImageRetryButtonProps = Omit<IconButtonProps, "icon">
+
+export const SeaImageRetryButton = forwardRef<HTMLButtonElement, SeaImageRetryButtonProps>(
+    ({ className, size = "sm", intent = "white", ...props }, ref) => (
+        <IconButton
+            ref={ref}
+            size={size}
+            intent={intent}
+            rounded
+            aria-label={props["aria-label"] ?? "Retry image"}
+            title={props.title ?? "Retry image"}
+            className={cn(
+                "border border-white/20 bg-black/50 text-white backdrop-blur-sm hover:bg-white hover:text-black",
+                className,
+            )}
+            icon={<LuRefreshCw className="size-4" aria-hidden="true" />}
+            data-proxied-image-retry-button
+            {...props}
+        />
+    ),
+)
+
+SeaImageRetryButton.displayName = "SeaImageRetryButton"
+
 export const SeaImage = forwardRef<HTMLImageElement, ImageProps & { isExternal?: boolean }>(
-    ({ isExternal, fill, priority, quality, placeholder, sizes, allowGif, ...props }, ref) => {
+    ({ isExternal, fill, priority, quality, placeholder, sizes, allowGif, overrideSrc, onError, onLoad, ...props }, ref) => {
         const [hasError, setHasError] = useState(false)
+        const [proxyRetryCount, setProxyRetryCount] = useState(0)
+        const [proxyRetryNonce, setProxyRetryNonce] = useState(0)
+        const [usingDirectFallback, setUsingDirectFallback] = useState(false)
+        const retryTimerRef = useRef<number | null>(null)
+
+        const imageSrc = props.src
+        const isStringSrc = typeof imageSrc === "string"
+        const isProxiedImage = isStringSrc && isImageProxyUrl(imageSrc)
+        const directFallbackSrc = isProxiedImage ? getImageProxyFallbackUrl(imageSrc) : undefined
 
         useEffect(() => {
             setHasError(false)
-        }, [props.src])
+            setProxyRetryCount(0)
+            setProxyRetryNonce(0)
+            setUsingDirectFallback(false)
+
+            return () => {
+                if (retryTimerRef.current) {
+                    clearTimeout(retryTimerRef.current)
+                    retryTimerRef.current = null
+                }
+            }
+        }, [imageSrc])
 
         if (HIDE_IMAGES) {
             return <Image
                 ref={ref}
                 {...props}
-                src="/no-cover.png"
+                src={DEFAULT_FALLBACK_IMAGE}
                 className={props.className}
                 alt={props.alt || "cover"}
                 fill={fill}
@@ -41,23 +113,104 @@ export const SeaImage = forwardRef<HTMLImageElement, ImageProps & { isExternal?:
             || (allowGif && props.src.endsWith(".gif"))
         )
 
-        const effectiveOverride = (blocked || hasError) ? "/no-cover.png" : props.overrideSrc
+        const fallbackImageSrc = blocked ? DEFAULT_FALLBACK_IMAGE : (overrideSrc || DEFAULT_FALLBACK_IMAGE)
 
-        function handleError() {
+        const clearRetryTimer = () => {
+            if (retryTimerRef.current) {
+                clearTimeout(retryTimerRef.current)
+                retryTimerRef.current = null
+            }
+        }
+
+        const retryImage = () => {
+            clearRetryTimer()
+            setHasError(false)
+            setProxyRetryCount(0)
+            setUsingDirectFallback(false)
+            setProxyRetryNonce(Date.now())
+        }
+
+        const queueRetry = () => {
+            clearRetryTimer()
+            retryTimerRef.current = window.setTimeout(() => {
+                setProxyRetryNonce(Date.now())
+                retryTimerRef.current = null
+            }, IMAGE_PROXY_RETRY_DELAY_MS)
+        }
+
+        const currentSrc = usingDirectFallback && directFallbackSrc
+            ? directFallbackSrc
+            : isStringSrc && isProxiedImage
+                ? withImageRetryNonce(imageSrc, proxyRetryNonce)
+                : imageSrc || ""
+
+        function handleError(event: React.SyntheticEvent<HTMLImageElement, Event>) {
+            onError?.(event)
+
+            if (blocked) {
+                setHasError(true)
+                return
+            }
+
+            if (isProxiedImage && !usingDirectFallback && proxyRetryCount < IMAGE_PROXY_MAX_RETRIES) {
+                setProxyRetryCount(prev => prev + 1)
+                queueRetry()
+                return
+            }
+
+            if (isProxiedImage && !usingDirectFallback && directFallbackSrc) {
+                clearRetryTimer()
+                setUsingDirectFallback(true)
+                return
+            }
+
             setHasError(true)
-            console.warn(`Error loading image ${props.src}`)
+            console.warn(`Error loading image ${imageSrc}`)
+        }
+
+        function handleLoad(event: React.SyntheticEvent<HTMLImageElement, Event>) {
+            clearRetryTimer()
+            onLoad?.(event)
+        }
+
+        if (isProxiedImage && hasError) {
+            return (
+                <div
+                    className={cn(
+                        "relative overflow-hidden",
+                        fill && "absolute inset-0",
+                    )}
+                >
+                    <Image
+                        ref={ref}
+                        {...props}
+                        src={fallbackImageSrc}
+                        alt={props.alt || ""}
+                        fill={fill}
+                        priority={priority}
+                        placeholder={placeholder}
+                    />
+                    <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center">
+                        <SeaImageRetryButton
+                            className="pointer-events-auto"
+                            onClick={retryImage}
+                        />
+                    </div>
+                </div>
+            )
         }
 
         return <Image
             ref={ref}
             {...props}
-            src={props.src || ""}
+            src={(hasError ? fallbackImageSrc : currentSrc) || ""}
             alt={props.alt || ""}
             fill={fill}
             priority={priority}
             placeholder={placeholder}
-            overrideSrc={effectiveOverride}
+            overrideSrc={hasError ? fallbackImageSrc : overrideSrc}
             onError={handleError}
+            onLoad={handleLoad}
         />
     },
 )

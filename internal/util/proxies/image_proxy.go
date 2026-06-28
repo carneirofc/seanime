@@ -2,19 +2,28 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"seanime/internal/security"
 	"seanime/internal/util"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"github.com/labstack/echo/v4"
 )
 
+// imageRequestTimeout bounds how long a single image fetch may take so a stalled
+// connection can't hang a download (or the proxy endpoint) indefinitely.
+const imageRequestTimeout = 60 * time.Second
+
 type ImageProxy struct{}
 
 func (ip *ImageProxy) GetImage(url string, headers map[string]string) ([]byte, string, error) {
-	request := req.C().DisableAutoReadResponse().NewRequest()
+	request := req.C().
+		SetTimeout(imageRequestTimeout).
+		DisableAutoReadResponse().
+		NewRequest()
 
 	for key, value := range headers {
 		request.SetHeader(key, value)
@@ -25,6 +34,12 @@ func (ip *ImageProxy) GetImage(url string, headers map[string]string) ([]byte, s
 		return nil, "", err
 	}
 	defer resp.Body.Close()
+
+	// Reject error responses up-front. Without this, an HTML error page (403/404/etc.)
+	// would be returned as "image" bytes and fail to decode downstream.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, "", fmt.Errorf("image proxy: unexpected status %d for %s", resp.StatusCode, url)
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
