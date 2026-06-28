@@ -32,7 +32,6 @@ export const vc_hlsSetAudioTrack = atom<((trackId: number) => void) | null>(null
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const hlsLog = logger("VIDEO CORE HLS")
-const MAX_MEDIA_ERROR_RECOVERY_ATTEMPTS = 2
 
 
 export const HLS_VIDEO_EXTENSIONS = /\.(m3u8)($|\?)/i
@@ -111,50 +110,8 @@ export function useVideoCoreHls({
                 enableWebVTT: true,
                 renderTextTracksNatively: false, // don't use native text tracks for subtitles
             })
-            let sourceLoaded = false
-            let recoveringMediaError = false
-            let mediaErrorRecoveryAttempts = 0
-            let fatalErrorReported = false
 
             hlsRef.current = hls
-
-            const reportFatalError = (data: ErrorData) => {
-                if (fatalErrorReported) return
-                fatalErrorReported = true
-
-                hlsLog.error("Unrecoverable HLS error", data)
-                if (hlsRef.current === hls) {
-                    hlsRef.current = null
-                }
-                hls.destroy()
-                onFatalError?.(data)
-            }
-
-            const recoverFatalMediaError = () => {
-                if (mediaErrorRecoveryAttempts >= MAX_MEDIA_ERROR_RECOVERY_ATTEMPTS) {
-                    return false
-                }
-
-                recoveringMediaError = true
-                mediaErrorRecoveryAttempts += 1
-
-                try {
-                    if (mediaErrorRecoveryAttempts === MAX_MEDIA_ERROR_RECOVERY_ATTEMPTS) {
-                        hlsLog.warning("Fatal media error, swapping audio codec and retrying")
-                        hls.swapAudioCodec()
-                    } else {
-                        hlsLog.warning("Fatal media error, attempting recovery")
-                    }
-
-                    hls.recoverMediaError()
-                    return true
-                }
-                catch (error) {
-                    recoveringMediaError = false
-                    hlsLog.error("Failed to recover from fatal media error", error)
-                    return false
-                }
-            }
 
             // Quality setter function
             const qualitySetter = (levelIndex: number) => {
@@ -179,18 +136,12 @@ export function useVideoCoreHls({
 
             hls.on(Events.MEDIA_ATTACHED, () => {
                 hlsLog.info("HLS media attached")
-                if (!sourceLoaded) {
-                    sourceLoaded = true
-                    hls.loadSource(streamUrl)
-                }
-                recoveringMediaError = false
+                hls.loadSource(streamUrl)
             })
 
             hls.on(Events.MEDIA_DETACHED, () => {
                 hlsLog.info("HLS media detached")
-                if (!recoveringMediaError) {
-                    onMediaDetached?.()
-                }
+                onMediaDetached?.()
             })
 
             hls.on(Events.MANIFEST_PARSED, (event, data) => {
@@ -256,26 +207,28 @@ export function useVideoCoreHls({
                 setCurrentAudioTrack(hls.audioTrack)
             })
 
-            hls.on(Events.FRAG_CHANGED, () => {
-                if (mediaErrorRecoveryAttempts > 0) {
-                    hlsLog.success("HLS media error recovery succeeded")
-                    mediaErrorRecoveryAttempts = 0
-                }
-            })
-
             hls.on(Events.ERROR, (event, data: ErrorData) => {
                 hlsLog.error("HLS error", data)
-                if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR && !data.fatal) {
+                if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR || data.details === Hls.ErrorDetails.BUFFER_NUDGE_ON_STALL) {
                     onStalled?.(data)
                 }
-
-                if (!data.fatal) return
-
-                if (data.type === Hls.ErrorTypes.MEDIA_ERROR && recoverFatalMediaError()) {
-                    return
+                if (data.fatal) {
+                    hlsLog.error("Fatal error, cannot recover")
+                    hls.destroy()
+                    onFatalError?.(data)
+                    // switch (data.type) {
+                    //     case Hls.ErrorTypes.NETWORK_ERROR:
+                    //         hlsLog.error("Fatal network error, trying to recover")
+                    //         hls.startLoad()
+                    //         break
+                    //     case Hls.ErrorTypes.MEDIA_ERROR:
+                    //         hlsLog.error("Fatal media error, trying to recover")
+                    //         hls.recoverMediaError()
+                    //         break
+                    //     default:
+                    //         break
+                    // }
                 }
-
-                reportFatalError(data)
             })
 
             return () => {
@@ -347,3 +300,4 @@ export async function isProbablyHls(url: string): Promise<"hls" | "unknown"> {
         return "unknown"
     }
 }
+
