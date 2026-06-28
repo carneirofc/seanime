@@ -632,3 +632,43 @@ func (o StringSlice) Value() (driver.Value, error) {
 	}
 	return strings.Join(o, ","), nil
 }
+
+// +---------------------+
+// |      OAuth 2.0      |
+// +---------------------+
+
+// OAuthClient represents a registered OAuth 2.0 client application.
+type OAuthClient struct {
+	BaseModel
+	ClientID     string `gorm:"column:client_id;uniqueIndex" json:"clientId"`
+	ClientSecret string `gorm:"column:client_secret" json:"clientSecret"`
+	Name         string `gorm:"column:name" json:"name"`
+	// Comma-separated list of allowed redirect URIs.
+	RedirectURIs string `gorm:"column:redirect_uris" json:"redirectUris"`
+	// Space-separated list of allowed scopes (e.g. "read write").
+	Scopes string `gorm:"column:scopes" json:"scopes"`
+	// Trusted clients skip the user consent screen.
+	Trusted bool `gorm:"column:trusted" json:"trusted"`
+}
+
+// OAuthAuthCode is a short-lived authorization code issued during the Authorization Code flow.
+type OAuthAuthCode struct {
+	BaseModel
+	Code        string    `gorm:"column:code;uniqueIndex" json:"code"`
+	ClientID    string    `gorm:"column:client_id" json:"clientId"`
+	RedirectURI string    `gorm:"column:redirect_uri" json:"redirectUri"`
+	Scope       string    `gorm:"column:scope" json:"scope"`
+	ExpiresAt   time.Time `gorm:"column:expires_at" json:"expiresAt"`
+	Used        bool      `gorm:"column:used" json:"used"`
+}
+
+// OAuthAccessToken is an issued access + refresh token pair.
+type OAuthAccessToken struct {
+	BaseModel
+	AccessToken  string     `gorm:"column:access_token;uniqueIndex" json:"accessToken"`
+	RefreshToken string     `gorm:"column:refresh_token;index" json:"refreshToken"`
+	ClientID     string     `gorm:"column:client_id" json:"clientId"`
+	Scope        string     `gorm:"column:scope" json:"scope"`
+	ExpiresAt    *time.Time `gorm:"column:expires_at" json:"expiresAt"`
+	Revoked      bool       `gorm:"column:revoked" json:"revoked"`
+}
