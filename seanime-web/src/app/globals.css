@@ -32,7 +32,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: rgb(var(--color-gray-200));
   }
 }
 
@@ -113,12 +113,12 @@
 
         --titlebar-h: theme("height.10");
 
-        --foreground: var(--color-gray-200);
+        --foreground: rgb(var(--color-gray-200));
         --background: #070707;
 
-        --brand: var(--color-brand-300);
+        --brand: rgb(var(--color-brand-300));
         --slate: var(--color-slate-500);
-        --gray: var(--color-gray-500);
+        --gray: rgb(var(--color-gray-500));
         --zinc: var(--color-zinc-500);
         --neutral: var(--color-neutral-500);
         --stone: var(--color-stone-500);
@@ -140,18 +140,18 @@
         --pink: var(--color-pink-500);
         --rose: var(--color-rose-500);
 
-        --border: var(--color-gray-200);
-        --ring: var(--color-brand-500);
+        --border: rgb(var(--color-gray-200));
+        --ring: rgb(var(--color-brand-500));
 
-        --muted: var(--color-gray-500);
-        --muted-highlight: var(--color-gray-700);
+        --muted: rgb(var(--color-gray-500));
+        --muted-highlight: rgb(var(--color-gray-700));
 
-        --paper: var(--color-gray-950);
+        --paper: rgb(var(--color-gray-950));
         --subtle: rgba(0, 0, 0, 0.04);
         --subtle-highlight: rgba(0, 0, 0, 0.06);
 
-        --media-card-popup-background: var(--color-gray-950);
-        --hover-from-background-color: var(--color-gray-900);
+        --media-card-popup-background: rgb(var(--color-gray-950));
+        --hover-from-background-color: rgb(var(--color-gray-900));
 
         /*--media-accent-color: theme('colors.brand.400');*/
         --media-accent-color: #fff;
@@ -160,12 +160,12 @@
 
     .dark,
     [data-mode="dark"] {
-        --foreground: var(--color-gray-200);
+        --foreground: rgb(var(--color-gray-200));
         --background: #070707;
 
         /*--brand: theme('colors.brand.300');*/
         --slate: var(--color-slate-300);
-        --gray: var(--color-gray-300);
+        --gray: rgb(var(--color-gray-300));
         --zinc: var(--color-zinc-300);
         --neutral: var(--color-neutral-300);
         --stone: var(--color-stone-300);
@@ -188,13 +188,13 @@
         --rose: var(--color-rose-300);
 
         --border: rgba(255, 255, 255, 0.1);
-        --ring: var(--color-brand-200);
+        --ring: rgb(var(--color-brand-200));
 
         --muted: rgba(255, 255, 255, 0.4);
         --muted-highlight: rgba(255, 255, 255, 0.6);
 
-        --paper: var(--color-gray-950);
-        --paper-highlighter: var(--color-gray-950);
+        --paper: rgb(var(--color-gray-950));
+        --paper-highlighter: rgb(var(--color-gray-950));
         --subtle: rgba(255, 255, 255, 0.06);
         --subtle-highlight: rgba(255, 255, 255, 0.08);
 
