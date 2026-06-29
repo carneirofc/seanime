@@ -40,14 +40,14 @@ The result is written to `dist\seanime-setup-<version>.exe`.
 
 - **Per-user install** (no administrator rights). Default location:
   `%LOCALAPPDATA%\Programs\Seanime` — you can change it in the wizard (e.g. `J:\seanime`).
-- **Data lives in `<install dir>\seanime_data_dir`** (matching the legacy `seanime.cmd` layout). The
-  shortcuts launch the server with `--datadir "<install dir>\seanime_data_dir"`, so installing to
-  `J:\seanime` keeps using `J:\seanime\seanime_data_dir`. No `.cmd` launcher needed.
+- **Data lives in `<install dir>\data`.** The shortcuts launch the server with
+  `--datadir "<install dir>\data"`, so installing to `J:\seanime` uses `J:\seanime\data`. No `.cmd`
+  launcher needed.
 - **Desktop icon is created by default** (you can untick it). A Start Menu entry is always created.
 - Optional "start automatically when I sign in" task (a per-user `Run` registry entry, removed on
   uninstall).
-- Registered in **Add/Remove Programs** with an uninstaller. User data in `seanime_data_dir` is
-  intentionally **left in place** on uninstall.
+- Registered in **Add/Remove Programs** with an uninstaller. User data in `data` is intentionally
+  **left in place** on uninstall.
 
 ## Silent install / uninstall
 
