@@ -12,16 +12,17 @@
 
 <p align="center">
   <a href="https://seanime.app/docs">Documentation</a> |
-  <a href="https://github.com/5rahim/seanime/releases">Latest release</a> |
+  <a href="https://github.com/carneirofc/seanime/releases">Latest release (this fork)</a> |
+  <a href="https://github.com/5rahim/seanime/releases">Upstream releases</a> |
   <a href="https://seanime.app/docs/policies">Copyright</a>
 </p>
 
 <div align="center">
-  <a href="https://github.com/5rahim/seanime/releases">
-    <img src="https://img.shields.io/github/v/release/5rahim/seanime?style=flat-square&color=blue" alt="" />
+  <a href="https://github.com/carneirofc/seanime/releases">
+    <img src="https://img.shields.io/github/v/release/carneirofc/seanime?style=flat-square&color=blue" alt="" />
   </a>
-  <a href="https://github.com/5rahim/seanime/releases">
-    <img src="https://img.shields.io/github/downloads/5rahim/seanime/total?style=flat-square&color=blue" alt="" />
+  <a href="https://github.com/carneirofc/seanime/releases">
+    <img src="https://img.shields.io/github/downloads/carneirofc/seanime/total?style=flat-square&color=blue" alt="" />
   </a>
 	<a href="https://discord.gg/Aruz7wdAaf">
 	  <img src="https://img.shields.io/discord/1224767201551192224?style=flat-square&logo=Discord&color=blue&label=Discord" alt="discord">
@@ -35,6 +36,11 @@
 <h5 align="center">
 Leave a star if you like the project! ⭐️
 </h5>
+
+> [!NOTE]
+> **This is a personal fork of [Seanime](https://github.com/5rahim/seanime) by [5rahim](https://github.com/5rahim).**
+> I maintain it according to my own needs, so it may diverge from the author's work. That's why I keep this build/version in parallel.
+> For the original, upstream project please visit [5rahim/seanime](https://github.com/5rahim/seanime). Please support the original author via [GitHub Sponsors](https://github.com/sponsors/5rahim).
 
 ## About
 
@@ -112,7 +118,7 @@ The maintenance of this project is made possible by the sponsors.
 Building from source is straightforward, you'll need [Node.js](https://nodejs.org/en/download) and [Go](https://go.dev/doc/install) installed on your system.
 Development and testing might require additional configuration.
 
-[Read more here](https://github.com/5rahim/seanime/blob/main/DEVELOPMENT_AND_BUILD.md)
+[Read more here](DEVELOPMENT_AND_BUILD.md)
 
 <br>
 
