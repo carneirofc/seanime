@@ -46,7 +46,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist
 OutputBaseFilename=seanime-setup-{#AppVersion}
 SetupIconFile=..\internal\icon\iconwin.ico
-UninstallDisplayIcon={app}\{#AppExeName}
+UninstallDisplayIcon={app}\seanime.ico
 UninstallDisplayName={#AppName} {#AppVersion}
 Compression=lzma2/max
 SolidCompression=yes
@@ -65,11 +65,13 @@ Name: "{app}\data"
 
 [Files]
 Source: "{#SourceBinary}"; DestDir: "{app}"; DestName: "{#AppExeName}"; Flags: ignoreversion
+; The server binary has no embedded Win32 icon resource, so ship the .ico for the shortcuts.
+Source: "..\internal\icon\iconwin.ico"; DestDir: "{app}"; DestName: "seanime.ico"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: "--datadir ""{app}\data"""; WorkingDir: "{app}"; IconFilename: "{app}\{#AppExeName}"
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: "--datadir ""{app}\data"""; WorkingDir: "{app}"; IconFilename: "{app}\seanime.ico"
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: "--datadir ""{app}\data"""; WorkingDir: "{app}"; IconFilename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: "--datadir ""{app}\data"""; WorkingDir: "{app}"; IconFilename: "{app}\seanime.ico"; Tasks: desktopicon
 
 [Registry]
 ; Optional sign-in autostart (removed on uninstall).
