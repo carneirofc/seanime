@@ -217,9 +217,78 @@ jobs:
   #    secrets:
   #      SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
 
+  # Build the Windows Inno Setup installer (setup.exe).
+  # Packages the systray (windowsgui, no console) server binary so the
+  # Start Menu / Desktop shortcuts launch the same GUI server shipped as the
+  # standalone Windows download. We pass /DAppVersion explicitly so the output
+  # filename (seanime-setup-<version>.exe) and VersionInfoVersion match the
+  # release tag; without it, the .iss script falls back to the version in
+  # internal/constants/constants.go.
+  build-installer:
+    needs: build-server
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code ⬇️
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # Determine the version the same way the release job does, so the installer
+      # filename (seanime-setup-<version>.exe) lines up with the release assets.
+      - name: Determine version 🔎
+        id: version
+        run: |
+          # Mirror the release job's derivation exactly so the installer filename
+          # (seanime-setup-<version>.exe) always matches the asset glob there.
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF/refs\/tags\/v/}
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF/refs\/tags\//}
+          else
+            echo "No tag associated with this run. Defaulting to version 0.1.0."
+            VERSION="0.1.0"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Installer version: $VERSION"
+        shell: bash
+
+      # Download the systray Windows server binary (built on the macOS runner).
+      # Artifact go-seanime-server-systray-windows contains
+      # binaries-seanime-server-systray-windows.tar -> seanime-server-systray-windows.exe
+      - name: Download Windows systray server binary 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: go-seanime-server-systray-windows
+          path: ./artifacts
+
+      # The .iss script expects the binary at dist\seanime-windows-amd64.exe
+      - name: Stage server binary for the installer 🗃️
+        run: |
+          mkdir -p dist
+          tar -xf ./artifacts/binaries-seanime-server-systray-windows.tar -C ./artifacts
+          mv ./artifacts/seanime-server-systray-windows.exe ./dist/seanime-windows-amd64.exe
+          ls -la ./dist
+        shell: bash
+
+      # Inno Setup is not guaranteed on the runner image; install it via Chocolatey.
+      - name: Install Inno Setup ⬇️
+        run: choco install innosetup --no-progress -y
+
+      - name: Compile installer 📦️
+        run: |
+          & "${Env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ steps.version.outputs.version }}" "installer\seanime.iss"
+        shell: pwsh
+
+      - name: Upload installer artifact 📤
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-windows
+          path: dist/seanime-setup-${{ steps.version.outputs.version }}.exe
+
   release:
     runs-on: ubuntu-latest
-    needs: [ build-server, build-electron ]
+    needs: [ build-server, build-electron, build-installer ]
 
     steps:
       - name: Checkout code
@@ -234,6 +303,14 @@ jobs:
           path: ./artifacts
           # ./artifacts
           merge-multiple: true
+
+      - name: Download Windows installer 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-windows
+          # The setup.exe is dropped directly into the repo root so it matches the
+          # other release assets that are attached from there.
+          path: .
 
       - name: Determine version from tag name 🔎
         run: |
@@ -416,6 +493,8 @@ jobs:
             seanime-${{ env.VERSION }}_Linux_x86_64.tar.gz
             seanime-${{ env.VERSION }}_Linux_arm64.tar.gz
             seanime-${{ env.VERSION }}_Windows_x86_64.zip
+            # Windows installer (setup.exe)
+            seanime-setup-${{ env.VERSION }}.exe
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: v${{ env.VERSION }}
           release_name: v${{ env.VERSION }}
