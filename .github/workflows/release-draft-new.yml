@@ -3,8 +3,14 @@ name: Release Draft
 on:
   workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    # Skip docs-only pushes so every README tweak doesn't rebuild every binary.
+    # The version comes from internal/constants/constants.go, not a git tag
+    # (see the "Determine version" steps below).
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
 
 permissions:
   contents: write
@@ -241,12 +247,11 @@ jobs:
         run: |
           # Mirror the release job's derivation exactly so the installer filename
           # (seanime-setup-<version>.exe) always matches the asset glob there.
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF/refs\/tags\/v/}
-          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF/refs\/tags\//}
-          else
-            echo "No tag associated with this run. Defaulting to version 0.1.0."
+          # Releases are triggered by merges to main (not tags), so the version
+          # is read from internal/constants/constants.go.
+          VERSION=$(grep -oP '^\s*Version\s*=\s*"\K[^"]+' internal/constants/constants.go | head -1)
+          if [[ -z "$VERSION" ]]; then
+            echo "Could not read Version from constants.go. Defaulting to 0.1.0."
             VERSION="0.1.0"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -312,17 +317,17 @@ jobs:
           # other release assets that are attached from there.
           path: .
 
-      - name: Determine version from tag name 🔎
+      - name: Determine version from constants.go 🔎
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-          VERSION=${GITHUB_REF/refs\/tags\/v/}
-          echo "Version extracted from tag: $VERSION"
-          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
-          VERSION=${GITHUB_REF/refs\/tags\//}
-          echo "Version extracted from tag: $VERSION"
-          else
-          echo "Warning: No tag associated with this run. Defaulting to version 0.1.0."
+          # Releases are triggered by merges to main, so the version is read from
+          # internal/constants/constants.go rather than a git tag. The release
+          # step below tags the resulting release v$VERSION.
+          VERSION=$(grep -oP '^\s*Version\s*=\s*"\K[^"]+' internal/constants/constants.go | head -1)
+          if [[ -z "$VERSION" ]]; then
+          echo "Warning: Could not read Version from constants.go. Defaulting to version 0.1.0."
           VERSION="0.1.0"
+          else
+          echo "Version extracted from constants.go: $VERSION"
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
