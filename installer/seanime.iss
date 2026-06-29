@@ -58,6 +58,16 @@
   #pragma message "Seanime installer version (from constants.go): " + AppVersion
 #endif
 
+; VersionInfoVersion must be purely numeric (x.x.x.x), so strip any prerelease
+; suffix (e.g. "-fork.1") for that field only. The display AppVersion used for
+; shortcuts and the output filename keeps the full string.
+#define DashPos Pos("-", AppVersion)
+#if DashPos > 0
+  #define NumericVersion Copy(AppVersion, 1, DashPos - 1)
+#else
+  #define NumericVersion AppVersion
+#endif
+
 #define AppName "Seanime"
 #define AppPublisher "Seanime"
 #define AppURL "https://github.com/5rahim/seanime"
@@ -75,7 +85,7 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}/releases
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#NumericVersion}
 DefaultDirName={localappdata}\Programs\Seanime
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
