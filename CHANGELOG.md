@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v3.8.7-fork.2
+
+- ✨ Search: Replaced the tags combobox with a grouped tags modal (browse by category, hover for descriptions)
+- ✨ Watchlists: Added local groupings and watchlists to organize anime and manga (stored in the browser)
+
 ## v3.8.7
 
 - ⚡️ VideoCore: Improved hls.js error handling
