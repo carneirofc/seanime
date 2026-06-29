@@ -10,12 +10,52 @@
 ; Build:
 ;   npm run build:installer            (compiles this script)
 ;   npm run dist:windows               (build the app, then the installer)
-;   iscc /DAppVersion=3.8.7 installer\seanime.iss
+;
+; The version is read automatically from internal/constants/constants.go (the single
+; source of truth) at compile time, so it never needs to be edited here. To override it
+; explicitly (e.g. in CI), pass a define:
+;   iscc /DAppVersion=9.9.9 installer\seanime.iss
 ;
 ; The output is written to dist\seanime-setup-<version>.exe.
 
+; Derive AppVersion from internal/constants/constants.go unless one was passed via /DAppVersion.
 #ifndef AppVersion
-  #define AppVersion "3.8.7"
+  #define ConstantsFile AddBackslash(SourcePath) + "..\internal\constants\constants.go"
+  #define ConstFileHandle
+  #define ConstFileLine ""
+  #define AppVersion ""
+
+  #sub ReadConstLine
+    #expr ConstFileLine = FileRead(ConstFileHandle)
+    ; Take the first line that mentions "Version" and has a quoted value, skipping
+    ; "VersionName". The version constant is declared before any other *Version constant,
+    ; so first-match-wins yields the right value regardless of leading tabs/spaces.
+    #if (AppVersion == "") && (Pos("Version", ConstFileLine) > 0) && (Pos("VersionName", ConstFileLine) == 0) && (Pos('"', ConstFileLine) > 0)
+      #define QuoteStart Pos('"', ConstFileLine)
+      #if QuoteStart > 0
+        #define AfterQuote Copy(ConstFileLine, QuoteStart + 1)
+        #define QuoteEnd Pos('"', AfterQuote)
+        #if QuoteEnd > 0
+          ; Use #expr (not #define) so the assignment updates the global macro;
+          ; a #define here would be scoped to this #sub invocation and lost on return.
+          #expr AppVersion = Copy(AfterQuote, 1, QuoteEnd - 1)
+        #endif
+      #endif
+    #endif
+  #endsub
+
+  #expr ConstFileHandle = FileOpen(ConstantsFile)
+  #if !ConstFileHandle
+    #error Unable to open constants.go to read the app version
+  #endif
+  #for {0; ConstFileHandle && !FileEof(ConstFileHandle); 0} ReadConstLine
+  #expr ConstFileHandle ? FileClose(ConstFileHandle) : 0
+
+  #if AppVersion == ""
+    #error Could not parse Version from internal/constants/constants.go
+  #endif
+
+  #pragma message "Seanime installer version (from constants.go): " + AppVersion
 #endif
 
 #define AppName "Seanime"
