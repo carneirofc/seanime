@@ -1,19 +1,5 @@
 import type { Config } from "tailwindcss"
 
-// Inlined from `tailwindcss/lib/util/flattenColorPalette`, which was removed in Tailwind v4.
-function flattenColorPalette(colors: Record<string, any>): Record<string, string> {
-    return Object.assign(
-        {},
-        ...Object.entries(colors ?? {}).flatMap(([color, values]) =>
-            typeof values == "object" && values !== null
-                ? Object.entries(flattenColorPalette(values)).map(([number, hex]) => ({
-                    [color + (number === "DEFAULT" ? "" : `-${number}`)]: hex,
-                }))
-                : [{ [`${color}`]: values }],
-        ),
-    )
-}
-
 const config: Config = {
     darkMode: "class",
     content: [
@@ -318,22 +304,9 @@ const config: Config = {
         require("@tailwindcss/forms"),
         require("tailwind-scrollbar-hide"),
         require("tailwindcss-animate"),
-        addVariablesForColors,
         function ({ addVariant }: { addVariant: (variant: string, selector: string) => void }) {
             addVariant("firefox", ":-moz-any(&)")
         },
     ],
 }
 export default config
-
-
-function addVariablesForColors({ addBase, theme }: any) {
-    let allColors = flattenColorPalette(theme("colors"))
-    let newVars = Object.fromEntries(
-        Object.entries(allColors).map(([key, val]) => [`--${key}`, val]),
-    )
-
-    addBase({
-        ":root": newVars,
-    })
-}
