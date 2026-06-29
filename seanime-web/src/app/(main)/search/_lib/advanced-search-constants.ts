@@ -2613,7 +2613,7 @@ export const ADVANCED_SEARCH_MEDIA_TAGS = [
     },
     {
         "id": 1902,
-        "name": "Swapping ",
+        "name": "Swapping",
         "description": "Features consensual partner swapping between couples during sexual activities.",
         "category": "Sexual Content",
         "isAdult": true,

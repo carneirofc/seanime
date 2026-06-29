@@ -361,6 +361,24 @@ func ListRecentAiringAnimeM(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// derefSliceCacheKey builds a deterministic cache-key fragment from a slice of
+// pointers. Formatting the slice directly with %v prints the pointer addresses
+// (e.g. "[0xc0001234]"), which change on every request — that both defeats the
+// cache and can collide when the runtime reuses a freed address, causing a
+// previous query's results to be returned for a different filter. Dereferencing
+// the values keeps the key stable and tied to the actual filter content.
+func derefSliceCacheKey[T any](s []*T) string {
+	parts := make([]string, 0, len(s))
+	for _, p := range s {
+		if p == nil {
+			parts = append(parts, "<nil>")
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("%v", *p))
+	}
+	return fmt.Sprintf("%v", parts)
+}
+
 func ListAnimeCacheKey(
 	Page *int,
 	Search *string,
@@ -388,16 +406,16 @@ func ListAnimeCacheKey(
 		key += fmt.Sprintf("_%d", *PerPage)
 	}
 	if Sort != nil {
-		key += fmt.Sprintf("_%v", Sort)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Sort))
 	}
 	if Status != nil {
-		key += fmt.Sprintf("_%v", Status)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Status))
 	}
 	if Genres != nil {
-		key += fmt.Sprintf("_%v", Genres)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Genres))
 	}
 	if Tags != nil {
-		key += fmt.Sprintf("_%v", Tags)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Tags))
 	}
 	if AverageScoreGreater != nil {
 		key += fmt.Sprintf("_%d", *AverageScoreGreater)
@@ -447,16 +465,16 @@ func ListMangaCacheKey(
 		key += fmt.Sprintf("_%d", *PerPage)
 	}
 	if Sort != nil {
-		key += fmt.Sprintf("_%v", Sort)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Sort))
 	}
 	if Status != nil {
-		key += fmt.Sprintf("_%v", Status)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Status))
 	}
 	if Genres != nil {
-		key += fmt.Sprintf("_%v", Genres)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Genres))
 	}
 	if Tags != nil {
-		key += fmt.Sprintf("_%v", Tags)
+		key += fmt.Sprintf("_%s", derefSliceCacheKey(Tags))
 	}
 	if AverageScoreGreater != nil {
 		key += fmt.Sprintf("_%d", *AverageScoreGreater)
