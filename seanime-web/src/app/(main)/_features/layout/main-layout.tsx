@@ -11,6 +11,7 @@ import { PlaylistListModal } from "@/app/(main)/_features/playlists/playlist-lis
 import { PluginManager } from "@/app/(main)/_features/plugin/plugin-manager"
 import { PluginWebviewSlot } from "@/app/(main)/_features/plugin/webview/plugin-webviews"
 import { ManualProgressTracking } from "@/app/(main)/_features/progress-tracking/manual-progress-tracking"
+import { AddToWatchlistModal } from "@/app/(main)/_features/watchlists/add-to-watchlist-modal"
 import { PlaybackManagerProgressTracking } from "@/app/(main)/_features/progress-tracking/playback-manager-progress-tracking"
 import { SeaCommand } from "@/app/(main)/_features/sea-command/sea-command"
 import { useChangelogTourListener } from "@/app/(main)/_features/tour/changelog-tour.tsx"
@@ -55,6 +56,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
             <ScannerModal />
             <PlaylistListModal />
             <GlobalPlaylistManager />
+            <AddToWatchlistModal />
             <ChapterDownloadsDrawer />
             <TorrentStreamOverlay />
             <DebridStreamOverlay />

@@ -35,6 +35,8 @@ const ScanLogViewerIndexLazyRouteImport = createFileRoute('/scan-log-viewer/')()
 const IssueReportIndexLazyRouteImport = createFileRoute('/issue-report/')()
 const DocsIndexLazyRouteImport = createFileRoute('/docs/')()
 const MainWebviewIndexLazyRouteImport = createFileRoute('/_main/webview/')()
+const MainWatchlistsIndexLazyRouteImport =
+  createFileRoute('/_main/watchlists/')()
 const MainTorrentListIndexLazyRouteImport = createFileRoute(
   '/_main/torrent-list/',
 )()
@@ -106,6 +108,13 @@ const MainWebviewIndexLazyRoute = MainWebviewIndexLazyRouteImport.update({
   getParentRoute: () => MainRoute,
 } as any).lazy(() =>
   import('./routes/_main/webview/index.lazy').then((d) => d.Route),
+)
+const MainWatchlistsIndexLazyRoute = MainWatchlistsIndexLazyRouteImport.update({
+  id: '/watchlists/',
+  path: '/watchlists/',
+  getParentRoute: () => MainRoute,
+} as any).lazy(() =>
+  import('./routes/_main/watchlists/index.lazy').then((d) => d.Route),
 )
 const MainTorrentListIndexLazyRoute =
   MainTorrentListIndexLazyRouteImport.update({
@@ -332,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/sync/': typeof MainSyncIndexLazyRoute
   '/torrent-client/': typeof MainTorrentClientIndexLazyRoute
   '/torrent-list/': typeof MainTorrentListIndexLazyRoute
+  '/watchlists/': typeof MainWatchlistsIndexLazyRoute
   '/webview/': typeof MainWebviewIndexLazyRoute
   '/auth/callback/': typeof MainAuthCallbackIndexRoute
   '/manga/entry/': typeof MainMangaEntryIndexRoute
@@ -368,6 +378,7 @@ export interface FileRoutesByTo {
   '/sync': typeof MainSyncIndexLazyRoute
   '/torrent-client': typeof MainTorrentClientIndexLazyRoute
   '/torrent-list': typeof MainTorrentListIndexLazyRoute
+  '/watchlists': typeof MainWatchlistsIndexLazyRoute
   '/webview': typeof MainWebviewIndexLazyRoute
   '/auth/callback': typeof MainAuthCallbackIndexRoute
   '/manga/entry': typeof MainMangaEntryIndexRoute
@@ -406,6 +417,7 @@ export interface FileRoutesById {
   '/_main/sync/': typeof MainSyncIndexLazyRoute
   '/_main/torrent-client/': typeof MainTorrentClientIndexLazyRoute
   '/_main/torrent-list/': typeof MainTorrentListIndexLazyRoute
+  '/_main/watchlists/': typeof MainWatchlistsIndexLazyRoute
   '/_main/webview/': typeof MainWebviewIndexLazyRoute
   '/_main/auth/callback/': typeof MainAuthCallbackIndexRoute
   '/_main/manga/entry/': typeof MainMangaEntryIndexRoute
@@ -444,6 +456,7 @@ export interface FileRouteTypes {
     | '/sync/'
     | '/torrent-client/'
     | '/torrent-list/'
+    | '/watchlists/'
     | '/webview/'
     | '/auth/callback/'
     | '/manga/entry/'
@@ -480,6 +493,7 @@ export interface FileRouteTypes {
     | '/sync'
     | '/torrent-client'
     | '/torrent-list'
+    | '/watchlists'
     | '/webview'
     | '/auth/callback'
     | '/manga/entry'
@@ -517,6 +531,7 @@ export interface FileRouteTypes {
     | '/_main/sync/'
     | '/_main/torrent-client/'
     | '/_main/torrent-list/'
+    | '/_main/watchlists/'
     | '/_main/webview/'
     | '/_main/auth/callback/'
     | '/_main/manga/entry/'
@@ -592,6 +607,13 @@ declare module '@tanstack/react-router' {
       path: '/webview'
       fullPath: '/webview/'
       preLoaderRoute: typeof MainWebviewIndexLazyRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/watchlists/': {
+      id: '/_main/watchlists/'
+      path: '/watchlists'
+      fullPath: '/watchlists/'
+      preLoaderRoute: typeof MainWatchlistsIndexLazyRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/torrent-list/': {
@@ -808,6 +830,7 @@ interface MainRouteChildren {
   MainSyncIndexLazyRoute: typeof MainSyncIndexLazyRoute
   MainTorrentClientIndexLazyRoute: typeof MainTorrentClientIndexLazyRoute
   MainTorrentListIndexLazyRoute: typeof MainTorrentListIndexLazyRoute
+  MainWatchlistsIndexLazyRoute: typeof MainWatchlistsIndexLazyRoute
   MainWebviewIndexLazyRoute: typeof MainWebviewIndexLazyRoute
   MainAuthCallbackIndexRoute: typeof MainAuthCallbackIndexRoute
   MainMangaEntryIndexRoute: typeof MainMangaEntryIndexRoute
@@ -839,6 +862,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainSyncIndexLazyRoute: MainSyncIndexLazyRoute,
   MainTorrentClientIndexLazyRoute: MainTorrentClientIndexLazyRoute,
   MainTorrentListIndexLazyRoute: MainTorrentListIndexLazyRoute,
+  MainWatchlistsIndexLazyRoute: MainWatchlistsIndexLazyRoute,
   MainWebviewIndexLazyRoute: MainWebviewIndexLazyRoute,
   MainAuthCallbackIndexRoute: MainAuthCallbackIndexRoute,
   MainMangaEntryIndexRoute: MainMangaEntryIndexRoute,
