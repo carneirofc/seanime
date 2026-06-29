@@ -12,7 +12,7 @@ import { Modal, ModalProps } from "../modal"
 export const CommandAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Command__root",
-        "flex h-full w-full flex-col overflow-hidden rounded-[--radius-md] bg-[--paper] text-[--foreground]",
+        "flex h-full w-full flex-col overflow-hidden rounded-md bg-(--paper) text-(--foreground)",
     ]),
     inputContainer: cva([
         "UI-Command__input",
@@ -29,21 +29,21 @@ export const CommandAnatomy = defineStyleAnatomy({
     ]),
     empty: cva([
         "UI-Command__empty",
-        "py-6 text-center text-base text-[--muted]",
+        "py-6 text-center text-base text-(--muted)",
     ]),
     group: cva([
         "UI-Command__group",
-        "overflow-hidden p-1 text-[--foreground]",
-        "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[--muted]",
+        "overflow-hidden p-1 text-(--foreground)",
+        "**:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-sm **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-(--muted)",
     ]),
     separator: cva([
         "UI-Command__separator",
-        "-mx-1 h-px bg-[--border]",
+        "-mx-1 h-px bg-(--border)",
     ]),
     item: cva([
         "UI-Command__item",
-        "relative flex cursor-default select-none items-center rounded-[--radius] px-2 py-1.5 text-base outline-none",
-        "aria-selected:bg-[--subtle] data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+        "relative flex cursor-default select-none items-center rounded-(--radius) px-2 py-1.5 text-base outline-none",
+        "aria-selected:bg-(--subtle) data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     ]),
     itemIconContainer: cva([
@@ -52,7 +52,7 @@ export const CommandAnatomy = defineStyleAnatomy({
     ]),
     shortcut: cva([
         "UI-Command__shortcut",
-        "ml-auto text-xs tracking-widest text-[--muted]",
+        "ml-auto text-xs tracking-widest text-(--muted)",
     ]),
 })
 
@@ -63,9 +63,9 @@ export const CommandDialogAnatomy = defineStyleAnatomy({
     ]),
     command: cva([
         "UI-CommandDialog__command",
-        "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[--muted]",
-        "[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pb-2 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5",
-        "[&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-2 [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-5",
+        "**:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-(--muted)",
+        "[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pb-2 **:[[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5",
+        "**:[[cmdk-input]]:h-12 **:[[cmdk-item]]:px-2 **:[[cmdk-item]]:py-2 [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-5",
     ]),
 })
 

@@ -24,7 +24,7 @@ export const DatePickerAnatomy = defineStyleAnatomy({
     ]),
     placeholder: cva([
         "UI-DatePicker__placeholder",
-        "text-[--muted]",
+        "text-(--muted)",
     ]),
 })
 
@@ -198,7 +198,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>((
                 selected={date}
                 onSelect={handleOnSelect}
                 locale={locale}
-                initialFocus
+                autoFocus
                 monthGridClass="w-auto mx-auto"
                 weekStartsOn={weekStartOn as Day}
             />
@@ -208,7 +208,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>((
                         e.stopPropagation()
                         handleOnSelect(undefined)
                     }}
-                    className="px-4 py-2 text-sm text-[--muted] hover:text-[--text] transition-colors"
+                    className="px-4 py-2 text-sm text-(--muted) hover:text-(--text) transition-colors"
                 >
                     Clear
                 </button>

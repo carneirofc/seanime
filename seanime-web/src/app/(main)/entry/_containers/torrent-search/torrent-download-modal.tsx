@@ -217,7 +217,7 @@ export function TorrentDownloadModal({ onToggleTorrent, media, entry }: {
                             key={`${torrent.infoHash}`}
                             trigger={<div
                                 className={cn(
-                                    "ml-12 gap-2 p-2 border rounded-[--radius-md] hover:bg-gray-800 relative",
+                                    "ml-12 gap-2 p-2 border rounded-md hover:bg-gray-800 relative",
                                 )}
                                 key={torrent.name}
                                 data-torrent-confirmation-modal-torrent-item
@@ -349,7 +349,7 @@ export function TorrentConfirmationContinueButton({ type, onTorrentValidated }: 
         <Button
             data-torrent-search-confirmation-continue-button
             intent="white"
-            className="Sea-TorrentSearchConfirmationContinueButton fixed z-[9999] left-0 right-0 bottom-4 rounded-full max-w-lg mx-auto halo font-bold"
+            className="Sea-TorrentSearchConfirmationContinueButton fixed z-9999 left-0 right-0 bottom-4 rounded-full max-w-lg mx-auto halo font-bold"
             size="lg"
             onClick={() => {
                 if (type === "download") {

@@ -112,7 +112,7 @@ export default function Page() {
                     <div className="space-y-4">
                         <div>
                             <h2>Scan summaries</h2>
-                            <p className="text-[--muted]">
+                            <p className="text-(--muted)">
                                 View the logs of your latest scans
                             </p>
                         </div>
@@ -121,7 +121,7 @@ export default function Page() {
 
                 <div className="">
                     {isLoading && <LoadingSpinner />}
-                    {(!isLoading && !data?.length) && <div className="p-4 text-[--muted] text-center">No scan summaries available</div>}
+                    {(!isLoading && !data?.length) && <div className="p-4 text-(--muted) text-center">No scan summaries available</div>}
                     {!!data?.length && (
                         <div className="space-y-4">
                             <div className="flex gap-2 items-center">
@@ -142,15 +142,15 @@ export default function Page() {
                                             placeholder="Search filenames..."
                                             value={searchQuery}
                                             onValueChange={setSearchQuery}
-                                            leftIcon={<LuFileSearch className="text-[--muted]" />}
+                                            leftIcon={<LuFileSearch className="text-(--muted)" />}
                                         />
                                     </div>
                                 )}
                             </div>
                             {!!selectedSummary && (
-                                <div className="space-y-4 rounded-[--radius] ">
+                                <div className="space-y-4 rounded-(--radius) ">
                                     <div>
-                                        <p className="text-[--muted]">
+                                        <p className="text-(--muted)">
                                             Seanime successfully scanned {selectedSummary.groups?.length} media
                                             {debouncedSearchQuery.trim() && (
                                                 <span className="ml-2 text-sm">({filteredGroups.length} matching)</span>
@@ -173,8 +173,8 @@ export default function Page() {
                                         <Accordion
                                             type="single"
                                             collapsible
-                                            triggerClass="py-0 px-3 dark:hover:bg-transparent text-[--muted] dark:hover:text-white"
-                                            className="p-0 bg-[--paper] border mt-4 rounded-[--radius] overflow-hidden relative gap-0"
+                                            triggerClass="py-0 px-3 dark:hover:bg-transparent text-(--muted) dark:hover:text-white"
+                                            className="p-0 bg-(--paper) border mt-4 rounded-(--radius) overflow-hidden relative gap-0"
                                         >
                                             {filteredUnmatchedFiles?.map(file => (
                                                 <ScanSummaryGroupItem
@@ -198,7 +198,7 @@ export default function Page() {
                                                     <div className="flex gap-2">
 
                                                         <div
-                                                            className="w-[5rem] h-[5rem] rounded-[--radius] flex-none object-cover object-center overflow-hidden relative"
+                                                            className="w-20 h-20 rounded-(--radius) flex-none object-cover object-center overflow-hidden relative"
                                                         >
                                                             <SeaImage
                                                                 src={group.mediaImage}
@@ -216,13 +216,13 @@ export default function Page() {
                                                                 href={`/entry?id=${group.mediaId}`}
                                                                 className="font-medium tracking-wide"
                                                             >{group.mediaTitle}</SeaLink>
-                                                            <p className="flex gap-1 items-center text-sm text-[--muted]">
+                                                            <p className="flex gap-1 items-center text-sm text-(--muted)">
                                                                 <span className="text-lg">{group.mediaIsInCollection ?
                                                                     <BiCheckCircle className="text-green-200" /> :
                                                                     <BiXCircle className="text-red-300" />}</span> Anime {group.mediaIsInCollection
                                                                 ? "is present"
                                                                 : "is not present"} in your AniList collection</p>
-                                                            <p className="text-sm flex gap-1 items-center text-[--muted]">
+                                                            <p className="text-sm flex gap-1 items-center text-(--muted)">
                                                                 <span className="text-base"><LuFileSearch className="text-brand-200" /></span>{group.files.length} file{group.files.length > 1 && "s"} scanned
                                                             </p>
                                                         </div>
@@ -230,11 +230,11 @@ export default function Page() {
                                                     </div>
 
                                                     {group.files.flatMap(n => n.logs).some(n => n?.level === "error") &&
-                                                        <p className="text-sm flex gap-1 text-red-300 items-center text-[--muted]">
+                                                        <p className="text-sm flex gap-1 text-red-300 items-center text-(--muted)">
                                                             <span className="text-base"><BiXCircle className="" /></span> Errors found
                                                         </p>}
                                                     {group.files.flatMap(n => n.logs).some(n => n?.level === "warning") &&
-                                                        <p className="text-sm flex gap-1 text-orange-300 items-center text-[--muted]">
+                                                        <p className="text-sm flex gap-1 text-orange-300 items-center text-(--muted)">
                                                             <span className="text-base"><AiFillWarning className="" /></span> Warnings found
                                                         </p>}
 
@@ -242,7 +242,7 @@ export default function Page() {
 
                                                         <div className="">
                                                             <Button
-                                                                className="px-0 dark:text-[--muted] dark:hover:text-[--foreground]"
+                                                                className="px-0 dark:text-(--muted) dark:hover:text-(--foreground)"
                                                                 intent="gray-link"
                                                                 leftIcon={<LuFolderTree />}
                                                                 onClick={() => openDirInLibraryExplorer(group.files?.[0]?.localFile?.path || "")}
@@ -254,12 +254,12 @@ export default function Page() {
 
                                                         <Accordion type="single" collapsible value={expandedAccordions.has("i1") ? "i1" : undefined}>
                                                             <AccordionItem value="i1">
-                                                                <AccordionTrigger className="p-0 dark:hover:bg-transparent text-[--muted] dark:hover:text-white">
+                                                                <AccordionTrigger className="p-0 dark:hover:bg-transparent text-(--muted) dark:hover:text-white">
                                                                     <span className="inline-flex text-base items-center gap-2"><LuTextSelect /> View
                                                                                                                                                 scanner
                                                                                                                                                 logs</span>
                                                                 </AccordionTrigger>
-                                                                <AccordionContent className="p-0 bg-[--paper] border mt-4 rounded-[--radius] overflow-hidden relative">
+                                                                <AccordionContent className="p-0 bg-(--paper) border mt-4 rounded-(--radius) overflow-hidden relative">
                                                                     <Accordion type="single" collapsible>
                                                                         <div className="grid grid-cols-1">
                                                                             {group.files.map(file => (
@@ -333,7 +333,7 @@ function ScanSummaryGroupItem(props: ScanSummaryFileItem) {
                 </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-2 overflow-x-auto">
-                <p className="text-sm text-left tracking-wide text-[--muted] italic line-clamp-1 max-w-full">
+                <p className="text-sm text-left tracking-wide text-(--muted) italic line-clamp-1 max-w-full">
                     {searchQuery ? (
                         <HighlightedText text={file.localFile.path} searchQuery={searchQuery} />
                     ) : (
@@ -342,7 +342,7 @@ function ScanSummaryGroupItem(props: ScanSummaryFileItem) {
                 </p>
                 <div className="">
                     <Button
-                        className="px-0 dark:text-[--muted] dark:hover:text-[--foreground]"
+                        className="px-0 dark:text-(--muted) dark:hover:text-(--foreground)"
                         intent="gray-link"
                         leftIcon={<LuFolderTree />}
                         onClick={() => openDirInLibraryExplorer(file.localFile?.path || "")}
@@ -371,7 +371,7 @@ function ScanSummaryFileParsedData(props: { localFile: Anime_LocalFile }) {
         <div className="flex-none">
             <div className="flex justify-between gap-2 items-center">
                 <div className="flex gap-1 items-center">
-                    <ul className="text-sm space-y-1 [&>li]:flex-none [&>li]:gap-1 [&>li]:line-clamp-1 [&>li]:flex [&>li]:items-center [&>li>span]:text-[--muted] [&>li>span]:uppercase">
+                    <ul className="text-sm space-y-1 [&>li]:flex-none [&>li]:gap-1 [&>li]:line-clamp-1 [&>li]:flex [&>li]:items-center [&>li>span]:text-(--muted) [&>li>span]:uppercase">
                         <li><TbListSearch className="text-indigo-200" />
                             <span>Title</span> "{localFile.parsedInfo?.title}"{!!folderTitles?.length && `, ${folderTitles}`}</li>
                         <li><TbListSearch className="text-indigo-200" /> <span>Episode</span> "{localFile.parsedInfo?.episode || ""}"</li>
@@ -412,7 +412,7 @@ function ScanSummaryLogMessage(props: { message: string, level: string }) {
     if (!message.startsWith("PANIC")) {
         return <div
             className={cn(
-                "text-[--muted] hover:text-white text-sm tracking-wide flex-none",
+                "text-(--muted) hover:text-white text-sm tracking-wide flex-none",
                 level === "error" && "text-red-300",
                 level === "warning" && "text-orange-300",
             )}

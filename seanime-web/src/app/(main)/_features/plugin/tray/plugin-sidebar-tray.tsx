@@ -107,7 +107,7 @@ const ExtensionList = ({
                     "w-10 mx-auto p-1 my-2",
                     "flex flex-col gap-1 items-center border border-transparent justify-center rounded-full transition-all duration-300 select-none",
                     place === "top" && "flex-row w-auto my-0 justify-start px-2 py-2 border-none",
-                    pinnedTrayIcons.length > 0 && "border-[--border]",
+                    pinnedTrayIcons.length > 0 && "border-(--border)",
                 )}
             >
 
@@ -121,7 +121,7 @@ const ExtensionList = ({
                             trigger={<IconButton
                                 intent="gray-basic"
                                 size="sm"
-                                icon={<LuComponent className="size-5 text-[--muted]" />}
+                                icon={<LuComponent className="size-5 text-(--muted)" />}
                                 className="rounded-full hover:rotate-360 transition-all duration-300"
                             />}
                         >Tray Plugins</Tooltip>
@@ -139,7 +139,7 @@ const ExtensionList = ({
                         {trayIcons?.map(trayIcon => (
                             <div
                                 key={trayIcon.extensionId}
-                                className="flex items-center gap-2 justify-between bg-[--subtle] rounded-md px-2 py-1 max-w-full"
+                                className="flex items-center gap-2 justify-between bg-(--subtle) rounded-md px-2 py-1 max-w-full"
                             >
                                 <div
                                     className="flex items-center gap-2 cursor-pointer max-w-full"
@@ -190,7 +190,7 @@ const ExtensionList = ({
                                             /> : <IconButton
                                                 intent="gray-basic"
                                                 size="sm"
-                                                icon={<TbPinned className="size-5 text-[--muted]" />}
+                                                icon={<TbPinned className="size-5 text-(--muted)" />}
                                                 className="rounded-full"
                                                 onClick={() => {
                                                     setPluginSettingsPinnedTrays({
@@ -206,12 +206,12 @@ const ExtensionList = ({
                                 </div>
                             </div>
                         ))}
-                        {!trayIcons.length && <p className="text-sm text-[--muted] py-1 text-center w-full">
+                        {!trayIcons.length && <p className="text-sm text-(--muted) py-1 text-center w-full">
                             No tray plugins
                         </p>}
 
                         {/* {developmentModeExtensions?.map(extension => (
-                         <div key={extension.id} className="flex items-center gap-2 justify-between bg-[--subtle] rounded-md p-2">
+                         <div key={extension.id} className="flex items-center gap-2 justify-between bg-(--subtle) rounded-md p-2">
                          <p className="text-sm font-medium">{extension.id}</p>
                          <div>
                          <IconButton
@@ -247,12 +247,12 @@ const ExtensionList = ({
                             <p className="font-bold">
                                 Debug
                             </p>
-                            <p className="text-xs text-[--muted]">
+                            <p className="text-xs text-(--muted)">
                                 These extensions are loaded in development mode.
                             </p>
                         </div>
                         {developmentModeExtensions?.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })).map(extension => (
-                            <div key={extension.id} className="flex items-center gap-2 justify-between bg-[--subtle] rounded-md px-2 py-1">
+                            <div key={extension.id} className="flex items-center gap-2 justify-between bg-(--subtle) rounded-md px-2 py-1">
                                 <p className="min-w-0 truncate text-sm font-medium">{extension.id}</p>
                                 <div className="flex items-center gap-1">
                                     <Tooltip
@@ -481,10 +481,10 @@ export function PluginSidebarTray({ place }: { place: "sidebar" | "top" }) {
                         <IconButton
                             intent="gray-basic"
                             size="sm"
-                            icon={<LuBlocks className="size-5 text-[--muted]" />}
+                            icon={<LuBlocks className="size-5 text-(--muted)" />}
                         />
                     </div>}
-                    className="rounded-full p-0 overflow-y-auto bg-[--background] mx-4"
+                    className="rounded-full p-0 overflow-y-auto bg-(--background) mx-4"
                     style={{
                         width: width ? width - 50 : "100%",
                         // transform: "translateX(10px)",

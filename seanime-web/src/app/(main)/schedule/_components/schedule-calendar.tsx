@@ -152,7 +152,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
         <>
             <div className="flex h-full flex-col rounded-xl border" data-schedule-calendar>
                 <header
-                    className="relative flex items-center justify-center py-3 px-4 lg:py-4 lg:px-6 gap-3 lg:gap-4 flex-none rounded-tr-xl rounded-tl-xl border-b bg-[--background]"
+                    className="relative flex items-center justify-center py-3 px-4 lg:py-4 lg:px-6 gap-3 lg:gap-4 flex-none rounded-tr-xl rounded-tl-xl border-b bg-(--background)"
                     data-schedule-calendar-header
                 >
                     <IconButton
@@ -166,7 +166,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
                     <div className="w-full"></div>
                     <h1
                         className={cn(
-                            "text-base lg:text-lg font-semibold text-[--muted] text-center flex-1 min-w-0 absolute inset-0 z-[0] flex items-center justify-center pointer-events-none",
+                            "text-base lg:text-lg font-semibold text-(--muted) text-center flex-1 min-w-0 absolute inset-0 z-0 flex items-center justify-center pointer-events-none",
                             isSameMonth(currentDate, new Date()) && "text-gray-100",
                         )}
                         data-schedule-calendar-header-title
@@ -209,7 +209,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
                                 draft.listStatuses = v as AL_MediaListStatus[]
                                 return
                             })}
-                                stackClass="grid grid-cols-2 gap-0 items-center !space-y-0"
+                                stackClass="grid grid-cols-2 gap-0 items-center space-y-0!"
                                 data-schedule-calendar-header-settings-popover-status
                             />
                             <Separator />
@@ -253,7 +253,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
                     className="flex flex-auto flex-col rounded-br-xl rounded-bl-xl overflow-hidden"
                     data-schedule-calendar-body
                 >
-                    <div className="hidden lg:grid grid-cols-7 gap-px border-b bg-[--background] text-center text-base font-semibold leading-6 text-gray-200 flex-none">
+                    <div className="hidden lg:grid grid-cols-7 gap-px border-b bg-(--background) text-center text-base font-semibold leading-6 text-gray-200 flex-none">
                         {weekStartsOn === 0 && <div className="py-2" data-schedule-calendar-day-name-sunday>
                             S<span className="sr-only sm:not-sr-only">un</span>
                         </div>}
@@ -280,11 +280,11 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
                         </div>}
                     </div>
 
-                    <div className="lg:hidden flex-auto bg-[--background] overflow-y-auto" data-schedule-calendar-mobile-list>
+                    <div className="lg:hidden flex-auto bg-(--background) overflow-y-auto" data-schedule-calendar-mobile-list>
                         <MobileCalendarList days={days} />
                     </div>
 
-                    <div className="hidden lg:flex bg-[--background] text-xs leading-6 text-gray-200 flex-auto" data-schedule-calendar-desktop>
+                    <div className="hidden lg:flex bg-(--background) text-xs leading-6 text-gray-200 flex-auto" data-schedule-calendar-desktop>
                         <div className="w-full grid grid-cols-7 grid-rows-6 gap-2 p-2" data-schedule-calendar-desktop-grid>
                             {days.map((day, index) => (
                                 <CalendarDay
@@ -336,7 +336,7 @@ function MobileCalendarList({ days }: MobileCalendarListProps) {
 
     if (relevantDays.length === 0) {
         return (
-            <div className="p-6 text-center text-[--muted]">
+            <div className="p-6 text-center text-(--muted)">
                 <p>No scheduled episodes for this month</p>
             </div>
         )
@@ -385,20 +385,20 @@ function MobileDayItem({ day, calendarParams }: MobileDayItemProps) {
                         <h4
                             className={cn(
                                 "font-semibold",
-                                day.isToday ? "text-[--brand]" : "text-gray-200",
+                                day.isToday ? "text-(--brand)" : "text-gray-200",
                             )}
                             data-schedule-calendar-mobile-list-day-item-day-name
                         >
                             {dayName}
                         </h4>
-                        <p className="text-base text-[--muted]" data-schedule-calendar-mobile-list-day-item-day-month-day>
+                        <p className="text-base text-(--muted)" data-schedule-calendar-mobile-list-day-item-day-month-day>
                             {monthDay}
                         </p>
                     </div>
                 </div>
                 {day.events.length > 0 && (
                     <div
-                        className="text-xs text-[--muted] bg-gray-800 px-2 py-1 rounded-full"
+                        className="text-xs text-(--muted) bg-gray-800 px-2 py-1 rounded-full"
                         data-schedule-calendar-mobile-list-day-item-event-count
                     >
                         {day.events.length} episode{day.events.length !== 1 ? "s" : ""}
@@ -419,7 +419,7 @@ function MobileDayItem({ day, calendarParams }: MobileDayItemProps) {
             )}
 
             {day.isToday && day.events.length === 0 && (
-                <div className="ml-0 lg:ml-13 text-sm text-[--muted] italic" data-schedule-calendar-mobile-list-day-item-no-events>
+                <div className="ml-0 lg:ml-13 text-sm text-(--muted) italic" data-schedule-calendar-mobile-list-day-item-no-events>
                     No episodes scheduled for today
                 </div>
             )}
@@ -440,7 +440,7 @@ function MobileEventItem({ event, calendarParams }: MobileEventItemProps) {
                 data-schedule-calendar-mobile-list-day-item-event-content
             >
                 <div
-                    className="relative w-10 h-14 lg:w-12 lg:h-16 rounded overflow-hidden flex-shrink-0"
+                    className="relative w-10 h-14 lg:w-12 lg:h-16 rounded overflow-hidden shrink-0"
                     data-schedule-calendar-mobile-list-day-item-event-image-container
                 >
                     <SeaImage
@@ -457,24 +457,24 @@ function MobileEventItem({ event, calendarParams }: MobileEventItemProps) {
                         <p
                             className={cn(
                                 "font-medium text-md text-gray-100 line-clamp-2",
-                                event.isWatched && calendarParams.indicateWatchedEpisodes && "text-[--muted]",
+                                event.isWatched && calendarParams.indicateWatchedEpisodes && "text-(--muted)",
                             )}
                             data-schedule-calendar-mobile-list-day-item-event-text
                         >
                             {event.name}
                         </p>
-                        <div className="flex items-center gap-1 flex-shrink-0" data-schedule-calendar-mobile-list-day-item-event-icons>
+                        <div className="flex items-center gap-1 shrink-0" data-schedule-calendar-mobile-list-day-item-event-icons>
                             {event.isSeasonFinale && !event.isWatched && (
-                                <FaFlag className="size-3 text-[--blue]" data-schedule-calendar-mobile-list-day-item-event-finale-icon />
+                                <FaFlag className="size-3 text-(--blue)" data-schedule-calendar-mobile-list-day-item-event-finale-icon />
                             )}
                             {event.isWatched && calendarParams.indicateWatchedEpisodes && (
-                                <FaCheck className="size-3 text-[--muted]" data-schedule-calendar-mobile-list-day-item-event-watched-icon />
+                                <FaCheck className="size-3 text-(--muted)" data-schedule-calendar-mobile-list-day-item-event-watched-icon />
                             )}
                         </div>
                     </div>
 
                     <div
-                        className="flex items-center gap-2 mt-2 text-sm text-[--muted]"
+                        className="flex items-center gap-2 mt-2 text-sm text-(--muted)"
                         data-schedule-calendar-mobile-list-day-item-event-episode-time
                     >
                         <span className="font-medium" data-schedule-calendar-mobile-list-day-item-event-episode>Episode {event.episode}</span>
@@ -482,7 +482,7 @@ function MobileEventItem({ event, calendarParams }: MobileEventItemProps) {
                         {event.time && <span data-schedule-calendar-mobile-list-day-item-event-time>{event.time}</span>}
                         {event.isSeasonFinale && <span>•</span>}
                         {event.isSeasonFinale && (
-                            <span className="text-[--blue] font-medium" data-schedule-calendar-mobile-list-day-item-event-finale>Finale</span>
+                            <span className="text-(--blue) font-medium" data-schedule-calendar-mobile-list-day-item-event-finale>Finale</span>
                         )}
                     </div>
                 </div>
@@ -531,7 +531,7 @@ function CalendarDayModal({ day, open, onOpenChange }: CalendarDayModalProps) {
                     </div>
                 ) : (
                     <div
-                        className="rounded-lg border bg-[--paper] p-4 text-sm text-[--muted]"
+                        className="rounded-lg border bg-(--paper) p-4 text-sm text-(--muted)"
                         data-schedule-calendar-day-modal-empty
                     >
                         No episodes are scheduled for this day.
@@ -583,7 +583,7 @@ function CalendarDayBackground({ events, isToday, hoveredEventId, onClick }: Cal
         <>
             <div
                 className={cn(
-                    "absolute top-0 left-0 z-[0] w-full h-full overflow-hidden rounded-md transition-all duration-500 ease-out",
+                    "absolute top-0 left-0 z-0 w-full h-full overflow-hidden rounded-md transition-all duration-500 ease-out",
                     isToday ? "opacity-80" : "opacity-20 group-hover:opacity-30",
                 )}
                 data-schedule-calendar-day-background
@@ -599,7 +599,7 @@ function CalendarDayBackground({ events, isToday, hoveredEventId, onClick }: Cal
             </div>
             <div
                 className={cn(
-                    "absolute cursor-pointer left-0 bottom-0 z-[1] w-full h-full bg-gradient-to-t from-gray-950/100 via-gray-950/80 via-40% to-transparent transition-all duration-300",
+                    "absolute cursor-pointer left-0 bottom-0 z-1 w-full h-full bg-linear-to-t from-gray-950 via-gray-950/80 via-40% to-transparent transition-all duration-300",
                     isToday && "from-gray-950/90 via-gray-950/80 via-40%",
                 )}
                 data-schedule-calendar-day-background-gradient
@@ -626,7 +626,7 @@ function CalendarEventList({ events, onEventHover }: CalendarEventListProps) {
     const calendarParams = useAtomValue(calendarParamsAtom)
 
     return (
-        <ol className="mt-1 sm:mt-2 relative z-[1] space-y-0.5 sm:space-y-1" data-schedule-calendar-event-list>
+        <ol className="mt-1 sm:mt-2 relative z-1 space-y-0.5 sm:space-y-1" data-schedule-calendar-event-list>
             {events.slice(0, MAX_EVENT_COUNT).map((event) => (
                 <li
                     key={event.id}
@@ -640,18 +640,18 @@ function CalendarEventList({ events, onEventHover }: CalendarEventListProps) {
                                 className={cn(
                                     "truncate font-medium text-gray-100 flex items-center gap-1",
                                     "text-xs lg:text-sm",
-                                    event.isWatched && calendarParams.indicateWatchedEpisodes ? "text-[--muted]" : "group-hover:text-gray-200",
+                                    event.isWatched && calendarParams.indicateWatchedEpisodes ? "text-(--muted)" : "group-hover:text-gray-200",
                                 )}
                                 data-schedule-calendar-event-item-text
                             >
                                 {event.isSeasonFinale && !event.isWatched &&
                                     <FaFlag
-                                        className="size-2 lg:size-3 text-[--blue] flex-none group-hover:scale-[1.15] transition-transform duration-300"
+                                        className="size-2 lg:size-3 text-(--blue) flex-none group-hover:scale-[1.15] transition-transform duration-300"
                                         data-schedule-calendar-event-item-finale-icon
                                     />}
                                 {event.isWatched && calendarParams.indicateWatchedEpisodes &&
                                     <FaCheck
-                                        className="size-2 lg:size-3 text-[--muted] flex-none group-hover:scale-[1.15] transition-transform duration-300"
+                                        className="size-2 lg:size-3 text-(--muted) flex-none group-hover:scale-[1.15] transition-transform duration-300"
                                         data-schedule-calendar-event-item-watched-icon
                                     />}
                                 <span className="truncate" data-schedule-calendar-event-item-name>
@@ -661,17 +661,17 @@ function CalendarEventList({ events, onEventHover }: CalendarEventListProps) {
                                 {/*    {event.name.length > 40 ? event.name.slice(0, 37) + "..." : event.name}*/}
                                 {/*</span>*/}
                             </p>
-                            <p className="text-xs text-[--muted] lg:hidden" data-schedule-calendar-event-item-episode>
+                            <p className="text-xs text-(--muted) lg:hidden" data-schedule-calendar-event-item-episode>
                                 Ep. {event.episode}
                                 {event.time && <span className="ml-1" data-schedule-calendar-event-item-time>• {event.time}</span>}
                             </p>
                         </div>
                         <time
                             dateTime={event.datetime}
-                            className="ml-3 hidden flex-none text-[--muted] group-hover:text-gray-200 lg:flex items-center"
+                            className="ml-3 hidden flex-none text-(--muted) group-hover:text-gray-200 lg:flex items-center"
                             data-schedule-calendar-event-item-episode-time
                         >
-                            <span className="mr-1 text-sm group-hover:text-[--foreground] font-semibold" data-schedule-calendar-event-item-episode>
+                            <span className="mr-1 text-sm group-hover:text-(--foreground) font-semibold" data-schedule-calendar-event-item-episode>
                                 Ep. {event.episode}
                             </span>
                         </time>
@@ -682,7 +682,7 @@ function CalendarEventList({ events, onEventHover }: CalendarEventListProps) {
                 <Popover
                     className="w-[280px] lg:w-full max-w-sm lg:max-w-sm"
                     trigger={
-                        <li className="text-[--muted] cursor-pointer text-sm lg:text-[0.7rem] py-1 pt-0">+ {events.length - MAX_EVENT_COUNT} more</li>
+                        <li className="text-(--muted) cursor-pointer text-sm lg:text-[0.7rem] py-1 pt-0">+ {events.length - MAX_EVENT_COUNT} more</li>
                     }
                     data-schedule-calendar-event-list-more-popover
                 >
@@ -693,14 +693,14 @@ function CalendarEventList({ events, onEventHover }: CalendarEventListProps) {
                                     <p
                                         className={cn("flex-auto truncate font-medium text-gray-100 flex items-center gap-2",
                                             event.isWatched && calendarParams.indicateWatchedEpisodes
-                                                ? "text-[--muted]"
+                                                ? "text-(--muted)"
                                                 : "group-hover:text-gray-200")}
                                         data-schedule-calendar-event-list-item-more-text
                                     >
                                         {event.isSeasonFinale && !event.isWatched &&
-                                            <FaFlag className="size-3 text-[--blue] flex-none group-hover:scale-[1.15] transition-transform duration-300" />}
+                                            <FaFlag className="size-3 text-(--blue) flex-none group-hover:scale-[1.15] transition-transform duration-300" />}
                                         {event.isWatched && calendarParams.indicateWatchedEpisodes &&
-                                            <FaCheck className="size-3 text-[--muted] flex-none group-hover:scale-[1.15] transition-transform duration-300" />}
+                                            <FaCheck className="size-3 text-(--muted) flex-none group-hover:scale-[1.15] transition-transform duration-300" />}
                                         {event.name}
                                     </p>
                                     <p className="flex-none" data-schedule-calendar-event-list-item-more-episode>
@@ -708,7 +708,7 @@ function CalendarEventList({ events, onEventHover }: CalendarEventListProps) {
                                     </p>
                                     <time
                                         dateTime={event.datetime}
-                                        className="ml-3 hidden flex-none text-[--muted] group-hover:text-gray-200 xl:block"
+                                        className="ml-3 hidden flex-none text-(--muted) group-hover:text-gray-200 xl:block"
                                         data-schedule-calendar-event-list-item-more-time
                                     >
                                         {event.time}
@@ -738,7 +738,7 @@ function CalendarDay({ day, index }: { day: CalendarDayItem, index: number }) {
         <div
             key={index}
             className={cn(
-                day.isCurrentMonth ? "bg-[--background]" : "opacity-20",
+                day.isCurrentMonth ? "bg-(--background)" : "opacity-20",
                 "relative py-1 px-1 sm:py-2 sm:px-3 h-24 sm:h-32 lg:h-40 rounded-md",
                 "flex flex-col justify-between group",
             )}
@@ -754,7 +754,7 @@ function CalendarDay({ day, index }: { day: CalendarDayItem, index: number }) {
                 />
             )}
 
-            <div className="absolute -top-2 left-10 right-1 z-[5] pointer-events-none hidden lg:block">
+            <div className="absolute -top-2 left-10 right-1 z-5 pointer-events-none hidden lg:block">
                 <div
                     className={cn(
                         "transition-all duration-300 ease-out",
@@ -769,13 +769,13 @@ function CalendarDay({ day, index }: { day: CalendarDayItem, index: number }) {
                         >
                             <p className="text-xs font-medium text-gray-100 line-clamp-2 leading-tight" data-schedule-calendar-day-hovered-event-text>
                                 <span
-                                    className="text-[--muted] font-normal"
+                                    className="text-(--muted) font-normal"
                                     data-schedule-calendar-day-hovered-event-text-name
                                 >{hoveredEvent.name.slice(0, 28) + (hoveredEvent.name.length > 28
                                     ? "..."
                                     : "")}</span>
                                 {hoveredEvent.isSeasonFinale &&
-                                    <span className="text-[--blue] ml-1" data-schedule-calendar-day-hovered-event-text-finale>Finale</span>}
+                                    <span className="text-(--blue) ml-1" data-schedule-calendar-day-hovered-event-text-finale>Finale</span>}
                                 <span className="ml-1" data-schedule-calendar-day-hovered-event-text-episode> Ep. {hoveredEvent.episode}</span>
                                 {hoveredEvent.time &&
                                     <span className="ml-1" data-schedule-calendar-day-hovered-event-text-time>- {hoveredEvent.time}</span>}
@@ -789,7 +789,7 @@ function CalendarDay({ day, index }: { day: CalendarDayItem, index: number }) {
                 dateTime={day.date}
                 className={
                     day.isToday
-                        ? "z-[1] relative flex h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-sm sm:text-base lg:text-lg items-center justify-center rounded-full bg-white font-bold group-hover:rotate-12 transition-transform duration-300 ease-out text-black"
+                        ? "z-1 relative flex h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-sm sm:text-base lg:text-lg items-center justify-center rounded-full bg-white font-bold group-hover:rotate-12 transition-transform duration-300 ease-out text-black"
                         : "text-xs sm:text-sm lg:text-base group-hover:text-white group-hover:font-bold transition-transform duration-300 ease-out"
                 }
                 data-schedule-calendar-day-date

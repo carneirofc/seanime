@@ -25,7 +25,7 @@ export const DataGridFilterAnatomy = defineStyleAnatomy({
 export const DataGridActiveFilterAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-DataGridActiveFilter__root",
-        "py-1 px-2 rounded-[--radius] border flex gap-2 items-center",
+        "py-1 px-2 rounded-(--radius) border flex gap-2 items-center",
     ]),
 })
 
@@ -170,7 +170,7 @@ export function DataGridFilter<T extends Record<string, any>>(props: DataGridFil
             )}
             {/*Date*/}
             {filterParams.type === "date-range" && (
-                <div className={cn(DataGridAnatomy.filterDropdownButton(), "truncate overflow-ellipsis")}>
+                <div className={cn(DataGridAnatomy.filterDropdownButton(), "truncate text-ellipsis")}>
                     {filterParams.icon && <span>{filterParams.icon}</span>}
                     <span>{filterParams.name}:</span>
                     <DateRangePicker
@@ -219,7 +219,7 @@ export const DataGridActiveFilter = React.forwardRef<HTMLButtonElement, DataGrid
     return (
         <button
             ref={ref}
-            className={cn(DataGridAnatomy.filterDropdownButton(), "truncate overflow-ellipsis")} {...rest}
+            className={cn(DataGridAnatomy.filterDropdownButton(), "truncate text-ellipsis")} {...rest}
         >
             {options.icon && <span>{options.icon}</span>}
             <span>{options.name}:</span>

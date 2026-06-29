@@ -29,7 +29,7 @@ export function DiscordRichPresenceSettings(props: DiscordRichPresenceSettingsPr
                 />
                 <div
                     className={cn(
-                        "flex gap-4 items-center flex-col md:flex-row !mt-3",
+                        "flex gap-4 items-center flex-col md:flex-row mt-3!",
                         enableRichPresence ? "opacity-100" : "opacity-50 pointer-events-none",
                     )}
                 >
@@ -68,7 +68,7 @@ export function DiscordRichPresenceSettings(props: DiscordRichPresenceSettingsPr
                 {/*<Field.Switch*/}
                 {/*    side="right"*/}
                 {/*    name="richPresenceUseMediaTitleStatus"*/}
-                {/*    label={<span className="flex gap-2 items-center">Use Media Title as Status <LuTriangleAlert className="text-[--orange]" /></span>}*/}
+                {/*    label={<span className="flex gap-2 items-center">Use Media Title as Status <LuTriangleAlert className="text-(--orange)" /></span>}*/}
                 {/*    moreHelp="Does not work with the default Discord Desktop Client."*/}
                 {/*    help="Replace 'Seanime' with the media title in the activity status. Only works if you use a discord client that utilizes arRPC."*/}
                 {/*/>*/}

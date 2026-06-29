@@ -130,14 +130,14 @@ export function MainSidebar() {
                     "overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']",
                     (!ctx.isBelowBreakpoint && expandedSidebar) && "w-[260px]",
                     (!ctx.isBelowBreakpoint && !ts.disableSidebarTransparency) && "bg-transparent",
-                    (!ctx.isBelowBreakpoint && !ts.disableSidebarTransparency && ts.expandSidebarOnHover && expandedSidebar) && "bg-[--background] rounded-tr-xl rounded-br-xl border-[--border]",
+                    (!ctx.isBelowBreakpoint && !ts.disableSidebarTransparency && ts.expandSidebarOnHover && expandedSidebar) && "bg-(--background) rounded-tr-xl rounded-br-xl border-(--border)",
                 )}
                 onMouseEnter={handleExpandSidebar}
                 onMouseLeave={handleUnexpandedSidebar}
             >
                 {(!ctx.isBelowBreakpoint && ts.expandSidebarOnHover && ts.disableSidebarTransparency) && <div
                     className={cn(
-                        "fixed h-full translate-x-0 w-[50px] bg-gradient bg-gradient-to-r via-[--background] from-[--background] to-transparent",
+                        "fixed h-full translate-x-0 w-[50px] bg-gradient bg-linear-to-r via-(--background) from-(--background) to-transparent",
                         "group-hover/main-sidebar:translate-x-[250px] transition opacity-0 duration-300 group-hover/main-sidebar:opacity-100",
                     )}
                 ></div>}
@@ -441,7 +441,7 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
                         },
                     },
                 ]}
-                subContentClass={cn((ts.hideTopNavbar || __isDesktop__) && "border-transparent !border-b-0")}
+                subContentClass={cn((ts.hideTopNavbar || __isDesktop__) && "border-transparent border-b-0!")}
                 onLinkItemClick={() => ctx.setOpen(false)}
                 isSidebar
             />
@@ -458,7 +458,7 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
                     className="bg-transparent border-none"
                     trigger={<IconButton
                         intent="gray-basic"
-                        className="!text-[--muted] hover:!text-[--foreground]"
+                        className="text-(--muted)! hover:text-(--foreground)!"
                         icon={<PiArrowCircleLeftDuotone />}
                         onClick={() => {
                             router.back()
@@ -664,7 +664,7 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                             )}
                         >
                             <Avatar size="sm" src={avatarSrc || undefined} />
-                            {expandedSidebar && <p className="truncate text-sm text-[--muted]">{user?.viewer?.name}</p>}
+                            {expandedSidebar && <p className="truncate text-sm text-(--muted)">{user?.viewer?.name}</p>}
                         </div>
                     }
                     open={popoverOpen}
@@ -685,9 +685,9 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                                 {user?.viewer?.name ?? "Guest"}
                             </p>
                             {user?.isSimulated ? (
-                                <p className="text-xs text-[--muted]">Not signed in</p>
+                                <p className="text-xs text-(--muted)">Not signed in</p>
                             ) : (
-                                <SeaLink href={anilistProfileUrl} target="_blank" className="text-xs text-[--muted] hover:text-[--brand] flex items-center gap-1 w-fit">
+                                <SeaLink href={anilistProfileUrl} target="_blank" className="text-xs text-(--muted) hover:text-(--brand) flex items-center gap-1 w-fit">
                                     AniList <LuExternalLink className="size-3" />
                                 </SeaLink>
                             )}
@@ -705,8 +705,8 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                                 { label: "Chapters", value: stats?.mangaStats?.chaptersRead },
                                 { label: "Score", value: stats?.animeStats?.meanScore },
                             ].map(({ label, value }) => (
-                                <div key={label} className="rounded-md bg-[--subtle] py-1.5 px-1">
-                                    <p className="text-[10px] text-[--muted]">{label}</p>
+                                <div key={label} className="rounded-md bg-(--subtle) py-1.5 px-1">
+                                    <p className="text-[10px] text-(--muted)">{label}</p>
                                     <p className="font-semibold text-xs mt-0.5">{value ?? "—"}</p>
                                 </div>
                             ))}
@@ -714,7 +714,7 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                     )}
 
                     {/* Actions */}
-                    <div className="border-t border-[--border] pt-2 flex flex-col gap-0.5">
+                    <div className="border-t border-(--border) pt-2 flex flex-col gap-0.5">
                         {!user?.isSimulated ? (
                             <button
                                 className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-red-500/10 text-red-400 transition-colors text-left"
@@ -739,7 +739,7 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                 description="Using an AniList account is recommended."
                 open={loginModal && user?.isSimulated}
                 onOpenChange={(v) => setLoginModal(v)}
-                overlayClass="bg-opacity-95 bg-gray-950"
+                overlayClass="bg-gray-950/95"
                 contentClass="border"
             >
                 <div className="mt-5 text-center space-y-4">

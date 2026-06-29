@@ -69,7 +69,7 @@ export function MediaEntryGenresList(props: MediaEntryGenresListProps) {
                         return <Badge
                             key={genre!}
                             className={cn(
-                                "hover:opacity-100 transition-all px-0 border-transparent bg-transparent hover:bg-transparent dark:text-[--muted] dark:hover:text-[--foreground]")}
+                                "hover:opacity-100 transition-all px-0 border-transparent bg-transparent hover:bg-transparent dark:text-(--muted) dark:hover:text-(--foreground)")}
                             size="lg"
                             data-media-entry-genres-list-item
                         >
@@ -90,7 +90,7 @@ export function MediaEntryGenresList(props: MediaEntryGenresListProps) {
                         return <SeaLink href={`/search?genre=${genre}&sorting=TRENDING_DESC${type === "manga" ? "&format=MANGA" : ""}`} key={genre!}>
                             <Badge
                                 className={cn(
-                                    "hover:opacity-100 transition-all px-0 border-transparent bg-transparent hover:bg-transparent dark:text-[--muted] dark:hover:text-[--foreground]")}
+                                    "hover:opacity-100 transition-all px-0 border-transparent bg-transparent hover:bg-transparent dark:text-(--muted) dark:hover:text-(--foreground)")}
                                 size="lg"
                                 data-media-entry-genres-list-item
                             >
@@ -210,7 +210,7 @@ export function AnimeEntryRankings(props: AnimeEntryRankingsProps) {
                             intent="gray"
                             leftIcon={<LuTrophy className="text-sm" />}
                             iconClass="text-yellow-500/70 group-hover/badge:text-yellow-400"
-                            className="transition-all hover:opacity-100 rounded-full bg-transparent dark:text-[--muted] border-transparent px-0 hover:bg-transparent dark:hover:text-[--foreground]"
+                            className="transition-all hover:opacity-100 rounded-full bg-transparent dark:text-(--muted) border-transparent px-0 hover:bg-transparent dark:hover:text-(--foreground)"
                         >
                             #{String(allTimeHighestRated.rank)} Highest Rated {formatFormat(allTimeHighestRated.format)}
                         </Badge>
@@ -227,7 +227,7 @@ export function AnimeEntryRankings(props: AnimeEntryRankingsProps) {
                             intent="gray"
                             leftIcon={<AiOutlineStar />}
                             iconClass="text-yellow-500/70 group-hover/badge:text-yellow-400"
-                            className="transition-all hover:opacity-100 rounded-full bg-transparent dark:text-[--muted] border-transparent px-0 hover:bg-transparent dark:hover:text-[--foreground]"
+                            className="transition-all hover:opacity-100 rounded-full bg-transparent dark:text-(--muted) border-transparent px-0 hover:bg-transparent dark:hover:text-(--foreground)"
                         >
                             #{String(seasonHighestRated.rank)} {capitalize(seasonHighestRated.season!)} {seasonHighestRated.year}
                         </Badge>
@@ -245,8 +245,8 @@ export function AnimeEntryRankings(props: AnimeEntryRankingsProps) {
                             size="lg"
                             intent="gray"
                             leftIcon={<AiOutlineHeart />}
-                            iconClass="text-[--muted] group-hover/badge:text-pink-400/70"
-                            className="transition-all hover:opacity-100 rounded-full bg-transparent dark:text-[--muted] border-transparent px-0 hover:bg-transparent dark:hover:text-[--foreground]"
+                            iconClass="text-(--muted) group-hover/badge:text-pink-400/70"
+                            className="transition-all hover:opacity-100 rounded-full bg-transparent dark:text-(--muted) border-transparent px-0 hover:bg-transparent dark:hover:text-(--foreground)"
                         >
                             #{(String(seasonMostPopular.rank))} Popular {formatFormat(seasonMostPopular.format)} {capitalize(seasonMostPopular.season!)} {seasonMostPopular.year}
                         </Badge>

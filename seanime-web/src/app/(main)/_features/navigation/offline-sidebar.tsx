@@ -54,14 +54,14 @@ export function OfflineSidebar() {
                     "h-full flex flex-col justify-between transition-gpu w-full transition-[width]",
                     (!ctx.isBelowBreakpoint && expandedSidebar) && "w-[260px]",
                     (!ctx.isBelowBreakpoint && !ts.disableSidebarTransparency) && "bg-transparent",
-                    (!ctx.isBelowBreakpoint && !ts.disableSidebarTransparency && ts.expandSidebarOnHover) && "hover:bg-[--background]",
+                    (!ctx.isBelowBreakpoint && !ts.disableSidebarTransparency && ts.expandSidebarOnHover) && "hover:bg-(--background)",
                 )}
                 onMouseEnter={handleExpandSidebar}
                 onMouseLeave={handleUnexpandedSidebar}
             >
                 {(!ctx.isBelowBreakpoint && ts.expandSidebarOnHover && ts.disableSidebarTransparency) && <div
                     className={cn(
-                        "fixed h-full translate-x-0 w-[50px] bg-gradient bg-gradient-to-r via-[--background] from-[--background] to-transparent",
+                        "fixed h-full translate-x-0 w-[50px] bg-gradient bg-linear-to-r via-(--background) from-(--background) to-transparent",
                         "group-hover/main-sidebar:translate-x-[250px] transition opacity-0 duration-300 group-hover/main-sidebar:opacity-100",
                     )}
                 ></div>}

@@ -99,8 +99,8 @@ export function ScannerModal() {
                 title="Library Scanner"
                 titleClass="text-center"
                 contentClass={cn(
-                    "space-y-4 max-w-2xl bg-gray-950 bg-opacity-90 rounded-xl",
-                    ts.enableBlurringEffects && "bg-gray-950 bg-opacity-80 backdrop-blur-sm firefox:bg-opacity-100 firefox:backdrop-blur-none",
+                    "space-y-4 max-w-2xl bg-gray-950/90 rounded-xl",
+                    ts.enableBlurringEffects && "bg-gray-950/80 backdrop-blur-sm firefox:bg-gray-950/100 firefox:backdrop-blur-none",
                 )}
                 overlayClass={cn(ts.enableBlurringEffects && "bg-gray-950/70 backdrop-blur-sm")}
             >
@@ -111,12 +111,12 @@ export function ScannerModal() {
                 {/*    proximity={100}*/}
                 {/*    inactiveZone={0.01}*/}
                 {/*    // movementDuration={4}*/}
-                {/*    className="!mt-0 opacity-30"*/}
+                {/*    className="mt-0! opacity-30"*/}
                 {/*/>*/}
 
 
 
-                {serverStatus?.user?.isSimulated && <div className="border border-dashed rounded-md py-2 px-4 !mt-5">
+                {serverStatus?.user?.isSimulated && <div className="border border-dashed rounded-md py-2 px-4 mt-5!">
                     Using this feature without an AniList account is not recommended if you have a large library, as it may lead to rate limits and
                     slower scanning. Please consider using an account for a better experience.
                 </div>}
@@ -124,7 +124,7 @@ export function ScannerModal() {
                 <div className="space-y-4" data-scanner-modal-content>
 
                     <AppLayoutStack className="space-y-2">
-                        <h5 className="text-[--muted]">Local files</h5>
+                        <h5 className="text-(--muted)">Local files</h5>
                         <Switch
                             side="right"
                             label="Skip locked files"
@@ -143,7 +143,7 @@ export function ScannerModal() {
                         <Separator />
 
                         <AppLayoutStack className="space-y-2">
-                            <h5 className="text-[--muted]">Matching data</h5>
+                            <h5 className="text-(--muted)">Matching data</h5>
                             <Switch
                                 side="right"
                                 label="My AniList Collection only"
@@ -168,7 +168,7 @@ export function ScannerModal() {
                                 onValueChange={v => enhanceWithOfflineDatabase.set(v === "database")}
                                 help={enhanceWithOfflineDatabase.active
                                     ? <span>Matches local files against the entire AniList catalog. Scanning will be slower.</span>
-                                    : <span><span className="text-[--orange]">Slower for large libraries</span>. Seanime will send an API request for
+                                    : <span><span className="text-(--orange)">Slower for large libraries</span>. Seanime will send an API request for
                                                                                                                each anime title found in the library,
                                                                                                                which may lead to rate limits and
                                                                                                                slower scanning.</span>}

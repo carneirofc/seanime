@@ -559,7 +559,7 @@ export default function Page() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen text-[--muted]">
+            <div className="flex items-center justify-center min-h-screen text-(--muted)">
                 <p>Loading saved report...</p>
             </div>
         )
@@ -587,7 +587,7 @@ export default function Page() {
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold text-gray-200 tracking-tight">Issue Report</h1>
                         <label
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-[--border] rounded-md cursor-pointer hover:bg-gray-700 transition-colors text-sm text-gray-300"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-(--border) rounded-md cursor-pointer hover:bg-gray-700 transition-colors text-sm text-gray-300"
                         >
                             <BiUpload />
                             <span>{report ? "Load another file" : "Load report file"}</span>
@@ -620,7 +620,7 @@ export default function Page() {
             {report ? (
                 <ReportViewer report={report} />
             ) : (
-                <div className="flex items-center justify-center h-[40vh] text-[--muted]">
+                <div className="flex items-center justify-center h-[40vh] text-(--muted)">
                     <p className="text-lg">Load an issue report JSON or ZIP file</p>
                 </div>
             )}
@@ -656,7 +656,7 @@ function ReportViewer({ report }: { report: ExtendedReport }) {
 
     return (
         <div className="space-y-0">
-            <div className="flex gap-1 bg-gray-950 border-b border-[--border] p-1 rounded-t-lg sticky top-0 z-20 overflow-x-auto">
+            <div className="flex gap-1 bg-gray-950 border-b border-(--border) p-1 rounded-t-lg sticky top-0 z-20 overflow-x-auto">
                 {tabs.filter(t => t.show !== false).map(({ key, label, icon: Icon, accent }) => (
                     <button
                         key={key}
@@ -728,7 +728,7 @@ function OverviewPanel({ report, stats, events }: { report: ExtendedReport; stat
         <div className="p-4 space-y-4">
             {/* report info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-gray-900 border border-[--border] rounded-lg p-4 space-y-2">
+                <div className="bg-gray-900 border border-(--border) rounded-lg p-4 space-y-2">
                     <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Report Info</h3>
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
                         <DetailLabel>Version</DetailLabel>
@@ -750,7 +750,7 @@ function OverviewPanel({ report, stats, events }: { report: ExtendedReport; stat
 
                 {/* description */}
                 {report.description && (
-                    <div className="bg-gray-900 border border-[--border] rounded-lg p-4 space-y-2">
+                    <div className="bg-gray-900 border border-(--border) rounded-lg p-4 space-y-2">
                         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">User Description</h3>
                         <p className="text-sm text-gray-200 whitespace-pre-wrap">{report.description}</p>
                     </div>
@@ -787,21 +787,21 @@ function OverviewPanel({ report, stats, events }: { report: ExtendedReport; stat
                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Events</h3>
                 <div className="flex items-center gap-2 flex-wrap">
                     <PipelineStep label="Clicks" detail={`${stats.clickCount}`} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Network" detail={`${stats.networkCount} req`} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Console" detail={`${stats.consoleCount}`} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Queries" detail={`${stats.queryCount}`} />
                     {stats.navigationCount > 0 && (
                         <>
-                            <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                            <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                             <PipelineStep label="Navigations" detail={`${stats.navigationCount}`} />
                         </>
                     )}
                     {stats.screenshotCount > 0 && (
                         <>
-                            <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                            <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                             <PipelineStep label="Screenshots" detail={`${stats.screenshotCount}`} />
                         </>
                     )}
@@ -812,7 +812,7 @@ function OverviewPanel({ report, stats, events }: { report: ExtendedReport; stat
             {report.status && (
                 <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Server status</h3>
-                    <div className="bg-gray-900 border border-[--border] rounded-lg p-3 max-h-[40vh] overflow-auto">
+                    <div className="bg-gray-900 border border-(--border) rounded-lg p-3 max-h-[40vh] overflow-auto">
                         <pre className="text-xs font-mono text-gray-300 whitespace-pre-wrap break-all">{report.status}</pre>
                     </div>
                 </div>
@@ -824,7 +824,7 @@ function OverviewPanel({ report, stats, events }: { report: ExtendedReport; stat
                     <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
                         Unlocked local files ({report.unlockedLocalFiles.length})
                     </h3>
-                    <div className="bg-gray-900 border border-[--border] rounded-lg max-h-[30vh] overflow-auto">
+                    <div className="bg-gray-900 border border-(--border) rounded-lg max-h-[30vh] overflow-auto">
                         {report.unlockedLocalFiles.map((f, i) => (
                             <div key={i} className="px-3 py-1.5 border-b border-gray-800 last:border-0 text-sm">
                                 <span className="text-gray-300 font-mono break-all">{f.path}</span>
@@ -906,7 +906,7 @@ function TimelinePanel({ events, searchQuery, setSearchQuery, includeServerLogs,
 
     return (
         <div className="flex h-[calc(100vh-140px)]">
-            <div className="w-[260px] flex-none p-4 border-r border-[--border] space-y-4 bg-gray-950 overflow-y-auto">
+            <div className="w-[260px] flex-none p-4 border-r border-(--border) space-y-4 bg-gray-950 overflow-y-auto">
                 <TextInput
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -928,7 +928,7 @@ function TimelinePanel({ events, searchQuery, setSearchQuery, includeServerLogs,
                     </div>
                 </div>
 
-                <div className="h-px bg-[--border]" />
+                <div className="h-px bg-(--border)" />
 
                 <div className="space-y-1">
                     {FILTER_OPTIONS.map(({ key, label }) => (
@@ -946,7 +946,7 @@ function TimelinePanel({ events, searchQuery, setSearchQuery, includeServerLogs,
                     ))}
                 </div>
 
-                <div className="h-px bg-[--border]" />
+                <div className="h-px bg-(--border)" />
 
                 {/* <Checkbox
                     label="Include server logs"
@@ -957,7 +957,7 @@ function TimelinePanel({ events, searchQuery, setSearchQuery, includeServerLogs,
             </div>
 
             <div className="flex-1 min-w-0 bg-gray-950">
-                <div className="p-2 border-b border-[--border] flex items-center justify-between">
+                <div className="p-2 border-b border-(--border) flex items-center justify-between">
                     <span className="text-sm text-gray-400 font-medium">Events</span>
                     <span className="text-xs text-gray-500">{filtered.length} filtered events</span>
                 </div>
@@ -1030,25 +1030,25 @@ function TimelineEventRow({ event, isExpanded, toggleExpanded }: {
         <div
             className={cn(
                 "bg-gray-900 border rounded-md overflow-hidden",
-                event.level === "error" ? "border-red-800/50" : event.level === "warn" ? "border-orange-800/50" : "border-[--border]",
+                event.level === "error" ? "border-red-800/50" : event.level === "warn" ? "border-orange-800/50" : "border-(--border)",
             )}
         >
             <button
                 onClick={toggleExpanded}
                 className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
             >
-                {isExpanded ? <BiChevronDown className="text-gray-500 flex-shrink-0" /> :
-                    <BiChevronRight className="text-gray-500 flex-shrink-0" />}
+                {isExpanded ? <BiChevronDown className="text-gray-500 shrink-0" /> :
+                    <BiChevronRight className="text-gray-500 shrink-0" />}
 
-                <span className="text-xs text-gray-500 font-mono flex-shrink-0 w-[70px]">
+                <span className="text-xs text-gray-500 font-mono shrink-0 w-[70px]">
                     {format(event.timestamp, "HH:mm:ss")}
                 </span>
 
-                <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0", typeBadgeColors[event.type])}>
+                <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded shrink-0", typeBadgeColors[event.type])}>
                     {typeLabels[event.type]}
                 </span>
 
-                <span className="flex-shrink-0">{typeIcons[event.type]}</span>
+                <span className="shrink-0">{typeIcons[event.type]}</span>
 
                 <span
                     className={cn(
@@ -1060,15 +1060,15 @@ function TimelineEventRow({ event, isExpanded, toggleExpanded }: {
                 </span>
 
                 {event.pageUrl && (
-                    <span className="text-xs text-gray-600 truncate max-w-[160px] flex-shrink-0">{event.pageUrl}</span>
+                    <span className="text-xs text-gray-600 truncate max-w-[160px] shrink-0">{event.pageUrl}</span>
                 )}
             </button>
             {isExpanded && (
-                <div className="border-t border-[--border] bg-gray-950 p-3">
+                <div className="border-t border-(--border) bg-gray-950 p-3">
                     {event.type === "screenshot" && event.raw.data ? (
                         <div className="space-y-2">
                             {event.raw.caption && <p className="text-sm text-gray-300 italic">"{event.raw.caption}"</p>}
-                            <img src={event.raw.data} alt="Screenshot" className="max-w-full max-h-[50vh] rounded-lg border border-[--border]" />
+                            <img src={event.raw.data} alt="Screenshot" className="max-w-full max-h-[50vh] rounded-lg border border-(--border)" />
                         </div>
                     ) : (
                         <DataGrid data={event.raw} />
@@ -1158,7 +1158,7 @@ function NetworkPanel({ logs, searchQuery, setSearchQuery }: {
                             <div
                                 className={cn(
                                     "bg-gray-900 border rounded-md overflow-hidden",
-                                    log.status >= 400 ? "border-red-800/50" : "border-[--border]",
+                                    log.status >= 400 ? "border-red-800/50" : "border-(--border)",
                                 )}
                             >
                                 <button
@@ -1166,9 +1166,9 @@ function NetworkPanel({ logs, searchQuery, setSearchQuery }: {
                                     className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
                                 >
                                     {expandedIds.has(id)
-                                        ? <BiChevronDown className="text-gray-500 flex-shrink-0" />
-                                        : <BiChevronRight className="text-gray-500 flex-shrink-0" />}
-                                    <span className="text-xs text-gray-500 font-mono flex-shrink-0 w-[70px]">
+                                        ? <BiChevronDown className="text-gray-500 shrink-0" />
+                                        : <BiChevronRight className="text-gray-500 shrink-0" />}
+                                    <span className="text-xs text-gray-500 font-mono shrink-0 w-[70px]">
                                         {log.timestamp ? format(parseISO(log.timestamp), "HH:mm:ss") : "—"}
                                     </span>
                                     <Badge size="sm" intent={log.method === "POST" ? "success" : "gray"}>
@@ -1178,10 +1178,10 @@ function NetworkPanel({ logs, searchQuery, setSearchQuery }: {
                                     <Badge size="sm" intent={log.status >= 400 ? "alert" : "gray"}>
                                         {log.status}
                                     </Badge>
-                                    <span className="text-xs text-gray-500 flex-shrink-0">{log.duration}ms</span>
+                                    <span className="text-xs text-gray-500 shrink-0">{log.duration}ms</span>
                                 </button>
                                 {expandedIds.has(id) && (
-                                    <div className="border-t border-[--border] bg-gray-950 p-3 space-y-2">
+                                    <div className="border-t border-(--border) bg-gray-950 p-3 space-y-2">
                                         <div className="text-xs text-gray-500 font-mono break-all">{log.pageUrl}</div>
                                         {log.body && log.body !== "null" && (
                                             <div className="space-y-1">
@@ -1284,7 +1284,7 @@ function ConsolePanel({ logs, searchQuery, setSearchQuery }: {
                             <div
                                 className={cn(
                                     "bg-gray-900 border rounded-md overflow-hidden",
-                                    log.type === "error" ? "border-red-800/50" : log.type === "warn" ? "border-orange-800/50" : "border-[--border]",
+                                    log.type === "error" ? "border-red-800/50" : log.type === "warn" ? "border-orange-800/50" : "border-(--border)",
                                 )}
                             >
                                 <button
@@ -1292,7 +1292,7 @@ function ConsolePanel({ logs, searchQuery, setSearchQuery }: {
                                     className="flex items-start gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
                                 >
                                     <LevelDot level={log.type === "error" ? "error" : log.type === "warn" ? "warn" : "debug"} />
-                                    <span className="text-xs text-gray-500 font-mono flex-shrink-0 w-[70px] pt-0.5">
+                                    <span className="text-xs text-gray-500 font-mono shrink-0 w-[70px] pt-0.5">
                                         {log.timestamp ? format(parseISO(log.timestamp), "HH:mm:ss") : "—"}
                                     </span>
                                     <LevelBadge level={log.type as any} />
@@ -1306,7 +1306,7 @@ function ConsolePanel({ logs, searchQuery, setSearchQuery }: {
                                     </span>
                                 </button>
                                 {expandedIds.has(index) && (
-                                    <div className="border-t border-[--border] bg-gray-950 p-3 space-y-2">
+                                    <div className="border-t border-(--border) bg-gray-950 p-3 space-y-2">
                                         <pre className="text-xs font-mono text-gray-300 whitespace-pre-wrap break-all">{log.content}</pre>
                                         <div className="text-xs text-gray-600">{log.pageUrl}</div>
                                     </div>
@@ -1354,9 +1354,9 @@ function ClicksPanel({ logs, searchQuery, setSearchQuery }: {
                     const log = filtered[index]
                     return (
                         <div className="pb-1">
-                            <div className="bg-gray-900 border border-[--border] rounded-md px-3 py-2 flex items-center gap-3">
-                                <FiMousePointer className="text-blue-400 flex-shrink-0" />
-                                <span className="text-xs text-gray-500 font-mono flex-shrink-0 w-[70px]">
+                            <div className="bg-gray-900 border border-(--border) rounded-md px-3 py-2 flex items-center gap-3">
+                                <FiMousePointer className="text-blue-400 shrink-0" />
+                                <span className="text-xs text-gray-500 font-mono shrink-0 w-[70px]">
                                     {log.timestamp ? format(parseISO(log.timestamp), "HH:mm:ss") : "—"}
                                 </span>
                                 <Badge size="sm" intent="gray">{log.element}</Badge>
@@ -1449,7 +1449,7 @@ function ScreenshotsPanel({ screenshots }: { screenshots: Screenshot[] }) {
                         onClick={() => setSelectedIndex(selectedIndex === i ? null : i)}
                         className={cn(
                             "bg-gray-900 border rounded-lg overflow-hidden text-left hover:border-indigo-500 transition-colors",
-                            selectedIndex === i ? "border-indigo-500" : "border-[--border]",
+                            selectedIndex === i ? "border-indigo-500" : "border-(--border)",
                         )}
                     >
                         <img src={ss.data} alt={ss.caption || `Screenshot ${i + 1}`} className="w-full h-[160px] object-cover" />
@@ -1464,7 +1464,7 @@ function ScreenshotsPanel({ screenshots }: { screenshots: Screenshot[] }) {
 
             {/* fullscreen preview */}
             {selectedIndex !== null && (
-                <div className="bg-gray-900 border border-[--border] rounded-lg p-4">
+                <div className="bg-gray-900 border border-(--border) rounded-lg p-4">
                     <img
                         src={screenshots[selectedIndex].data}
                         alt="Full screenshot"
@@ -1647,7 +1647,7 @@ function ReplayPanel({ rrwebEvents, unifiedEvents, includeServerLogs, setInclude
 
     return (
         <div className="h-[calc(100vh-120px)] overflow-hidden flex flex-col">
-            <div className="px-4 py-2 flex items-center gap-3 border-b border-[--border] bg-gray-950 flex-none">
+            <div className="px-4 py-2 flex items-center gap-3 border-b border-(--border) bg-gray-950 flex-none">
                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Session Replay</h3>
                 <span className="text-xs text-gray-500">{rrwebEvents.length} DOM events</span>
                 <div className="ml-auto">
@@ -1665,7 +1665,7 @@ function ReplayPanel({ rrwebEvents, unifiedEvents, includeServerLogs, setInclude
                     <div className="h-full bg-gray-900 relative min-h-0 min-w-0 overflow-hidden">
                         <div
                             ref={containerRef}
-                            className="absolute inset-0 w-full h-full [&_.rr-player]:!h-full [&_.rr-player]:!flex [&_.rr-player]:!flex-col [&_.replayer-wrapper]:!flex-1 [&_.rr-controller]:!flex-none"
+                            className="absolute inset-0 w-full h-full [&_.rr-player]:h-full! [&_.rr-player]:flex! [&_.rr-player]:flex-col! [&_.replayer-wrapper]:flex-1! [&_.rr-controller]:flex-none!"
                         />
                     </div>
                 </ResizablePanel>
@@ -1674,7 +1674,7 @@ function ReplayPanel({ rrwebEvents, unifiedEvents, includeServerLogs, setInclude
 
                 <ResizablePanel defaultSize={30} minSize={15}>
                     <div className="h-full bg-gray-950 flex flex-col flex-none">
-                        <div className="p-2 border-b border-[--border] bg-gray-900/50 space-y-2">
+                        <div className="p-2 border-b border-(--border) bg-gray-900/50 space-y-2">
                             <div className="flex items-center justify-between">
                                 <p className="text-xs text-center font-medium text-gray-400">Timeline ({visibleEvents.length})</p>
                             </div>
@@ -1800,7 +1800,7 @@ function WebSocketPanel({ logs, searchQuery, setSearchQuery }: {
                         <div className="pb-1">
                             <div
                                 className={cn(
-                                    "bg-gray-900 border rounded-md overflow-hidden border-[--border]",
+                                    "bg-gray-900 border rounded-md overflow-hidden border-(--border)",
                                 )}
                             >
                                 <button
@@ -1808,9 +1808,9 @@ function WebSocketPanel({ logs, searchQuery, setSearchQuery }: {
                                     className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
                                 >
                                     {expandedIds.has(index)
-                                        ? <BiChevronDown className="text-gray-500 flex-shrink-0" />
-                                        : <BiChevronRight className="text-gray-500 flex-shrink-0" />}
-                                    <span className="text-xs text-gray-500 font-mono flex-shrink-0 w-[70px]">
+                                        ? <BiChevronDown className="text-gray-500 shrink-0" />
+                                        : <BiChevronRight className="text-gray-500 shrink-0" />}
+                                    <span className="text-xs text-gray-500 font-mono shrink-0 w-[70px]">
                                         {log.timestamp ? format(parseISO(log.timestamp), "HH:mm:ss") : "—"}
                                     </span>
                                     <Badge size="sm" intent={log.direction === "incoming" ? "info" : "success"}>
@@ -1821,7 +1821,7 @@ function WebSocketPanel({ logs, searchQuery, setSearchQuery }: {
                                     </span>
                                 </button>
                                 {expandedIds.has(index) && (
-                                    <div className="border-t border-[--border] bg-gray-950 p-3 space-y-2">
+                                    <div className="border-t border-(--border) bg-gray-950 p-3 space-y-2">
                                         <pre className="text-xs font-mono text-gray-300 bg-gray-900 p-2 rounded break-all whitespace-pre-wrap max-h-[300px] overflow-auto">
                                             {tryFormatJSON(JSON.stringify(log.payload))}
                                         </pre>
@@ -1869,7 +1869,7 @@ function StatCard({ label, value, icon, color, sub, hideValue }: {
     label: string; value: number; icon: React.ReactNode; color: string; sub?: string; hideValue?: boolean
 }) {
     return (
-        <div className="bg-gray-900 border border-[--border] rounded-lg p-3 space-y-1">
+        <div className="bg-gray-900 border border-(--border) rounded-lg p-3 space-y-1">
             <div className="flex items-center gap-2">
                 <span className={cn("text-lg", color)}>{icon}</span>
                 <span className="text-sm text-gray-400 font-medium">{label}</span>
@@ -1884,7 +1884,7 @@ function StatCard({ label, value, icon, color, sub, hideValue }: {
 
 function PipelineStep({ label, detail }: { label: string; detail: string }) {
     return (
-        <div className="bg-gray-900 border border-[--border] rounded-md px-3 py-2 text-center min-w-[100px]">
+        <div className="bg-gray-900 border border-(--border) rounded-md px-3 py-2 text-center min-w-[100px]">
             <p className="text-sm font-semibold text-gray-300">{label}</p>
             <p className="text-sm text-gray-500 mt-0.5">{detail}</p>
         </div>
@@ -1916,7 +1916,7 @@ function LevelDot({ level }: { level: string }) {
     return (
         <span
             className={cn(
-                "inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0",
+                "inline-block w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
                 level === "error" && "bg-red-400",
                 level === "warn" && "bg-orange-400",
                 level === "info" && "bg-blue-400",

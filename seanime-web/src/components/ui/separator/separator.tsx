@@ -10,12 +10,12 @@ import * as React from "react"
 export const SeparatorAnatomy = {
     root: cva([
         "UI-Separator__root",
-        "shrink-0 bg-[--border]",
+        "shrink-0 bg-(--border)",
     ], {
         variants: {
             orientation: {
-                horizontal: "w-full h-[1px]",
-                vertical: "h-full w-[1px]",
+                horizontal: "w-full h-px",
+                vertical: "h-full w-px",
             },
         },
     }),

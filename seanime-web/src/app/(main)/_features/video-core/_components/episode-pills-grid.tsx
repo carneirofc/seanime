@@ -68,7 +68,7 @@ export function EpisodePillsGrid({
                                 "transition-colors duration-150 ease-out",
                                 "focus:outline-none",
                                 !isSelected && [
-                                    "bg-[--subtle]",
+                                    "bg-(--subtle)",
                                     "hover:bg-transparent",
                                 ],
                                 isSelected && [
@@ -78,7 +78,7 @@ export function EpisodePillsGrid({
                                     "text-orange-300",
                                 ],
                                 isWatched && !isSelected && [
-                                    "text-[--muted]",
+                                    "text-(--muted)",
                                 ],
                                 disabled && [
                                     "opacity-50 cursor-not-allowed",
@@ -101,7 +101,7 @@ export function EpisodePillsGrid({
 
                             {/* {isWatched && !isSelected && (
                              <div
-                             className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-[--brand]"
+                             className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-(--brand)"
                              />
                              )} */}
                         </motion.button>

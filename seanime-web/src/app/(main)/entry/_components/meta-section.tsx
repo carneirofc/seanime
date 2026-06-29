@@ -226,7 +226,7 @@ export function MetaSection(props: { entry: Anime_Entry, details: AL_AnimeDetail
 
                         {entry._isNakamaEntry && currentView === "library" &&
                             <div className="flex items-center gap-2 h-10 px-4 border rounded-md flex-none">
-                                <MdOutlineConnectWithoutContact className="size-6 animate-pulse text-[--blue]" />
+                                <MdOutlineConnectWithoutContact className="size-6 animate-pulse text-(--blue)" />
                                 <span className="text-sm tracking-wide">Shared by {nakamaStatus?.hostConnectionStatus?.username}</span>
                             </div>}
 
@@ -241,13 +241,13 @@ export function MetaSection(props: { entry: Anime_Entry, details: AL_AnimeDetail
 
                 {entry.downloadInfo?.hasInaccurateSchedule && <p
                     className={cn(
-                        "text-[--muted] text-sm text-center mb-3",
+                        "text-(--muted) text-sm text-center mb-3",
                         "text-left",
                     )}
                     data-anime-meta-section-inaccurate-schedule-message
                 >
                     <span className="block">Could not retrieve accurate scheduling information for this show.</span>
-                    <span className="block text-[--muted]">Please check the schedule online for more information.</span>
+                    <span className="block text-(--muted)">Please check the schedule online for more information.</span>
                 </p>}
 
 

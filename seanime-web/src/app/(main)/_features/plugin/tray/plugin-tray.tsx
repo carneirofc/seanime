@@ -254,7 +254,7 @@ export function PluginTray(props: TrayPluginProps) {
                     modal={false}
                 >
                     <VaulContent
-                        className={cn("bg-gray-950 p-0 rounded-t-xl mx-auto rounded-b-none border-b-0 !min-h-[120px]")}
+                        className={cn("bg-gray-950 p-0 rounded-t-xl mx-auto rounded-b-none border-b-0 min-h-[120px]!")}
                         onOpenAutoFocus={(e) => e.preventDefault()}
                         style={{
                             width: isMobile ? "100vw" : popoverWidth,
@@ -262,7 +262,7 @@ export function PluginTray(props: TrayPluginProps) {
                         }}
                         data-plugin-tray-popover-content={props.trayIcon.extensionId}
                     >
-                        <div className="absolute w-full top-[-2.5rem]">
+                        <div className="absolute w-full -top-10">
                             <div className="flex items-center justify-between">
                                 <p
                                     className="text-sm border font-medium text-gray-300 px-1.5 py-0.5 rounded-lg bg-black/60"
@@ -373,7 +373,7 @@ function PluginTrayContent(props: PluginTrayContentProps) {
         <div>
             <div
                 className={cn(
-                    "max-h-[35rem] overflow-y-auto p-3",
+                    "max-h-140 overflow-y-auto p-3",
                 )}
             >
 

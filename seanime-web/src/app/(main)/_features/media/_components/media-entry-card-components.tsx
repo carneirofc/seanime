@@ -60,7 +60,7 @@ function MediaEntryCardImage(props: MediaEntryCardImageProps) {
             <span
                 aria-hidden="true"
                 className={cn(
-                    "absolute inset-0 z-0 bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-950/80",
+                    "absolute inset-0 z-0 bg-linear-to-br from-gray-900/80 via-gray-800/70 to-gray-950/80",
                     loaded !== "not-loaded" ? "opacity-0" : "opacity-100",
                 )}
             />
@@ -92,7 +92,7 @@ export function MediaEntryCardAdultVeil(props: React.HTMLAttributes<HTMLDivEleme
     return (
         <div
             aria-hidden="true"
-            className={cn("absolute inset-0 z-[4] overflow-hidden rounded-[--radius] bg-gray-950 opacity-[0.97]", className)}
+            className={cn("absolute inset-0 z-4 overflow-hidden rounded-(--radius) bg-gray-950 opacity-[0.97]", className)}
             {...rest}
         >
             <div
@@ -155,7 +155,7 @@ export function MediaEntryCardOverlay(props: MediaEntryCardOverlayProps) {
         <div
             data-media-entry-card-overlay
             className={cn(
-                "absolute z-[14] top-0 left-0 w-full",
+                "absolute z-14 top-0 left-0 w-full",
             )}
         >{overlay}</div>
     )
@@ -189,16 +189,16 @@ export const MediaEntryCardHoverPopup = React.memo((props: MediaEntryCardHoverPo
             data-state={shouldRenderPopup ? "open" : "closed"}
             className={cn(
                 "group/media-entry-card-popup",
-                !ts.enableMediaCardBlurredBackground ? "bg-[--media-card-popup-background]" : "bg-gray-950/90 backdrop-blur-sm",
-                "absolute z-[15] opacity-0 scale-100 border border-[rgb(255_255_255_/_5%)] duration-150",
+                !ts.enableMediaCardBlurredBackground ? "bg-(--media-card-popup-background)" : "bg-gray-950/90 backdrop-blur-sm",
+                "absolute z-15 opacity-0 scale-100 border border-[rgb(255_255_255/5%)] duration-150",
                 "group-hover/media-entry-card:opacity-100 group-hover/media-entry-card:scale-100",
                 "group-focus-visible/media-entry-card:opacity-100 group-focus-visible/media-entry-card:scale-100",
                 "focus-visible:opacity-100 focus-visible:scale-100",
-                "h-[105%] w-[100%] -top-[5%] rounded-[0.7rem] transition ease-in-out",
-                "transform-gpu will-change-[opacity,transform] [contain:layout_paint_style]",
+                "h-[105%] w-full top-[-5%] rounded-[0.7rem] transition ease-in-out",
+                "transform-gpu will-change-[opacity,transform] contain-[layout_paint_style]",
                 "focus-visible:ring-2 ring-brand-400 focus-visible:outline-0",
                 "hidden lg:block", // Hide on small screens
-                markBorderRenderingArtifacts && "w-[103%] -left-[1.5%]",
+                markBorderRenderingArtifacts && "w-[103%] left-[-1.5%]",
             )}
             {...rest}
         >
@@ -214,7 +214,7 @@ export const MediaEntryCardHoverPopup = React.memo((props: MediaEntryCardHoverPo
             {/*{(ts.enableMediaCardBlurredBackground && !!coverImage) &&*/}
             {/*    <div*/}
             {/*        data-media-entry-card-hover-popup-image-container*/}
-            {/*        className="absolute top-0 left-0 w-full h-full rounded-[--radius] overflow-hidden"*/}
+            {/*        className="absolute top-0 left-0 w-full h-full rounded-(--radius) overflow-hidden"*/}
             {/*    >*/}
             {/*        <SeaImage*/}
             {/*            data-media-entry-card-hover-popup-image*/}
@@ -229,7 +229,7 @@ export const MediaEntryCardHoverPopup = React.memo((props: MediaEntryCardHoverPo
 
             {/*        <div*/}
             {/*            data-media-entry-card-hover-popup-image-blur-overlay*/}
-            {/*            className="absolute top-0 w-full h-full backdrop-blur-xl z-[0]"*/}
+            {/*            className="absolute top-0 w-full h-full backdrop-blur-xl z-0"*/}
             {/*        ></div>*/}
             {/*    </div>}*/}
 
@@ -237,10 +237,10 @@ export const MediaEntryCardHoverPopup = React.memo((props: MediaEntryCardHoverPo
                 <>
                     {ts.enableMediaCardBlurredBackground && <div
                         data-media-entry-card-hover-popup-image-blur-gradient
-                        className="w-full absolute top-0 h-[50%] opacity-60 bg-gradient-to-b from-30% from-[--background] to-transparent z-[2] rounded-[--radius]"
+                        className="w-full absolute top-0 h-[50%] opacity-60 bg-linear-to-b from-30% from-(--background) to-transparent z-2 rounded-(--radius)"
                     />}
 
-                    <div data-media-entry-card-hover-popup-content className="p-2 h-full w-full flex flex-col justify-between relative z-[2]">
+                    <div data-media-entry-card-hover-popup-content className="p-2 h-full w-full flex flex-col justify-between relative z-2">
                         {children}
                     </div>
                 </>
@@ -356,14 +356,14 @@ export function MediaEntryCardHoverPopupTitleSection(props: MediaEntryCardHoverP
                 >
                     {title}
                 </SeaLink>
-                {!!otherTitle && <p className="text-xs text-[--muted] text-center px-4 line-clamp-1">
+                {!!otherTitle && <p className="text-xs text-(--muted) text-center px-4 line-clamp-1">
                     {otherTitle}
                 </p>}
             </div>
             {!!year && <div>
                 <p
                     data-media-entry-card-hover-popup-title-section-year-season
-                    className="justify-center text-sm text-[--muted] flex w-full gap-1 items-center"
+                    className="justify-center text-sm text-(--muted) flex w-full gap-1 items-center"
                 >
                     {/*{startCase(format || "")} - <BiCalendarAlt /> {capitalize(season ?? "")} {year}*/}
                     <BiCalendarAlt /> {capitalize(season ?? "")} {year}{(format !== "TV" && format !== "MANGA") && ` - ${format || ""}`}
@@ -398,7 +398,7 @@ export function AnimeEntryCardNextAiring(props: AnimeEntryCardNextAiringProps) {
                     nextAiring?.timeUntilAiring), { addSuffix: true })}
                     {/*<Badge*/}
                     {/*    size="sm"*/}
-                    {/*    className="bg-transparent rounded-[--radius]"*/}
+                    {/*    className="bg-transparent rounded-(--radius)"*/}
                     {/*>{nextAiring?.episode}</Badge>*/}
                 </p>
             </div>
@@ -463,13 +463,13 @@ export function MediaEntryCardBody(props: MediaEntryCardBodyProps) {
                 bypassEntryPreloadBudget={bypassEntryPreloadBudget}
                 warmEntryOnViewport={warmEntryOnViewport}
                 onClick={onClick}
-                className="w-full relative focus-visible:ring-2 ring-[--brand]"
+                className="w-full relative focus-visible:ring-2 ring-(--brand)"
                 data-media-entry-card-body-link
             >
                 <div
                     data-media-entry-card-body
                     className={cn(
-                        "media-entry-card__body aspect-[6/8] flex-none rounded-[--radius] object-cover object-center relative overflow-hidden isolate select-none",
+                        "media-entry-card__body aspect-6/8 flex-none rounded-(--radius) object-cover object-center relative overflow-hidden isolate select-none",
                     )}
                 >
 
@@ -480,14 +480,14 @@ export function MediaEntryCardBody(props: MediaEntryCardBodyProps) {
                         <div
                             data-media-entry-card-body-progress-bar-container
                             className={cn(
-                                "absolute top-0 w-full h-1 z-[2] bg-gray-700 left-0",
+                                "absolute top-0 w-full h-1 z-2 bg-gray-700 left-0",
                                 listStatus === "COMPLETED" && "hidden",
                             )}
                         >
                             <div
                                 data-media-entry-card-body-progress-bar
                                 className={cn(
-                                    "h-1 absolute z-[2] left-0 bg-gray-200 transition-all",
+                                    "h-1 absolute z-2 left-0 bg-gray-200 transition-all",
                                     (listStatus === "CURRENT") ? "bg-brand-400" : "bg-gray-400",
                                 )}
                                 style={{
@@ -498,16 +498,16 @@ export function MediaEntryCardBody(props: MediaEntryCardBodyProps) {
                     )}
 
                     {(showLibraryBadge) &&
-                        <div data-media-entry-card-body-library-badge className="absolute z-[1] left-0 top-0">
+                        <div data-media-entry-card-body-library-badge className="absolute z-1 left-0 top-0">
                             <Badge
                                 size="xl" intent="warning-solid"
-                                className="rounded-[--radius] rounded-bl-none rounded-tr-none text-orange-900"
+                                className="rounded-(--radius) rounded-bl-none rounded-tr-none text-orange-900"
                             ><IoLibrarySharp /></Badge>
                         </div>}
 
                     {/*RELEASING BADGE*/}
                     {(status === "RELEASING" || status === "NOT_YET_RELEASED") && !hideReleasingBadge &&
-                        <div data-media-entry-card-body-releasing-badge-container className="absolute z-[10] right-1 top-2">
+                        <div data-media-entry-card-body-releasing-badge-container className="absolute z-10 right-1 top-2">
                             <Badge intent={status === "RELEASING" ? "primary-solid" : "zinc-solid"} size="lg"><RiSignalTowerLine /></Badge>
                         </div>}
 
@@ -560,11 +560,11 @@ export function MediaEntryCardTitleSection(props: MediaEntryCardTitleSectionProp
             <div>
                 <p
                     data-media-entry-card-title-section-title
-                    className="text-pretty font-medium min-[2000px]:font-semibold text-sm lg:text-[1rem] min-[2000px]:text-lg line-clamp-2"
+                    className="text-pretty font-medium 5xl:font-semibold text-sm lg:text-[1rem] 5xl:text-lg line-clamp-2"
                 >{title}</p>
             </div>
             {(!!season || !!year) && <div>
-                <p data-media-entry-card-title-section-year-season className="text-sm text-[--muted] inline-flex gap-1 items-center">
+                <p data-media-entry-card-title-section-year-season className="text-sm text-(--muted) inline-flex gap-1 items-center">
                     {capitalize(season ?? "")} {year}
                 </p>
             </div>}
@@ -630,17 +630,17 @@ export const MediaEntryCardHoverPopupBanner = memo(({
     >
         <div
             data-media-entry-card-hover-popup-banner-container
-            className="aspect-[4/2] relative rounded-[--radius] mb-2 cursor-pointer overflow-hidden isolate"
+            className="aspect-4/2 relative rounded-(--radius) mb-2 cursor-pointer overflow-hidden isolate"
         >
             {(showProgressBar && progress && listStatus && progressTotal && progress !== progressTotal) &&
                 <div
                     data-media-entry-card-hover-popup-banner-progress-bar-container
-                    className="absolute overflow-hidden top-0 w-full h-1 z-[2] bg-gray-700 left-0"
+                    className="absolute overflow-hidden top-0 w-full h-1 z-2 bg-gray-700 left-0"
                 >
                     <div
                         data-media-entry-card-hover-popup-banner-progress-bar
                         className={cn(
-                            "h-1 absolute z-[2] left-0 bg-gray-200 transition-all",
+                            "h-1 absolute z-2 left-0 bg-gray-200 transition-all",
                             (listStatus === "CURRENT" || listStatus === "COMPLETED") ? "bg-brand-400" : "bg-gray-400",
                         )}
                         style={{ width: `${String(Math.ceil((progress / progressTotal) * 100))}%` }}
@@ -648,7 +648,7 @@ export const MediaEntryCardHoverPopupBanner = memo(({
                 </div>}
 
             {(status === "RELEASING" || status === "NOT_YET_RELEASED") &&
-                <div data-media-entry-card-hover-popup-banner-releasing-badge-container className="absolute z-[10] right-1 top-2">
+                <div data-media-entry-card-hover-popup-banner-releasing-badge-container className="absolute z-10 right-1 top-2">
                     <Tooltip
                         trigger={<Badge intent={status === "RELEASING" ? "primary-solid" : "zinc-solid"} size="lg"><RiSignalTowerLine /></Badge>}
                     >
@@ -674,12 +674,12 @@ export const MediaEntryCardHoverPopupBanner = memo(({
                 />
             </div> : <div
                 data-media-entry-card-hover-popup-banner-image-gradient
-                className="h-full block absolute w-full bg-gradient-to-t from-gray-800 to-transparent"
+                className="h-full block absolute w-full bg-linear-to-t from-gray-800 to-transparent"
             ></div>}
 
             {(blurAdultContent && isAdult) && <MediaEntryCardAdultVeil data-media-entry-card-hover-popup-banner-blur-adult-content-overlay />}
 
-            <div data-media-entry-card-hover-popup-banner-progress-badge-container className="absolute z-[4] left-0 bottom-0">
+            <div data-media-entry-card-hover-popup-banner-progress-badge-container className="absolute z-4 left-0 bottom-0">
                 <MediaEntryProgressBadge
                     progress={progress}
                     progressTotal={progressTotal}
@@ -690,7 +690,7 @@ export const MediaEntryCardHoverPopupBanner = memo(({
             {(trailerEnabled && actionPopupHover) && <div
                 data-media-entry-card-hover-popup-banner-trailer-container
                 className={cn(
-                    "absolute w-full h-full overflow-hidden rounded-[--radius]",
+                    "absolute w-full h-full overflow-hidden rounded-(--radius)",
                     !trailerLoaded && "hidden",
                 )}
             >
@@ -720,8 +720,8 @@ export const MediaEntryCardHoverPopupBanner = memo(({
             {<div
                 data-media-entry-card-hover-popup-banner-gradient
                 className={cn(
-                    "w-full absolute -bottom-1 h-[80%] from-10% bg-gradient-to-t from-[--media-card-popup-background] to-transparent z-[2]",
-                    ts.enableMediaCardBlurredBackground && "from-[--background] from-0% opacity-60",
+                    "w-full absolute -bottom-1 h-[80%] from-10% bg-linear-to-t from-(--media-card-popup-background) to-transparent z-2",
+                    ts.enableMediaCardBlurredBackground && "from-(--background) from-0% opacity-60",
                 )}
             />}
         </div>

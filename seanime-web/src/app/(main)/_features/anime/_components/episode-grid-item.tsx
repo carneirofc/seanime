@@ -105,7 +105,7 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
             className={cn(
                 "max-w-full",
                 "rounded-lg relative transition group/episode-list-item select-none",
-                !!ts.libraryScreenCustomBackgroundImage && ts.libraryScreenCustomBackgroundOpacity > 5 ? "bg-[--background] p-3" : "py-3",
+                !!ts.libraryScreenCustomBackgroundImage && ts.libraryScreenCustomBackgroundOpacity > 5 ? "bg-(--background) p-3" : "py-3",
                 "pr-12",
                 disabled && "cursor-not-allowed opacity-50 pointer-events-none",
                 className,
@@ -117,7 +117,7 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                 <Badge
                     data-episode-grid-item-filler-badge
                     className={cn(
-                        "font-semibold absolute top-3 left-0 z-[5] text-white bg-orange-800 !bg-opacity-100 rounded-[--radius-md] text-base rounded-bl-none rounded-tr-none",
+                        "font-semibold absolute top-3 left-0 z-5 text-white bg-orange-800/100 rounded-md text-base rounded-bl-none rounded-tr-none",
                         "lg:group-hover/episode-list-item:scale-105 lg:group-hover/episode-list-item:-translate-x-0.5 lg:group-hover/episode-list-item:-translate-y-0.5 transition-transform",
                         !!ts.libraryScreenCustomBackgroundImage && ts.libraryScreenCustomBackgroundOpacity > 5 && "top-3  left-3",
                     )}
@@ -137,7 +137,7 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                     className={cn(
                         "w-36 h-28 lg:w-44 lg:h-32",
                         (ts.hideEpisodeCardDescription) && "w-36 h-28 lg:w-40 lg:h-28",
-                        "flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden",
+                        "flex-none rounded-md object-cover object-center relative overflow-hidden",
                         "group/ep-item-img-container",
                         "lg:group-hover/episode-list-item:scale-105 transition-transform",
                         // onClick && "hover:ring-1 ring-[rgba(255,255,255,0.1)] ring-offset-transparent ring-offset-2",
@@ -145,22 +145,22 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                         {
                             "border-2 border-red-700": isInvalid,
                             "border-2 border-yellow-900": isFiller,
-                            "border-2 border-[--brand]": isSelected,
+                            "border-2 border-(--brand)": isSelected,
                         },
 
                         imageContainerClassName,
                     )}
                     onClick={onClick}
                 >
-                    <div data-episode-grid-item-image-overlay className="absolute z-[1] rounded-[--radius-md] w-full h-full"></div>
+                    <div data-episode-grid-item-image-overlay className="absolute z-1 rounded-md w-full h-full"></div>
                     <div
                         data-episode-grid-item-image-background
-                        className="bg-[--background] absolute z-[0] rounded-[--radius-md] w-full h-full"
+                        className="bg-(--background) absolute z-0 rounded-md w-full h-full"
                     ></div>
                     {!!onClick && <div
                         data-episode-grid-item-action-overlay
                         className={cn(
-                            "absolute inset-0 bg-gray-950 bg-opacity-60 z-[2] flex items-center justify-center",
+                            "absolute inset-0 bg-gray-950/60 z-2 flex items-center justify-center",
                             "transition-opacity opacity-0 group-hover/ep-item-img-container:opacity-100",
                         )}
                     >
@@ -171,12 +171,12 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                         data-episode-card-action-icon
                         className={cn(
                             "px-6 text-gray-200",
-                            "cursor-pointer bg-gray-900/50 z-[1] absolute w-[105%] h-[105%] items-center justify-center",
+                            "cursor-pointer bg-gray-900/50 z-1 absolute w-[105%] h-[105%] items-center justify-center",
                             "hidden md:flex flex-col gap-1",
                         )}
                     >
                         <div className="bg-gray-900/70 px-3 py-2 rounded-lg text-center">
-                            {/*{topTitle !== title && <p className="line-clamp-1 text-[--muted]">{topTitle}</p>}*/}
+                            {/*{topTitle !== title && <p className="line-clamp-1 text-(--muted)">{topTitle}</p>}*/}
                             <p className="text-md tracking-wide line-clamp-1">{title}</p>
                         </div>
                     </div>}
@@ -200,7 +200,7 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                     />}
 
                     {(serverStatus?.settings?.library?.enableWatchContinuity && !!percentageComplete && !isWatched) &&
-                        <div data-episode-grid-item-progress-bar-container className="absolute bottom-0 left-0 w-full z-[3]">
+                        <div data-episode-grid-item-progress-bar-container className="absolute bottom-0 left-0 w-full z-3">
                             <ProgressBar value={percentageComplete} size="xs" />
                         </div>}
                 </div>
@@ -215,15 +215,15 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                     <p
                         className={cn(
                             !episodeTitle && "text-lg font-semibold",
-                            !!episodeTitle && "transition line-clamp-2 text-base text-[--muted]",
+                            !!episodeTitle && "transition line-clamp-2 text-base text-(--muted)",
                             // { "opacity-50 group-hover/episode-list-item:opacity-100": isWatched },
                         )}
                         data-episode-grid-item-title
                     >
                         <span
                             className={cn(
-                                "font-medium text-[--foreground]",
-                                isSelected && "text-[--brand]",
+                                "font-medium text-(--foreground)",
+                                isSelected && "text-(--brand)",
                             )}
                         >
                             {title?.replaceAll("`", "'")}</span>{(!!episodeTitle && !!length) &&
@@ -233,7 +233,7 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                     {!!episodeTitle && episodeTitle !== title &&
                         <p
                             data-episode-grid-item-episode-title
-                            className={cn("text-md font-medium lg:text-lg text-gray-300 line-clamp-2 lg:!leading-6",
+                            className={cn("text-md font-medium lg:text-lg text-gray-300 line-clamp-2 lg:leading-6!",
                                 spoiler.blurTitle && "blur-sm",
                                 episodeTitleClassName)}
                         >{episodeTitle?.replaceAll("`", "'")}</p>}
@@ -242,7 +242,7 @@ export const EpisodeGridItem = React.memo((props: EpisodeGridItemProps & React.C
                     {!!description && !ts.hideEpisodeCardDescription &&
                         <p
                             data-episode-grid-item-episode-description className={cn(
-                            "text-sm text-[--muted] line-clamp-2",
+                            "text-sm text-(--muted) line-clamp-2",
                             spoiler.blurDescription && "blur-sm",
                         )}
                         >{description.replaceAll("`",

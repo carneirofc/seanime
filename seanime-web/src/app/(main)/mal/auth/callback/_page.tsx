@@ -45,7 +45,7 @@ export default function _page() {
 
     return (
         <div>
-            <LoadingOverlay className="fixed w-full h-full z-[80]">
+            <LoadingOverlay className="fixed w-full h-full z-80">
                 <h3 className="mt-2">Authenticating...</h3>
             </LoadingOverlay>
         </div>

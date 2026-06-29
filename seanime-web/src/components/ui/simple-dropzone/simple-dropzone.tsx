@@ -13,20 +13,20 @@ import { hiddenInputStyles } from "../input"
 export const SimpleDropzoneAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-SimpleDropzone__root",
-        "appearance-none w-full mb-2 cursor-pointer hover:text-[--foreground] flex items-center justify-center p-4 border rounded-[--radius] border-dashed",
+        "appearance-none w-full mb-2 cursor-pointer hover:text-(--foreground) flex items-center justify-center p-4 border rounded-(--radius) border-dashed",
         "gap-3 text-sm sm:text-base",
-        "outline-none ring-[--ring] focus-visible:ring-2",
-        "text-[--muted] transition ease-in-out hover:border-[--foreground]",
+        "outline-none ring-(--ring) focus-visible:ring-2",
+        "text-(--muted) transition ease-in-out hover:border-(--foreground)",
         "data-[drag-active=true]:border-brand-500",
-        "data-[drag-reject=true]:border-[--red]",
+        "data-[drag-reject=true]:border-(--red)",
     ]),
     list: cva([
         "UI-SimpleDropzone__list",
-        "flex rounded-[--radius-md] flex-wrap divide-y divide-[--border]",
+        "flex rounded-md flex-wrap divide-y divide-(--border)",
     ]),
     listItem: cva([
         "UI-SimpleDropzone__listItem",
-        "flex items-center justify-space-between relative p-1 hover:bg-[--subtle] w-full overflow-hidden",
+        "flex items-center justify-space-between relative p-1 hover:bg-(--subtle) w-full overflow-hidden",
     ]),
     listItemDetailsContainer: cva([
         "UI-SimpleDropzone__listItemDetailsContainer",
@@ -38,7 +38,7 @@ export const SimpleDropzoneAnatomy = defineStyleAnatomy({
     ]),
     listItemSize: cva([
         "UI-SimpleDropzone__listItemSize",
-        "text-xs uppercase text-center font-semibold align-center text-[--muted]",
+        "text-xs uppercase text-center font-semibold align-center text-(--muted)",
     ]),
     listItemRemoveButton: cva([
         "UI-SimpleDropzone__listItemRemoveButton",
@@ -54,7 +54,7 @@ export const SimpleDropzoneAnatomy = defineStyleAnatomy({
     ]),
     imagePreview: cva([
         "UI-SimpleDropzone__imagePreview",
-        "relative bg-transparent border h-full bg-center bg-no-repeat bg-contain rounded-[--radius-md] overflow-hidden",
+        "relative bg-transparent border h-full bg-center bg-no-repeat bg-contain rounded-md overflow-hidden",
         "col-span-1 row-span-1",
     ]),
     imagePreviewRemoveButton: cva([
@@ -67,7 +67,7 @@ export const SimpleDropzoneAnatomy = defineStyleAnatomy({
     ]),
     maxSizeText: cva([
         "UI-SimpleDropzone__maxSizeText",
-        "text-sm text-[--muted] font-medium",
+        "text-sm text-(--muted) font-medium",
     ]),
 })
 

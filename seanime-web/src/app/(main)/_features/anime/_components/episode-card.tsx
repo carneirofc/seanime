@@ -133,11 +133,11 @@ export function EpisodeCard(props: EpisodeCardProps) {
     const showAdultVeil = !!serverStatus?.settings?.anilist?.blurAdultContent && !!(isAdult ?? episode?.baseAnime?.isAdult)
 
     const Meta = () => (
-        <div data-episode-card-info-container className="relative z-[3] w-full space-y-0">
+        <div data-episode-card-info-container className="relative z-3 w-full space-y-0">
             {(displayTopTitle !== title || showTotalEpisodes) && <p
                 data-episode-card-title
                 className={cn(
-                    "w-[80%] line-clamp-1 text-md md:text-lg transition-colors duration-200 text-[--foreground] font-semibold",
+                    "w-[80%] line-clamp-1 text-md md:text-lg transition-colors duration-200 text-(--foreground) font-semibold",
                     isSingleContainer && "text-sm max-w-[80%] text-white/60",
                     spoiler.blurTitle && "blur-sm",
                 )}
@@ -149,12 +149,12 @@ export function EpisodeCard(props: EpisodeCardProps) {
                     <span className="flex-none text-base md:text-xl font-medium">{title}{showTotalEpisodes ?
                         <span className="opacity-40">{` / `}{progressTotal! - offset}</span>
                         : ``}</span>
-                    <span className="text-[--muted] text-base md:text-lg ml-2 font-normal line-clamp-1">{showAnimeInfo
+                    <span className="text-(--muted) text-base md:text-lg ml-2 font-normal line-clamp-1">{showAnimeInfo
                         ? "- " + anime.title
                         : ""}</span>
                 </p>
                 {(!!meta || !!length) && (!isSingleContainer || !minutesRemaining) && (
-                    <p data-episode-card-meta-text className="text-[--muted] flex-none ml-2 text-sm md:text-base line-clamp-2 text-right">
+                    <p data-episode-card-meta-text className="text-(--muted) flex-none ml-2 text-sm md:text-base line-clamp-2 text-right">
                         {meta}{!!meta && !!length && `  • `}{length ? `${length}m` : ""}
                     </p>)}
             </div>
@@ -166,7 +166,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
             hideMenuIf={!anime?.id}
             content={
                 <ContextMenuGroup>
-                    <ContextMenuLabel className="text-[--muted] line-clamp-1 py-0 my-2">
+                    <ContextMenuLabel className="text-(--muted) line-clamp-1 py-0 my-2">
                         {anime?.title}
                     </ContextMenuLabel>
 
@@ -212,7 +212,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
                         "rounded-xl space-y-2 flex-none group/episode-card cursor-pointer",
                         "select-none",
                         type === "carousel" && "w-full",
-                        type === "grid" && "aspect-[4/2] w-72 lg:w-[26rem]",
+                        type === "grid" && "aspect-4/2 w-72 lg:w-104",
                         className,
                         containerClass,
                     )}
@@ -227,7 +227,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
                     <div
                         data-episode-card-image-container
                         className={cn(
-                            "w-full h-full rounded-xl overflow-hidden z-[1] aspect-[4/2] relative bg-[--background]",
+                            "w-full h-full rounded-xl overflow-hidden z-1 aspect-4/2 relative bg-(--background)",
                             // "lg:group-hover/episode-card:scale-[1.02] lg:group-hover/episode-card:translate-y-1  transition-transform
                             // duration-200",
                         )}
@@ -250,13 +250,13 @@ export function EpisodeCard(props: EpisodeCardProps) {
                             )}
                         /> : <div
                             data-episode-card-image-bottom-gradient
-                            className="h-full block rounded-xl absolute w-full bg-gradient-to-t from-gray-800 to-transparent z-[2]"
+                            className="h-full block rounded-xl absolute w-full bg-linear-to-t from-gray-800 to-transparent z-2"
                         ></div>}
 
                         {showAdultVeil && (
                             <MediaEntryCardAdultVeil
                                 data-episode-card-adult-content-overlay
-                                className="z-[2]"
+                                className="z-2"
                             />
                         )}
 
@@ -264,7 +264,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
                         <EpisodeItemBottomGradient isSingleContainer={isSingleContainer} className="rounded-b-xl" />
 
                         {isSingleContainer && (
-                            <div className="absolute bottom-0 left-0 w-full h-fit z-[3] p-3">
+                            <div className="absolute bottom-0 left-0 w-full h-fit z-3 p-3">
                                 <Meta />
                             </div>
                         )}
@@ -272,7 +272,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
                         {(serverStatus?.settings?.library?.enableWatchContinuity && !!percentageComplete) &&
                             <div
                                 data-episode-card-progress-bar-container
-                                className="absolute bottom-0 left-0 w-full z-[3]"
+                                className="absolute bottom-0 left-0 w-full z-3"
                                 data-episode-number={episodeNumber}
                                 data-media-id={anime?.id}
                                 data-progress-total={progressTotal}
@@ -281,7 +281,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
                                 <ProgressBar value={percentageComplete} size="xs" />
                                 {!!minutesRemaining && <div
                                     className={cn(
-                                        "absolute bottom-2 right-2 text-[--muted]",
+                                        "absolute bottom-2 right-2 text-(--muted)",
                                         isSingleContainer && "right-4 bottom-4 ",
                                     )}
                                 >
@@ -293,7 +293,7 @@ export function EpisodeCard(props: EpisodeCardProps) {
                             data-episode-card-action-icon
                             className={cn(
                                 "group-hover/episode-card:opacity-100 text-6xl text-gray-200",
-                                "cursor-pointer opacity-0 transition-opacity bg-gray-950 bg-opacity-60 z-[2] absolute w-[105%] h-[105%] items-center justify-center",
+                                "cursor-pointer opacity-0 transition-opacity bg-gray-950/60 z-2 absolute w-[105%] h-[105%] items-center justify-center",
                                 "hidden md:flex",
                             )}
                         >
@@ -303,24 +303,24 @@ export function EpisodeCard(props: EpisodeCardProps) {
                             data-episode-card-action-icon
                             className={cn(
                                 "px-12 text-gray-200",
-                                "cursor-pointer bg-gray-900/50 z-[1] absolute w-[105%] h-[105%] items-center justify-center",
+                                "cursor-pointer bg-gray-900/50 z-1 absolute w-[105%] h-[105%] items-center justify-center",
                                 "hidden md:flex flex-col gap-1",
                             )}
                         >
                             <div className="bg-gray-900/70 px-3 py-2 rounded-lg text-center">
-                                {/*{topTitle !== title && <p className="line-clamp-1 text-[--muted]">{topTitle}</p>}*/}
+                                {/*{topTitle !== title && <p className="line-clamp-1 text-(--muted)">{topTitle}</p>}*/}
                                 <p className="text-2xl tracking-wide">{title}</p>
                             </div>
                         </div>}
 
                         {/*{isInvalid &&*/}
-                        {/*    <p data-episode-card-invalid-metadata className="text-red-300 opacity-50 absolute left-2 bottom-2 z-[2]">No metadata*/}
+                        {/*    <p data-episode-card-invalid-metadata className="text-red-300 opacity-50 absolute left-2 bottom-2 z-2">No metadata*/}
                         {/*                                                                                                             found</p>}*/}
                     </div>
                     {(showAnimeInfo && !isSingleContainer) ? <div data-episode-card-anime-info-container className="flex gap-3 items-center">
                         <div
                             data-episode-card-anime-image-container
-                            className="flex-none w-12 aspect-[5/6] rounded-lg overflow-hidden z-[1] relative hidden"
+                            className="flex-none w-12 aspect-5/6 rounded-lg overflow-hidden z-1 relative hidden"
                         >
                             {!!anime?.image && <SeaImage
                                 data-episode-card-anime-image

@@ -62,12 +62,12 @@ const radioGroupClasses = {
     ),
     stackClass: "space-y-0 flex flex-wrap lg:flex-nowrap lg:flex-row gap-2",
     itemIndicatorClass: "hidden",
-    itemLabelClass: "font-normal tracking-wide line-clamp-1 truncate flex flex-col items-center data-[state=checked]:text-[--gray] cursor-pointer",
+    itemLabelClass: "font-normal tracking-wide line-clamp-1 truncate flex flex-col items-center data-[state=checked]:text-(--gray) cursor-pointer",
     itemContainerClass: cn(
-        "items-start cursor-pointer transition border-transparent rounded-[--radius] py-1.5 px-3 w-full",
-        "hover:bg-[--subtle] dark:bg-gray-900",
+        "items-start cursor-pointer transition border-transparent rounded-(--radius) py-1.5 px-3 w-full",
+        "hover:bg-(--subtle) dark:bg-gray-900",
         "data-[state=checked]:bg-white dark:data-[state=unchecked]:hover:bg-gray-800 dark:data-[state=checked]:bg-gray-900",
-        "focus:ring-2 ring-transparent dark:ring-transparent outline-none ring-offset-1 ring-offset-[--background] focus-within:ring-2 transition",
+        "focus:ring-2 ring-transparent dark:ring-transparent outline-none ring-offset-1 ring-offset-(--background) focus-within:ring-2 transition",
         "border border-transparent data-[state=checked]:border-gray-500 data-[state=checked]:ring-offset-0",
     ),
 }
@@ -396,7 +396,7 @@ export function ChapterReaderSettings(props: ChapterReaderSettingsProps) {
                 open={open}
                 onOpenChange={setOpen}
                 size="lg"
-                contentClass="z-[51] bg-gray-950/80 firefox:bg-opacity-100 firefox:backdrop-blur-none"
+                contentClass="z-51 bg-gray-950/80 firefox:bg-gray-950/100 firefox:backdrop-blur-none"
                 data-chapter-reader-settings-drawer
             >
                 <div className="space-y-4 py-4" data-chapter-reader-settings-drawer-content>
@@ -551,7 +551,7 @@ export function ChapterReaderSettings(props: ChapterReaderSettingsProps) {
                         <>
                             <div>
                                 <h4>Editable Keybinds</h4>
-                                <p className="text-[--muted] text-xs">Click to edit</p>
+                                <p className="text-(--muted) text-xs">Click to edit</p>
                             </div>
 
                             {[
@@ -585,7 +585,7 @@ export function ChapterReaderSettings(props: ChapterReaderSettingsProps) {
                                         <div className="">
                                             <Button
                                                 onKeyDownCapture={(e) => setKbs(e, item.key)}
-                                                className="focus:ring-2 focus:ring-[--brand] focus:ring-offset-1 focus-visible:ring-2 focus-visible:ring-[--brand] focus-visible:ring-offset-1"
+                                                className="focus:ring-2 focus:ring-(--brand) focus:ring-offset-1 focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-1"
                                                 size="sm"
                                                 intent="primary-subtle"
                                                 id={`chapter-reader-settings-kbs-${item.key}`}
@@ -599,9 +599,9 @@ export function ChapterReaderSettings(props: ChapterReaderSettingsProps) {
                                                 {item.value}
                                             </Button>
                                         </div>
-                                        <label className="text-[--gray]">
+                                        <label className="text-(--gray)">
                                             <span className="font-semibold">{item.label}</span>
-                                            {/*{!!item.help && <span className="ml-2 text-[--muted]">({item.help})</span>}*/}
+                                            {/*{!!item.help && <span className="ml-2 text-(--muted)">({item.help})</span>}*/}
                                         </label>
                                         {
                                             item.value !== (MANGA_DEFAULT_KBS as any)[item.key] && (

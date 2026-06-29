@@ -48,7 +48,7 @@ export function TopIndefiniteLoader() {
 
     return (
         <>
-            {showStack.length > 0 && <div className="w-full bg-gray-950 fixed top-0 left-0 z-[100]">
+            {showStack.length > 0 && <div className="w-full bg-gray-950 fixed top-0 left-0 z-100">
                 <ProgressBar size="xs" isIndeterminate />
             </div>}
         </>

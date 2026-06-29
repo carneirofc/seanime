@@ -80,9 +80,9 @@ export function MediaplayerSettings(props: MediaplayerSettingsProps) {
                 <Accordion
                     type="single"
                     className=""
-                    triggerClass="text-[--muted] dark:data-[state=open]:text-white px-0 dark:hover:bg-transparent hover:bg-transparent dark:hover:text-white hover:text-black"
+                    triggerClass="text-(--muted) dark:data-[state=open]:text-white px-0 dark:hover:bg-transparent hover:bg-transparent dark:hover:text-white hover:text-black"
                     itemClass=""
-                    contentClass="p-4 border rounded-[--radius-md]"
+                    contentClass="p-4 border rounded-md"
                     collapsible
                     defaultValue={serverStatus?.settings?.mediaPlayer?.defaultPlayer}
                 >

@@ -137,7 +137,7 @@ function StepIndicator({ currentStep, totalSteps, onStepClick }: { currentStep: 
             </div>
 
             <div className="text-center mb-8">
-                <p className="text-[--muted] text-sm ">
+                <p className="text-(--muted) text-sm ">
                     These settings can be changed later
                 </p>
             </div>
@@ -166,11 +166,11 @@ function StepIndicator({ currentStep, totalSteps, onStepClick }: { currentStep: 
                             className={cn(
                                 "w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-all duration-200",
                                 // i <= currentStep
-                                //     ? `bg-gradient-to-r ${step.gradient} text-white`
+                                //     ? `bg-linear-to-r ${step.gradient} text-white`
                                 //     : "bg-gray-700 text-gray-500",
                                 i <= currentStep
-                                    ? "bg-gradient-to-br from-brand-500/20 to-indigo-500/20 border border-brand-500/20"
-                                    : "bg-[--subtle] text-[--muted]",
+                                    ? "bg-linear-to-br from-brand-500/20 to-indigo-500/20 border border-brand-500/20"
+                                    : "bg-(--subtle) text-(--muted)",
                                 i <= currentStep && "group-hover:shadow-md",
                             )}
                             initial={{ scale: 0.9 }}
@@ -186,8 +186,8 @@ function StepIndicator({ currentStep, totalSteps, onStepClick }: { currentStep: 
                             <h3
                                 className={cn(
                                     "text-sm font-medium transition-colors duration-200 tracking-wide",
-                                    i <= currentStep ? "text-white" : "text-[--muted]",
-                                    "group-hover:text-[--brand]",
+                                    i <= currentStep ? "text-white" : "text-(--muted)",
+                                    "group-hover:text-(--brand)",
                                 )}
                             >
                                 {step.title}
@@ -198,11 +198,11 @@ function StepIndicator({ currentStep, totalSteps, onStepClick }: { currentStep: 
                         </div>
 
                         {/* {i < STEPS.length - 1 && (
-                         <div className="absolute top-8 left-full w-[40%] h-0.5 -translate-y-0 hidden md:block">
+                         <div className="absolute top-8 left-full w-[40%] h-0.5 translate-y-0 hidden md:block">
                          <div className={cn(
                          "h-full transition-all duration-300",
                          i < currentStep
-                         ? "bg-[--subtle]"
+                         ? "bg-(--subtle)"
                          : "bg-gray-600"
                          )} />
                          </div>
@@ -251,7 +251,7 @@ function LibraryStep({ form }: { form: any }) {
         >
             <motion.div variants={itemVariants} className="text-center space-y-4">
                 <h2 className="text-3xl font-bold">Anime Library</h2>
-                <p className="text-[--muted] text-sm max-w-lg mx-auto">
+                <p className="text-(--muted) text-sm max-w-lg mx-auto">
                     Choose the folder where your anime files are stored. This is where Seanime will scan for your collection.
                 </p>
             </motion.div>
@@ -287,12 +287,12 @@ function PlayerStep({ form, status }: { form: any, status: Status }) {
         >
             <motion.div variants={itemVariants} className="text-center space-y-4">
 
-                {__isElectronDesktop__ && <div className="max-w-3xl mx-auto p-4 rounded-xl border !mb-8 font-medium">
+                {__isElectronDesktop__ && <div className="max-w-3xl mx-auto p-4 rounded-xl border mb-8! font-medium">
                     Seanime Denshi includes a built-in media player that is enabled by default. You can still configure an external media player.
                 </div>}
 
                 <h2 className="text-3xl font-bold">{__isDesktop__ ? "External " : ""}Media Player</h2>
-                <p className="text-[--muted] text-sm max-w-lg mx-auto">
+                <p className="text-(--muted) text-sm max-w-lg mx-auto">
                     Configure your preferred external media player for watching anime and tracking progress automatically.
                 </p>
             </motion.div>
@@ -435,7 +435,7 @@ function TorrentStep({ form }: { form: any }) {
         >
             <motion.div variants={itemVariants} className="text-center space-y-4">
                 <h2 className="text-3xl font-bold">Downloading</h2>
-                <p className="text-[--muted] text-sm max-w-lg mx-auto">
+                <p className="text-(--muted) text-sm max-w-lg mx-auto">
                     Configure your torrent client for downloading.
                 </p>
             </motion.div>
@@ -448,7 +448,7 @@ function TorrentStep({ form }: { form: any }) {
                             <ImDownload className="w-6 h-6 text-blue-500" />
                             <h3 className="text-xl font-semibold">Torrent Client</h3>
                         </div>
-                        <p className="text-sm text-[--muted]">
+                        <p className="text-sm text-(--muted)">
                             Client used to download anime torrents
                         </p>
                         <Field.Select
@@ -530,7 +530,7 @@ function DebridStep({ form }: { form: any }) {
         >
             <motion.div variants={itemVariants} className="text-center space-y-4">
                 <h2 className="text-3xl font-bold">Debrid Service</h2>
-                <p className="text-[--muted] text-sm max-w-lg mx-auto">
+                <p className="text-(--muted) text-sm max-w-lg mx-auto">
                     Debrid services offer faster downloads and instant streaming from the cloud.
                 </p>
             </motion.div>
@@ -540,7 +540,7 @@ function DebridStep({ form }: { form: any }) {
                     <Field.Select
                         name="debridProvider"
                         label="Debrid Service"
-                        leftIcon={<HiServerStack className="text-[--purple]" />}
+                        leftIcon={<HiServerStack className="text-(--purple)" />}
                         options={[
                             { label: "None", value: "none" },
                             { label: "TorBox", value: "torbox" },
@@ -627,7 +627,7 @@ function FeaturesStep({ form }: { form: any }) {
         >
             <motion.div variants={itemVariants} className="text-center space-y-4">
                 <h2 className="text-3xl font-bold">Additional Features</h2>
-                <p className="text-[--muted] text-sm max-w-lg mx-auto">
+                <p className="text-(--muted) text-sm max-w-lg mx-auto">
                     Choose which additional features you'd like to enable. You can enable or disable these later in settings.
                 </p>
             </motion.div>
@@ -646,7 +646,7 @@ function FeaturesStep({ form }: { form: any }) {
                                     <div
                                         className={cn(
                                             "w-12 h-12 rounded-lg flex items-center justify-center",
-                                            `bg-gradient-to-br ${feature.gradient}`,
+                                            `bg-linear-to-br ${feature.gradient}`,
                                         )}
                                     >
                                         <feature.icon className="w-6 h-6 text-white" />
@@ -665,7 +665,7 @@ function FeaturesStep({ form }: { form: any }) {
                                 "bg-gray-900/50 hover:bg-gray-800/80",
                                 "border border-gray-700/50",
                                 // "hover:shadow-lg hover:scale-[1.02]",
-                                "data-[checked=true]:bg-gradient-to-br data-[checked=true]:from-gray-900 data-[checked=true]:to-gray-900",
+                                "data-[checked=true]:bg-linear-to-br data-[checked=true]:from-gray-900 data-[checked=true]:to-gray-900",
                                 "data-[checked=true]:border-gray-400",
                                 // "data-[checked=true]:shadow-lg data-[checked=true]:scale-[1.02]"
                             )}
@@ -730,9 +730,9 @@ export function GettingStartedPage({ status }: { status: Status }) {
     if (isPending) return <LoadingOverlayWithLogo />
 
     if (!data) return (
-        <div className="min-h-screen bg-gradient-to-br from-[--background] via-[--background] to-indigo-900/10 relative">
+        <div className="min-h-screen bg-linear-to-br from-(--background) via-(--background) to-indigo-900/10 relative">
             <div className="fixed h-100vh w-100vw inset-0 ">
-                <div className="fixed h-100vh w-100vw bg-gray-950/20 z-[1] backdrop-blur-sm firefox:backdrop-blur-none inset-0"></div>
+                <div className="fixed h-100vh w-100vw bg-gray-950/20 z-1 backdrop-blur-sm firefox:backdrop-blur-none inset-0"></div>
                 <Image
                     src="/background.jpeg"
                     alt="bg"
@@ -835,7 +835,7 @@ export function GettingStartedPage({ status }: { status: Status }) {
                                 {currentStep === STEPS.length - 1 ? (
                                     <Button
                                         type="submit"
-                                        className="flex items-center bg-gradient-to-r from-brand-600 to-indigo-600 hover:ring-2 ring-brand-600"
+                                        className="flex items-center bg-linear-to-r from-brand-600 to-indigo-600 hover:ring-2 ring-brand-600"
                                         loading={isPending}
                                         rightIcon={<BiRocket className="size-6" />}
                                     >
@@ -861,7 +861,7 @@ export function GettingStartedPage({ status }: { status: Status }) {
                 </Form>
 
                 <motion.p
-                    className="text-center text-[--muted] mt-12"
+                    className="text-center text-(--muted) mt-12"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1 }}

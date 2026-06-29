@@ -10,8 +10,8 @@ import { LoadingSpinner } from "./loading-spinner"
 export const LoadingOverlayAnatomy = defineStyleAnatomy({
     overlay: cva([
         "UI-LoadingOverlay__overlay overflow-hidden",
-        "absolute bg-[--background]/50 w-full h-full z-10 inset-0 pt-4 flex flex-col items-center justify-center backdrop-blur-sm",
-        "!mt-0",
+        "absolute bg-(--background)/50 w-full h-full z-10 inset-0 pt-4 flex flex-col items-center justify-center backdrop-blur-sm",
+        "mt-0!",
     ]),
 })
 

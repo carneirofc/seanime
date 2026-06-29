@@ -272,7 +272,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
 
             <SeaContextMenu
                 content={<ContextMenuGroup>
-                    <ContextMenuLabel className="text-[--muted] line-clamp-1 py-0 my-2">
+                    <ContextMenuLabel className="text-(--muted) line-clamp-1 py-0 my-2">
                         {media.title?.userPreferred}
                     </ContextMenuLabel>
                     {!serverStatus?.isOffline && <ContextMenuItem
@@ -383,7 +383,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                             )}
 
                             {(listData?.status && listData?.status !== "CURRENT") &&
-                                <p className="text-center text-xs text-[--muted] w-full">
+                                <p className="text-center text-xs text-(--muted) w-full">
                                     {capitalize(listData?.status ?? "")}
                                     {/*{listData?.status === "CURRENT" ? type === "anime" ? "Watching" : "Reading"*/}
                                     {/*    : capitalize(listData?.status ?? "")}*/}
@@ -393,7 +393,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                             {/*{hoveringTitle && <div>*/}
                             {/*    <p*/}
                             {/*        data-media-entry-card-hover-popup-title-section-year-season*/}
-                            {/*        className="justify-center text-center text-xs text-[--muted] flex w-full gap-1 items-center px-4 leading-0 line-clamp-2"*/}
+                            {/*        className="justify-center text-center text-xs text-(--muted) flex w-full gap-1 items-center px-4 leading-0 line-clamp-2"*/}
                             {/*    >*/}
                             {/*        {(media.title?.english && media.title?.userPreferred !== media.title?.english) ? `${startCase(media.title?.english)}` : null}*/}
                             {/*        {(media.title?.romaji && media.title?.userPreferred !== media.title?.romaji) ? `${startCase(media.title?.romaji)}` : null}*/}
@@ -439,7 +439,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                 onClick={onClick}
                 hideReleasingBadge={hideReleasingBadge}
             >
-                <div data-media-entry-card-body-progress-badge-container className="absolute z-[10] left-0 bottom-0 flex items-end">
+                <div data-media-entry-card-body-progress-badge-container className="absolute z-10 left-0 bottom-0 flex items-end">
                     <MediaEntryProgressBadge
                         progress={listData?.progress}
                         progressTotal={progressTotal}
@@ -460,7 +460,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                         </> : null}
                     />
                 </div>
-                <div data-media-entry-card-body-score-badge-container className="absolute z-[10] right-0 bottom-0">
+                <div data-media-entry-card-body-score-badge-container className="absolute z-10 right-0 bottom-0">
                     <MediaEntryScoreBadge
                         isMediaCard
                         score={listData?.score}
@@ -469,10 +469,10 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                 {(type === "anime" && !!libraryData && hasMissingEpisodes) && (
                     <div
                         data-media-entry-card-body-missing-episodes-badge-container
-                        className="absolute z-[10] w-full flex justify-center left-1 bottom-0"
+                        className="absolute z-10 w-full flex justify-center left-1 bottom-0"
                     >
                         <Badge
-                            className="font-semibold animate-pulse text-white bg-gray-950 !bg-opacity-90 rounded-[--radius-md] text-base rounded-bl-none rounded-br-none"
+                            className="font-semibold animate-pulse text-white bg-gray-950/90 rounded-md text-base rounded-bl-none rounded-br-none"
                             intent="gray-solid"
                             size="xl"
                         ><RiCalendarLine /></Badge>

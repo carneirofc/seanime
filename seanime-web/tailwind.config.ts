@@ -1,6 +1,18 @@
 import type { Config } from "tailwindcss"
 
-const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette")
+// Inlined from `tailwindcss/lib/util/flattenColorPalette`, which was removed in Tailwind v4.
+function flattenColorPalette(colors: Record<string, any>): Record<string, string> {
+    return Object.assign(
+        {},
+        ...Object.entries(colors ?? {}).flatMap(([color, values]) =>
+            typeof values == "object" && values !== null
+                ? Object.entries(flattenColorPalette(values)).map(([number, hex]) => ({
+                    [color + (number === "DEFAULT" ? "" : `-${number}`)]: hex,
+                }))
+                : [{ [`${color}`]: values }],
+        ),
+    )
+}
 
 const config: Config = {
     darkMode: "class",
@@ -118,7 +130,7 @@ const config: Config = {
 
 
         "uppercase", "lowercase", "capitalize", "normal-case",
-        "truncate", "overflow-ellipsis", "overflow-clip",
+        "truncate", "text-ellipsis", "overflow-clip",
 
         "rounded-none", "rounded-sm", "rounded", "rounded-md", "rounded-lg", "rounded-xl", "rounded-2xl", "rounded-3xl", "rounded-full",
         "border", "border-0", "border-2", "border-4", "border-8",

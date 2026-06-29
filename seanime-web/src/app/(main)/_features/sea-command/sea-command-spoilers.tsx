@@ -78,7 +78,7 @@ export function SeaCommandSpoilers() {
                         }}
                     >
                         <span className="tracking-widest text-sm">/spoilers {item.value}</span>
-                        <CommandShortcut className="text-[--muted]">{currentValue === item.value ? "current" : item.description}</CommandShortcut>
+                        <CommandShortcut className="text-(--muted)">{currentValue === item.value ? "current" : item.description}</CommandShortcut>
                     </CommandItem>
                 ))}
             </CommandGroup>

@@ -21,7 +21,7 @@ export const PageWrapper = React.forwardRef<HTMLDivElement, PageWrapperProps>((p
                 data-page-wrapper
                 {...PAGE_TRANSITION}
                 {...rest as any}
-                className={cn("z-[5] relative", className)}
+                className={cn("z-5 relative", className)}
             >
                 {children}
             </motion.div>

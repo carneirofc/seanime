@@ -94,11 +94,11 @@ export function DetailedLibraryView(props: LibraryViewProps) {
     if (!hasEntries) return null
 
     return (
-        <PageWrapper className="px-4 space-y-8 relative z-[4]" data-detailed-library-view-container>
+        <PageWrapper className="px-4 space-y-8 relative z-4" data-detailed-library-view-container>
 
             {/* <div
              className={cn(
-             "absolute top-[-20rem] left-0 w-full h-[30rem] bg-gradient-to-t from-[--background] to-transparent z-[-1]",
+             "absolute -top-80 left-0 w-full h-120 bg-linear-to-t from-(--background) to-transparent z-[-1]",
              TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
              )}
              /> */}
@@ -122,7 +122,7 @@ export function DetailedLibraryView(props: LibraryViewProps) {
 
             {(!isHomeItem) && <div
                 className={cn(
-                    "grid grid-cols-3 lg:grid-cols-6 gap-4 [&>div]:text-center [&>div>p]:text-[--muted]",
+                    "grid grid-cols-3 lg:grid-cols-6 gap-4 [&>div]:text-center [&>div>p]:text-(--muted)",
                     isNakamaLibrary && "lg:grid-cols-5",
                 )}
                 data-detailed-library-view-stats-container
@@ -179,7 +179,7 @@ const LibraryCollectionListItem = React.memo(({ list, streamingMediaIds, type }:
 
     return (
         <React.Fragment key={list.type}>
-            <h2>{getLibraryCollectionTitle(list.type)} <span className="text-[--muted] font-medium ml-3">{list?.entries?.length ?? 0}</span></h2>
+            <h2>{getLibraryCollectionTitle(list.type)} <span className="text-(--muted) font-medium ml-3">{list?.entries?.length ?? 0}</span></h2>
             {type === "grid" && <MediaCardLazyGrid itemCount={list?.entries?.length || 0}>
                 {list.entries?.map(entry => {
                     return <LibraryCollectionEntryItem key={entry.mediaId} entry={entry} streamingMediaIds={streamingMediaIds} type={type} />
@@ -187,7 +187,7 @@ const LibraryCollectionListItem = React.memo(({ list, streamingMediaIds, type }:
             </MediaCardLazyGrid>}
 
             {type === "carousel" && <Carousel
-                className={cn("w-full max-w-full !mt-0")}
+                className={cn("w-full max-w-full mt-0!")}
                 gap="xl"
                 opts={{
                     align: "start",
@@ -221,7 +221,7 @@ const MergedLibraryCollectionList = React.memo(({ entries, streamingMediaIds, ty
             </MediaCardLazyGrid>}
 
             {type === "carousel" && <Carousel
-                className={cn("w-full max-w-full !mt-0")}
+                className={cn("w-full max-w-full mt-0!")}
                 gap="xl"
                 opts={{
                     align: "start",

@@ -11,7 +11,7 @@ import { ChartColor } from "./color-theme"
 export const ChartTooltipAnatomy = defineStyleAnatomy({
     frame: cva([
         "UI-ChartTooltip__frame",
-        "border bg-[--paper] p-2 rounded-[--radius]",
+        "border bg-(--paper) p-2 rounded-(--radius)",
     ]),
     header: cva([
         "UI-ChartTooltip__header",
@@ -38,7 +38,7 @@ export const ChartTooltipRowAnatomy = defineStyleAnatomy({
     dot: cva([
         "UI-ChartTooltip__dot",
         "shrink-0",
-        "h-3 w-3 bg-[--gray] rounded-full shadow-sm",
+        "h-3 w-3 bg-(--gray) rounded-full shadow-sm",
     ]),
     value: cva([
         "UI-ChartTooltip__value",
@@ -46,7 +46,7 @@ export const ChartTooltipRowAnatomy = defineStyleAnatomy({
     ]),
     label: cva([
         "UI-ChartTooltip__label",
-        "text-sm text-right whitespace-nowrap font-medium text-[--foreground]",
+        "text-sm text-right whitespace-nowrap font-medium text-(--foreground)",
     ]),
 })
 
@@ -106,7 +106,7 @@ export const ChartTooltipRow = (
 export type ChartTooltipProps = ComponentAnatomy<typeof ChartTooltipAnatomy> & {
     active: boolean | undefined
     payload: any
-    label: string
+    label?: string | number
     categoryColors: Map<string, ChartColor>
     valueFormatter: ChartValueFormatter
 }

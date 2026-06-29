@@ -63,7 +63,7 @@ export const TorrentListItem = ({ torrent, metadata, debridCached, onClick, isSe
             <div className="flex flex-wrap gap-2 items-center lg:absolute bottom-0 left-0 right-0">
                 {torrent.isBestRelease && (
                     <Badge
-                        className="rounded-[--radius-md] text-[0.8rem] bg-pink-800 border-transparent border"
+                        className="rounded-md text-[0.8rem] bg-pink-800 border-transparent border"
                         intent="success-solid"
                         leftIcon={<LuGem className="text-md" />}
                     >
@@ -73,11 +73,11 @@ export const TorrentListItem = ({ torrent, metadata, debridCached, onClick, isSe
                 <TorrentSeedersBadge seeders={torrent.seeders} />
                 {!!torrent.size && <p className="text-gray-300 text-sm flex items-center gap-1">
                     {torrent.formattedSize}</p>}
-                {torrent.date && <p className="text-[--muted] text-sm flex items-center gap-1">
+                {torrent.date && <p className="text-(--muted) text-sm flex items-center gap-1">
                     <BiCalendarAlt /> {formatDistanceToNowSafe(torrent.date)}
                 </p>}
                 <div className="flex-1"></div>
-                {extensionName && <p className="text-[--muted] font-bold text-sm flex items-center gap-1">{extensionName}</p>}
+                {extensionName && <p className="text-(--muted) font-bold text-sm flex items-center gap-1">{extensionName}</p>}
             </div>
             {metadata && <TorrentParsedMetadata metadata={metadata} />}
         </TorrentPreviewItem>
@@ -210,7 +210,7 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
             className={cn(
                 "border p-3 pr-12 rounded-lg relative transition group/torrent-preview-item overflow-hidden",
                 // !__isElectronDesktop__ && "lg:hover:scale-[1.01]",
-                "max-w-full bg-[--background]",
+                "max-w-full bg-(--background)",
                 isSelected && "sticky top-2 bottom-2 z-10",
                 {
                     "border-brand-200": isSelected,
@@ -232,14 +232,14 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
                         alt="episode image"
                         fill
                         className={cn(
-                            "object-cover object-center absolute w-full h-full group-hover/torrent-preview-item:blur-0 transition-opacity opacity-25 group-hover/torrent-preview-item:opacity-60 z-[0] select-none pointer-events-none",
+                            "object-cover object-center absolute w-full h-full group-hover/torrent-preview-item:blur-0 transition-opacity opacity-25 group-hover/torrent-preview-item:opacity-60 z-0 select-none pointer-events-none",
                             (!image && fallbackImage) && "opacity-10 group-hover/torrent-preview-item:opacity-30",
                             isSelected && "opacity-50",
                         )}
                     />}
                     <div
                         data-torrent-preview-item-image-end-gradient
-                        className="transition-colors absolute w-full h-full -right-2 bg-gradient-to-l from-[--background] via-[--background] via-30% hover:from-[var(--hover-from-background-color)] to-transparent z-[1] select-none pointer-events-none"
+                        className="transition-colors absolute w-full h-full -right-2 bg-linear-to-l from-(--background) via-(--background) via-30% hover:from-(--hover-from-background-color) to-transparent z-1 select-none pointer-events-none"
                     ></div>
                 </div>}
             {(image && isBatch) &&
@@ -250,25 +250,25 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
                         alt="episode image"
                         fill
                         className={cn(
-                            "object-cover object-center absolute w-full h-full group-hover/torrent-preview-item:blur-0 transition-opacity opacity-25 z-[0] select-none pointer-events-none",
+                            "object-cover object-center absolute w-full h-full group-hover/torrent-preview-item:blur-0 transition-opacity opacity-25 z-0 select-none pointer-events-none",
                             (image) && "opacity-10",
                             isSelected && "opacity-10",
                         )}
                     />}
                     <div
                         data-torrent-preview-item-image-end-gradient
-                        className="transition-colors absolute w-full h-full -left-2 bg-gradient-to-r from-[--background] via-[--background] via-30% hover:from-[var(--hover-from-background-color)] to-transparent z-[1] select-none pointer-events-none"
+                        className="transition-colors absolute w-full h-full -left-2 bg-linear-to-r from-(--background) via-(--background) via-30% hover:from-(--hover-from-background-color) to-transparent z-1 select-none pointer-events-none"
                     ></div>
                 </div>}
 
             {/*<div*/}
-            {/*    className="absolute w-[calc(100%_-_179px)] h-full bg-[--background] top-0 left-[179px]"*/}
+            {/*    className="absolute w-[calc(100%-179px)] h-full bg-(--background) top-0 left-[179px]"*/}
             {/*></div>*/}
 
             <div
                 data-torrent-preview-item-content
                 className={cn(
-                    "flex gap-4 relative z-[2]",
+                    "flex gap-4 relative z-2",
                     { "cursor-pointer": !!onClick },
                 )}
                 onClick={onClick}
@@ -282,14 +282,14 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
                         )}
                     />}
 
-                {debridCached && <div className="absolute -left-1.5 -top-1.5 z-[2]" data-torrent-preview-item-debrid-cached-badge>
+                {debridCached && <div className="absolute -left-1.5 -top-1.5 z-2" data-torrent-preview-item-debrid-cached-badge>
                     <TorrentDebridInstantAvailabilityBadge />
                 </div>}
 
                 <div
                     data-torrent-preview-item-release-info-container
                     className={cn(
-                        "h-24 w-24 lg:w-28 flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden",
+                        "h-24 w-24 lg:w-28 flex-none rounded-md object-cover object-center relative overflow-hidden",
                         "flex flex-col items-center justify-center",
                         "text-xs",
                         // isBasic && "h-20",
@@ -297,7 +297,7 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
                 >
                     <p
                         className={cn(
-                            "z-[1] font-medium truncate flex items-center max-w-full w-fit px-0 py-1 rounded-[--radius-md] text-[.9rem]",
+                            "z-1 font-medium truncate flex items-center max-w-full w-fit px-0 py-1 rounded-md text-[.9rem]",
                             "border-transparent bg-transparent",
                             // "group-hover/torrent-preview-item:bg-gray-950/50 group-hover/torrent-preview-item:text-white",
                         )}
@@ -318,15 +318,15 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
 
                     {mainTitle && <div
                         className={cn(
-                            "font-normal text-[1rem] transition line-clamp-1 tracking-wide flex gap-2 items-center max-w-[35rem] lg:max-w-[35rem] 3xl:max-w-[35rem]",
+                            "font-normal text-[1rem] transition line-clamp-1 tracking-wide flex gap-2 items-center max-w-140 lg:max-w-140 3xl:max-w-140",
                             // isBasic && "text-sm",
                         )}
                         data-torrent-preview-item-title
                     >{mainTitle} {confirmed && <span className="" data-torrent-preview-item-confirmed-badge>
                         <LuCircleCheckBig
                             className={cn(
-                                "text-[--gray] text-sm",
-                                isBestRelease ? "text-[--pink] opacity-70" : "opacity-30",
+                                "text-(--gray) text-sm",
+                                isBestRelease ? "text-(--pink) opacity-70" : "opacity-30",
                             )}
                         />
                     </span>}</div>}
@@ -352,7 +352,7 @@ const TorrentPreviewItem = memo((props: TorrentPreviewItemProps) => {
                     side="left"
                     trigger={<IconButton
                         data-torrent-preview-item-open-in-browser-button
-                        icon={<BiLinkExternal className="text-[--muted]" />}
+                        icon={<BiLinkExternal className="text-(--muted)" />}
                         intent="gray-basic"
                         size="sm"
                         onClick={() => openTab(link)}

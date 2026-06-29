@@ -132,7 +132,7 @@ export const GradientBackground: React.FC<GradientBackgroundProps> = ({
                     ease: [0.25, 0.1, 0.25, 1], // Cubic bezier easing
                 },
             }}
-            className={`absolute inset-0 z-[0] overflow-hidden ${containerClassName}`}
+            className={`absolute inset-0 z-0 overflow-hidden ${containerClassName}`}
         >
             <div
                 ref={containerRef}

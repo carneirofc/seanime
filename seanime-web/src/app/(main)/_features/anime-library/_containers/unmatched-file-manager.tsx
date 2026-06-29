@@ -212,7 +212,7 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                 </div>
 
                 <div
-                    className="bg-gray-900 border text-sm tracking-wide p-2 px-4 rounded-[--radius-md] line-clamp-1 flex gap-2 items-center cursor-pointer transition hover:bg-opacity-80"
+                    className="bg-gray-900 border text-sm tracking-wide p-2 px-4 rounded-md line-clamp-1 flex gap-2 items-center cursor-pointer transition hover:bg-gray-900/80"
                     onClick={() => openInExplorer({
                         path: currentGroup.dir,
                     })}
@@ -243,7 +243,7 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                     {/*</div>*/}
                 </div>
 
-                <div className="bg-gray-950 border p-2 px-2 divide-y divide-[--border] rounded-[--radius-md] max-h-[50vh] max-w-full overflow-x-auto overflow-y-auto text-sm">
+                <div className="bg-gray-950 border p-2 px-2 divide-y divide-(--border) rounded-md max-h-[50vh] max-w-full overflow-x-auto overflow-y-auto text-sm">
 
                     <div className="p-2">
                         <Checkbox
@@ -262,7 +262,7 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                                     })
                                 }
                             }}
-                            fieldClass="w-[fit-content]"
+                            fieldClass="w-fit"
                         />
                     </div>
 
@@ -288,7 +288,7 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                                             }
                                         }}
                                         labelClass="text-sm tracking-wide data-[checked=false]:opacity-50"
-                                        fieldClass="w-[fit-content]"
+                                        fieldClass="w-fit"
                                     />
                                 </div>
                             </div>
@@ -349,10 +349,10 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                     options={suggestions?.map((media) => (
                         {
                             label: <div>
-                                <p className="text-base md:text-md font-medium !-mt-1.5 line-clamp-1">{media.title?.userPreferred || media.title?.english || media.title?.romaji || "N/A"}</p>
+                                <p className="text-base md:text-md font-medium -mt-1.5! line-clamp-1">{media.title?.userPreferred || media.title?.english || media.title?.romaji || "N/A"}</p>
                                 <div className="mt-2 flex w-full gap-4">
                                     {media.coverImage?.medium && <div
-                                        className="h-28 w-28 flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden"
+                                        className="h-28 w-28 flex-none rounded-md object-cover object-center relative overflow-hidden"
                                     >
                                         <SeaImage
                                             src={media.coverImage.medium}
@@ -364,7 +364,7 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                                             className="object-cover object-center"
                                         />
                                     </div>}
-                                    <div className="text-[--muted]">
+                                    <div className="text-(--muted)">
                                         <p>Type: <span
                                             className="text-gray-200 font-semibold"
                                         >{media.format}</span>
@@ -388,11 +388,11 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                     ))}
                     stackClass="grid grid-cols-1 md:grid-cols-2 gap-2 space-y-0"
                     itemContainerClass={cn(
-                        "items-start cursor-pointer transition border-transparent rounded-[--radius] p-4 w-full",
-                        "bg-gray-50 hover:bg-[--subtle] dark:bg-gray-900",
+                        "items-start cursor-pointer transition border-transparent rounded-(--radius) p-4 w-full",
+                        "bg-gray-50 hover:bg-(--subtle) dark:bg-gray-900",
                         "data-[state=checked]:bg-white dark:data-[state=checked]:bg-gray-950",
-                        "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-[--background] focus-within:ring-2 transition",
-                        "border border-transparent data-[state=checked]:border-[--brand] data-[state=checked]:ring-offset-0",
+                        "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-(--background) focus-within:ring-2 transition",
+                        "border border-transparent data-[state=checked]:border-(--brand) data-[state=checked]:ring-offset-0",
                     )}
                     itemClass={cn(
                         "border-transparent absolute top-2 right-2 bg-transparent dark:bg-transparent dark:data-[state=unchecked]:bg-transparent",
@@ -400,7 +400,7 @@ export function UnmatchedFileManager(props: UnmatchedFileManagerProps) {
                         "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent",
                     )}
                     itemIndicatorClass="hidden"
-                    itemLabelClass="font-medium flex flex-col items-center data-[state=checked]:text-[--brand] cursor-pointer"
+                    itemLabelClass="font-medium flex flex-col items-center data-[state=checked]:text-(--brand) cursor-pointer"
                 />}
 
             </AppLayoutStack>

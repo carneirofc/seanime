@@ -381,8 +381,8 @@ export function GlobalPlaylistManager() {
                     {currentPlaylist.episodes?.map(ep => <EpisodeItem key={playlist_getEpisodeKey(ep)} episode={ep} />)}
                 </div>
             </div>
-            <div className="p-3 bg-[--paper] relative">
-                <div className="absolute top-[-2rem] h-[2rem] left-0 right-0 bg-gradient-to-t from-[--paper] to-transparent">
+            <div className="p-3 bg-(--paper) relative">
+                <div className="absolute -top-8 h-8 left-0 right-0 bg-linear-to-t from-(--paper) to-transparent">
                 </div>
                 <div className="flex gap-2">
                     <IconButton
@@ -394,7 +394,7 @@ export function GlobalPlaylistManager() {
                     />
                     <div className="flex flex-1"></div>
                     <Tooltip
-                        className="z-[99999]" trigger={<span>
+                        className="z-99999" trigger={<span>
                         <IconButton
                             icon={<LuRefreshCw />}
                             intent="gray-basic"
@@ -407,7 +407,7 @@ export function GlobalPlaylistManager() {
                         Reopen episode
                     </Tooltip>
                     <Tooltip
-                        className="z-[99999]" trigger={<span>
+                        className="z-99999" trigger={<span>
                         <IconButton
                             icon={<BiX />}
                             intent="alert-basic"
@@ -439,13 +439,13 @@ function EpisodeItem({ episode }: { episode: Anime_PlaylistEpisode }) {
     return (
         <div
             className={cn(
-                "px-2.5 py-2 bg-[--background] rounded-md border flex gap-3 relative",
+                "px-2.5 py-2 bg-(--background) rounded-md border flex gap-3 relative",
                 "opacity-50 hover:opacity-70",
                 playlist_isSameEpisode(currentPlaylistEpisode,
                     episode) && "opacity-100 hover:opacity-100 border-[rgba(255,255,255,0.5)] sticky top-0 bottom-0 z-10 shadow-xl",
             )}
         >
-            <div className="size-20 aspect-square flex-none rounded-md overflow-hidden relative transition bg-[--background]">
+            <div className="size-20 aspect-square flex-none rounded-md overflow-hidden relative transition bg-(--background)">
                 {episode.episode!.episodeMetadata?.image && <SeaImage
                     data-episode-card-image
                     src={getImageUrl(episode.episode!.episodeMetadata?.image)}
@@ -461,11 +461,11 @@ function EpisodeItem({ episode }: { episode: Anime_PlaylistEpisode }) {
                 />}
             </div>
             <div className="max-w-full space-y-1">
-                <p className="text-sm text-[--muted]">{episode.episode?.baseAnime?.title?.userPreferred}</p>
+                <p className="text-sm text-(--muted)">{episode.episode?.baseAnime?.title?.userPreferred}</p>
                 <p className="">{episode.episode?.baseAnime?.format !== "MOVIE" ? `Episode ${episode.episode!.episodeNumber}` : "Movie"}</p>
 
                 <div>
-                    <div className="text-xs text-[--muted] line-clamp-1 tracking-wide">
+                    <div className="text-xs text-(--muted) line-clamp-1 tracking-wide">
                         {episode.watchType === "torrent" ? "Torrent streaming" : episode.watchType === "debrid" ? "Debrid streaming" :
                             episode.watchType === "online" ? "Online streaming" :
                                 episode.episode?.localFile?.name}

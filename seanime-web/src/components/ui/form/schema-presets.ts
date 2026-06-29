@@ -8,8 +8,7 @@ export const schemaPresets = {
     autocomplete: z.object({ label: z.string(), value: z.string().nullable() }),
     validAddress: z.object({
         label: z.string(), value: z.string({
-            required_error: "Invalid address",
-            invalid_type_error: "Invalid address",
+            error: "Invalid address",
         }),
     }),
     time: z.object({ hour: z.number().min(0).max(23), minute: z.number().min(0).max(59) }),

@@ -87,7 +87,7 @@ export function AutoSelectProfileButton() {
                     Customize auto-select
                 </Button>
                 {hasProfile && (
-                    <div className="text-sm text-[--muted] space-y-1">
+                    <div className="text-sm text-(--muted) space-y-1">
                         {profile.resolutions && profile.resolutions.length > 0 && (
                             <p><strong>Resolutions:</strong> {profile.resolutions.join(", ")}</p>
                         )}
@@ -256,7 +256,7 @@ function AutoSelectProfileForm(props: AutoSelectProfileFormProps) {
 
             <Separator />
 
-            <div className="border rounded-[--radius] p-4 relative space-y-3">
+            <div className="border rounded-(--radius) p-4 relative space-y-3">
                 <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">
                     Release Preferences
                 </div>
@@ -266,7 +266,7 @@ function AutoSelectProfileForm(props: AutoSelectProfileFormProps) {
                 <ExcludeTermsSortableField />
             </div>
 
-            <div className="border rounded-[--radius] p-4 relative space-y-3">
+            <div className="border rounded-(--radius) p-4 relative space-y-3">
                 <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">
                     Metadata Preferences
                 </div>
@@ -315,7 +315,7 @@ function AutoSelectProfileForm(props: AutoSelectProfileFormProps) {
                 </div>
             </div>
 
-            <div className="border rounded-[--radius] p-4 relative space-y-3">
+            <div className="border rounded-(--radius) p-4 relative space-y-3">
                 <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">
                     Special Preferences
                 </div>
@@ -353,7 +353,7 @@ function AutoSelectProfileForm(props: AutoSelectProfileFormProps) {
                 />
             </div>
 
-            <div className="border rounded-[--radius] p-4 relative space-y-3">
+            <div className="border rounded-(--radius) p-4 relative space-y-3">
                 <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">
                     Thresholds
                 </div>
@@ -574,7 +574,7 @@ function ProvidersFieldControlled() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Providers (ordered, max 3)</label>
-            <p className="text-sm text-[--muted]">Select up to 3 providers in order of priority</p>
+            <p className="text-sm text-(--muted)">Select up to 3 providers in order of priority</p>
             <Combobox
                 value={comboboxValue}
                 onValueChange={handleAdd}
@@ -650,7 +650,7 @@ function ReleaseGroupsSortableField() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Release Groups (ordered)</label>
-            <p className="text-sm text-[--muted]">Preferred groups in order of priority</p>
+            <p className="text-sm text-(--muted)">Preferred groups in order of priority</p>
 
             <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion) => (
@@ -750,7 +750,7 @@ function ResolutionsSortableField() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Resolutions (ordered)</label>
-            <p className="text-sm text-[--muted]">Preferred resolutions in order of priority</p>
+            <p className="text-sm text-(--muted)">Preferred resolutions in order of priority</p>
 
             <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion) => (
@@ -848,7 +848,7 @@ function ExcludeTermsSortableField() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Exclude Terms</label>
-            <p className="text-sm text-[--muted]">Exclude torrents with these terms</p>
+            <p className="text-sm text-(--muted)">Exclude torrents with these terms</p>
 
             <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
                 <SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
@@ -926,7 +926,7 @@ function PreferredLanguagesSortableField() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Preferred Languages (ordered)</label>
-            <p className="text-sm text-[--muted]">Ordered list of preferred languages</p>
+            <p className="text-sm text-(--muted)">Ordered list of preferred languages</p>
 
             <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion) => (
@@ -1026,7 +1026,7 @@ function PreferredCodecsSortableField() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Preferred Codecs (ordered)</label>
-            <p className="text-sm text-[--muted]">Ordered list of preferred codecs (comma-separated alternatives)</p>
+            <p className="text-sm text-(--muted)">Ordered list of preferred codecs (comma-separated alternatives)</p>
 
             <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion) => (
@@ -1126,7 +1126,7 @@ function PreferredSourcesSortableField() {
     return (
         <div className="space-y-2">
             <label className="text-sm font-medium">Preferred Sources (ordered)</label>
-            <p className="text-sm text-[--muted]">Ordered list of preferred sources (comma-separated alternatives)</p>
+            <p className="text-sm text-(--muted)">Ordered list of preferred sources (comma-separated alternatives)</p>
 
             <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion) => (

@@ -283,9 +283,9 @@ export function VideoCoreTimeRange(props: VideoCoreTimeRangeProps) {
             data-vc-element="time-range"
             data-vc-seeking-target-state={seeking}
             className={cn(
-                "w-full relative group/vc-time-range z-[2] flex h-8",
+                "w-full relative group/vc-time-range z-2 flex h-8",
                 "cursor-pointer outline-none",
-                "touch-none select-none [contain:layout_style]", // prevent page scroll and text selection on mobile
+                "touch-none select-none contain-[layout_style]", // prevent page scroll and text selection on mobile
             )}
             role="slider"
             tabIndex={0}
@@ -371,7 +371,7 @@ function VideoCoreTimeRangeSegment(props: {
                     data-vc-element="time-range-chapter-bar"
                     data-vc-for="progress"
                     className={cn(
-                        "bg-white absolute w-full h-full left-0 transform-gpu z-[10]",
+                        "bg-white absolute w-full h-full left-0 transform-gpu z-10",
                     )}
                     style={{
                         "--tw-translate-x": duration > 1 ? `${getChapterBarPosition(chapter, progressPercentage)}%` : "-100%",
@@ -381,7 +381,7 @@ function VideoCoreTimeRangeSegment(props: {
                     data-vc-element="time-range-chapter-bar"
                     data-vc-for="seeking-target"
                     className={cn(
-                        "bg-white/30 absolute w-full h-full left-0 transform-gpu z-[9]",
+                        "bg-white/30 absolute w-full h-full left-0 transform-gpu z-9",
                     )}
                     style={{
                         "--tw-translate-x": duration > 1 ? `${getChapterBarPosition(chapter, seekingTargetProgress)}%` : "-100%",
@@ -391,7 +391,7 @@ function VideoCoreTimeRangeSegment(props: {
                     data-vc-element="time-range-chapter-bar"
                     data-vc-for="buffer"
                     className={cn(
-                        "bg-white/10 absolute w-full h-full left-0 transform-gpu z-[8]",
+                        "bg-white/10 absolute w-full h-full left-0 transform-gpu z-8",
                     )}
                     style={{
                         "--tw-translate-x": duration > 1 ? `${getChapterBarPosition(chapter, bufferedPercentage)}%` : "-100%",
@@ -402,7 +402,7 @@ function VideoCoreTimeRangeSegment(props: {
                     data-vc-for="main"
                     data-vc-highlighted-state={!!vc_getChapterType(chapter.label) && highlightOPEDChapters}
                     className={cn(
-                        "bg-white/20 absolute left-0 w-full h-full z-[1]",
+                        "bg-white/20 absolute left-0 w-full h-full z-1",
                         (!!vc_getChapterType(chapter.label) && highlightOPEDChapters) && "bg-blue-300/50",
                     )}
                 />
@@ -418,7 +418,7 @@ function VideoCoreTimeRangeSegment(props: {
                         action({ type: "seekTo", payload: { time: ((duration * (chapter.percentageOffset + chapter.width))) / 100 } })
                     }}
                     className={cn(
-                        "absolute top-0 right-0 size-4 flex items-center justify-center -translate-y-1/2 translate-x-1/2 cursor-pointer z-[20] ",
+                        "absolute top-0 right-0 size-4 flex items-center justify-center -translate-y-1/2 translate-x-1/2 cursor-pointer z-20 ",
                     )}
                     style={{
                         right: `-${CHAPTER_GAP / 2}px`,
@@ -426,7 +426,7 @@ function VideoCoreTimeRangeSegment(props: {
                     aria-label={`Seek to end of chapter ${idx + 1}`}
                     tabIndex={-1}
                 >
-                    <FaDiamond className="size-2.5 text-white/20 hover:text-white/100 transition-colors duration-100" />
+                    <FaDiamond className="size-2.5 text-white/20 hover:text-white transition-colors duration-100" />
                 </button>
             )}
         </div>
@@ -697,7 +697,7 @@ function VideoCoreTimePreview(props: { chapters: VideoCoreTimeRangeChapter[] }) 
         {showThumbnail && <div
             data-vc-element="preview-thumbnail"
             className={cn(
-                "absolute left-0 bottom-full aspect-video overflow-hidden rounded-md bg-black border border-white/50 pointer-events-none will-change-transform [contain:layout_paint_style]",
+                "absolute left-0 bottom-full aspect-video overflow-hidden rounded-md bg-black border border-white/50 pointer-events-none will-change-transform contain-[layout_paint_style]",
             )}
             style={{
                 width: previewWidth,

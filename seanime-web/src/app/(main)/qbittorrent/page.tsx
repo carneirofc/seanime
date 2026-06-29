@@ -34,7 +34,7 @@ export default function Page() {
             <header className="flex items-center justify-between">
                 <div>
                     <h2>qBittorrent</h2>
-                    <p className="text-[--muted]">Access the embedded qBittorrent client Web UI.</p>
+                    <p className="text-(--muted)">Access the embedded qBittorrent client Web UI.</p>
                 </div>
                 {__isElectronDesktop__ && (
                     <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export default function Page() {
 
             {__isElectronDesktop__ ? (
                 <div
-                    className="w-full h-[calc(100vh-16rem)] rounded-xl border border-[--border] overflow-hidden ring-1 ring-[--border] ring-offset-2 ring-offset-[--background]"
+                    className="w-full h-[calc(100vh-16rem)] rounded-xl border border-(--border) overflow-hidden ring-1 ring-(--border) ring-offset-2 ring-offset-(--background)"
                 >
                     {isAllowed && (
                         <webview
@@ -68,10 +68,10 @@ export default function Page() {
                 </div>
             ) : (
                 <div className="flex items-center justify-center h-[calc(100vh-16rem)]">
-                    <Card className="max-w-md p-8 text-center space-y-6 border border-[--border] bg-gray-900/40 backdrop-blur-sm rounded-2xl shadow-xl">
+                    <Card className="max-w-md p-8 text-center space-y-6 border border-(--border) bg-gray-900/40 backdrop-blur-sm rounded-2xl shadow-xl">
                         <div className="space-y-2">
                             <h3 className="text-xl font-semibold tracking-tight text-white">Open in a new tab</h3>
-                            <p className="text-sm text-[--muted]">
+                            <p className="text-sm text-(--muted)">
                                 Due to browser security policies (COEP and Clickjacking protection), the embedded client cannot be loaded inside the
                                 iframe here.
                             </p>

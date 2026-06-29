@@ -1154,7 +1154,7 @@ export function PluginForm({ name, fields: _fields }: FormProps) {
                                                 value: String(opt.value),
                                             })) ?? []}
                                             placeholder={field.placeholder}
-                                            value={fField.value}
+                                            value={fField.value as string}
                                             onValueChange={(value) => fField.onChange(value)}
                                         />
                                     )}
@@ -1171,7 +1171,7 @@ export function PluginForm({ name, fields: _fields }: FormProps) {
                                         <Checkbox
                                             key={field.id}
                                             label={field.label}
-                                            value={fField.value}
+                                            value={fField.value as boolean}
                                             onValueChange={(value) => fField.onChange(value)}
                                         />
                                     )}
@@ -1188,7 +1188,7 @@ export function PluginForm({ name, fields: _fields }: FormProps) {
                                         <Switch
                                             key={field.id}
                                             label={field.label}
-                                            value={fField.value}
+                                            value={fField.value as boolean}
                                             onValueChange={(value) => fField.onChange(value)}
                                         />
                                     )}
@@ -1210,7 +1210,7 @@ export function PluginForm({ name, fields: _fields }: FormProps) {
                                                 label: opt.label,
                                                 value: String(opt.value),
                                             })) ?? []}
-                                            value={fField.value}
+                                            value={fField.value as string}
                                             onValueChange={(value) => fField.onChange(value)}
                                         />
                                     )}
@@ -1228,7 +1228,7 @@ export function PluginForm({ name, fields: _fields }: FormProps) {
                                             key={field.id}
                                             name={field.name}
                                             label={field.label}
-                                            value={fField.value}
+                                            value={fField.value as Date}
                                             onValueChange={(date) => fField.onChange(date)}
                                         />
                                     )}

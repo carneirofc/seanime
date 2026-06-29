@@ -27,10 +27,10 @@ export const DrawerAnatomy = defineStyleAnatomy({
         variants: {
             side: {
                 player: "w-full inset-x-0 top-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-                top: "w-full lg:w-[calc(100%_-_20px)] inset-x-0 top-0 border data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-                bottom: "w-full lg:w-[calc(100%_-_20px)] inset-x-0 bottom-0 border data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-                left: "inset-y-0 left-0 h-full lg:h-[calc(100%_-_20px)] border data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
-                right: "inset-y-0 right-0 h-full lg:h-[calc(100%_-_20px)] border data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+                top: "w-full lg:w-[calc(100%-20px)] inset-x-0 top-0 border data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+                bottom: "w-full lg:w-[calc(100%-20px)] inset-x-0 bottom-0 border data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+                left: "inset-y-0 left-0 h-full lg:h-[calc(100%-20px)] border data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+                right: "inset-y-0 right-0 h-full lg:h-[calc(100%-20px)] border data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
             },
             size: { sm: null, md: null, lg: null, xl: null, full: null },
         },
@@ -70,7 +70,7 @@ export const DrawerAnatomy = defineStyleAnatomy({
     ]),
     description: cva([
         "UI-Drawer__description",
-        "text-sm text-[--muted]",
+        "text-sm text-(--muted)",
     ]),
 })
 
@@ -537,7 +537,7 @@ export function VideoCoreDrawer(props: DrawerProps) {
                     className={cn(
                         DrawerAnatomy.content({ size, side: "player" }),
                         contentClass,
-                        "w-full h-full transition-all duration-300 overflow-hidden fixed transform-gpu [contain:layout_paint_style]",
+                        "w-full h-full transition-all duration-300 overflow-hidden fixed transform-gpu contain-[layout_paint_style]",
                         miniPlayer && "aspect-video w-[300px] lg:w-[400px] h-auto rounded-lg shadow-xl will-change-[transform,opacity]",
                         isHidden && "ring-2 ring-brand-300",
                     )}
@@ -575,7 +575,7 @@ export function VideoCoreDrawer(props: DrawerProps) {
                     {miniPlayer && <div
                         ref={draggableAreaRef}
                         data-vc-element="drawer-miniplayer-draggable-area"
-                        className="vc-drawer-draggable-area absolute inset-0 z-[6]"
+                        className="vc-drawer-draggable-area absolute inset-0 z-6"
                     >
 
                     </div>}
@@ -590,7 +590,7 @@ export function VideoCoreDrawer(props: DrawerProps) {
                     {!hideCloseButton && <VaulPrimitive.Close
                         className={cn(
                             DrawerAnatomy.close(),
-                            // __isDesktop__ && "!top-10 !right-4",
+                            // __isDesktop__ && "top-10! right-4!",
                             closeClass,
                         )}
                         asChild

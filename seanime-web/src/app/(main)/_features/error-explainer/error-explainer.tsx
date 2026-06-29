@@ -14,7 +14,7 @@ export function ErrorExplainer() {
             {open && <div
                 className={cn(
                     "error-explainer-ui",
-                    "fixed z-[100] bottom-8 w-fit left-20 h-fit flex",
+                    "fixed z-100 bottom-8 w-fit left-20 h-fit flex",
                     "transition-all duration-300 select-none",
                     // !isRecording && "hover:translate-y-[-2px]",
                     // isRecording && "justify-end",

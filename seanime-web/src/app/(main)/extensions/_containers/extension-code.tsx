@@ -87,7 +87,7 @@ function Content(props: ExtensionCodeModalProps) {
                 <p>
                     {extension.name}
                 </p>
-                {!readOnly && !diff && <div className="text-sm text-[--muted]">
+                {!readOnly && !diff && <div className="text-sm text-(--muted)">
                     You can edit the code of the extension here.
                 </div>}
             </div>
@@ -126,7 +126,7 @@ function ExtensionCodeEditor({
 }: { code: string, language: string, setCode: any, readOnly?: boolean }) {
 
     return (
-        <div className="overflow-hidden rounded-[--radius-md]">
+        <div className="overflow-hidden rounded-md">
             <CodeMirror
                 value={code}
                 height="75vh"
@@ -169,7 +169,7 @@ export const UnifiedDiff = ({ oldCode, currentCode, language }: Props) => {
     })
 
     return (
-        <div className="overflow-hidden rounded-[--radius-md]">
+        <div className="overflow-hidden rounded-md">
             <CodeMirror
                 value={normalizedCurrentCode}
                 height="75vh"

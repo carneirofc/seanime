@@ -109,7 +109,7 @@ export function VideoCoreSubtitleMenu({ inline }: { inline?: boolean }) {
         >
             <VideoCoreMenuTitle>Subtitles {(!!subtitleManager && !inline) && <Tooltip
                 trigger={<AiFillInfoCircle className="text-sm" />}
-                className="z-[150]"
+                className="z-150"
                 portalContainer={isFullscreen ? (containerElement ?? undefined) : undefined}
             >
                 You can add subtitles by dragging and dropping files onto the player.

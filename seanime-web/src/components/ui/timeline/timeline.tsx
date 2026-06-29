@@ -24,7 +24,7 @@ export const TimelineAnatomy = defineStyleAnatomy({
     ]),
     line: cva([
         "UI-Timeline__line",
-        "w-px h-full bg-[--border]",
+        "w-px h-full bg-(--border)",
     ]),
     detailsSection: cva([
         "UI-Timeline__detailsSection",
@@ -36,7 +36,7 @@ export const TimelineAnatomy = defineStyleAnatomy({
     ]),
     description: cva([
         "UI-Timeline__description",
-        "text-[--muted] text-sm",
+        "text-(--muted) text-sm",
     ]),
 })
 

@@ -80,7 +80,7 @@ export function MangaLibraryView(props: MangaLibraryViewProps) {
                                 No manga has been added to your library yet.
                             </p>
 
-                            <div className="!mt-4">
+                            <div className="mt-4!">
                                 <SeaLink href="/discover?type=manga">
                                     <Button intent="white-outline" rounded>
                                         Browse manga
@@ -132,7 +132,7 @@ export function CollectionLists({ collectionList, genres, storedProviders, showS
 
     return (
         <PageWrapper
-            className="p-4 space-y-8 relative z-[4]"
+            className="p-4 space-y-8 relative z-4"
             data-manga-library-view-collection-lists-container
             {...{
                 initial: { opacity: 0, y: 60 },
@@ -155,7 +155,7 @@ export function CollectionLists({ collectionList, genres, storedProviders, showS
                             withTitle={withTitle}
                         />
 
-                        {(collection.type === "CURRENT" && !!genres?.length) && <GenreSelector genres={genres} className="!my-0" />}
+                        {(collection.type === "CURRENT" && !!genres?.length) && <GenreSelector genres={genres} className="my-0!" />}
                     </React.Fragment>
                 )
             })}
@@ -180,7 +180,7 @@ export function FilteredCollectionLists({ collectionList, genres, showStatuses, 
 
     return (
         <PageWrapper
-            className="p-4 space-y-8 relative z-[4]"
+            className="p-4 space-y-8 relative z-4"
             data-manga-library-view-filtered-collection-lists-container
             {...{
                 initial: { opacity: 0, y: 60 },
@@ -212,7 +212,7 @@ export function FilteredCollectionLists({ collectionList, genres, showStatuses, 
                 })}
             </MediaCardLazyGrid>}
             {type === "carousel" && <Carousel
-                className={cn("w-full max-w-full !mt-0")}
+                className={cn("w-full max-w-full mt-0!")}
                 gap="xl"
                 opts={{
                     align: "start",
@@ -307,7 +307,7 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                     <Button
                         intent="white-link"
                         size="xs"
-                        className="!px-2 !py-1"
+                        className="px-2! py-1!"
                         onClick={() => {
                             setParams(draft => {
                                 draft.unreadOnly = false
@@ -328,9 +328,9 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                             icon={<BiDotsVertical />}
                             // loading={isRefetchingMangaChapterContainers}
                         />
-                        {/*{params.unreadOnly && <div className="absolute -top-1 -right-1 bg-[--blue] size-2 rounded-full"></div>}*/}
+                        {/*{params.unreadOnly && <div className="absolute -top-1 -right-1 bg-(--blue) size-2 rounded-full"></div>}*/}
                         {isRefetchingMangaChapterContainers &&
-                            <div className="absolute -top-1 -right-1 bg-[--orange] size-3 rounded-full animate-ping"></div>}
+                            <div className="absolute -top-1 -right-1 bg-(--orange) size-3 rounded-full animate-ping"></div>}
                     </div>}
                 >
                     <DropdownMenuItem
@@ -377,7 +377,7 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                 <TextGenerateEffect
                     data-manga-library-view-collection-list-item-header-media-title
                     words={headerManga?.title?.userPreferred || ""}
-                    className="w-full text-xl lg:text-5xl lg:max-w-[50%] h-[3.2rem] !mt-1 line-clamp-1 truncate text-ellipsis hidden lg:block pb-1"
+                    className="w-full text-xl lg:text-5xl lg:max-w-[50%] h-[3.2rem] mt-1! line-clamp-1 truncate text-ellipsis hidden lg:block pb-1"
                 />
             }
 
@@ -404,7 +404,7 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                 })}
             </MediaCardLazyGrid>}
             {type === "carousel" && <Carousel
-                className={cn("w-full max-w-full !mt-0")}
+                className={cn("w-full max-w-full mt-0!")}
                 gap="xl"
                 opts={{
                     align: "start",

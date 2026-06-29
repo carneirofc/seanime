@@ -86,7 +86,7 @@ export function LibraryCollectionFilteredLists({ collectionList, isLoading, stre
                 })}
             </MediaCardLazyGrid>}
             {type === "carousel" && <Carousel
-                className={cn("w-full max-w-full !mt-0")}
+                className={cn("w-full max-w-full mt-0!")}
                 gap="xl"
                 opts={{
                     align: "start",
@@ -171,7 +171,7 @@ export const LibraryCollectionListItem = React.memo(({ list, streamingMediaIds, 
                 })}
             </MediaCardLazyGrid>}
             {type === "carousel" && <Carousel
-                className={cn("w-full max-w-full !mt-0")}
+                className={cn("w-full max-w-full mt-0!")}
                 gap="xl"
                 opts={{
                     align: "start",

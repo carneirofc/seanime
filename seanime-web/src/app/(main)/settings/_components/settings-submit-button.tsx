@@ -45,9 +45,9 @@ export function SettingsIsDirty({ className }: { className?: string }) {
     return isDirty ? <Alert
         intent="info"
         className={cn(
-            "fixed right-4 z-[50] h-auto w-fit p-5 !mt-0 hidden lg:block rounded-xl bg-[--background] border shadow-2xl mx-auto animate-in slide-in-from-top-2 duration-300",
+            "fixed right-4 z-50 h-auto w-fit p-5 mt-0! hidden lg:block rounded-xl bg-(--background) border shadow-2xl mx-auto animate-in slide-in-from-top-2 duration-300",
             className,
-            "top-[2rem]",
+            "top-8",
         )}
     >
         <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function SettingsIsDirty({ className }: { className?: string }) {
                 role="save"
                 size="md"
                 className={cn(
-                    "text-md text-[--muted] py-0 h-6 px-2 transition-all duration-200 hover:scale-105 group",
+                    "text-md text-(--muted) py-0 h-6 px-2 transition-all duration-200 hover:scale-105 group",
                 )}
                 intent="white-link"
                 onClick={() => reset()}

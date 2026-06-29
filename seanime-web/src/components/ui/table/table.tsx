@@ -21,20 +21,20 @@ export const TableAnatomy = defineStyleAnatomy({
     ]),
     tableFooter: cva([
         "UI-Table__tableFooter",
-        "border-t bg-gray-100 dark:bg-gray-900 bg-opacity-40 font-medium [&>tr]:last:border-b-0",
+        "border-t bg-gray-100/40 dark:bg-gray-900 font-medium [&>tr]:last:border-b-0",
     ]),
     tableRow: cva([
         "UI-Table__tableRow",
-        "border-b transition-colors hover:bg-[--subtle] data-[state=selected]:bg-[--subtle]",
+        "border-b transition-colors hover:bg-(--subtle) data-[state=selected]:bg-(--subtle)",
     ]),
     tableHead: cva([
         "UI-Table__tableHead",
         "h-12 px-4 text-left align-middle font-medium",
-        "[&:has([role=checkbox])]:pr-0",
+        "has-[[role=checkbox]]:pr-0",
     ]),
     tableCell: cva([
         "UI-Table__tableCell",
-        "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+        "p-4 align-middle has-[[role=checkbox]]:pr-0",
     ]),
     tableCaption: cva([
         "UI-Table__tableCaption",

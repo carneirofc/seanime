@@ -107,7 +107,7 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>((pro
             {...rest}
         >
             <div className={cn(PageHeaderAnatomy.detailsContainer({ _withImage: !!image }), detailsContainerClass)}>
-                {image && <div className="flex-shrink-0">
+                {image && <div className="shrink-0">
                     <div className="relative">
                         {image}
                     </div>

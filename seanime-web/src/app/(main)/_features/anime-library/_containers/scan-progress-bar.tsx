@@ -43,10 +43,10 @@ export function ScanProgressBar() {
 
     return (
         <>
-            <div className="w-full bg-gray-950 fixed top-0 left-0 z-[100]" data-scan-progress-bar-container>
+            <div className="w-full bg-gray-950 fixed top-0 left-0 z-100" data-scan-progress-bar-container>
                 <ProgressBar size="xs" value={progress} />
             </div>
-            {/*<div className="fixed left-0 top-8 w-full flex justify-center z-[100]">*/}
+            {/*<div className="fixed left-0 top-8 w-full flex justify-center z-100">*/}
             {/*    <div className="bg-gray-900 rounded-full border h-14 px-6 flex gap-2 items-center">*/}
             {/*        <Spinner className="w-4 h-4" />*/}
             {/*        <p>{progress}% - {status}</p>*/}
@@ -56,7 +56,7 @@ export function ScanProgressBar() {
                 <PageWrapper>
                     <Card className="w-fit max-w-[400px] relative" data-scan-progress-bar-card>
                         <CardHeader>
-                            <CardDescription className="flex items-center gap-2 text-base text-[--foregorund]">
+                            <CardDescription className="flex items-center gap-2 text-base text-(--foregorund)">
                                 <Spinner className="size-6" /> {progress}% - {status}
                             </CardDescription>
                         </CardHeader>

@@ -205,15 +205,15 @@ export function MangaReaderBar(props: MangaReaderBarProps) {
                             data-manga-reader-bar-pagination
                             className={cn(
                                 "w-full h-6 cursor-pointer",
-                                "transition-all duration-200 bg-gradient-to-t via-transparent from-transparent from-10% to-transparent hover:from-gray-800",
+                                "transition-all duration-200 bg-linear-to-t via-transparent from-transparent from-10% to-transparent hover:from-gray-800",
                                 index === currentPageIndex && "from-gray-800",
-                                index < currentPageIndex && "from-[--subtle] from-5%",
+                                index < currentPageIndex && "from-(--subtle) from-5%",
                             )}
                             onClick={() => handlePageChange(index)}
                         >
                             <p
                                 className={cn(
-                                    "w-full h-full flex items-center rounded-t-md justify-center text-transparent group-hover/bp:text-[--muted] transition",
+                                    "w-full h-full flex items-center rounded-t-md justify-center text-transparent group-hover/bp:text-(--muted) transition",
                                     "hover:text-white hover:bg-gray-800",
                                     index === currentPageIndex && "text-white hover:text-white group-hover/bp:text-white",
                                 )}
@@ -227,7 +227,7 @@ export function MangaReaderBar(props: MangaReaderBarProps) {
             <div
                 data-manga-reader-bar
                 className={cn(
-                    "fixed bottom-0 w-full h-12 gap-4 flex items-center px-4 z-[10] bg-[var(--background)] transition-transform",
+                    "fixed bottom-0 w-full h-12 gap-4 flex items-center px-4 z-10 bg-(--background) transition-transform",
                     hiddenBar && "translate-y-60",
                 )} id="manga-reader-bar"
             >
@@ -260,14 +260,14 @@ export function MangaReaderBar(props: MangaReaderBarProps) {
                         trigger={
                             <Badge
                                 size="lg"
-                                className="w-fit cursor-pointer rounded-[--radius-md] z-[5] flex bg-gray-950 items-center bottom-2 focus-visible:outline-none"
+                                className="w-fit cursor-pointer rounded-md z-5 flex bg-gray-950 items-center bottom-2 focus-visible:outline-none"
                                 tabIndex={-1}
                                 data-manga-reader-bar-page-container-badge
                             >
                                 {!!(currentPageIndex + 1) && (
                                     <p className="">
                                         {currentPageIndex + 1}{secondPageText}
-                                        <span className="text-[--muted]"> / {pageContainer?.pages?.length}</span>
+                                        <span className="text-(--muted)"> / {pageContainer?.pages?.length}</span>
                                     </p>
                                 )}
                             </Badge>
@@ -300,10 +300,10 @@ export function MangaReaderBar(props: MangaReaderBarProps) {
                                     tabIndex={-1}
                                 />
                             }
-                            className="text-[--muted] space-y-1"
+                            className="text-(--muted) space-y-1"
                         >
                             <div data-manga-reader-bar-info-container-provider className="hidden lg:block">
-                                <p className="text-[--muted] text-sm">{selectedChapter?.provider}</p>
+                                <p className="text-(--muted) text-sm">{selectedChapter?.provider}</p>
                             </div>
                             <div data-manga-reader-bar-info-container-mode className="flex items-center gap-1">
                                 <span className="text-white w-6">m:</span>

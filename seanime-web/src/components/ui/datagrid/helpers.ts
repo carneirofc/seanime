@@ -1,6 +1,6 @@
 import { BuiltInFilterFn, Cell, Column, ColumnDef, Row, Table } from "@tanstack/react-table"
 import React from "react"
-import { AnyZodObject, z, ZodAny, ZodTypeAny } from "zod"
+import { z, ZodAny, ZodObject, ZodTypeAny } from "zod"
 import { DataGridEditingFieldContext } from "./datagrid-cell-input-field"
 import { DataGridValidationRowErrors } from "./use-datagrid-editing"
 
@@ -123,7 +123,7 @@ export type DataGridColumnDefHelpers<T extends Record<string, any>> = {
  * ]), [])
  * @param callback
  */
-export function defineDataGridColumns<T extends Record<string, any>, Schema extends AnyZodObject = any>(
+export function defineDataGridColumns<T extends Record<string, any>, Schema extends ZodObject<any> = any>(
     callback: (helpers: DataGridColumnDefHelpers<T>, schema?: Schema) => Array<ColumnDef<T>>,
 ) {
     return callback({

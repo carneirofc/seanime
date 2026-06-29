@@ -108,7 +108,7 @@ export const Form = <Schema extends z.ZodObject<z.ZodRawShape>>(props: FormProps
         delayError,
     }
 
-    form.resolver = zodResolver(schema)
+    form.resolver = zodResolver(schema) as any
 
     const methods = useForm(form)
     const { handleSubmit } = methods

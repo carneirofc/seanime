@@ -23,7 +23,7 @@ export function HomeSettingsButton(props: HomeSettingsButtonProps) {
     //     <>
     //         <Tooltip
     //             open
-    //             className="bg-fuchsia-500/100 flex gap-2 items-center font-semibold"
+    //             className="bg-fuchsia-500 flex gap-2 items-center font-semibold"
     //             sideOffset={5}
     //             trigger={<IconButton
     //                 data-library-toolbar-switch-view-button

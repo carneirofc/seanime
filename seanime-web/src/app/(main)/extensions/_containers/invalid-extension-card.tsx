@@ -40,12 +40,12 @@ export function InvalidExtensionCard(props: InvalidExtensionCardProps) {
         >
             <div
                 className={cn(
-                    "absolute z-[0] left-0 top-0 h-full w-full max-w-[150px] bg-gradient-to-r to-gray-900",
+                    "absolute z-0 left-0 top-0 h-full w-full max-w-[150px] bg-linear-to-r to-gray-900",
                     "max-w-[50%] from-red-900/10",
                 )}
             ></div>
 
-            <div className="absolute top-3 right-3 grid grid-cols-2 gap-1 p-1 rounded-[--radius-md] bg-gray-900 z-[2]">
+            <div className="absolute top-3 right-3 grid grid-cols-2 gap-1 p-1 rounded-md bg-gray-900 z-2">
                 <Modal
                     trigger={<IconButton
                         size="sm"
@@ -65,7 +65,7 @@ export function InvalidExtensionCard(props: InvalidExtensionCardProps) {
                         {extension.reason}
                     </code>
 
-                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-xs text-center tracking-wide text-[--muted]">
+                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-xs text-center tracking-wide text-(--muted)">
                         {extension.path}
                     </p>
                 </Modal>
@@ -103,9 +103,9 @@ export function InvalidExtensionCard(props: InvalidExtensionCardProps) {
                 />
             </div>
 
-            <div className="z-[1] relative space-y-3">
+            <div className="z-1 relative space-y-3">
                 <div className="flex gap-3 pr-16">
-                    <div className="relative rounded-[--radius-md] size-12 bg-gray-900 overflow-hidden">
+                    <div className="relative rounded-md size-12 bg-gray-900 overflow-hidden">
                         {!!extension.extension?.icon ? (
                             <SeaImage
                                 src={extension.extension?.icon}
@@ -127,7 +127,7 @@ export function InvalidExtensionCard(props: InvalidExtensionCardProps) {
                         <p className="font-semibold line-clamp-1">
                             {extension.extension?.name ?? "Unknown"}
                         </p>
-                        <p className="text-[--muted] text-sm line-clamp-1 italic">
+                        <p className="text-(--muted) text-sm line-clamp-1 italic">
                             {extension.extension?.id ?? "Invalid ID"}
                         </p>
                     </div>
@@ -142,13 +142,13 @@ export function InvalidExtensionCard(props: InvalidExtensionCardProps) {
                 </div>
 
                 <div className="flex gap-2">
-                    {!!extension.extension?.version && <Badge className="rounded-[--radius-md]">
+                    {!!extension.extension?.version && <Badge className="rounded-md">
                         {extension.extension?.version}
                     </Badge>}
-                    <Badge className="rounded-[--radius-md]" intent="unstyled">
+                    <Badge className="rounded-md" intent="unstyled">
                         {extension.extension?.author ?? "-"}
                     </Badge>
-                    {extension.extension?.lang && <Badge className="rounded-[--radius-md]" intent="unstyled">
+                    {extension.extension?.lang && <Badge className="rounded-md" intent="unstyled">
                         {extension.extension?.lang?.toUpperCase?.()}
                     </Badge>}
                 </div>
@@ -198,12 +198,12 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
         >
             <div
                 className={cn(
-                    "absolute z-[0] left-0 top-0 h-full w-full max-w-[150px] bg-gradient-to-r to-gray-900",
+                    "absolute z-0 left-0 top-0 h-full w-full max-w-[150px] bg-linear-to-r to-gray-900",
                     "max-w-[50%] from-yellow-900/10",
                 )}
             ></div>
 
-            <div className="absolute top-3 right-3 flex flex-col gap-1 p-1 rounded-xl bg-gray-900 z-[2]">
+            <div className="absolute top-3 right-3 flex flex-col gap-1 p-1 rounded-xl bg-gray-900 z-2">
                 <Modal
                     trigger={<Button
                         size="sm"
@@ -218,7 +218,7 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                         The plugin <span className="font-bold">{extension.extension?.name}</span> is requesting the following permissions:
                     </p>
 
-                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-md leading-relaxed text-left bg-[--subtle] p-3 rounded-xl">
+                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-md leading-relaxed text-left bg-(--subtle) p-3 rounded-xl">
                         {extension.pluginPermissionDescription?.split("\n").map((line, index) => {
                             line = line.trimEnd()
                             if (line.startsWith("•") && !line.startsWith("*")) {
@@ -235,7 +235,7 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                                 </span>
                             }
                             if (line.startsWith("*")) {
-                                return <p key={index} className="mb-1 block text-[--orange]">
+                                return <p key={index} className="mb-1 block text-(--orange)">
                                     <span className="font-bold inline-block">{line.replace("* ", "")?.trim()}</span>
                                 </p>
                             }
@@ -247,12 +247,12 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
 
                     {isUnsafe && <Alert
                         intent="warning"
-                        className="!text-[--muted] !bg-gray-800"
+                        className="text-(--muted)! bg-gray-800!"
                         description="This plugin relies on unsafe flags to function. Seanime cannot guarantee that it is safe to use."
                         // className="mb-4"
                     />}
 
-                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-sm text-center text-[--muted]">
+                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-sm text-center text-(--muted)">
                         {extension.path}
                     </p>
 
@@ -315,9 +315,9 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                  /> */}
             </div>
 
-            <div className="z-[1] relative space-y-3">
+            <div className="z-1 relative space-y-3">
                 <div className="flex gap-3 pr-16">
-                    <div className="relative rounded-[--radius-md] size-12 bg-gray-900 overflow-hidden">
+                    <div className="relative rounded-md size-12 bg-gray-900 overflow-hidden">
                         {!!extension.extension?.icon ? (
                             <SeaImage
                                 src={extension.extension?.icon}
@@ -339,7 +339,7 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                         <p className="font-semibold line-clamp-1">
                             {extension.extension?.name ?? "Unknown"}
                         </p>
-                        <p className="text-[--muted] text-xs line-clamp-1 italic">
+                        <p className="text-(--muted) text-xs line-clamp-1 italic">
                             {extension.extension?.id ?? "Invalid ID"}
                         </p>
                     </div>

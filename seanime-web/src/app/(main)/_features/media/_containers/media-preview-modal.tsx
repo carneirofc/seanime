@@ -86,7 +86,7 @@ export function MediaPreviewModal(props: AnimePreviewModalProps) {
                 {...rest}
             >
 
-                {info && <div className="z-[12] absolute right-2 top-2 flex gap-2 items-center">
+                {info && <div className="z-12 absolute right-2 top-2 flex gap-2 items-center">
                     {(!!previousInfo && previousInfo.mediaId !== info.mediaId) && <IconButton
                         intent="white-subtle" size="sm" className="rounded-full" icon={<GoArrowLeft />}
                         onClick={() => {
@@ -145,16 +145,16 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
         <ScopeProvider atoms={[__torrentSearch_selectionAtom, __torrentSearch_selectionEpisodeAtom, __torrentSearch_selectedTorrentsAtom]}>
             <div
                 className={cn(
-                    "absolute z-[0] opacity-30 w-full rounded-t-[--radius] overflow-hidden",
-                    "w-full flex-none object-cover object-center z-[3] bg-[--background] h-[12rem]",
-                    ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small ? "lg:h-[23rem]" : "h-[12rem] lg:h-[22rem] 2xl:h-[30rem]",
+                    "absolute z-0 opacity-30 w-full rounded-t-(--radius) overflow-hidden",
+                    "w-full flex-none object-cover object-center z-3 bg-(--background) h-48",
+                    ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small ? "lg:h-92" : "h-48 lg:h-88 2xl:h-120",
                 )}
             >
 
                 {/*BOTTOM OVERFLOW FADE*/}
                 <div
                     className={cn(
-                        "w-full z-[2] absolute bottom-[-5rem] h-[5rem] bg-gradient-to-b from-[--background] via-transparent via-100% to-transparent",
+                        "w-full z-2 absolute -bottom-20 h-20 bg-linear-to-b from-(--background) via-transparent via-100% to-transparent",
                     )}
                 />
 
@@ -171,21 +171,21 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
                         priority
                         sizes="100vw"
                         className={cn(
-                            "object-cover object-center z-[1]",
+                            "object-cover object-center z-1",
                         )}
                     />}
 
                     {/*LEFT MASK*/}
                     <div
                         className={cn(
-                            "hidden lg:block max-w-[60rem] xl:max-w-[100rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background]  transition-opacity to-transparent",
+                            "hidden lg:block max-w-240 xl:max-w-[100rem] w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background)  transition-opacity to-transparent",
                             "opacity-85 duration-1000",
                             // y > 300 && "opacity-70",
                         )}
                     />
                     <div
                         className={cn(
-                            "hidden lg:block max-w-[60rem] xl:max-w-[80rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] from-25% transition-opacity to-transparent",
+                            "hidden lg:block max-w-240 xl:max-w-7xl w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) from-25% transition-opacity to-transparent",
                             "opacity-50 duration-500",
                         )}
                     />
@@ -194,23 +194,23 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
                 {/*BOTTOM FADE*/}
                 <div
                     className={cn(
-                        "w-full z-[3] absolute bottom-0 h-[50%] bg-gradient-to-t from-[--background] via-transparent via-100% to-transparent",
+                        "w-full z-3 absolute bottom-0 h-[50%] bg-linear-to-t from-(--background) via-transparent via-100% to-transparent",
                     )}
                 />
 
                 <div
                     className={cn(
-                        "absolute h-full w-full block lg:hidden bg-[--background] opacity-70 z-[2]",
+                        "absolute h-full w-full block lg:hidden bg-(--background) opacity-70 z-2",
                     )}
                 />
 
             </div>
 
-            {entryLoading && <div className="space-y-4 relative z-[5]">
+            {entryLoading && <div className="space-y-4 relative z-5">
                 <Skeleton
                     className={cn(
-                        "h-[12rem]",
-                        ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small ? "lg:h-[23rem]" : "h-[12rem] lg:h-[22rem] 2xl:h-[30rem]",
+                        "h-48",
+                        ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small ? "lg:h-92" : "h-48 lg:h-88 2xl:h-120",
                     )}
                 />
                 {/*<LoadingSpinner />*/}
@@ -218,7 +218,7 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
 
             {(!entryLoading && entry) && <>
 
-                <div className="z-[5] relative">
+                <div className="z-5 relative">
                     <MediaPageHeaderEntryDetails
                         coverImage={entry.media?.coverImage?.extraLarge || entry.media?.coverImage?.large}
                         title={entry.media?.title?.userPreferred}
@@ -237,7 +237,7 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
                     >
                         <div
                             className={cn(
-                                "flex gap-3 flex-wrap items-center relative z-[10]",
+                                "flex gap-3 flex-wrap items-center relative z-10",
                                 ts.mediaPageBannerInfoBoxSize === ThemeMediaPageInfoBoxSize.Fluid && "justify-center lg:justify-start lg:max-w-[65vw]",
                             )}
                         >
@@ -305,7 +305,7 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
                     </div>}
                 </div>
 
-                {/*<div className="absolute top-0 left-0 w-full h-full z-[0] bg-[--background] rounded-xl">*/}
+                {/*<div className="absolute top-0 left-0 w-full h-full z-0 bg-(--background) rounded-xl">*/}
                 {/*    <SeaImage*/}
                 {/*        src={media?.bannerImage || ""}*/}
                 {/*        alt={""}*/}
@@ -316,7 +316,7 @@ function Content({ entry, entryLoading, detailsLoading, details, type }: {
                 {/*    />*/}
 
                 {/*    <div*/}
-                {/*        className="absolute top-0 w-full h-full backdrop-blur-2xl z-[2] "*/}
+                {/*        className="absolute top-0 w-full h-full backdrop-blur-2xl z-2 "*/}
                 {/*    ></div>*/}
                 {/*</div>*/}
 

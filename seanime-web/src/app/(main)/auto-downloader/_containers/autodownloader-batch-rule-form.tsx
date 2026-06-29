@@ -114,7 +114,7 @@ export function AutoDownloaderBatchRuleForm(props: AutoDownloaderBatchRuleFormPr
     }
 
     if (allMedia.length === 0) {
-        return <div className="p-4 text-[--muted] text-center">No media found in your library</div>
+        return <div className="p-4 text-(--muted) text-center">No media found in your library</div>
     }
 
     return (
@@ -198,7 +198,7 @@ function RuleFormFields(props: RuleFormFieldsProps) {
                     rules={rules}
                 />
 
-                <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+                <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
                     <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Title</div>
                     <Field.RadioCards
                         label="Type of search"
@@ -207,7 +207,7 @@ function RuleFormFields(props: RuleFormFieldsProps) {
                             {
                                 label: <div className="w-full">
                                     <p className="mb-1 flex items-center"><MdVerified className="text-lg inline-block mr-2" />Most likely</p>
-                                    <p className="font-normal text-sm text-[--muted]">The torrent name will be parsed and analyzed using a comparison
+                                    <p className="font-normal text-sm text-(--muted)">The torrent name will be parsed and analyzed using a comparison
                                                                                       algorithm</p>
                                 </div>,
                                 value: "likely",
@@ -215,7 +215,7 @@ function RuleFormFields(props: RuleFormFieldsProps) {
                             {
                                 label: <div className="w-full">
                                     <p className="mb-1 flex items-center"><LuTextCursorInput className="text-lg inline-block mr-2" />Exact match</p>
-                                    <p className="font-normal text-sm text-[--muted]">The torrent name must contain the comparison title you set (case
+                                    <p className="font-normal text-sm text-(--muted)">The torrent name must contain the comparison title you set (case
                                                                                       insensitive)</p>
                                 </div>,
                                 value: "contains",
@@ -230,7 +230,7 @@ function RuleFormFields(props: RuleFormFieldsProps) {
 
                 <ResolutionsField name="resolutions" control={form.control} />
 
-                <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+                <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
                     <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Constraints</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <Field.Number
@@ -456,7 +456,7 @@ function MediaFieldItem(props: MediaFieldItemProps) {
         <div>
             <div className="flex gap-4 items-center w-full">
                 <div className="flex flex-col gap-2 w-full">
-                    <div className="border rounded-[--radius] p-4 relative space-y-3">
+                    <div className="border rounded-(--radius) p-4 relative space-y-3">
                         <div className="flex gap-4 items-center">
                             <AutoDownloaderMediaCombobox
                                 mediaList={allMedia}
@@ -491,7 +491,7 @@ function MediaFieldItem(props: MediaFieldItemProps) {
                 />
             </div>
             {!!separatorText && (
-                <p className="text-center text-[--muted] my-4">{separatorText}</p>
+                <p className="text-center text-(--muted) my-4">{separatorText}</p>
             )}
         </div>
     )

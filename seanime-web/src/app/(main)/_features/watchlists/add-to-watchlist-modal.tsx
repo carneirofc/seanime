@@ -27,7 +27,7 @@ export function AddToWatchlistModal() {
             <div className="space-y-4">
                 {groupings.length === 0 ? (
                     <div className="text-center space-y-3 py-2">
-                        <p className="text-[--muted] text-sm">
+                        <p className="text-(--muted) text-sm">
                             You don't have any groupings yet. Create one to start organizing your watchlists.
                         </p>
                         <InlineCreate
@@ -42,12 +42,12 @@ export function AddToWatchlistModal() {
                             <div className="space-y-4">
                                 {groupings.map(grouping => (
                                     <div key={grouping.id} data-add-to-watchlist-grouping className="space-y-1.5">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-[--muted]">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-(--muted)">
                                             {grouping.name}
                                         </p>
 
                                         {grouping.watchlists.length === 0 && (
-                                            <p className="text-xs text-[--muted] italic px-1">No watchlists yet</p>
+                                            <p className="text-xs text-(--muted) italic px-1">No watchlists yet</p>
                                         )}
 
                                         <div className="space-y-1">
@@ -68,13 +68,13 @@ export function AddToWatchlistModal() {
                                                             "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-colors text-left",
                                                             "border",
                                                             inIt
-                                                                ? "border-brand-400/40 bg-brand-500/10 text-[--brand]"
+                                                                ? "border-brand-400/40 bg-brand-500/10 text-(--brand)"
                                                                 : "border-transparent bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10",
                                                         )}
                                                     >
                                                         <span className="truncate">
                                                             {watchlist.name}
-                                                            <span className="text-[--muted] ml-2 text-xs">{watchlist.media.length}</span>
+                                                            <span className="text-(--muted) ml-2 text-xs">{watchlist.media.length}</span>
                                                         </span>
                                                         {inIt && <LuCheck className="shrink-0" />}
                                                     </button>
@@ -94,8 +94,8 @@ export function AddToWatchlistModal() {
                             </div>
                         </ScrollArea>
 
-                        <div className="border-t border-[--border] pt-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[--muted] mb-1.5">New grouping</p>
+                        <div className="border-t border-(--border) pt-3">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-(--muted) mb-1.5">New grouping</p>
                             <InlineCreate
                                 placeholder="New grouping name"
                                 icon={<LuFolderPlus />}

@@ -114,16 +114,16 @@ export function ManualProgressTracking() {
                 onOpenChange={v => setShowModal(v)}
                 // title="Progress"
                 titleClass="text-center"
-                contentClass="!space-y-2 relative max-w-2xl rounded-2xl"
+                contentClass="space-y-2! relative max-w-2xl rounded-2xl"
             >
                 {state && <div data-manual-progress-tracking-modal-content className="text-center relative overflow-hidden space-y-2">
-                    <p className="text-[--muted]">Playing externally</p>
+                    <p className="text-(--muted)">Playing externally</p>
                     {state.mediaCoverImage && <div className="size-16 rounded-full relative mx-auto overflow-hidden mb-3">
                         <SeaImage src={state.mediaCoverImage} alt="cover image" fill className="object-cover object-center" />
                     </div>}
                     <h3 className="text-lg font-medium line-clamp-1">{state?.mediaTitle}</h3>
                     <p className="text-2xl font-bold">Episode {state?.episodeNumber}
-                        <span className="text-[--muted]">{" / "}{(!!state?.mediaTotalEpisodes && state?.mediaTotalEpisodes > 0)
+                        <span className="text-(--muted)">{" / "}{(!!state?.mediaTotalEpisodes && state?.mediaTotalEpisodes > 0)
                             ? state?.mediaTotalEpisodes
                             : "-"}</span></p>
                 </div>}

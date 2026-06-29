@@ -9,24 +9,26 @@ export type Options = {
     max?: number
 }
 
-const getType = (field: z.ZodTypeAny) => {
-    switch (field._def.typeName) {
-        case "ZodArray":
+const getType = (field: z.ZodType) => {
+    switch ((field as any)._def.type) {
+        case "array":
             return "array"
-        case "ZodObject":
+        case "object":
             return "object"
-        case "ZodNumber":
+        case "number":
             return "number"
-        case "ZodDate":
+        case "date":
             return "date"
-        case "ZodString":
+        case "string":
         default:
             return "text"
     }
 }
 
-const getArrayOption = (field: any, name: string) => {
-    return field._def[name]?.value
+const getArrayOption = (field: any, check: "min_length" | "max_length") => {
+    const checks = field?._def?.checks ?? []
+    const found = checks.find((c: any) => c?._zod?.def?.check === check)
+    return check === "min_length" ? found?._zod?.def?.minimum : found?._zod?.def?.maximum
 }
 
 /**
@@ -35,14 +37,15 @@ const getArrayOption = (field: any, name: string) => {
  * @param schema The Yup schema
  * @returns {FieldProps[]}
  */
-export const getFieldsFromSchema = (schema: z.ZodTypeAny): FieldValues[] => {
+export const getFieldsFromSchema = (schema: z.ZodType): FieldValues[] => {
     const fields: FieldValues[] = []
 
+    const def = (schema as any)._def
     let schemaFields: Record<string, any> = {}
-    if (schema._def.typeName === "ZodArray") {
-        schemaFields = schema._def.type.shape
-    } else if (schema._def.typeName === "ZodObject") {
-        schemaFields = schema._def.shape()
+    if (def.type === "array") {
+        schemaFields = (schema as any).element?.shape ?? {}
+    } else if (def.type === "object") {
+        schemaFields = (schema as any).shape ?? {}
     } else {
         return fields
     }
@@ -51,9 +54,9 @@ export const getFieldsFromSchema = (schema: z.ZodTypeAny): FieldValues[] => {
         const field = schemaFields[name]
 
         const options: Options = {}
-        if (field._def.typeName === "ZodArray") {
-            options.min = getArrayOption(field, "minLength")
-            options.max = getArrayOption(field, "maxLength")
+        if (field._def.type === "array") {
+            options.min = getArrayOption(field, "min_length")
+            options.max = getArrayOption(field, "max_length")
         }
 
         const meta = field.description && zodParseMeta(field.description)
@@ -69,11 +72,11 @@ export const getFieldsFromSchema = (schema: z.ZodTypeAny): FieldValues[] => {
 }
 
 
-export const getNestedSchema = (schema: z.ZodTypeAny, path: string) => {
-    return get(schema._def.shape(), path)
+export const getNestedSchema = (schema: z.ZodType, path: string) => {
+    return get((schema as any).shape, path)
 }
 
-export const zodFieldResolver = <T extends z.ZodTypeAny>(schema: T) => {
+export const zodFieldResolver = <T extends z.ZodType>(schema: T) => {
     return {
         getFields() {
             return getFieldsFromSchema(schema)
@@ -106,10 +109,13 @@ export const zodParseMeta = (meta: string) => {
  * @link https://github.com/colinhacks/zod/discussions/1953#discussioncomment-4811588
  * @param schema
  */
-export function getZodDefaults<Schema extends z.AnyZodObject>(schema: Schema) {
+export function getZodDefaults<Schema extends z.ZodObject<any>>(schema: Schema) {
     return Object.fromEntries(
         Object.entries(schema.shape).map(([key, value]) => {
-            if (value instanceof z.ZodDefault) return [key, value._def.defaultValue()]
+            if (value instanceof z.ZodDefault) {
+                const dv = (value as any)._def.defaultValue
+                return [key, typeof dv === "function" ? dv() : dv]
+            }
             return [key, undefined]
         }),
     )
@@ -118,10 +124,10 @@ export function getZodDefaults<Schema extends z.AnyZodObject>(schema: Schema) {
 /**
  * @param schema
  */
-export function getZodDescriptions<Schema extends z.AnyZodObject>(schema: Schema) {
+export function getZodDescriptions<Schema extends z.ZodObject<any>>(schema: Schema) {
     return Object.fromEntries(
         Object.entries(schema.shape).map(([key, value]) => {
-            return [key, (value as any)._def.description ?? undefined]
+            return [key, (value as any).description ?? undefined]
         }),
     )
 }
@@ -134,7 +140,7 @@ export function getZodDescriptions<Schema extends z.AnyZodObject>(schema: Schema
  */
 export function getZodParsedDescription<T extends {
     [p: string]: any
-}>(schema: z.AnyZodObject, key: string): T | undefined {
+}>(schema: z.ZodObject<any>, key: string): T | undefined {
     const obj = getZodDescriptions(schema)
     const parsedDescription: any = (typeof obj[key as keyof typeof obj] === "string" || obj[key as keyof typeof obj] instanceof String) ? JSON.parse(
         obj[key as keyof typeof obj]) : undefined

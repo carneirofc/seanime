@@ -91,12 +91,12 @@ export function ServerSettings(props: ServerSettingsProps) {
                         <p>The AniList API is not working. All requests will be served from the cache.</p>
                         <p>You can disable this in the app settings.</p>
                     </div>}
-                    className="fixed top-4 right-4 z-[50] hidden lg:block"
+                    className="fixed top-4 right-4 z-50 hidden lg:block"
                 />
             )}
 
             <SettingsCard>
-                {/*<p className="text-[--muted]">*/}
+                {/*<p className="text-(--muted)">*/}
                 {/*    Only applies to desktop and integrated players.*/}
                 {/*</p>*/}
 
@@ -141,7 +141,7 @@ export function ServerSettings(props: ServerSettingsProps) {
                 </div>
 
                 {f.watch("hideAnimeSpoilers") && (
-                    <div className="space-y-1 pl-4 border-l border-[--border] ml-2">
+                    <div className="space-y-1 pl-4 border-l border-(--border) ml-2">
                         <Field.Switch
                             side="right"
                             label="Hide thumbnails"
@@ -196,7 +196,7 @@ export function ServerSettings(props: ServerSettingsProps) {
                     )}
                 />
 
-                {f.watch("enableAdultContent") && <div className="space-y-1 pl-4 border-l border-[--border] ml-2">
+                {f.watch("enableAdultContent") && <div className="space-y-1 pl-4 border-l border-(--border) ml-2">
                     <Field.Switch
                         side="right"
                         name="blurAdultContent"
@@ -292,7 +292,7 @@ export function ServerSettings(props: ServerSettingsProps) {
                     ].map(item => {
                         return (
                             <div className="flex gap-2 items-center" key={item.label}>
-                                <label className="text-[--gray]">
+                                <label className="text-(--gray)">
                                     <span className="font-semibold">{item.label}</span>
                                 </label>
                                 <div className="flex gap-2 items-center">
@@ -316,13 +316,13 @@ export function ServerSettings(props: ServerSettingsProps) {
                                                 setShortcuts(prev => [keyStr, prev[1]])
                                             }
                                         }}
-                                        className="focus:ring-2 focus:ring-[--brand] focus:ring-offset-1"
+                                        className="focus:ring-2 focus:ring-(--brand) focus:ring-offset-1"
                                         size="sm"
                                         intent="white-subtle"
                                     >
                                         {shortcuts[0]}
                                     </Button>
-                                    <span className="text-[--muted]">or</span>
+                                    <span className="text-(--muted)">or</span>
                                     <Button
                                         onKeyDownCapture={(e) => {
                                             e.preventDefault()
@@ -343,7 +343,7 @@ export function ServerSettings(props: ServerSettingsProps) {
                                                 setShortcuts(prev => [prev[0], keyStr])
                                             }
                                         }}
-                                        className="focus:ring-2 focus:ring-[--brand] focus:ring-offset-1"
+                                        className="focus:ring-2 focus:ring-(--brand) focus:ring-offset-1"
                                         size="sm"
                                         intent="white-subtle"
                                     >
@@ -380,7 +380,7 @@ export function ServerSettings(props: ServerSettingsProps) {
                     icon={<LuDatabaseBackup className="" />}
                 />
                 {!f.watch("disableCacheLayer") && (
-                    <div className="space-y-1 pl-4 border-l border-[--border] ml-2">
+                    <div className="space-y-1 pl-4 border-l border-(--border) ml-2">
                         <Switch
                             value={!isApiWorking}
                             onValueChange={v => toggleCacheLayer()}
@@ -415,7 +415,7 @@ export function ServerSettings(props: ServerSettingsProps) {
                     name="disableUpdateCheck"
                     label={__isElectronDesktop__ ? "Do not fetch updates" : "Do not check for updates"}
                     help={__isElectronDesktop__ ? (<span className="flex gap-2 items-center">
-                        <LuCircleAlert className="size-4 text-[--blue]" />
+                        <LuCircleAlert className="size-4 text-(--blue)" />
                         <span>If enabled, new releases won't be displayed. Seanime Denshi may still auto-update in the background.</span>
                     </span>) : "If enabled, Seanime will not check for new releases."}
                     moreHelp={__isElectronDesktop__ ? "You cannot disable auto-updates for Seanime Denshi." : undefined}
@@ -459,12 +459,12 @@ export function ServerSettings(props: ServerSettingsProps) {
             {/*<Accordion*/}
             {/*    type="single"*/}
             {/*    collapsible*/}
-            {/*    className="border rounded-[--radius-md]"*/}
-            {/*    triggerClass="dark:bg-[--paper]"*/}
-            {/*    contentClass="!pt-2 dark:bg-[--paper]"*/}
+            {/*    className="border rounded-md"*/}
+            {/*    triggerClass="dark:bg-(--paper)"*/}
+            {/*    contentClass="pt-2! dark:bg-(--paper)"*/}
             {/*>*/}
             {/*    <AccordionItem value="more">*/}
-            {/*        <AccordionTrigger className="bg-gray-900 rounded-[--radius-md]">*/}
+            {/*        <AccordionTrigger className="bg-gray-900 rounded-md">*/}
             {/*            Advanced*/}
             {/*        </AccordionTrigger>*/}
             {/*        <AccordionContent className="pt-6 flex flex-col md:flex-row gap-3">*/}
@@ -482,11 +482,11 @@ export function ServerSettings(props: ServerSettingsProps) {
 
 const cardCheckboxStyles = {
     itemContainerClass: cn(
-        "block border border-[--border] cursor-pointer transition overflow-hidden w-full",
-        "bg-gray-50 hover:bg-[--subtle] dark:bg-gray-950 border-dashed",
+        "block border border-(--border) cursor-pointer transition overflow-hidden w-full",
+        "bg-gray-50 hover:bg-(--subtle) dark:bg-gray-950 border-dashed",
         "data-[checked=false]:opacity-30",
         "data-[checked=true]:bg-white dark:data-[checked=true]:bg-gray-950",
-        "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-[--background] focus-within:ring-2 transition",
+        "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-(--background) focus-within:ring-2 transition",
         "data-[checked=true]:border data-[checked=true]:ring-offset-0",
     ),
     itemClass: cn(
@@ -497,6 +497,6 @@ const cardCheckboxStyles = {
     //     "data-[state=unchecked]:bg-transparent data-[state=unchecked]:hover:bg-transparent dark:data-[state=unchecked]:hover:bg-transparent",
     //     "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent",
     // ),
-    // itemLabelClass: "font-medium flex flex-col items-center data-[state=checked]:text-[--brand] cursor-pointer",
+    // itemLabelClass: "font-medium flex flex-col items-center data-[state=checked]:text-(--brand) cursor-pointer",
     stackClass: "flex md:flex-row flex-col space-y-0 gap-4",
 }

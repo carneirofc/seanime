@@ -235,7 +235,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                 title="Repository URL"
             >
                 <div className="space-y-4">
-                    <p className="text-sm text-[--muted]">
+                    <p className="text-sm text-(--muted)">
                         Enter the URL of the repository JSON file.
                     </p>
 
@@ -295,10 +295,10 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                     <h2>
                         Marketplace
                     </h2>
-                    <p className="text-[--muted] text-sm">
+                    <p className="text-(--muted) text-sm">
                         Browse and install extensions from the repository.
                     </p>
-                    <p className="text-[--muted] text-xs mt-1">
+                    <p className="text-(--muted) text-xs mt-1">
                         Source: {marketplaceUrl === DEFAULT_MARKETPLACE_URL ?
                         <span>Official repository</span> :
                         <span>{marketplaceUrl}</span>
@@ -426,7 +426,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
 
             {(!!marketplaceExtensions && filteredExtensions.length === 0) && (
                 <Card className="p-8 text-center">
-                    <p className="text-[--muted]">No extensions found matching your criteria.</p>
+                    <p className="text-(--muted)">No extensions found matching your criteria.</p>
                 </Card>
             )}
 
@@ -500,7 +500,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                         >
                             Custom sources do not provide any streaming features. Torrent and online streaming providers are needed for this.
                         </Popover></h3>
-                        <p className="text-[--muted] text-sm">
+                        <p className="text-(--muted) text-sm">
                             Custom sources let you browse media beyond what AniList provides.
                         </p>
                     </div>
@@ -558,13 +558,13 @@ export function MarketplaceExtensionCard(props: MarketplaceExtensionCardProps) {
     return (
         <div
             className={cn(
-                "group/extension-card border border-[rgb(255_255_255_/_5%)] relative overflow-hidden",
+                "group/extension-card border border-[rgb(255_255_255/5%)] relative overflow-hidden",
                 "bg-gray-900 rounded-xl p-3",
-                !!updateData && "border-[--green]",
+                !!updateData && "border-(--green)",
             )}
         >
-            {!hideInstallButton && <div className="absolute top-3 right-3 z-[2]">
-                <div className=" flex flex-row gap-1 z-[2] flex-wrap justify-end">
+            {!hideInstallButton && <div className="absolute top-3 right-3 z-2">
+                <div className=" flex flex-row gap-1 z-2 flex-wrap justify-end">
                     {!isInstalled ? <IconButton
                         size="sm"
                         intent="primary-subtle"
@@ -581,7 +581,7 @@ export function MarketplaceExtensionCard(props: MarketplaceExtensionCardProps) {
                 </div>
             </div>}
 
-            <div className="z-[1] relative space-y-3">
+            <div className="z-1 relative space-y-3">
                 <div className="flex gap-3 pr-16">
                     <div className={cn("relative rounded-md size-12 bg-gray-950 overflow-hidden", !!extension.icon && "bg-gray-900")}>
                         {!!extension.icon ? (
@@ -614,7 +614,7 @@ export function MarketplaceExtensionCard(props: MarketplaceExtensionCardProps) {
 
                 {extension.description && (
                     <Popover
-                        trigger={<p className="text-sm text-[--muted] line-clamp-2 cursor-pointer">
+                        trigger={<p className="text-sm text-(--muted) line-clamp-2 cursor-pointer">
                             {extension.description}
                         </p>}
                     >
@@ -638,7 +638,7 @@ export function MarketplaceExtensionCard(props: MarketplaceExtensionCardProps) {
                         {/*{extension.lang.toUpperCase()}*/}
                         {LANGUAGES_LIST[extension.lang?.toLowerCase()]?.nativeName || extension.lang?.toUpperCase() || "Unknown"}
                     </Badge>}
-                    <Badge className="border-transparent rounded-md text-[--muted] px-0" intent="unstyled">
+                    <Badge className="border-transparent rounded-md text-(--muted) px-0" intent="unstyled">
                         {capitalize(extension.language)}
                     </Badge>
                     {!!updateData && <Badge className="rounded-md" intent="success">

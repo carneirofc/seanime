@@ -15,7 +15,7 @@ import {
     VisibilityState,
 } from "@tanstack/react-table"
 import * as React from "react"
-import { AnyZodObject } from "zod"
+import { ZodObject } from "zod"
 import { Checkbox } from "../checkbox"
 import { DataGridOnRowEdit, DataGridOnRowValidationError } from "./use-datagrid-editing"
 import { dateRangeFilter } from "./use-datagrid-filtering"
@@ -98,7 +98,7 @@ export type DataGridInstanceProps<T extends Record<string, any>> = {
     /**
      * Zod validation schema for the columns.
      */
-    validationSchema?: AnyZodObject
+    validationSchema?: ZodObject<any>
     /**
      * Callback invoked when a cell is successfully edited.
      */

@@ -40,7 +40,7 @@ export function EmptyLibraryView(props: EmptyLibraryViewProps) {
     return (
         <>
             <DiscoverPageHeader />
-            <PageWrapper className="p-4 sm:p-8 pt-0 space-y-8 relative z-[4]" data-empty-library-view-container>
+            <PageWrapper className="p-4 sm:p-8 pt-0 space-y-8 relative z-4" data-empty-library-view-container>
                 <div className="text-center space-y-4">
                     <div className="w-fit mx-auto space-y-4">
                         {!!serverStatus?.settings?.library?.libraryPath ? <>
@@ -118,7 +118,7 @@ function GenreSelector({
             <div className="flex flex-1"></div>
             <StaticTabs
                 className="px-2 overflow-visible gap-2 py-4 w-fit"
-                triggerClass="text-base rounded-[--radius-md] ring-2 ring-transparent data-[current=true]:ring-brand-500 data-[current=true]:text-brand-300"
+                triggerClass="text-base rounded-md ring-2 ring-transparent data-[current=true]:ring-brand-500 data-[current=true]:text-brand-300"
                 items={[
                     // {
                     //     name: "All",

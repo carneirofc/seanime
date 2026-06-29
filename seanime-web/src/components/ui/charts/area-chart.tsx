@@ -111,7 +111,7 @@ export const AreaChart = React.forwardRef<HTMLDivElement, AreaChartProps>((props
                             dataKey={index}
                             tick={{ transform: "translate(0, 8)" }}
                             ticks={startEndOnly ? [data[0][index], data[data.length - 1][index]] : undefined}
-                            className="font-medium text-[--muted] text-xs"
+                            className="font-medium text-(--muted) text-xs"
                             interval={intervalType}
                             axisLine={false}
                             tickLine={false}
@@ -129,7 +129,7 @@ export const AreaChart = React.forwardRef<HTMLDivElement, AreaChartProps>((props
                             type="number"
                             domain={yAxisDomain as AxisDomain}
                             tick={{ transform: "translate(-3, 0)" }}
-                            className="font-medium text-[--muted] text-xs"
+                            className="font-medium text-(--muted) text-xs"
                             tickFormatter={valueFormatter}
                             allowDecimals={allowDecimals}
                         />

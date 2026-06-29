@@ -150,7 +150,7 @@ export default function Page() {
             <div className="flex flex-col lg:flex-row gap-2">
                 <div>
                     <h2 className="">Offline media</h2>
-                    <p className="text-[--muted]">
+                    <p className="text-(--muted)">
                         View the media you've saved locally for offline use.
                     </p>
                 </div>
@@ -287,7 +287,7 @@ export default function Page() {
             </>}
 
             {/*{(queueState && (Object.keys(queueState.animeTasks!).length > 0 || Object.keys(queueState.mangaTasks!).length > 0)) &&*/}
-            {/*    <div className="border rounded-[--radius-md] p-2">*/}
+            {/*    <div className="border rounded-md p-2">*/}
             {/*        <p className="flex items-center gap-1">*/}
             {/*            <Spinner className="size-6" />*/}
             {/*            <span>Syncing in progress</span>*/}

@@ -18,7 +18,7 @@ export const LoadingSpinnerAnatomy = defineStyleAnatomy({
     ]),
     title: cva([
         "UI-LoadingSpinner__title",
-        "text-base font-medium text-[--foreground] py-2",
+        "text-base font-medium text-(--foreground) py-2",
     ]),
 })
 

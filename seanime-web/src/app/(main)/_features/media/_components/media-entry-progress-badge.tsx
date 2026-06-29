@@ -19,7 +19,7 @@ export const MediaEntryProgressBadge = (props: MediaEntryProgressBadgeProps) => 
         <Badge
             intent="unstyled"
             size="lg"
-            className="font-semibold tracking-wide flex-col rounded-[--radius-md] rounded-tl-none rounded-br-none border-0 bg-zinc-950/40 px-1.5 py-0.5 gap-0 !h-auto"
+            className="font-semibold tracking-wide flex-col rounded-md rounded-tl-none rounded-br-none border-0 bg-zinc-950/40 px-1.5 py-0.5 gap-0 h-auto!"
             data-media-entry-progress-badge
         >
             {top && <span data-media-entry-progress-badge-top className="block">
@@ -35,7 +35,7 @@ export const MediaEntryProgressBadge = (props: MediaEntryProgressBadgeProps) => 
                 {progress || 0}{(!!progressTotal || forceShowTotal) && <span
                 data-media-entry-progress-badge-progress-total
                 className={cn(
-                    "text-[--muted]",
+                    "text-(--muted)",
                 )}
             >/{(!!progressTotal) ? progressTotal : "-"}</span>}
             </span>}

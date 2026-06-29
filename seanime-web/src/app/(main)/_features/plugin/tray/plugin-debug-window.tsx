@@ -58,7 +58,7 @@ function levelClass(level: string) {
         case "debug":
             return "border-violet-500/40 bg-violet-500/10 text-violet-100"
         default:
-            return "border-[--border] bg-[--subtle] text-[--foreground]"
+            return "border-(--border) bg-(--subtle) text-(--foreground)"
     }
 }
 
@@ -235,7 +235,7 @@ export function PluginDebugWindow({
     return (
         <div
             ref={panelRef}
-            className="fixed z-[80] flex w-[min(680px,calc(100vw_-_24px))] min-h-[280px] flex-col overflow-hidden rounded-2xl border border-[--border] bg-[--background] shadow-2xl"
+            className="fixed z-80 flex w-[min(680px,calc(100vw-24px))] min-h-[280px] flex-col overflow-hidden rounded-2xl border border-(--border) bg-(--background) shadow-2xl"
             style={{
                 left: position.x,
                 top: position.y,
@@ -244,7 +244,7 @@ export function PluginDebugWindow({
             }}
         >
             <div
-                className="flex cursor-move select-none items-center justify-between gap-3 border-b border-[--border] px-3 py-2"
+                className="flex cursor-move select-none items-center justify-between gap-3 border-b border-(--border) px-3 py-2"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -252,7 +252,7 @@ export function PluginDebugWindow({
             >
                 <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{extensionName || extensionId}</p>
-                    <p className="truncate font-mono text-xs text-[--muted]">{extensionId}</p>
+                    <p className="truncate font-mono text-xs text-(--muted)">{extensionId}</p>
                 </div>
                 <div className="flex items-center gap-1" onPointerDown={event => event.stopPropagation()}>
                     <Tooltip
@@ -290,7 +290,7 @@ export function PluginDebugWindow({
                     >Close</Tooltip>
                 </div>
             </div>
-            <div className="flex flex-col gap-2 border-b border-[--border] px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-(--border) px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 flex-1 items-center gap-2">
                     <TextInput
                         value={search}
@@ -310,7 +310,7 @@ export function PluginDebugWindow({
                                 "rounded-md border px-2 py-1 text-xs capitalize transition-colors",
                                 level === item
                                     ? "bg-white text-black"
-                                    : "border-[--border] text-[--muted] hover:text-[--foreground]",
+                                    : "border-(--border) text-(--muted) hover:text-(--foreground)",
                             )}
                             onClick={() => setLevel(item)}
                         >
@@ -318,16 +318,16 @@ export function PluginDebugWindow({
                         </button>
                     ))}
                 </div>
-                <p className="flex-none font-mono text-xs text-right text-[--muted] min-w-10">{visibleLogs.length}/{logs.length}</p>
+                <p className="flex-none font-mono text-xs text-right text-(--muted) min-w-10">{visibleLogs.length}/{logs.length}</p>
             </div>
             <div ref={listRef} onScroll={onListScroll} className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
-                {!visibleLogs.length && <div className="flex h-full items-center justify-center text-sm text-[--muted]">
+                {!visibleLogs.length && <div className="flex h-full items-center justify-center text-sm text-(--muted)">
                     No logs
                 </div>}
                 {visibleLogs.map(log => (
-                    <div key={log.id} className="rounded-md border border-[--border] bg-[--paper] p-2 hover:bg-[--subtle]">
+                    <div key={log.id} className="rounded-md border border-(--border) bg-(--paper) p-2 hover:bg-(--subtle)">
                         <div className="mb-1 flex min-w-0 items-center gap-2">
-                            <span className="font-mono text-xs text-[--muted]">{new Date(log.at).toLocaleTimeString()}</span>
+                            <span className="font-mono text-xs text-(--muted)">{new Date(log.at).toLocaleTimeString()}</span>
                             <span
                                 className={cn(
                                     "rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
@@ -337,22 +337,22 @@ export function PluginDebugWindow({
                                 {log.level}
                             </span>
                         </div>
-                        <p className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[--foreground]">{log.message}</p>
+                        <p className="whitespace-pre-wrap wrap-break-word font-mono text-xs leading-relaxed text-(--foreground)">{log.message}</p>
                         {!!log.values?.length &&
-                            <pre className="mt-2 max-h-52 overflow-auto rounded-md bg-black/30 p-2 text-xs leading-relaxed text-[--muted]">
+                            <pre className="mt-2 max-h-52 overflow-auto rounded-md bg-black/30 p-2 text-xs leading-relaxed text-(--muted)">
                                 {formatDebugValue(log.values.length === 1 ? log.values[0] : log.values)}
                             </pre>}
                     </div>
                 ))}
             </div>
             <div
-                className="flex h-3 flex-none cursor-ns-resize items-center justify-center border-t border-[--border] bg-[--subtle] touch-none"
+                className="flex h-3 flex-none cursor-ns-resize items-center justify-center border-t border-(--border) bg-(--subtle) touch-none"
                 onPointerDown={onResizePointerDown}
                 onPointerMove={onResizePointerMove}
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerUp}
             >
-                <div className="h-1 w-12 rounded-full bg-[--border]" />
+                <div className="h-1 w-12 rounded-full bg-(--border)" />
             </div>
         </div>
     )

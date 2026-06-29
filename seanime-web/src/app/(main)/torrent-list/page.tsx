@@ -38,7 +38,7 @@ export default function Page() {
                 <div data-torrent-list-page-header className="flex items-center w-full justify-between">
                     <div data-torrent-list-page-header-title>
                         <h2>Active torrents</h2>
-                        <p className="text-[--muted]">
+                        <p className="text-(--muted)">
                             See torrents currently being downloaded or seeded
                         </p>
                     </div>
@@ -75,8 +75,8 @@ export default function Page() {
 
 const getSortIcon = (sortDirection: SortDirection) => {
     return sortDirection === "asc" ?
-        <TbSortAscending className="text-[--muted] text-lg" /> :
-        <TbSortDescending className="text-[--muted] text-lg" />
+        <TbSortAscending className="text-(--muted) text-lg" /> :
+        <TbSortDescending className="text-(--muted) text-lg" />
 }
 
 function Content() {
@@ -136,7 +136,7 @@ function Content() {
         <AppLayoutStack className={""}>
 
             <div>
-                <ul className="text-[--muted] flex flex-wrap gap-4 items-center">
+                <ul className="text-(--muted) flex flex-wrap gap-4 items-center">
                     <li>Downloading: {data?.filter(t => t.status === "downloading" || t.status === "paused")?.length ?? 0}</li>
                     <li>Seeding: {data?.filter(t => t.status === "seeding")?.length ?? 0}</li>
                     {!!data?.filter(t => t.status === "seeding")?.length && <li>
@@ -151,7 +151,7 @@ function Content() {
                         trigger={<Button
                             size="xs"
                             intent="gray-basic"
-                            leftIcon={<LuListCheck className="text-[--muted] text-lg" />}
+                            leftIcon={<LuListCheck className="text-(--muted) text-lg" />}
                         >
                             Category{!!category ? `: ${category}` : ""}
                         </Button>}
@@ -238,10 +238,10 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, onTorrentAction, 
     return (
         <div
             data-torrent-item-container className={cn(
-            "hover:bg-gray-900 hover:bg-opacity-70 px-4 py-3 relative flex gap-4 group/torrent-item",
+            "hover:bg-gray-900/70 px-4 py-3 relative flex gap-4 group/torrent-item",
             torrent.status === "paused" && "bg-gray-900 hover:bg-gray-900",
-            torrent.status === "downloading" && "bg-green-900 bg-opacity-20 hover:hover:bg-opacity-30 hover:bg-green-900",
-            torrent.status === "error" && "bg-red-900 bg-opacity-20 hover:hover:bg-opacity-30 hover:bg-red-900",
+            torrent.status === "downloading" && "bg-green-900/20 hover:hover:bg-green-900/30 hover:bg-green-900",
+            torrent.status === "error" && "bg-red-900/20 hover:hover:bg-red-900/30 hover:bg-red-900",
         )}
         >
             <div data-torrent-item-title-container className="w-full">
@@ -258,7 +258,7 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, onTorrentAction, 
                         })
                     }}
                 >{torrent.name}</div>
-                <div data-torrent-item-info className="text-[--muted]">
+                <div data-torrent-item-info className="text-(--muted)">
                     {torrent.error ? (
                         <span className="text-red-400 font-medium" title={torrent.error}>{torrent.error}</span>
                     ) : (
@@ -288,10 +288,10 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, onTorrentAction, 
                     >{capitalize(torrent.status)}</strong>
                 </div>
                 {torrent.status !== "seeding" &&
-                    <div data-torrent-item-progress-bar className="w-full h-1 mr-4 mt-2 relative z-[1] bg-gray-700 left-0 overflow-hidden rounded-xl">
+                    <div data-torrent-item-progress-bar className="w-full h-1 mr-4 mt-2 relative z-1 bg-gray-700 left-0 overflow-hidden rounded-xl">
                         <div
                             className={cn(
-                                "h-full absolute z-[2] left-0 bg-gray-200 transition-all",
+                                "h-full absolute z-2 left-0 bg-gray-200 transition-all",
                                 {
                                     "bg-green-300": torrent.status === "downloading",
                                     "bg-gray-500": torrent.status === "paused",

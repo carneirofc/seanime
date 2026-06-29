@@ -115,7 +115,7 @@ export function SeaCommandSearch() {
                     {debouncedQuery !== "" && !isLoading && !isFetching && (!media || media.length === 0) && (
                         <div className="py-14 px-6 text-center text-sm sm:px-14">
                             {<div
-                                className="h-[10rem] w-[10rem] mx-auto flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden"
+                                className="h-40 w-40 mx-auto flex-none rounded-md object-cover object-center relative overflow-hidden"
                             >
                                 <SeaImage
                                     src="/luffy-01.png"
@@ -127,9 +127,9 @@ export function SeaCommandSearch() {
                                     className="object-contain object-top"
                                 />
                             </div>}
-                            <h5 className="mt-4 font-semibold text-[--foreground]">Nothing
+                            <h5 className="mt-4 font-semibold text-(--foreground)">Nothing
                                                                                    found</h5>
-                            <p className="mt-2 text-[--muted]">
+                            <p className="mt-2 text-(--muted)">
                                 We couldn't find anything with that name. Please try again.
                             </p>
                         </div>

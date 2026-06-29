@@ -323,15 +323,15 @@ export function AnimeEntryPage() {
             <div
                 data-anime-entry-page-content-container
                 className={cn(
-                    "px-4 md:px-8 relative z-[8]",
-                    (currentView === "onlinestream" && vc_fullscreen) && "z-[100]",
+                    "px-4 md:px-8 relative z-8",
+                    (currentView === "onlinestream" && vc_fullscreen) && "z-100",
                 )}
             >
                 <PageWrapper
                     data-anime-entry-page-content
                     className={cn(
                         "relative 2xl:order-first pb-10 lg:min-h-[calc(100vh-10rem)]",
-                        (currentView === "onlinestream" && vc_fullscreen) && "z-[100]",
+                        (currentView === "onlinestream" && vc_fullscreen) && "z-100",
                     )}
                     {...ENTRY_VIEW_SHELL_TRANSITION}
                 >
@@ -387,14 +387,14 @@ export function AnimeEntryPage() {
                             key="online-streaming-episodes"
                             className={cn(
                                 "relative 2xl:order-first pb-10 lg:pt-0",
-                                (currentView === "onlinestream" && vc_fullscreen) && "z-[100]",
+                                (currentView === "onlinestream" && vc_fullscreen) && "z-100",
                             )}
                             {...ENTRY_VIEW_TRANSITION}
                         >
                             <div className="h-10 lg:h-0" />
                             <div className="space-y-4" data-anime-entry-page-online-streaming-view-content>
                                 {/*<div*/}
-                                {/*    className="absolute right-0 top-[-0.5rem] lg:top-[-3rem]"*/}
+                                {/*    className="absolute right-0 -top-2 lg:-top-12"*/}
                                 {/*    data-anime-entry-page-online-streaming-view-content-title-container*/}
                                 {/*>*/}
                                 {/*    <h2 className="text-xl lg:text-3xl flex items-center gap-3">Online streaming</h2>*/}
@@ -467,7 +467,7 @@ export function EntrySectionTabs(props: EntrySectionTabs) {
             >
                 <StaticTabs
                     className="lg:h-10 w-fit flex-wrap lg:flex-nowrap overflow-hidden justify-center lg:justify-start"
-                    triggerClass="px-4 py-1 text-[1.1rem] data-[current=true]:text-[1.19rem] border border-transparent data-[current=true]:text-white opacity-80 data-[current=true]:border-transparent data-[current=true]:opacity-100 data-[current=true]:bg-gray-300 data-[current=true]:bg-opacity-10 rounded-xl data-[current=false]:scale-95 lg:scale-100 "
+                    triggerClass="px-4 py-1 text-[1.1rem] data-[current=true]:text-[1.19rem] border border-transparent data-[current=true]:text-white opacity-80 data-[current=true]:border-transparent data-[current=true]:opacity-100 data-[current=true]:bg-gray-300 data-[current=true]:bg-gray-300/10 rounded-xl data-[current=false]:scale-95 lg:scale-100 "
                     iconClass="size-5 hidden data-[current=true]:block"
                     items={[
                         { name: "Local library", iconType: IoLibraryOutline, isCurrent: isLibraryView, onClick: () => setView("library") },

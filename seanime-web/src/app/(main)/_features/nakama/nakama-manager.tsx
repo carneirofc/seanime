@@ -321,8 +321,8 @@ export function NakamaManager() {
                 Nakama
             </div>}
             contentClass={cn(
-                "max-w-3xl bg-gray-950 bg-opacity-90 firefox:bg-opacity-100 firefox:backdrop-blur-none sm:rounded-3xl",
-                ts.enableBlurringEffects && "bg-gray-950 bg-opacity-90 backdrop-blur-sm firefox:bg-opacity-100 firefox:backdrop-blur-none",
+                "max-w-3xl bg-gray-950/90 firefox:bg-gray-950/100 firefox:backdrop-blur-none sm:rounded-3xl",
+                ts.enableBlurringEffects && "bg-gray-950/90 backdrop-blur-sm firefox:bg-gray-950/100 firefox:backdrop-blur-none",
             )}
             overlayClass={cn(ts.enableBlurringEffects ? "bg-gray-950/70 backdrop-blur-sm" : "bg-black/80")}
             // allowOutsideInteraction
@@ -394,12 +394,12 @@ export function NakamaManager() {
                                                 {isDisconnectingFromRoom ? "Disconnecting..." : "Disconnect"}
                                             </Button>
                                         </div>
-                                        <p className="text-sm text-[--muted]">
+                                        <p className="text-sm text-(--muted)">
                                             Cloud Rooms do not support local file and debrid playback.
                                         </p>
                                         <div className="p-4 border rounded-lg bg-gray-950 space-y-3">
                                             <div className="space-y-1">
-                                                <span className="text-sm text-[--muted]">Nakama Host URL and Passcode</span>
+                                                <span className="text-sm text-(--muted)">Nakama Host URL and Passcode</span>
                                                 <div className="flex items-center gap-2">
                                                     <TextInput
                                                         readOnly
@@ -442,7 +442,7 @@ export function NakamaManager() {
                                                 </div>
                                             </div>
                                             {roomInfo.expiresAt && <div className="flex items-center gap-1">
-                                                <span className="text-sm text-[--muted]">Expires: </span>
+                                                <span className="text-sm text-(--muted)">Expires: </span>
                                                 <span className="text-sm font-semibold">{new Date(roomInfo.expiresAt).toLocaleString()}</span>
                                             </div>}
                                         </div>
@@ -456,7 +456,7 @@ export function NakamaManager() {
                                                 <p className="font-bold">
                                                     Cloud Room
                                                 </p>
-                                                <p className="text-sm text-[--muted] pr-4">
+                                                <p className="text-sm text-(--muted) pr-4">
                                                     Cloud Rooms use Seanime's API to enable hosting watch parties without exposing your server to the
                                                     internet.
                                                 </p>
@@ -483,7 +483,7 @@ export function NakamaManager() {
                                 <h4>Direct connections ({nakamaStatus?.connectedPeers?.length ?? 0})</h4>
                                 <div className="p-4 border rounded-lg bg-gray-950">
                                     {!nakamaStatus?.connectedPeers?.length &&
-                                        <p className="text-center text-sm text-[--muted]">No connected peers</p>}
+                                        <p className="text-center text-sm text-(--muted)">No connected peers</p>}
                                     {nakamaStatus?.connectedPeers?.map((peer, index) => (
                                         <div key={index} className="flex items-center justify-between py-1">
                                             <span className="font-medium">{peer}</span>
@@ -501,13 +501,13 @@ export function NakamaManager() {
                             <div className="p-4 border rounded-lg bg-gray-950">
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-[--muted]">Host</span>
+                                        <span className="text-sm text-(--muted)">Host</span>
                                         <span className="font-medium text-sm tracking-wide">
                                             {nakamaStatus?.hostConnectionStatus?.username || "Unknown"}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-[--muted]">Connection Mode</span>
+                                        <span className="text-sm text-(--muted)">Connection Mode</span>
                                         <Badge intent={nakamaStatus?.hostConnectionStatus?.connectionMode === "rooms" ? "primary" : "gray"}>
                                             {nakamaStatus?.hostConnectionStatus?.connectionMode === "rooms" ? "Cloud Room" : "Direct"}
                                         </Badge>
@@ -562,8 +562,8 @@ export function NakamaManager() {
 
             {!nakamaStatus?.isHost && !nakamaStatus?.isConnectedToHost && nakamaStatus !== undefined && (
                 <div className="text-center py-8">
-                    <p className="text-[--muted]">Nakama is not active</p>
-                    <p className="text-sm text-[--muted] mt-2">
+                    <p className="text-(--muted)">Nakama is not active</p>
+                    <p className="text-sm text-(--muted) mt-2">
                         Configure Nakama in settings to connect to a host or start hosting
                     </p>
                 </div>
@@ -625,7 +625,7 @@ function WatchPartyCreation({
                          max={10}
                          step={0.5}
                          />
-                         <p className="text-xs text-[--muted]">How far out of sync before forcing synchronization</p>
+                         <p className="text-xs text-(--muted)">How far out of sync before forcing synchronization</p>
                          </div>
 
                          <div className="space-y-2">
@@ -638,7 +638,7 @@ function WatchPartyCreation({
                          min={5}
                          max={60}
                          />
-                         <p className="text-xs text-[--muted]">Maximum time to wait for peers to buffer</p>
+                         <p className="text-xs text-(--muted)">Maximum time to wait for peers to buffer</p>
                          </div>
                          </div> */}
 
@@ -658,7 +658,7 @@ function WatchPartyCreation({
             {isConnectedToHost && !isHost && hasActiveSession && (
                 <div className="p-4 border rounded-lg bg-gray-950">
                     <div className="space-y-4">
-                        <p className="text-sm text-[--muted]">
+                        <p className="text-sm text-(--muted)">
                             There's an active watch party! Join to watch content together in sync.
                         </p>
                         <Button
@@ -676,13 +676,13 @@ function WatchPartyCreation({
 
             {!isHost && !isConnectedToHost && (
                 <div className="text-center py-8">
-                    <p className="text-[--muted]">Connect to a host to join a watch party</p>
+                    <p className="text-(--muted)">Connect to a host to join a watch party</p>
                 </div>
             )}
 
             {!isHost && isConnectedToHost && !hasActiveSession && (
                 <div className="text-center py-8">
-                    <p className="text-[--muted]">No active watch party</p>
+                    <p className="text-(--muted)">No active watch party</p>
                 </div>
             )}
         </div>
@@ -750,23 +750,23 @@ function WatchPartySessionView({ session, isHost, onLeave, isLeaving, isRoom }: 
             {/* <SettingsCard title="Session Details">
              <div className="space-y-3">
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Session ID:</span>
+             <span className="text-sm text-(--muted)">Session ID:</span>
              <span className="font-mono text-xs">{session.id}</span>
              </div>
 
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Created:</span>
+             <span className="text-sm text-(--muted)">Created:</span>
              <span className="text-sm">{session.createdAt ? new Date(session.createdAt).toLocaleString() : "Unknown"}</span>
              </div>
 
              {session.currentMediaInfo && (
              <>
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Current Media:</span>
+             <span className="text-sm text-(--muted)">Current Media:</span>
              <span className="text-sm">Episode {session.currentMediaInfo.episodeNumber}</span>
              </div>
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Stream Type:</span>
+             <span className="text-sm text-(--muted)">Stream Type:</span>
              <Badge className="">
              {session.currentMediaInfo.streamType}
              </Badge>
@@ -786,7 +786,7 @@ function WatchPartySessionView({ session, isHost, onLeave, isLeaving, isRoom }: 
                                 <div className="flex items-center gap-2">
                                     <span className="font-medium text-sm tracking-wide">
                                         {participant.username}
-                                        {isCurrentUser && <span className="text-[--muted] font-normal"> (me)</span>}
+                                        {isCurrentUser && <span className="text-(--muted) font-normal"> (me)</span>}
                                     </span>
                                     {session.isRelayMode && participant.isHost && (
                                         <Badge intent="unstyled" className="text-xs" leftIcon={<FaBroadcastTower />}>Relay</Badge>
@@ -804,7 +804,7 @@ function WatchPartySessionView({ session, isHost, onLeave, isLeaving, isRoom }: 
                                         >Promote to origin</Button>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-[--muted]">
+                                <div className="flex items-center gap-2 text-xs text-(--muted)">
                                     {!participant.isHost && participant.bufferHealth !== undefined && (
                                         <Tooltip
                                             trigger={<div className="flex items-center gap-1">
@@ -839,17 +839,17 @@ function WatchPartySessionView({ session, isHost, onLeave, isLeaving, isRoom }: 
             {/* <SettingsCard title="Settings">
              <div className="space-y-2">
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Participant Control:</span>
+             <span className="text-sm text-(--muted)">Participant Control:</span>
              <span className="text-sm">
              {session.settings?.allowParticipantControl ? "Enabled" : "Disabled"}
              </span>
              </div>
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Sync Threshold:</span>
+             <span className="text-sm text-(--muted)">Sync Threshold:</span>
              <span className="text-sm">{session.settings?.syncThreshold}s</span>
              </div>
              <div className="flex items-center justify-between">
-             <span className="text-sm text-[--muted]">Max Buffer Wait:</span>
+             <span className="text-sm text-(--muted)">Max Buffer Wait:</span>
              <span className="text-sm">{session.settings?.maxBufferWaitTime}s</span>
              </div>
              </div>

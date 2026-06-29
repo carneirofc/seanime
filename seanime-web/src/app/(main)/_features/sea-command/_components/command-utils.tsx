@@ -11,7 +11,7 @@ export function CommandItemMedia({ media, type }: { media: AL_BaseAnime | AL_Bas
     const { setPreviewModalMediaId } = useMediaPreviewModal()
     return (
         <div className="flex gap-3 items-center w-full">
-            <div className="size-12 flex-none rounded-[--radius-md] relative overflow-hidden">
+            <div className="size-12 flex-none rounded-md relative overflow-hidden">
                 <SeaImage
                     src={media.coverImage?.medium || ""}
                     alt="episode image"
@@ -28,7 +28,7 @@ export function CommandItemMedia({ media, type }: { media: AL_BaseAnime | AL_Bas
                 size="sm" intent="gray-basic" onClick={e => {
                 e.stopPropagation()
                 setPreviewModalMediaId(media.id, type)
-            }} className="flex-shrink-0"
+            }} className="shrink-0"
             >
                 Preview
             </Button>
@@ -39,8 +39,8 @@ export function CommandItemMedia({ media, type }: { media: AL_BaseAnime | AL_Bas
 export function CommandHelperText({ command, description, show }: { command: string, description: string, show: boolean }) {
     if (!show) return null
     return (
-        <p className="py-1 px-6 text-center text-sm sm:px-14 tracking-widest text-[--muted]">
-            <span className="text-[--foreground]">{command}</span> <span className="tracking-wide">{description}</span>
+        <p className="py-1 px-6 text-center text-sm sm:px-14 tracking-widest text-(--muted)">
+            <span className="text-(--foreground)">{command}</span> <span className="tracking-wide">{description}</span>
         </p>
     )
 }
@@ -67,7 +67,7 @@ export function SeaCommandAutocompleteSuggestions({
                         }}
                     >
                         <span className="tracking-widest text-sm">/{command.command}</span>
-                        <CommandShortcut className="text-[--muted]">{command.description}</CommandShortcut>
+                        <CommandShortcut className="text-(--muted)">{command.description}</CommandShortcut>
                     </CommandItem>
                 ))}
             </CommandGroup>

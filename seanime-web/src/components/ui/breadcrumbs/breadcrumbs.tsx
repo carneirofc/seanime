@@ -18,7 +18,7 @@ export const BreadcrumbsAnatomy = defineStyleAnatomy({
     ]),
     chevronIcon: cva([
         "UI-Breadcrumbs__chevronIcon",
-        "h-5 w-5 flex-shrink-0 text-gray-400 mr-4",
+        "h-5 w-5 shrink-0 text-gray-400 mr-4",
     ]),
     item: cva([
         "UI-Breadcrumbs__item",
@@ -26,16 +26,16 @@ export const BreadcrumbsAnatomy = defineStyleAnatomy({
     ]),
     itemLink: cva([
         "UI-Breadcrumbs__itemLink",
-        "text-sm font-medium text-[--muted] hover:text-[--foreground]",
-        "data-[selected=true]:pointer-events-none data-[selected=true]:font-semibold data-[selected=true]:text-[--foreground]", // Selected
+        "text-sm font-medium text-(--muted) hover:text-(--foreground)",
+        "data-[selected=true]:pointer-events-none data-[selected=true]:font-semibold data-[selected=true]:text-(--foreground)", // Selected
     ]),
     homeItem: cva([
         "UI-Breadcrumbs__homeItem",
-        "text-[--muted] hover:text-[--foreground]",
+        "text-(--muted) hover:text-(--foreground)",
     ]),
     homeIcon: cva([
         "UI-Breadcrumbs__homeIcon",
-        "h-5 w-5 flex-shrink-0",
+        "h-5 w-5 shrink-0",
     ]),
 })
 

@@ -37,7 +37,7 @@ function AutoDownloaderQueueItem(props: AutoDownloaderQueueItemProps) {
     const useDebrid = !!serverStatus?.settings?.autoDownloader?.useDebrid
 
     return (
-        <div className="rounded-[--radius] p-3 bg-gray-900">
+        <div className="rounded-(--radius) p-3 bg-gray-900">
             <div className="flex items-center gap-4">
                 <div
                     onClick={() => setPreviewModalMediaId(item.mediaId, "anime")}
@@ -63,9 +63,9 @@ function AutoDownloaderQueueItem(props: AutoDownloaderQueueItemProps) {
                         {item.isDelayed && item.delayUntil &&
                             <span>for {formatDistanceToNowSafe(item.delayUntil, { addSuffix: false })}.</span>}
                     </p>
-                    {item.createdAt && <span className="text-[--muted] text-sm">Added {formatDistanceToNowSafe(item.createdAt)}</span>}
+                    {item.createdAt && <span className="text-(--muted) text-sm">Added {formatDistanceToNowSafe(item.createdAt)}</span>}
                     {item.downloaded && (
-                        <p className="text-sm text-[--muted]">
+                        <p className="text-sm text-(--muted)">
                             Not yet scanned
                         </p>
                     )}
@@ -132,7 +132,7 @@ export function AutodownloaderQueue(props: AutoDownloaderQueueProps) {
 
     return (
         <Card className="p-4 space-y-2">
-            <ul className="text-base text-[--muted]">
+            <ul className="text-base text-(--muted)">
                 <li>
                     The queue shows items waiting to be downloaded or scanned.
                 </li>
@@ -141,7 +141,7 @@ export function AutodownloaderQueue(props: AutoDownloaderQueueProps) {
                  </li> */}
             </ul>
             {!data?.length && (
-                <p className="text-center text-[--muted]">
+                <p className="text-center text-(--muted)">
                     Queue is empty
                 </p>
             )}

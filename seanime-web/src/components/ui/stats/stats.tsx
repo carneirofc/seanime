@@ -9,7 +9,7 @@ import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
 export const StatsAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Stats__root",
-        "grid grid-cols-1 divide-y divide-[--border] overflow-hidden md:grid-cols-3 md:divide-y-0 md:divide-x",
+        "grid grid-cols-1 divide-y divide-(--border) overflow-hidden md:grid-cols-3 md:divide-y-0 md:divide-x",
     ], {
         variants: {
             size: {
@@ -34,7 +34,7 @@ export const StatsAnatomy = defineStyleAnatomy({
     }),
     name: cva([
         "UI-Stats__name",
-        "text-sm font-normal text-[--muted]",
+        "text-sm font-normal text-(--muted)",
     ], {
         variants: {
             size: {
@@ -58,12 +58,12 @@ export const StatsAnatomy = defineStyleAnatomy({
     }),
     unit: cva([
         "UI-Stats__unit",
-        "ml-2 text-sm font-medium text-[--muted]",
+        "ml-2 text-sm font-medium text-(--muted)",
     ]),
     trend: cva([
         "UI-Stats__trend",
         "inline-flex items-baseline text-sm font-medium",
-        "data-[trend=up]:text-[--green] data-[trend=down]:text-[--red]",
+        "data-[trend=up]:text-(--green) data-[trend=down]:text-(--red)",
     ]),
     icon: cva([
         "UI-Stats__icon",

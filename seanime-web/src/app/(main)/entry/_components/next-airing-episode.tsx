@@ -18,8 +18,8 @@ export function NextAiringEpisode(props: { media: AL_BaseAnime }) {
                 )}
             >
                 <span className="font-semibold">Episode {props.media.nextAiringEpisode?.episode}</span> {distance}
-                <BiCalendarAlt className="text-lg text-[--muted]" />
-                <span className="text-[--muted]">{day}</span>
+                <BiCalendarAlt className="text-lg text-(--muted)" />
+                <span className="text-(--muted)">{day}</span>
             </div>
         )}
     </>

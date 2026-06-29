@@ -91,7 +91,7 @@ export function AnimeEntryMetadataManager(props: AnimeEntryMetadataManagerProps)
                         <h3 className="text-center flex gap-2 items-center justify-center">Metadata
                                                                                            Parent <Help content="This will not work if the parent series does not contain specials metadata." />
                         </h3>
-                        <p className="text-sm text-[--muted] text-center">
+                        <p className="text-sm text-(--muted) text-center">
                             Add metadata to specials by linking the entry to a parent anime.
                         </p>
                     </div>

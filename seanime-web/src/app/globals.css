@@ -1,6 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@config '../../tailwind.config.ts';
+
+/*
+  Tailwind v4 ignores the `safelist` option from the JS config, so the
+  dynamically-constructed classes that used to be safelisted are declared
+  here with `@source inline(...)` (supports brace expansion). These cover
+  runtime/plugin-applied classes that the source scanner cannot detect.
+*/
+@source inline("{bg,text}-{amber,green,gray,indigo,lime,red,emerald,purple,blue,brand,orange,yellow}-{100,200,300,400,500,600,700,800,900,950}");
+@source inline("hover:bg-{red,green,blue,gray,brand,orange,yellow}-{100,200,300,400,500,600,700,800,900,950}");
+@source inline("text-audienceScore-{300,500,600,700}");
+@source inline("{p,m,px,py,pt,pb,pl,pr,mx,my,mt,mb,ml,mr,gap}-{0,1,2,3,4,5,6,7,8,9,10,11,12,14,16,20,24}");
+@source inline("{lg:,}{grid-cols,col-span}-{1,2,3,4,5,6,7,8,9,10,11,12}");
+@source inline("{lg:,md:,}{flex,inline-flex,grid,inline-grid,flex-row,flex-col,flex-row-reverse,flex-col-reverse,flex-wrap,flex-nowrap,flex-wrap-reverse,hidden,block,inline,inline-block,items-start,items-center,items-end,items-baseline,items-stretch,justify-start,justify-center,justify-end,justify-between,justify-around,justify-evenly}");
+@source inline("{lg:,md:,}text-{xs,sm,base,lg,xl,2xl,3xl}");
+@source inline("{lg:,md:,}font-{thin,light,normal,medium,semibold,bold}");
+@source inline("{lg:,md:,}text-{left,center,right,justify}");
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 @layer base {
     :root {
@@ -79,45 +113,45 @@
 
         --titlebar-h: theme("height.10");
 
-        --foreground: theme('colors.gray.200');
+        --foreground: var(--color-gray-200);
         --background: #070707;
 
-        --brand: theme('colors.brand.300');
-        --slate: theme('colors.slate.500');
-        --gray: theme('colors.gray.500');
-        --zinc: theme('colors.zinc.500');
-        --neutral: theme('colors.neutral.500');
-        --stone: theme('colors.stone.500');
-        --red: theme('colors.red.500');
-        --orange: theme('colors.orange.500');
-        --amber: theme('colors.amber.500');
-        --yellow: theme('colors.yellow.500');
-        --lime: theme('colors.lime.500');
-        --green: theme('colors.green.500');
-        --emerald: theme('colors.emerald.500');
-        --teal: theme('colors.teal.500');
-        --cyan: theme('colors.cyan.500');
-        --sky: theme('colors.sky.500');
-        --blue: theme('colors.blue.500');
-        --indigo: theme('colors.indigo.500');
-        --violet: theme('colors.violet.500');
-        --purple: theme('colors.purple.500');
-        --fuchsia: theme('colors.fuchsia.500');
-        --pink: theme('colors.pink.500');
-        --rose: theme('colors.rose.500');
+        --brand: var(--color-brand-300);
+        --slate: var(--color-slate-500);
+        --gray: var(--color-gray-500);
+        --zinc: var(--color-zinc-500);
+        --neutral: var(--color-neutral-500);
+        --stone: var(--color-stone-500);
+        --red: var(--color-red-500);
+        --orange: var(--color-orange-500);
+        --amber: var(--color-amber-500);
+        --yellow: var(--color-yellow-500);
+        --lime: var(--color-lime-500);
+        --green: var(--color-green-500);
+        --emerald: var(--color-emerald-500);
+        --teal: var(--color-teal-500);
+        --cyan: var(--color-cyan-500);
+        --sky: var(--color-sky-500);
+        --blue: var(--color-blue-500);
+        --indigo: var(--color-indigo-500);
+        --violet: var(--color-violet-500);
+        --purple: var(--color-purple-500);
+        --fuchsia: var(--color-fuchsia-500);
+        --pink: var(--color-pink-500);
+        --rose: var(--color-rose-500);
 
-        --border: theme('colors.gray.200');
-        --ring: theme('colors.brand.500');
+        --border: var(--color-gray-200);
+        --ring: var(--color-brand-500);
 
-        --muted: theme('colors.gray.500');
-        --muted-highlight: theme('colors.gray.700');
+        --muted: var(--color-gray-500);
+        --muted-highlight: var(--color-gray-700);
 
-        --paper: theme('colors.gray.950');
+        --paper: var(--color-gray-950);
         --subtle: rgba(0, 0, 0, 0.04);
         --subtle-highlight: rgba(0, 0, 0, 0.06);
 
-        --media-card-popup-background: theme('colors.gray.950');
-        --hover-from-background-color: theme('colors.gray.900');
+        --media-card-popup-background: var(--color-gray-950);
+        --hover-from-background-color: var(--color-gray-900);
 
         /*--media-accent-color: theme('colors.brand.400');*/
         --media-accent-color: #fff;
@@ -126,41 +160,41 @@
 
     .dark,
     [data-mode="dark"] {
-        --foreground: theme('colors.gray.200');
+        --foreground: var(--color-gray-200);
         --background: #070707;
 
         /*--brand: theme('colors.brand.300');*/
-        --slate: theme('colors.slate.300');
-        --gray: theme('colors.gray.300');
-        --zinc: theme('colors.zinc.300');
-        --neutral: theme('colors.neutral.300');
-        --stone: theme('colors.stone.300');
-        --red: theme('colors.red.300');
-        --orange: theme('colors.orange.300');
-        --amber: theme('colors.amber.300');
-        --yellow: theme('colors.yellow.300');
-        --lime: theme('colors.lime.300');
-        --green: theme('colors.green.300');
-        --emerald: theme('colors.emerald.300');
-        --teal: theme('colors.teal.300');
-        --cyan: theme('colors.cyan.300');
-        --sky: theme('colors.sky.300');
-        --blue: theme('colors.blue.300');
-        --indigo: theme('colors.indigo.300');
-        --violet: theme('colors.violet.300');
-        --purple: theme('colors.purple.300');
-        --fuchsia: theme('colors.fuchsia.300');
-        --pink: theme('colors.pink.300');
-        --rose: theme('colors.rose.300');
+        --slate: var(--color-slate-300);
+        --gray: var(--color-gray-300);
+        --zinc: var(--color-zinc-300);
+        --neutral: var(--color-neutral-300);
+        --stone: var(--color-stone-300);
+        --red: var(--color-red-300);
+        --orange: var(--color-orange-300);
+        --amber: var(--color-amber-300);
+        --yellow: var(--color-yellow-300);
+        --lime: var(--color-lime-300);
+        --green: var(--color-green-300);
+        --emerald: var(--color-emerald-300);
+        --teal: var(--color-teal-300);
+        --cyan: var(--color-cyan-300);
+        --sky: var(--color-sky-300);
+        --blue: var(--color-blue-300);
+        --indigo: var(--color-indigo-300);
+        --violet: var(--color-violet-300);
+        --purple: var(--color-purple-300);
+        --fuchsia: var(--color-fuchsia-300);
+        --pink: var(--color-pink-300);
+        --rose: var(--color-rose-300);
 
         --border: rgba(255, 255, 255, 0.1);
-        --ring: theme('colors.brand.200');
+        --ring: var(--color-brand-200);
 
         --muted: rgba(255, 255, 255, 0.4);
         --muted-highlight: rgba(255, 255, 255, 0.6);
 
-        --paper: theme('colors.gray.950');
-        --paper-highlighter: theme('colors.gray.950');
+        --paper: var(--color-gray-950);
+        --paper-highlighter: var(--color-gray-950);
         --subtle: rgba(255, 255, 255, 0.06);
         --subtle-highlight: rgba(255, 255, 255, 0.08);
 
@@ -406,7 +440,7 @@ h6 {
 } */
 
 .code {
-    @apply bg-gray-800 rounded-[--radius-md] px-2 py-1 text-sm font-mono border
+    @apply bg-gray-800 rounded-md px-2 py-1 text-sm font-mono border
 }
 
 .JASSUB {
@@ -614,13 +648,13 @@ media-controller[mediaisfullscreen] {
 .native-player-button svg {
     /* height: 100%;
     width: 100%; */
-    @apply !size-7;
+    @apply size-7!;
     /*fill: var(--media-primary-color, #fff);*/
     fill-rule: evenodd;
 }
 
 [data-native-player-container][data-mini-player="true"] .native-player-button svg {
-    @apply !size-5;
+    @apply size-5!;
 }
 
 .svg-shadow {

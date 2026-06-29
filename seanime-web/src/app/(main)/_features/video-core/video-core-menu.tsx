@@ -61,7 +61,7 @@ export function VideoCoreMenu(props: VideoCoreMenuProps) {
             trigger={<div>{trigger}</div>}
             allowOutsideInteraction={true}
             contentClass={cn(
-                "bg-black/85 rounded-xl p-3 backdrop-blur-sm w-[20rem] z-[100]",
+                "bg-black/85 rounded-xl p-3 backdrop-blur-sm w-[20rem] z-100",
                 className,
             )}
             portalContainer={isFullscreen ? containerElement || undefined : undefined}
@@ -85,7 +85,7 @@ export function VideoCoreMenu(props: VideoCoreMenuProps) {
             side="top"
             modal={false}
             className={cn(
-                "bg-black/85 rounded-xl p-3 backdrop-blur-sm w-[20rem] z-[100]",
+                "bg-black/85 rounded-xl p-3 backdrop-blur-sm w-[20rem] z-100",
                 className,
             )}
             portalContainer={isFullscreen ? containerElement || undefined : undefined}
@@ -141,7 +141,7 @@ export function VideoCoreMenuBody(props: { children: React.ReactNode }) {
     const { children, ...rest } = props
 
     return (
-        <div data-vc-element="menu-body" className="max-h-[18rem] overflow-y-auto">
+        <div data-vc-element="menu-body" className="max-h-72 overflow-y-auto">
             {children}
         </div>
     )
@@ -233,7 +233,7 @@ export function VideoCoreMenuOption(props: {
                 <span className="w-full flex flex-1 text-sm font-medium">
                     {title}
                 </span>
-                {value && <span className="text-sm font-medium tracking-wide text-[--muted] mr-2">
+                {value && <span className="text-sm font-medium tracking-wide text-(--muted) mr-2">
                     {value}
                 </span>}
                 <LuChevronRight className="text-lg" />
@@ -306,7 +306,7 @@ export function VideoCoreMenuSubOption(props: {
                 <span className="w-full flex flex-1 text-sm font-medium">
                     {title}
                 </span>
-                {value && <span className="text-sm font-medium tracking-wide text-[--muted] mr-2">
+                {value && <span className="text-sm font-medium tracking-wide text-(--muted) mr-2">
                     {value}
                 </span>}
                 <LuChevronRight className="text-lg" />
@@ -377,13 +377,13 @@ export function VideoCoreSettingSelect(props: VideoCoreSettingSelectProps) {
                         <span className="flex-1" data-vc-element="setting-select-option-separator"></span>
                         {(option.moreInfo || option.description) &&
                             <div className="w-fit flex-none ml-2 flex gap-2 items-center" data-vc-element="setting-select-option-description">
-                                {option.moreInfo && <span className="text-xs font-medium tracking-wide text-[--muted]">
+                                {option.moreInfo && <span className="text-xs font-medium tracking-wide text-(--muted)">
                                     {option.moreInfo}
                                 </span>}
                                 {option.description && <Tooltip
                                     trigger={<AiFillInfoCircle className="text-sm" />}
                                     portalContainer={isFullscreen ? containerElement || undefined : undefined}
-                                    className="z-[150]"
+                                    className="z-150"
                                 >
                                     {option.description}
                                 </Tooltip>}

@@ -176,7 +176,7 @@ export function AutoDownloaderProfileForm(props: AutoDownloaderProfileFormProps)
                 />
                 <label className="text-sm">
                     Global
-                    <span className="text-[--muted] block text-xs">Apply this profile to all rules automatically</span>
+                    <span className="text-(--muted) block text-xs">Apply this profile to all rules automatically</span>
                 </label>
             </div>
 
@@ -188,7 +188,7 @@ export function AutoDownloaderProfileForm(props: AutoDownloaderProfileFormProps)
 
             <ConditionsSortableField />
 
-            <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+            <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
                 <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Thresholds</div>
                 <div className="space-y-2">
                     <label className="text-sm font-medium">Minimum Score</label>
@@ -201,7 +201,7 @@ export function AutoDownloaderProfileForm(props: AutoDownloaderProfileFormProps)
                         })}
                         placeholder="0"
                     />
-                    <p className="text-sm text-[--muted]">Torrents with a score lower than this will be rejected</p>
+                    <p className="text-sm text-(--muted)">Torrents with a score lower than this will be rejected</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -244,9 +244,9 @@ export function AutoDownloaderProfileForm(props: AutoDownloaderProfileFormProps)
 
             <ProvidersFieldControlled />
 
-            <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+            <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
                 <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Delay</div>
-                <p className="text-sm text-[--muted]">
+                <p className="text-sm text-(--muted)">
                     Wait for better releases before downloading. The delay period will start once a first match is found.
                     If a higher delay profile is assigned to a rule or applied globally, this one will be ignored.
                 </p>
@@ -278,7 +278,7 @@ export function AutoDownloaderProfileForm(props: AutoDownloaderProfileFormProps)
                             formatOptions={{ useGrouping: false }}
                             help="Skip the delay if torrent score exceeds this value"
                         />
-                        <p className="text-sm text-[--muted]"></p>
+                        <p className="text-sm text-(--muted)"></p>
                     </div>
                 )}
             </div>
@@ -355,9 +355,9 @@ function ReleaseGroupsSortableField() {
     ]
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Release Groups</div>
-            <p className="text-sm text-[--muted]">
+            <p className="text-sm text-(--muted)">
                 List of release groups to look for. If empty, any release group will be accepted.
                 Rules can override this.
             </p>
@@ -466,9 +466,9 @@ function ResolutionsSortableField() {
     const suggestions = ["2160p", "1080p", "720p", "540p", "480p"]
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Resolutions</div>
-            <p className="text-sm text-[--muted]">
+            <p className="text-sm text-(--muted)">
                 Drag and drop to reorder. The first matching resolution will be picked. Rules can override this.
             </p>
 
@@ -578,9 +578,9 @@ function ConditionsSortableField() {
     }
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Conditions</div>
-            <p className="text-sm text-[--muted]">
+            <p className="text-sm text-(--muted)">
                 Add conditions to filter torrents or adjust their score.
             </p>
 
@@ -641,7 +641,7 @@ function ConditionItem(props: ConditionItemProps) {
                                 { label: "Require", value: "require" },
                             ]}
                             label="Action:"
-                            fieldClass="!flex !items-center gap-2 w-fit"
+                            fieldClass="flex! items-center! gap-2 w-fit"
                             labelProps={{ className: "items-center text-sm font-semibold pt-1" }}
                             className="w-32"
                         />
@@ -651,7 +651,7 @@ function ConditionItem(props: ConditionItemProps) {
                                 onValueChange={(v) => onUpdateField(field.id, "score", v || 0)}
                                 placeholder="Score"
                                 label="Score:"
-                                fieldClass="!flex !items-center gap-2 w-fit"
+                                fieldClass="flex! items-center! gap-2 w-fit"
                                 labelProps={{ className: "items-center text-sm font-semibold pt-1" }}
                                 className="w-32"
                                 formatOptions={{ useGrouping: false }}
@@ -714,9 +714,9 @@ function ProvidersFieldControlled() {
     const { data: extensions } = useAnimeListTorrentProviderExtensions()
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Providers</div>
-            <p className="text-sm text-[--muted]">
+            <p className="text-sm text-(--muted)">
                 Select specific providers to look for. If empty, the default provider will be used.
             </p>
             <Combobox

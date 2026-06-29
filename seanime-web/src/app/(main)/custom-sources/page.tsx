@@ -170,7 +170,7 @@ export default function Page() {
                         </Button>
                     </div>
 
-                    {!provider && <div className="text-center py-8 text-[--muted]">
+                    {!provider && <div className="text-center py-8 text-(--muted)">
                         Select a source to view its content
                     </div>}
 
@@ -316,7 +316,7 @@ function CustomSourceResults({
                         size="sm"
                     />
                     {totalPages > 1 && (
-                        <div className="text-sm text-[--muted]">
+                        <div className="text-sm text-(--muted)">
                             Page {currentPage} of {totalPages}
                         </div>
                     )}
@@ -351,7 +351,7 @@ function CustomSourceResults({
                                     value={page}
                                     onClick={() => handlePageChange(page as number)}
                                     disabled={isLoading}
-                                    className={page === currentPage ? "bg-[--brand] text-white" : ""}
+                                    className={page === currentPage ? "bg-(--brand) text-white" : ""}
                                 />
                             )
                         ))}

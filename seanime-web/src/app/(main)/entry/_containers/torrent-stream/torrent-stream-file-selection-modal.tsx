@@ -138,7 +138,7 @@ export function TorrentstreamFileSelectionModal({ entry }: { entry: Anime_Entry 
 
                             <ScrollArea
                                 viewportRef={scrollRef}
-                                className="h-[80dvh] lg:h-[60dvh] overflow-y-auto p-4 border rounded-[--radius-md]"
+                                className="h-[80dvh] lg:h-[60dvh] overflow-y-auto p-4 border rounded-md"
                             >
                                 <FileTreeSelector
                                     filePreviews={filePreviews || []}

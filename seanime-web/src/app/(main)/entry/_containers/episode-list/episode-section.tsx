@@ -75,7 +75,7 @@ export function EpisodeSection({ entry, details, bottomSection, hideCarousel, ma
                     <div className="flex gap-1 items-center w-full">
                         <p className="max-w-[70%] truncate">{episode.displayTitle}</p>
                         {!!episode.episodeTitle && (
-                            <p className="text-[--muted] flex-1 truncate">- {episode.episodeTitle}</p>
+                            <p className="text-(--muted) flex-1 truncate">- {episode.episodeTitle}</p>
                         )}
                     </div>
                 ),

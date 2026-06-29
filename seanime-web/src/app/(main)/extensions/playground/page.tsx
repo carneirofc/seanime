@@ -13,7 +13,7 @@ export default function Page() {
     return (
         <>
             <CustomLibraryBanner discrete />
-            <PageWrapper className="p-4 sm:p-8 pt-0 space-y-8 relative z-[4]">
+            <PageWrapper className="p-4 sm:p-8 pt-0 space-y-8 relative z-4">
                 <ExtensionPlayground
                     language={extensionLanguage}
                     type={extensionType}

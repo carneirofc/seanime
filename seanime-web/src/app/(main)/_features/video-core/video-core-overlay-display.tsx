@@ -46,7 +46,7 @@ export function VideoCoreOverlayDisplay() {
                 animate={{ opacity: 0.5, scale: 1.6 }}
                 exit={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.06, ease: "easeOut" }}
-                className="absolute w-full h-full pointer-events-none flex z-[50] items-center justify-center"
+                className="absolute w-full h-full pointer-events-none flex z-50 items-center justify-center"
             >
                 {notification.message === "PLAY" &&
                     <PiPlayDuotone

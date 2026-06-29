@@ -80,7 +80,7 @@ export function SeaCommandList() {
                         }}
                     >
                         <span className="tracking-widest text-sm">/{command.command}</span>
-                        <CommandShortcut className="text-[--muted]">{command.description}</CommandShortcut>
+                        <CommandShortcut className="text-(--muted)">{command.description}</CommandShortcut>
                     </CommandItem>
                 ))}
             </CommandGroup>

@@ -259,7 +259,7 @@ export function TorrentStreamPage(props: TorrentStreamPageProps) {
                     <div className="flex gap-1 items-center w-full">
                         <p className="max-w-[70%] truncate">{episode.displayTitle}</p>
                         {!!episode.episodeTitle && (
-                            <p className="text-[--muted] flex-1 truncate">- {episode.episodeTitle}</p>
+                            <p className="text-(--muted) flex-1 truncate">- {episode.episodeTitle}</p>
                         )}
                     </div>
                 ),
@@ -290,7 +290,7 @@ export function TorrentStreamPage(props: TorrentStreamPageProps) {
             >
                 <div className="h-10 lg:h-0" />
                 <AppLayoutStack data-torrent-stream-page>
-                    {/*<div className="absolute right-0 top-[-3rem]" data-torrent-stream-page-title-container>*/}
+                    {/*<div className="absolute right-0 -top-12" data-torrent-stream-page-title-container>*/}
                     {/*    <h2 className="text-xl lg:text-3xl flex items-center gap-3">Torrent streaming</h2>*/}
                     {/*</div>*/}
 
@@ -345,7 +345,7 @@ export function TorrentStreamPage(props: TorrentStreamPageProps) {
                                                     {batchHistory.torrent?.name}
                                                 </Popover>
                                             </div>
-                                            <p className="line-clamp-1 text-[--muted] text-xs tracking-wide w-0 transition-all duration-300 ease-in-out group-hover/torrent-stream-batch-history:w-[20rem]">
+                                            <p className="line-clamp-1 text-(--muted) text-xs tracking-wide w-0 transition-all duration-300 ease-in-out group-hover/torrent-stream-batch-history:w-[20rem]">
 
                                             </p>
                                         </div>

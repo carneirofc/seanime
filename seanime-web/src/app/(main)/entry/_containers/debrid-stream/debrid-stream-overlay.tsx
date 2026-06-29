@@ -108,7 +108,7 @@ export function DebridStreamOverlay() {
 
     if (!state) return (
         <>
-            {/*{(showMediaPlayerLoading) && <div className="w-full bg-gray-950 fixed top-0 left-0 z-[100]">*/}
+            {/*{(showMediaPlayerLoading) && <div className="w-full bg-gray-950 fixed top-0 left-0 z-100">*/}
             {/*    <ProgressBar size="xs" isIndeterminate />*/}
             {/*</div>}*/}
         </>
@@ -118,18 +118,18 @@ export function DebridStreamOverlay() {
         <>
 
             {minimized && (
-                <div className="fixed z-[100] bottom-8 w-full h-fit flex justify-center">
+                <div className="fixed z-100 bottom-8 w-full h-fit flex justify-center">
                     <div
                         className="shadow-2xl p-4 bg-gray-900 border text-white rounded-3xl cursor-pointer hover:border-gray-600"
                         onClick={() => setMinimized(false)}
                     >
                         <div className="flex items-center justify-center gap-4">
-                            <HiOutlineServerStack className="text-2xl text-[--brand]" />
+                            <HiOutlineServerStack className="text-2xl text-(--brand)" />
                             <div className="">
                                 <p>
                                     Awaiting stream from Debrid service
                                 </p>
-                                <p className="text-[--muted] text-sm">
+                                <p className="text-(--muted) text-sm">
                                     {state?.message}
                                 </p>
                             </div>
@@ -139,7 +139,7 @@ export function DebridStreamOverlay() {
                 </div>
             )}
 
-            {/*{state?.status === "downloading" && <div className="w-full bg-gray-950 fixed top-0 left-0 z-[100]">*/}
+            {/*{state?.status === "downloading" && <div className="w-full bg-gray-950 fixed top-0 left-0 z-100">*/}
             {/*    <ProgressBar size="xs" isIndeterminate />*/}
             {/*</div>}*/}
 
@@ -152,7 +152,7 @@ export function DebridStreamOverlay() {
 
                 <AppLayoutStack>
 
-                    <p className="text-[--muted] italic text-sm">
+                    <p className="text-(--muted) italic text-sm">
                         Closing this modal will not cancel the stream
                     </p>
 

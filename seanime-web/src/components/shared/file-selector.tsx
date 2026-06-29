@@ -71,7 +71,7 @@ export function FileSelector(props: FileSelectorProps) {
                     // onBlur={checkDirectoryExists}
                 />
                 <BiFolderOpen
-                    className="text-2xl cursor-pointer absolute z-[1] top-0 right-0"
+                    className="text-2xl cursor-pointer absolute z-1 top-0 right-0"
                     onClick={() => setModalOpen(true)}
                 />
             </div>
@@ -139,7 +139,7 @@ function FileSelectorModal(props: FileSelectorProps & { isOpen: boolean, onOpenC
 
                 <ScrollArea
                     className={cn(
-                        "h-60 rounded-[--radius-md] border",
+                        "h-60 rounded-md border",
                     )}
                 >
                     {exampleData.children?.map(node => (
@@ -226,9 +226,9 @@ const TreeNode: React.FC<TreeProps & { level: number }> = ({
                 >
                     <div className="flex items-center">
                         {data.type === "directory" ? (
-                            <FiFolder className="w-4 h-4 text-[--brand]" />
+                            <FiFolder className="w-4 h-4 text-(--brand)" />
                         ) : (
-                            <FiFile className="w-4 h-4 text-[--muted]" />
+                            <FiFile className="w-4 h-4 text-(--muted)" />
                         )}
                     </div>
                     <span

@@ -44,7 +44,7 @@ export function AppErrorBoundary({ error, reset, resetErrorBoundary }: AppErrorB
             title="Client side error"
             reset={handleReset}
         >
-            <p className="text-[--muted]">
+            <p className="text-(--muted)">
                 {(error as Error)?.message || "An unexpected error occurred."}
             </p>
         </LuffyError>

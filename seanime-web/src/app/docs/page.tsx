@@ -16,7 +16,7 @@ export default function Page() {
             {data?.toSorted?.((a, b) => a.filename?.localeCompare(b.filename))?.map((group, i) => (
                 <div key={group.filename + i} className="space-y-4">
                     <h4 className=""><span>{group.filename}</span> <span className="text-gray-300">/</span>
-                        <span className="text-[--muted]"> {group.filename.replace(".go", "")}.hooks.ts</span></h4>
+                        <span className="text-(--muted)"> {group.filename.replace(".go", "")}.hooks.ts</span></h4>
                     <Accordion type="multiple" defaultValue={[]}>
                         {group.handlers?.toSorted((a, b) => a.filename?.localeCompare(b.filename)).map((route, i) => (
                             <AccordionItem value={route.name} key={route.name + i} className="space-y-2">
@@ -32,9 +32,9 @@ export default function Page() {
                                             {route.api!.methods?.join(", ")}
                                         </Badge>
                                         <span className="font-semibold flex-none whitespace-nowrap">{route.api!.endpoint}</span>
-                                        <span className="font-normal text-sm text-[--muted] flex-none whitespace-nowrap">{route.name}</span>
-                                        {/*<span className="font-medium text-[--muted] text-sm truncate flex-shrink">({route.name.replace("Handle", "")})</span>*/}
-                                        <span className="text-[--muted] text-[.97rem] whitespace-nowrap truncate text-ellipsis"> - {route.api!.summary}</span>
+                                        <span className="font-normal text-sm text-(--muted) flex-none whitespace-nowrap">{route.name}</span>
+                                        {/*<span className="font-medium text-(--muted) text-sm truncate shrink">({route.name.replace("Handle", "")})</span>*/}
+                                        <span className="text-(--muted) text-[.97rem] whitespace-nowrap truncate text-ellipsis"> - {route.api!.summary}</span>
                                     </p>
                                 </AccordionTrigger>
 
@@ -60,7 +60,7 @@ export default function Page() {
                                                         {param.name}
                                                         {param.required && <span className="text-red-500">*</span>}
                                                     </p>
-                                                    <p className="text-[--muted]">{param.typescriptType}</p>
+                                                    <p className="text-(--muted)">{param.typescriptType}</p>
                                                     {param.descriptions?.map((desc, i) => (
                                                         <p key={desc + i}>{desc}</p>
                                                     ))}
@@ -75,8 +75,8 @@ export default function Page() {
                                             {route.api?.bodyFields?.map((field, i) => (
                                                 <li key={field.name + i} className="flex gap-2 items-center">
                                                     <p className="font-medium">{field.jsonName} {field.required &&
-                                                        <span className="text-[--red]">*</span>}</p>
-                                                    <p className="text-[--muted]">{field.typescriptType}</p>
+                                                        <span className="text-(--red)">*</span>}</p>
+                                                    <p className="text-(--muted)">{field.typescriptType}</p>
                                                     {field.descriptions?.map((desc, i) => (
                                                         <p key={desc + i}>{desc}</p>
                                                     ))}
@@ -86,7 +86,7 @@ export default function Page() {
                                     </div>}
 
                                     <div className="flex gap-2 items-center">
-                                        <p className="font-medium text-[--muted]">Returns</p>
+                                        <p className="font-medium text-(--muted)">Returns</p>
                                         <p className="font-bold text-brand-900">{route.api!.returnTypescriptType}</p>
                                     </div>
                                 </AccordionContent>

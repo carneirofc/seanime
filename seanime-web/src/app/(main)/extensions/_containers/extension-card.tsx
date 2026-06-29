@@ -58,22 +58,22 @@ export function ExtensionCard(props: ExtensionCardProps) {
     return (
         <div
             className={cn(
-                "group/extension-card border border-[rgb(255_255_255_/_5%)] relative overflow-hidden",
+                "group/extension-card border border-[rgb(255_255_255/5%)] relative overflow-hidden",
                 "bg-gray-900 rounded-xl p-3",
-                !!updateData && "border-[--green]",
-                userConfigError && "border-[--orange]",
+                !!updateData && "border-(--green)",
+                userConfigError && "border-(--orange)",
                 isDisabled && "opacity-70 border-gray-700",
             )}
         >
             <div
                 className={cn(
-                    "absolute z-[0] right-0 top-0 h-full w-full max-w-[150px] bg-gradient-to-l to-gray-950",
+                    "absolute z-0 right-0 top-0 h-full w-full max-w-[150px] bg-linear-to-l to-gray-950",
                     // !isBuiltin && "max-w-[50%] from-indigo-950/20",
                 )}
             ></div>
 
-            <div className="absolute top-3 right-3 z-[2]">
-                <div className=" flex flex-row gap-1 z-[2] flex-wrap justify-end">
+            <div className="absolute top-3 right-3 z-2">
+                <div className=" flex flex-row gap-1 z-2 flex-wrap justify-end">
 
                     {!!extension.userConfig && (
                         <>
@@ -114,7 +114,7 @@ export function ExtensionCard(props: ExtensionCardProps) {
                         </div>
                     </ExtensionSettings>
                 </div>
-                <div className="flex flex-row gap-1 z-[2] flex-wrap justify-end">
+                <div className="flex flex-row gap-1 z-2 flex-wrap justify-end">
 
                     {!!extension.readme && (
                         <div onClick={() => window.open(extension.readme, "_blank")}>
@@ -164,7 +164,7 @@ export function ExtensionCard(props: ExtensionCardProps) {
                 </div>
             </div>
 
-            <div className="z-[1] relative flex flex-col h-full">
+            <div className="z-1 relative flex flex-col h-full">
                 <div className="flex gap-3 pr-16">
                     <div
                         className={cn(
@@ -232,7 +232,7 @@ export function ExtensionCard(props: ExtensionCardProps) {
                     {!isBuiltin && <Badge className="rounded-md" intent="unstyled">
                         {extension.author}
                     </Badge>}
-                    {extension.lang?.toUpperCase() !== "MULTI" && <Badge className="border-transparent rounded-md !px-0" intent="unstyled">
+                    {extension.lang?.toUpperCase() !== "MULTI" && <Badge className="border-transparent rounded-md px-0!" intent="unstyled">
                         {/*{extension.lang.toUpperCase()}*/}
                         {LANGUAGES_LIST[extension.lang?.toLowerCase()]?.nativeName || extension.lang?.toUpperCase() || "Unknown"}
                     </Badge>}

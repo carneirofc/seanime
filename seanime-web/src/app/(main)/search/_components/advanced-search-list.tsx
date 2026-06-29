@@ -29,8 +29,8 @@ export function AdvancedSearchList() {
             <div
                 data-advanced-search-list-load-more-container
                 className={cn(
-                    "relative flex flex-col rounded-[--radius-md] animate-none",
-                    "cursor-pointer border border-none text-[--muted] hover:text-white pt-24 items-center gap-2 transition",
+                    "relative flex flex-col rounded-md animate-none",
+                    "cursor-pointer border border-none text-(--muted) hover:text-white pt-24 items-center gap-2 transition",
                 )}
                 onClick={() => fetchNextPage()}
             >

@@ -204,7 +204,7 @@ function LogModal(props: { filename: string }) {
         <>
             <p
                 onClick={() => setOpen(true)}
-                className="cursor-pointer hover:text-[--muted]"
+                className="cursor-pointer hover:text-(--muted)"
             >{filename}</p>
             <Modal
                 open={open}
@@ -223,8 +223,8 @@ function LogModal(props: { filename: string }) {
                 </Button>
 
                 {isPending ? <LoadingSpinner /> :
-                    <div className="bg-gray-900 rounded-[--radius-md] border max-w-full overflow-x-auto">
-                        <pre className="text-md max-h-[40rem] p-2 min-h-12 whitespace-pre-wrap break-all">
+                    <div className="bg-gray-900 rounded-md border max-w-full overflow-x-auto">
+                        <pre className="text-md max-h-160 p-2 min-h-12 whitespace-pre-wrap break-all">
                             {data?.split("\n").map((line, i) => (
                                 <p
                                     key={i}
@@ -234,7 +234,7 @@ function LogModal(props: { filename: string }) {
                                         line.includes("|ERR|") && "text-white bg-red-800",
                                         line.includes("|WRN|") && "text-orange-500",
                                         line.includes("|INF|") && "text-blue-200",
-                                        line.includes("|TRC|") && "text-[--muted]",
+                                        line.includes("|TRC|") && "text-(--muted)",
                                     )}
                                 >{line}</p>
                             ))}
@@ -318,34 +318,34 @@ function MemoryProfilingSettings() {
                     {memoryStats && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="bg-gray-800 p-4 rounded-md">
-                                <div className="text-sm text-[--muted]">Heap Allocated</div>
+                                <div className="text-sm text-(--muted)">Heap Allocated</div>
                                 <div className="text-xl font-medium">{formatBytes(memoryStats.heapAlloc)}</div>
                             </div>
                             <div className="bg-gray-800 p-4 rounded-md">
-                                <div className="text-sm text-[--muted]">Heap In Use</div>
+                                <div className="text-sm text-(--muted)">Heap In Use</div>
                                 <div className="text-xl font-medium">{formatBytes(memoryStats.heapInuse)}</div>
                             </div>
                             <div className="bg-gray-800 p-4 rounded-md">
-                                <div className="text-sm text-[--muted]">Heap System</div>
+                                <div className="text-sm text-(--muted)">Heap System</div>
                                 <div className="text-xl font-medium">{formatBytes(memoryStats.heapSys)}</div>
                             </div>
                             <div className="bg-gray-800 p-4 rounded-md">
-                                <div className="text-sm text-[--muted]">Total Allocated</div>
+                                <div className="text-sm text-(--muted)">Total Allocated</div>
                                 <div className="text-xl font-medium">{formatBytes(memoryStats.totalAlloc)}</div>
                             </div>
                             <div className="bg-gray-800 p-4 rounded-md">
-                                <div className="text-sm text-[--muted]">Goroutines</div>
+                                <div className="text-sm text-(--muted)">Goroutines</div>
                                 <div className="text-xl font-medium">{memoryStats.numGoroutine}</div>
                             </div>
                             <div className="bg-gray-800 p-4 rounded-md">
-                                <div className="text-sm text-[--muted]">GC Cycles</div>
+                                <div className="text-sm text-(--muted)">GC Cycles</div>
                                 <div className="text-xl font-medium">{memoryStats.numGC}</div>
                             </div>
                         </div>
                     )}
 
                     {!memoryStats && !isLoadingMemoryStats && (
-                        <div className="text-center py-4 text-[--muted]">
+                        <div className="text-center py-4 text-(--muted)">
                             Click "Refresh" to load memory statistics
                         </div>
                     )}
@@ -424,7 +424,7 @@ function MemoryProfilingSettings() {
                                     Download CPU Profile
                                 </Button>
                             </div>
-                            <p className="text-xs text-[--muted] mt-1">
+                            <p className="text-xs text-(--muted) mt-1">
                                 CPU profiling will run for the specified duration (1-300 seconds)
                             </p>
                         </div>

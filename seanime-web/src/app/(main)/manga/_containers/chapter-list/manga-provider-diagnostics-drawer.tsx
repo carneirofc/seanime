@@ -81,13 +81,13 @@ export function MangaProviderDiagnosticsDrawer({ provider, mediaId }: MangaProvi
                 side="right"
             >
                 {/* Tab Buttons */}
-                <div className="flex gap-1 mb-4 border-b border-[--border] pb-2">
+                <div className="flex gap-1 mb-4 border-b border-(--border) pb-2">
                     <button
                         className={cn(
                             "px-3 py-1.5 text-sm rounded-md transition-colors",
                             activeTab === "logs"
-                                ? "bg-[--subtle] text-[--foreground] font-medium"
-                                : "text-[--muted] hover:text-[--foreground] hover:bg-[--subtle]",
+                                ? "bg-(--subtle) text-(--foreground) font-medium"
+                                : "text-(--muted) hover:text-(--foreground) hover:bg-(--subtle)",
                         )}
                         onClick={() => setActiveTab("logs")}
                     >
@@ -97,8 +97,8 @@ export function MangaProviderDiagnosticsDrawer({ provider, mediaId }: MangaProvi
                         className={cn(
                             "px-3 py-1.5 text-sm rounded-md transition-colors",
                             activeTab === "cache"
-                                ? "bg-[--subtle] text-[--foreground] font-medium"
-                                : "text-[--muted] hover:text-[--foreground] hover:bg-[--subtle]",
+                                ? "bg-(--subtle) text-(--foreground) font-medium"
+                                : "text-(--muted) hover:text-(--foreground) hover:bg-(--subtle)",
                         )}
                         onClick={() => setActiveTab("cache")}
                     >
@@ -110,20 +110,20 @@ export function MangaProviderDiagnosticsDrawer({ provider, mediaId }: MangaProvi
                 {activeTab === "logs" && (
                     <>
                         {!provider && (
-                            <p className="text-[--muted] text-sm">No provider selected.</p>
+                            <p className="text-(--muted) text-sm">No provider selected.</p>
                         )}
 
                         {provider && logsLoading && (
-                            <p className="text-[--muted] text-sm">Loading request logs...</p>
+                            <p className="text-(--muted) text-sm">Loading request logs...</p>
                         )}
 
                         {provider && !logsLoading && sortedLogs.length === 0 && (
-                            <p className="text-[--muted] text-sm">No requests recorded yet for this provider. Requests are logged in-memory and reset on server restart.</p>
+                            <p className="text-(--muted) text-sm">No requests recorded yet for this provider. Requests are logged in-memory and reset on server restart.</p>
                         )}
 
                         {provider && !logsLoading && sortedLogs.length > 0 && (
                             <div className="space-y-1">
-                                <p className="text-[--muted] text-xs mb-3">
+                                <p className="text-(--muted) text-xs mb-3">
                                     Showing {sortedLogs.length} recent request(s). Newest first.
                                 </p>
                                 {sortedLogs.map((log, i) => (
@@ -138,20 +138,20 @@ export function MangaProviderDiagnosticsDrawer({ provider, mediaId }: MangaProvi
                 {activeTab === "cache" && (
                     <>
                         {!mediaId && (
-                            <p className="text-[--muted] text-sm">No media selected.</p>
+                            <p className="text-(--muted) text-sm">No media selected.</p>
                         )}
 
                         {mediaId && cacheLoading && (
-                            <p className="text-[--muted] text-sm">Loading cache info...</p>
+                            <p className="text-(--muted) text-sm">Loading cache info...</p>
                         )}
 
                         {mediaId && !cacheLoading && (!cacheInfo || cacheInfo.length === 0) && (
-                            <p className="text-[--muted] text-sm">No cached data found for this media. Cache files are created when chapters or pages are fetched from a provider.</p>
+                            <p className="text-(--muted) text-sm">No cached data found for this media. Cache files are created when chapters or pages are fetched from a provider.</p>
                         )}
 
                         {mediaId && !cacheLoading && cacheInfo && cacheInfo.length > 0 && (
                             <div className="space-y-2">
-                                <p className="text-[--muted] text-xs mb-3">
+                                <p className="text-(--muted) text-xs mb-3">
                                     Found {cacheInfo.length} cache bucket(s) for media ID {mediaId}.
                                 </p>
                                 {cacheInfo.map((info, i) => (
@@ -231,7 +231,7 @@ function CacheBucketRow({ info }: { info: Manga_ProviderCacheInfo }) {
     return (
         <div
             className={cn(
-                "rounded-md border border-[--border] px-3 py-2 cursor-pointer hover:bg-[--subtle] transition-colors",
+                "rounded-md border border-(--border) px-3 py-2 cursor-pointer hover:bg-(--subtle) transition-colors",
                 hasExpiredKeys && "border-yellow-800/40 bg-yellow-950/10",
             )}
             onClick={() => setExpanded(!expanded)}
@@ -250,10 +250,10 @@ function CacheBucketRow({ info }: { info: Manga_ProviderCacheInfo }) {
                 >
                     {getBucketTypeLabel(info.bucketType)}
                 </Badge>
-                <span className="text-[--muted] font-mono shrink-0">
+                <span className="text-(--muted) font-mono shrink-0">
                     {formatFileSize(info.fileSizeBytes)}
                 </span>
-                <span className="text-[--muted] shrink-0">
+                <span className="text-(--muted) shrink-0">
                     {info.keyCount} key(s)
                 </span>
             </div>
@@ -261,40 +261,40 @@ function CacheBucketRow({ info }: { info: Manga_ProviderCacheInfo }) {
             {expanded && (
                 <div className="mt-3 space-y-2 text-xs">
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-20 shrink-0">File:</span>
-                        <span className="font-mono break-all select-all text-[--foreground]">{info.fileName}</span>
+                        <span className="text-(--muted) w-20 shrink-0">File:</span>
+                        <span className="font-mono break-all select-all text-(--foreground)">{info.fileName}</span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-20 shrink-0">Full Path:</span>
-                        <span className="font-mono break-all select-all text-[--foreground]">{info.filePath}</span>
+                        <span className="text-(--muted) w-20 shrink-0">Full Path:</span>
+                        <span className="font-mono break-all select-all text-(--foreground)">{info.filePath}</span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-20 shrink-0">Size:</span>
+                        <span className="text-(--muted) w-20 shrink-0">Size:</span>
                         <span className="font-mono">{formatFileSize(info.fileSizeBytes)} ({info.fileSizeBytes.toLocaleString()} bytes)</span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-20 shrink-0">Provider:</span>
+                        <span className="text-(--muted) w-20 shrink-0">Provider:</span>
                         <span className="font-mono">{info.provider}</span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-20 shrink-0">Bucket Type:</span>
+                        <span className="text-(--muted) w-20 shrink-0">Bucket Type:</span>
                         <span className="font-mono">{info.bucketType} ({getBucketTypeLabel(info.bucketType)})</span>
                     </div>
 
                     {/* Cache Keys */}
                     {info.keys && info.keys.length > 0 && (
                         <div className="mt-2">
-                            <p className="text-[--muted] mb-1 font-medium">Cached Keys:</p>
+                            <p className="text-(--muted) mb-1 font-medium">Cached Keys:</p>
                             <div className="space-y-1 ml-2">
                                 {info.keys.map((key, j) => {
                                     const status = getExpirationStatus(key)
                                     return (
-                                        <div key={j} className="rounded border border-[--border] px-2 py-1.5 bg-[--background]">
+                                        <div key={j} className="rounded border border-(--border) px-2 py-1.5 bg-(--background)">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-mono text-[--foreground] break-all select-all">{key.key}</span>
+                                                <span className="font-mono text-(--foreground) break-all select-all">{key.key}</span>
                                                 <span className={cn("font-mono shrink-0", status.color)}>{status.label}</span>
                                             </div>
-                                            <div className="flex gap-4 mt-1 text-[--muted]">
+                                            <div className="flex gap-4 mt-1 text-(--muted)">
                                                 {key.expiration && (
                                                     <span>Expires: {formatDateTime(key.expiration)}</span>
                                                 )}
@@ -329,7 +329,7 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
             ? "text-yellow-400"
             : isSuccess
                 ? "text-green-400"
-                : "text-[--muted]"
+                : "text-(--muted)"
 
     const timestamp = React.useMemo(() => {
         try {
@@ -348,13 +348,13 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
     return (
         <div
             className={cn(
-                "rounded-md border border-[--border] px-3 py-2 cursor-pointer hover:bg-[--subtle] transition-colors",
+                "rounded-md border border-(--border) px-3 py-2 cursor-pointer hover:bg-(--subtle) transition-colors",
                 isError && "border-red-800/40 bg-red-950/20",
             )}
             onClick={() => setExpanded(!expanded)}
         >
             <div className="flex items-center gap-2 text-xs">
-                <span className="text-[--muted] font-mono shrink-0">{timestamp}</span>
+                <span className="text-(--muted) font-mono shrink-0">{timestamp}</span>
                 <Badge
                     intent={isError ? "alert" : isSuccess ? "success" : "gray"}
                     size="sm"
@@ -367,10 +367,10 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
                         {log.statusCode}
                     </span>
                 )}
-                <span className="text-[--muted] font-mono truncate flex-1" title={log.url}>
+                <span className="text-(--muted) font-mono truncate flex-1" title={log.url}>
                     {log.url}
                 </span>
-                <span className="text-[--muted] font-mono shrink-0">
+                <span className="text-(--muted) font-mono shrink-0">
                     {log.durationMs}ms
                 </span>
             </div>
@@ -378,26 +378,26 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
             {expanded && (
                 <div className="mt-2 space-y-1 text-xs">
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-16 shrink-0">URL:</span>
+                        <span className="text-(--muted) w-16 shrink-0">URL:</span>
                         <span className="font-mono break-all select-all">{log.url}</span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-16 shrink-0">Method:</span>
+                        <span className="text-(--muted) w-16 shrink-0">Method:</span>
                         <span className="font-mono">{log.method}</span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-16 shrink-0">Status:</span>
+                        <span className="text-(--muted) w-16 shrink-0">Status:</span>
                         <span className={cn("font-mono", statusColor)}>
                             {log.statusCode > 0 ? `${log.statusCode} ${log.statusText}` : "N/A (request failed)"}
                         </span>
                     </div>
                     <div className="flex gap-2">
-                        <span className="text-[--muted] w-16 shrink-0">Duration:</span>
+                        <span className="text-(--muted) w-16 shrink-0">Duration:</span>
                         <span className="font-mono">{log.durationMs}ms</span>
                     </div>
                     {log.error && (
                         <div className="flex gap-2">
-                            <span className="text-[--muted] w-16 shrink-0">Error:</span>
+                            <span className="text-(--muted) w-16 shrink-0">Error:</span>
                             <span className="font-mono text-red-400 break-all">{log.error}</span>
                         </div>
                     )}
@@ -405,12 +405,12 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
                     {/* Request Headers */}
                     {hasRequestHeaders && (
                         <div className="mt-2">
-                            <p className="text-[--muted] mb-1 font-medium">Request Headers:</p>
-                            <div className="rounded border border-[--border] bg-[--background] p-2 space-y-0.5">
+                            <p className="text-(--muted) mb-1 font-medium">Request Headers:</p>
+                            <div className="rounded border border-(--border) bg-(--background) p-2 space-y-0.5">
                                 {Object.entries(log.requestHeaders!).map(([key, value]) => (
                                     <div key={key} className="flex gap-2 font-mono">
                                         <span className="text-blue-400 shrink-0">{key}:</span>
-                                        <span className="text-[--foreground] break-all select-all">{value}</span>
+                                        <span className="text-(--foreground) break-all select-all">{value}</span>
                                     </div>
                                 ))}
                             </div>
@@ -420,12 +420,12 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
                     {/* Response Headers */}
                     {hasResponseHeaders && (
                         <div className="mt-2">
-                            <p className="text-[--muted] mb-1 font-medium">Response Headers:</p>
-                            <div className="rounded border border-[--border] bg-[--background] p-2 space-y-0.5">
+                            <p className="text-(--muted) mb-1 font-medium">Response Headers:</p>
+                            <div className="rounded border border-(--border) bg-(--background) p-2 space-y-0.5">
                                 {Object.entries(log.responseHeaders!).map(([key, value]) => (
                                     <div key={key} className="flex gap-2 font-mono">
                                         <span className="text-green-400 shrink-0">{key}:</span>
-                                        <span className="text-[--foreground] break-all select-all">{value}</span>
+                                        <span className="text-(--foreground) break-all select-all">{value}</span>
                                     </div>
                                 ))}
                             </div>
@@ -433,7 +433,7 @@ function RequestLogRow({ log }: { log: Manga_ProviderRequestLog }) {
                     )}
 
                     {!hasRequestHeaders && !hasResponseHeaders && (
-                        <p className="text-[--muted] text-xs mt-2 italic">
+                        <p className="text-(--muted) text-xs mt-2 italic">
                             No headers captured for this request. Headers are only logged for extension-based providers.
                         </p>
                     )}

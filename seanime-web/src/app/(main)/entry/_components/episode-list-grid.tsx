@@ -19,10 +19,10 @@ export function EpisodeListGrid(props: EpisodeListGridProps) {
     return (
         <div
             className={cn(
-                "grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 min-[2000px]:grid-cols-4",
-                maxCol === 3 && "min-[2000px]:grid-cols-3",
-                maxCol === 2 && "lg:grid-cols-2 2xl:grid-cols-2 min-[2000px]:grid-cols-2",
-                maxCol === 1 && "lg:grid-cols-1 2xl:grid-cols-1 min-[2000px]:grid-cols-1",
+                "grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 5xl:grid-cols-4",
+                maxCol === 3 && "5xl:grid-cols-3",
+                maxCol === 2 && "lg:grid-cols-2 2xl:grid-cols-2 5xl:grid-cols-2",
+                maxCol === 1 && "lg:grid-cols-1 2xl:grid-cols-1 5xl:grid-cols-1",
                 "gap-4",
             )}
             {...rest}
@@ -132,10 +132,10 @@ export function EpisodeListPaginatedGrid(props: EpisodeListPaginatedGridProps) {
         <>
             <div
                 className={cn(
-                    "grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 min-[2000px]:grid-cols-4",
-                    maxCol === 3 && "min-[2000px]:grid-cols-3",
-                    maxCol === 2 && "lg:grid-cols-2 2xl:grid-cols-2 min-[2000px]:grid-cols-2",
-                    maxCol === 1 && "lg:grid-cols-1 2xl:grid-cols-1 min-[2000px]:grid-cols-1",
+                    "grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 5xl:grid-cols-4",
+                    maxCol === 3 && "5xl:grid-cols-3",
+                    maxCol === 2 && "lg:grid-cols-2 2xl:grid-cols-2 5xl:grid-cols-2",
+                    maxCol === 1 && "lg:grid-cols-1 2xl:grid-cols-1 5xl:grid-cols-1",
                     "gap-4",
                 )}
                 data-episode-list-grid

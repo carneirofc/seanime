@@ -25,7 +25,7 @@ export function StreamPageSkeleton() {
                     <div className="flex gap-4">
                         {Array.from({ length: 3 }).map((_, i) => (
                             <div key={i} className="flex-none w-full md:w-1/2 2xl:w-1/3 space-y-2">
-                                <Skeleton className="w-full aspect-[4/2] h-full rounded-xl" />
+                                <Skeleton className="w-full aspect-4/2 h-full rounded-xl" />
                                 <div className="space-y-1.5">
                                     <Skeleton className="h-4 w-16 rounded-xl opacity-70" />
                                     <Skeleton className="h-5 w-48 rounded-xl" />
@@ -38,10 +38,10 @@ export function StreamPageSkeleton() {
                 <div>
                     {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex gap-4 py-3 pr-12">
-                            <Skeleton className="h-28 w-36 lg:h-32 lg:w-44 flex-none rounded-[--radius-md]" />
+                            <Skeleton className="h-28 w-36 lg:h-32 lg:w-44 flex-none rounded-md" />
                             <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
                                 <Skeleton className="h-5 w-20 rounded-xl" />
-                                <Skeleton className="h-4 w-full max-w-[28rem] rounded-xl opacity-80" />
+                                <Skeleton className="h-4 w-full max-w-md rounded-xl opacity-80" />
                                 <Skeleton className="h-3 w-2/3 max-w-[20rem] rounded-xl opacity-50" />
                             </div>
                         </div>

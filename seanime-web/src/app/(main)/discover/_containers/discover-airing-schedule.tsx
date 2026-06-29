@@ -90,7 +90,7 @@ export function DiscoverAiringSchedule() {
     if (!data?.Page?.airingSchedules?.length) return null
 
     return (
-        <div className="space-y-4 z-[5] relative" data-discover-airing-schedule-container>
+        <div className="space-y-4 z-5 relative" data-discover-airing-schedule-container>
             <h2 className="text-center">Airing Schedule</h2>
             <div className="space-y-6">
                 {days.map((day, index) => {
@@ -100,7 +100,7 @@ export function DiscoverAiringSchedule() {
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-2">
                                     <h3 className="font-semibold">{format(new Date(day.date), "EEEE, PP")}</h3>
-                                    {day.isToday && <span className="text-[--muted]">Today</span>}
+                                    {day.isToday && <span className="text-(--muted)">Today</span>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                     {day.events?.toSorted((a, b) => a.datetime.localeCompare(b.datetime))?.map((event, index) => {
@@ -108,7 +108,7 @@ export function DiscoverAiringSchedule() {
                                             <React.Fragment key={event.id}>
                                                 <SeaContextMenu
                                                     content={<ContextMenuGroup>
-                                                        <ContextMenuLabel className="text-[--muted] line-clamp-2 py-0 my-2">
+                                                        <ContextMenuLabel className="text-(--muted) line-clamp-2 py-0 my-2">
                                                             {event.media?.title?.userPreferred}
                                                         </ContextMenuLabel>
                                                         <ContextMenuItem
@@ -130,10 +130,10 @@ export function DiscoverAiringSchedule() {
                                                     <ContextMenuTrigger>
                                                         <div
                                                             key={String(`${event.id}${index}`)}
-                                                            className="flex gap-3 bg-[--background] rounded-[--radius-md] p-2"
+                                                            className="flex gap-3 bg-(--background) rounded-md p-2"
                                                         >
                                                             <div
-                                                                className="w-[5rem] h-[5rem] rounded-[--radius] flex-none object-cover object-center overflow-hidden relative"
+                                                                className="w-20 h-20 rounded-(--radius) flex-none object-cover object-center overflow-hidden relative"
                                                             >
                                                                 <SeaImage
                                                                     src={event.media?.coverImage?.large || event.media?.bannerImage || "/no-cover.png"}
@@ -152,7 +152,7 @@ export function DiscoverAiringSchedule() {
                                                                     className="font-medium tracking-wide line-clamp-1"
                                                                 >{event.media?.title?.userPreferred}</SeaLink>
 
-                                                                <p className="text-[--muted]">
+                                                                <p className="text-(--muted)">
                                                                     Ep {event.episode} airing at {event.time}
                                                                 </p>
                                                             </div>

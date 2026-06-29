@@ -53,7 +53,7 @@ export function MediaEntryCharactersSection(props: RelationsRecommendationsSecti
                                 "max-w-full flex gap-4",
                                 "rounded-lg relative transition group/episode-list-item select-none",
                                 !!ts.libraryScreenCustomBackgroundImage && ts.libraryScreenCustomBackgroundOpacity > 5
-                                    ? "bg-[--background] p-3"
+                                    ? "bg-(--background) p-3"
                                     : "py-3",
                                 "pr-12",
                             )}
@@ -63,17 +63,17 @@ export function MediaEntryCharactersSection(props: RelationsRecommendationsSecti
                             <div
                                 data-media-entry-characters-section-grid-item-image-container
                                 className={cn(
-                                    "size-20 flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden",
+                                    "size-20 flex-none rounded-md object-cover object-center relative overflow-hidden",
                                     "group/ep-item-img-container",
                                 )}
                             >
                                 <div
                                     data-media-entry-characters-section-grid-item-image-overlay
-                                    className="absolute z-[1] rounded-[--radius-md] w-full h-full"
+                                    className="absolute z-1 rounded-md w-full h-full"
                                 ></div>
                                 <div
                                     data-media-entry-characters-section-grid-item-image-background
-                                    className="bg-[--background] absolute z-[0] rounded-[--radius-md] w-full h-full"
+                                    className="bg-(--background) absolute z-0 rounded-md w-full h-full"
                                 ></div>
                                 {(edge?.node?.image?.large) && <SeaImage
                                     data-media-entry-characters-section-grid-item-image
@@ -103,7 +103,7 @@ export function MediaEntryCharactersSection(props: RelationsRecommendationsSecti
                                     {edge?.node?.age} years old
                                 </p>}
 
-                                <p data-media-entry-characters-section-grid-item-content-role className="text-[--muted] text-xs">
+                                <p data-media-entry-characters-section-grid-item-content-role className="text-(--muted) text-xs">
                                     {edge?.role}
                                 </p>
 

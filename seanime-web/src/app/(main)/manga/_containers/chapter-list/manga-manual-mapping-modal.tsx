@@ -178,13 +178,13 @@ function Content({
                                 </Button>
                             </AppLayoutStack>
                         ) : (
-                            <p className="text-[--muted] italic">No manual match</p>
+                            <p className="text-(--muted) italic">No manual match</p>
                         )}
                     </div>
 
                     <Separator />
 
-                    <p className="text-sm text-[--muted] text-center">
+                    <p className="text-sm text-(--muted) text-center">
                         {helperText}
                     </p>
 
@@ -193,7 +193,7 @@ function Content({
                             <Field.Text
                                 name="query"
                                 placeholder="Enter a title..."
-                                leftIcon={<FiSearch className="text-xl text-[--muted]" />}
+                                leftIcon={<FiSearch className="text-xl text-(--muted)" />}
                                 fieldClass="w-full"
                             />
 
@@ -204,7 +204,7 @@ function Content({
                     {searchLoading ? <LoadingSpinner /> : (
                         <>
                             {displaySearchResults.length === 0 && (searchResults !== undefined || isAutomaticMatchFlow) && (
-                                <p className="text-sm text-[--muted] text-center">
+                                <p className="text-sm text-(--muted) text-center">
                                     {isAutomaticMatchFlow
                                         ? "No automatic matches available right now. Search manually to continue."
                                         : "No search results found."}
@@ -216,7 +216,7 @@ function Content({
                                     <div
                                         key={item.id}
                                         className={cn(
-                                            "group/sr-item col-span-1 aspect-[6/7] rounded-[--radius-md] relative bg-[--background] cursor-pointer transition-opacity",
+                                            "group/sr-item col-span-1 aspect-6/7 rounded-md relative bg-(--background) cursor-pointer transition-opacity",
                                         )}
                                         onClick={() => {
                                             setSelectedMatch(item)
@@ -233,7 +233,7 @@ function Content({
                                             fill
                                             alt=""
                                             className={cn(
-                                                "object-center object-cover lg:opacity-50 rounded-[--radius-md] transition-opacity lg:group-hover/sr-item:opacity-100",
+                                                "object-center object-cover lg:opacity-50 rounded-md transition-opacity lg:group-hover/sr-item:opacity-100",
                                             )}
                                         />}
                                         {item.url && (
@@ -241,7 +241,7 @@ function Content({
                                                 href={item.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="absolute top-1 right-1 z-[15] p-1 rounded-md bg-black/60 text-white hover:bg-black/80 transition-colors"
+                                                className="absolute top-1 right-1 z-15 p-1 rounded-md bg-black/60 text-white hover:bg-black/80 transition-colors"
                                                 onClick={(e) => e.stopPropagation()}
                                                 title="Open in browser"
                                             >
@@ -249,31 +249,31 @@ function Content({
                                             </a>
                                         )}
                                         <Tooltip
-                                            trigger={<div className="absolute m-2 bottom-0 z-[10] w-[calc(100%-1rem)]">
+                                            trigger={<div className="absolute m-2 bottom-0 z-10 w-[calc(100%-1rem)]">
                                                 <p className="line-clamp-2 text-sm font-semibold">
                                                     {item.title} {item.year && `(${item.year})`}
                                                 </p>
-                                                <p className="text-xs text-[--muted] mt-0.5">ID: {item.id}</p>
+                                                <p className="text-xs text-(--muted) mt-0.5">ID: {item.id}</p>
                                             </div>}
-                                            className="z-[150]"
+                                            className="z-150"
                                         >
                                             <div className="max-w-xs">
                                                 <p className="font-semibold">
                                                     {item.title} {item.year && `(${item.year})`}
                                                 </p>
-                                                <p className="text-sm text-[--muted] mt-1">ID: {item.id}</p>
+                                                <p className="text-sm text-(--muted) mt-1">ID: {item.id}</p>
                                                 {item.url && (
-                                                    <p className="text-sm text-[--muted] mt-0.5 break-all">{item.url}</p>
+                                                    <p className="text-sm text-(--muted) mt-0.5 break-all">{item.url}</p>
                                                 )}
                                                 {item.synonyms && item.synonyms.length > 0 && (
-                                                    <p className="text-sm text-[--muted] mt-0.5">
+                                                    <p className="text-sm text-(--muted) mt-0.5">
                                                         Alt: {item.synonyms.join(", ")}
                                                     </p>
                                                 )}
                                             </div>
                                         </Tooltip>
                                         <div
-                                            className="z-[5] absolute rounded-br-md rounded-bl-md bottom-0 w-full h-[80%] bg-gradient-to-t from-[--background] to-transparent"
+                                            className="z-5 absolute rounded-br-md rounded-bl-md bottom-0 w-full h-[80%] bg-linear-to-t from-(--background) to-transparent"
                                         />
                                     </div>
                                 ))}

@@ -70,13 +70,13 @@ export function AutoplayCountdownModal({
             titleClass="text-center"
             hideCloseButton
             title="Playing next episode in"
-            contentClass="!space-y-4 relative max-w-xl border-transparent !rounded-3xl"
-            closeClass="!text-[--red]"
+            contentClass="space-y-4! relative max-w-xl border-transparent rounded-3xl!"
+            closeClass="text-(--red)!"
         >
             <div className="text-center space-y-4">
-                <div className="rounded-[--radius-md] text-center">
+                <div className="rounded-md text-center">
                     <h3 className="text-5xl font-bold">{countdown}</h3>
-                    {/* <p className="text-[--muted] text-sm mt-1">
+                    {/* <p className="text-(--muted) text-sm mt-1">
                      {countdown === 1 ? "second" : "seconds"}
                      </p> */}
                 </div>
@@ -100,12 +100,12 @@ export function AutoplayCountdownModal({
                 {/*        </h4>*/}
 
                 {/*        {episodeInfo.episodeTitle && (*/}
-                {/*            <p className="text-[--muted] text-sm line-clamp-2">*/}
+                {/*            <p className="text-(--muted) text-sm line-clamp-2">*/}
                 {/*                {episodeInfo.episodeTitle}*/}
                 {/*            </p>*/}
                 {/*        )}*/}
 
-                {/*        <p className="text-xs text-[--muted] mt-1">*/}
+                {/*        <p className="text-xs text-(--muted) mt-1">*/}
                 {/*            {getStreamingTypeLabel()}*/}
                 {/*        </p>*/}
                 {/*    </div>*/}

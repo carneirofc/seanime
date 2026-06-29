@@ -292,7 +292,7 @@ export function SeaCommandTorrentMagnet() {
                                 }}
                             >
                                 Continue
-                            </CommandItem> : <p className="px-2 pb-2 text-sm text-[--muted]">
+                            </CommandItem> : <p className="px-2 pb-2 text-sm text-(--muted)">
                                 Paste a valid magnet link to continue.
                             </p>}
                             <CommandItem
@@ -311,10 +311,10 @@ export function SeaCommandTorrentMagnet() {
                             <div className="px-2 pb-2 space-y-1">
                                 {magnet && (
                                     <div className="flex items-center gap-2 line-clamp-2">
-                                        <span className="text-sm text-[--muted] flex-none">
+                                        <span className="text-sm text-(--muted) flex-none">
                                             Magnet link:
                                         </span>
-                                        <span className="text-sm text-[--foreground]">
+                                        <span className="text-sm text-(--foreground)">
                                             {magnet}
                                         </span>
                                     </div>
@@ -328,7 +328,7 @@ export function SeaCommandTorrentMagnet() {
                             >
                                 Back
                             </CommandItem>
-                            {isAnimeLoading && <p className="px-2 pb-2 text-sm text-[--muted]">Loading your anime...</p>}
+                            {isAnimeLoading && <p className="px-2 pb-2 text-sm text-(--muted)">Loading your anime...</p>}
                             {filteredAnime.map(n => (
                                 <CommandItem
                                     key={n.id}
@@ -350,10 +350,10 @@ export function SeaCommandTorrentMagnet() {
                             <div className="px-2 pb-2 space-y-1">
                                 {magnet && (
                                     <div className="flex items-center gap-2 line-clamp-2">
-                                        <span className="text-sm text-[--muted] flex-none">
+                                        <span className="text-sm text-(--muted) flex-none">
                                             Magnet link:
                                         </span>
-                                        <span className="text-sm text-[--foreground]">
+                                        <span className="text-sm text-(--foreground)">
                                             {magnet}
                                         </span>
                                     </div>
@@ -381,12 +381,12 @@ export function SeaCommandTorrentMagnet() {
                             {/*    </CommandItem>*/}
                             {/*)}*/}
 
-                            {(isEntryLoading || isEpisodeLoading) && <p className="px-2 pb-2 text-sm text-[--muted]">
+                            {(isEntryLoading || isEpisodeLoading) && <p className="px-2 pb-2 text-sm text-(--muted)">
                                 Loading episodes...
                             </p>}
 
                             {!isEntryLoading && !isEpisodeLoading && filteredEpisodes.length === 0 && (
-                                <p className="px-2 pb-2 text-sm text-[--muted]">No episodes found.</p>
+                                <p className="px-2 pb-2 text-sm text-(--muted)">No episodes found.</p>
                             )}
 
                             {filteredEpisodes.map(episode => (
@@ -401,7 +401,7 @@ export function SeaCommandTorrentMagnet() {
                                     <div className="flex gap-1 items-center w-full">
                                         <p className="max-w-[70%] truncate">{episode.displayTitle}</p>
                                         {!!episode.episodeTitle && (
-                                            <p className="text-[--muted] flex-1 truncate">- {episode.episodeTitle}</p>
+                                            <p className="text-(--muted) flex-1 truncate">- {episode.episodeTitle}</p>
                                         )}
                                     </div>
                                 </CommandItem>
@@ -414,10 +414,10 @@ export function SeaCommandTorrentMagnet() {
                             <div className="px-2 pb-2 space-y-1">
                                 {magnet && (
                                     <div className="flex items-center gap-2 line-clamp-2">
-                                        <span className="text-sm text-[--muted] flex-none">
+                                        <span className="text-sm text-(--muted) flex-none">
                                             Magnet link:
                                         </span>
-                                        <span className="text-sm text-[--foreground]">
+                                        <span className="text-sm text-(--foreground)">
                                             {magnet}
                                         </span>
                                     </div>
@@ -425,16 +425,16 @@ export function SeaCommandTorrentMagnet() {
                             </div>
                             <div className="px-2 pb-2 space-y-1 text-sm">
                                 {entry?.media && (
-                                    <div className="text-[--foreground]">{entry.media.title?.userPreferred || entry.media.title?.romaji}</div>
+                                    <div className="text-(--foreground)">{entry.media.title?.userPreferred || entry.media.title?.romaji}</div>
                                 )}
                                 {selectedEpisode && (
-                                    <div className="text-[--muted]">{selectedEpisode.displayTitle}</div>
+                                    <div className="text-(--muted)">{selectedEpisode.displayTitle}</div>
                                 )}
                                 {!canStreamSelectedEpisode && (
-                                    <div className="text-[--muted]">Streaming is unavailable for this episode because AniDB mapping is missing.</div>
+                                    <div className="text-(--muted)">Streaming is unavailable for this episode because AniDB mapping is missing.</div>
                                 )}
                                 {!canDownload && serverStatus?.settings?.torrent?.defaultTorrentClient !== TORRENT_CLIENT.NONE && (
-                                    <div className="text-[--muted]">Download is unavailable because no default destination could be resolved.</div>
+                                    <div className="text-(--muted)">Download is unavailable because no default destination could be resolved.</div>
                                 )}
                             </div>
                             <CommandItem

@@ -13,7 +13,7 @@ export default function Page() {
                 <div className="flex justify-between items-center w-full relative">
                     <div>
                         <h2>Auto Downloader</h2>
-                        <p className="text-[--muted]">
+                        <p className="text-(--muted)">
                             Automatically download new episodes as they are released.
                         </p>
                     </div>

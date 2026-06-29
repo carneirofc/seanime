@@ -100,13 +100,13 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
             size: 10,
             enableSorting: true,
             accessorFn: (row) => getProviderLabel(row.provider),
-            cell: ({ row }) => <span className="text-[--muted] text-sm">{getProviderLabel(row.original.provider)}</span>,
+            cell: ({ row }) => <span className="text-(--muted) text-sm">{getProviderLabel(row.original.provider)}</span>,
         },
         {
             accessorKey: "chapterId",
             header: "Chapter ID",
             size: 20,
-            cell: info => <span className="text-[--muted] text-sm italic">{info.getValue<string>()}</span>,
+            cell: info => <span className="text-(--muted) text-sm italic">{info.getValue<string>()}</span>,
         },
         {
             id: "_actions",
@@ -116,8 +116,8 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
             cell: ({ row }) => {
                 return (
                     <div className="flex justify-end gap-2 items-center w-full">
-                        {row.original.queued && <p className="text-[--muted]">Queued</p>}
-                        {row.original.downloaded && <p className="text-[--muted] px-1"><MdOutlineOfflinePin className="text-2xl" /></p>}
+                        {row.original.queued && <p className="text-(--muted)">Queued</p>}
+                        {row.original.downloaded && <p className="text-(--muted) px-1"><MdOutlineOfflinePin className="text-2xl" /></p>}
 
                         {row.original.downloaded && <IconButton
                             intent="gray-subtle"
@@ -186,7 +186,7 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
         <>
             <h3 className="pt-8">Downloaded chapters</h3>
 
-            <div data-downloaded-chapter-list-container className="space-y-4 rounded-2xl border bg-[--paper] p-4">
+            <div data-downloaded-chapter-list-container className="space-y-4 rounded-2xl border bg-(--paper) p-4">
 
                 <div className="flex flex-wrap items-center gap-4">
                     <Checkbox

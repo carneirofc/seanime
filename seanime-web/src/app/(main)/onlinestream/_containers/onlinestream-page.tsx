@@ -704,7 +704,7 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
                 }}
                 disabled={servers.length <= 1}
                 fieldClass="w-fit"
-                className="rounded-full w-fit !px-4"
+                className="rounded-full w-fit px-4!"
                 addonClass="rounded-full rounded-r-none"
             />}
             <IsomorphicPopover
@@ -718,7 +718,7 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
                     Cache
                 </Button>}
             >
-                <p className="text-sm text-[--muted]">
+                <p className="text-sm text-(--muted)">
                     Empty the cache if you are experiencing issues with the stream.
                 </p>
                 <Button
@@ -738,7 +738,7 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
             <Skeleton className="h-12" />
         </div>
         <div
-            className="grid 2xl:grid-cols-[1fr,450px] gap-4 xl:gap-4"
+            className="grid 2xl:grid-cols-[1fr_450px] gap-4 xl:gap-4"
         >
             <div className="w-full min-h-[70dvh] relative">
                 <Skeleton className="h-full w-full absolute" />
@@ -919,7 +919,7 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
                                         />
                                     )
                                 })}
-                                {!!episodes?.length && <p className="text-center text-[--muted] py-2">End</p>}
+                                {!!episodes?.length && <p className="text-center text-(--muted) py-2">End</p>}
                             </motion.div>
                         ) : (
                             <EpisodePillsGrid
@@ -954,7 +954,7 @@ function IsomorphicPopover
     if (width && width > 1024) {
         return <Popover
             {...rest}
-            className="max-w-xl !w-full overflow-hidden space-y-2"
+            className="max-w-xl w-full! overflow-hidden space-y-2"
         >
             {children}
         </Popover>

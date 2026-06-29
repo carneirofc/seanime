@@ -18,7 +18,7 @@ const HorizontalDraggableScrollAnatomy = defineStyleAnatomy({
         "flex max-w-full w-full space-x-3 overflow-x-scroll scrollbar-hide scroll select-none",
     ]),
     chevronOverlay: cva([
-        "flex flex-none items-center justify-center cursor-pointer hover:text-[--foreground] absolute bg-gradient-to-r from-[--background] z-40",
+        "flex flex-none items-center justify-center cursor-pointer hover:text-(--foreground) absolute bg-linear-to-r from-(--background) z-40",
         "h-full w-16 opacity-90 hover:opacity-100 transition-opacity",
         "data-[state=hidden]:opacity-0 data-[state=hidden]:pointer-events-none",
         "data-[state=visible]:animate-in data-[state=hidden]:animate-out",
@@ -28,8 +28,8 @@ const HorizontalDraggableScrollAnatomy = defineStyleAnatomy({
     ], {
         variants: {
             side: {
-                left: "left-0 bg-gradient-to-r rounded-l-xl",
-                right: "right-0 bg-gradient-to-l rounded-r-xl",
+                left: "left-0 bg-linear-to-r rounded-l-xl",
+                right: "right-0 bg-linear-to-l rounded-r-xl",
             },
         },
     }),

@@ -130,9 +130,9 @@ const FileTreeNodeComponent: React.FC<FileTreeNodeProps> = ({
         <div>
             <div
                 className={cn(
-                    "flex items-center py-1.5 px-2 border border-transparent rounded-[--radius]",
+                    "flex items-center py-1.5 px-2 border border-transparent rounded-(--radius)",
                     node.type === "file" && "cursor-pointer",
-                    node.type === "file" && !isSelected && "hover:bg-[--subtle]",
+                    node.type === "file" && !isSelected && "hover:bg-(--subtle)",
                     isSelected && "bg-white dark:bg-gray-950 border border-gray-400",
                     (hasLikelyMatch && !isSelected && !isLikelyMatch && node.type === "file") && "opacity-60",
                 )}
@@ -150,9 +150,9 @@ const FileTreeNodeComponent: React.FC<FileTreeNodeProps> = ({
                         </span>
                     )}
                     {node.type === "directory" ? (
-                        <FcFolder className="size-5 mr-2 text-[--white] cursor-pointer" />
+                        <FcFolder className="size-5 mr-2 text-(--white) cursor-pointer" />
                     ) : (
-                        <FiFile className="size-5 mr-2 text-[--muted]" />
+                        <FiFile className="size-5 mr-2 text-(--muted)" />
                     )}
                 </div>
 
@@ -164,17 +164,17 @@ const FileTreeNodeComponent: React.FC<FileTreeNodeProps> = ({
                             </p>
                             {isLikelyMatch && (
                                 <p className="flex items-center">
-                                    <MdVerified className="text-[--green] mr-1" />
+                                    <MdVerified className="text-(--green) mr-1" />
                                     <span className="text-white text-sm">Likely match</span>
                                 </p>
                             )}
-                            <p className="font-normal line-clamp-2 text-sm text-[--muted]">{node.filePreview.displayPath}</p>
+                            <p className="font-normal line-clamp-2 text-sm text-(--muted)">{node.filePreview.displayPath}</p>
                         </>
                     ) : (
                         <span
                             className={cn(
                                 "font-medium",
-                                node.type === "directory" ? "text-[--white]" : "cursor-pointer",
+                                node.type === "directory" ? "text-(--white)" : "cursor-pointer",
                             )}
                         >
                             {node.name}
@@ -248,7 +248,7 @@ export const FileTreeSelector: React.FC<FileTreeSelectorProps> = ({
                         />
                     ))
                 ) : debouncedSearchTerm.trim() ? (
-                    <div className="text-center py-8 text-[--muted]">
+                    <div className="text-center py-8 text-(--muted)">
                         <FiSearch className="mx-auto mb-2 size-8 opacity-50" />
                         <p>No files found matching "{debouncedSearchTerm}"</p>
                     </div>
@@ -369,7 +369,7 @@ const FileTreeMultiNodeComponent: React.FC<FileTreeMultiNodeProps> = ({
         <div>
             <div
                 className={cn(
-                    "flex items-center py-1.5 px-2 border rounded-[--radius] cursor-pointer transition-colors",
+                    "flex items-center py-1.5 px-2 border rounded-(--radius) cursor-pointer transition-colors",
                     // File selection styles
                     node.type === "file" && isFileSelected && "border bg-gray-900 text-white",
                     node.type === "file" && !isFileSelected && "border-transparent",
@@ -407,14 +407,14 @@ const FileTreeMultiNodeComponent: React.FC<FileTreeMultiNodeProps> = ({
                     )}
                     {node.type === "directory" ? (
                         <FcFolder
-                            className="size-5 mr-2 text-[--white] cursor-pointer"
+                            className="size-5 mr-2 text-(--white) cursor-pointer"
                             onClick={(e) => {
                                 e.stopPropagation()
                                 toggleOpen(e)
                             }}
                         />
                     ) : (
-                        <FiFile className="size-5 mr-2 text-[--muted]" />
+                        <FiFile className="size-5 mr-2 text-(--muted)" />
                     )}
                 </div>
 
@@ -424,10 +424,10 @@ const FileTreeMultiNodeComponent: React.FC<FileTreeMultiNodeProps> = ({
                             <p className="mb-1 line-clamp-1 font-medium">
                                 {node.filePreview.displayTitle}
                             </p>
-                            <p className="font-normal line-clamp-2 text-sm text-[--muted]">{node.filePreview.displayPath}</p>
+                            <p className="font-normal line-clamp-2 text-sm text-(--muted)">{node.filePreview.displayPath}</p>
                         </>
                     ) : (
-                        <span className="font-medium text-[--white]">
+                        <span className="font-medium text-(--white)">
                             {node.name}
                         </span>
                     )}
@@ -503,7 +503,7 @@ export const FileTreeMultiSelector: React.FC<FileTreeMultiSelectorProps> = ({
                         />
                     ))
                 ) : debouncedSearchTerm.trim() ? (
-                    <div className="text-center py-8 text-[--muted]">
+                    <div className="text-center py-8 text-(--muted)">
                         <FiSearch className="mx-auto mb-2 size-8 opacity-50" />
                         <p>No files found matching "{debouncedSearchTerm}"</p>
                     </div>

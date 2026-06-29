@@ -22,7 +22,7 @@ export const DateRangePickerAnatomy = defineStyleAnatomy({
     ]),
     placeholder: cva([
         "UI-DateRangePicker__placeholder",
-        "text-[--muted]",
+        "text-(--muted)",
     ]),
 })
 
@@ -175,7 +175,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
             selected={date}
             onSelect={handleOnSelect}
             locale={locale}
-            initialFocus
+            autoFocus
             monthGridClass="w-auto mx-auto"
             numberOfMonths={2}
         />

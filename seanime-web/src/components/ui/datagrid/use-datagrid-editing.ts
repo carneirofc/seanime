@@ -1,7 +1,7 @@
 import { Row, Table } from "@tanstack/react-table"
 import equal from "fast-deep-equal"
 import * as React from "react"
-import { AnyZodObject, ZodIssue } from "zod"
+import { ZodIssue, ZodObject } from "zod"
 import { DataGridEditingValueUpdater } from "./datagrid-cell-input-field"
 
 
@@ -47,7 +47,7 @@ type Props<T extends Record<string, any>> = {
     onDataChange: React.Dispatch<React.SetStateAction<T[]>>
     optimisticUpdatePrimaryKey: string | undefined
     manualPagination: boolean
-    schema: AnyZodObject | undefined
+    schema: ZodObject<any> | undefined
     onRowValidationError: DataGridOnRowValidationError<T> | undefined
 }
 
@@ -248,7 +248,7 @@ export function useDataGridEditing<T extends Record<string, any>>(props: Props<T
                 } else {
 
 
-                    parsed.error.errors.map(error => {
+                    parsed.error.issues.map(error => {
                         setRowErrors(prev => [
                             ...prev,
                             { rowId: row.id, key: String(error.path[0]), message: error.message },
@@ -260,7 +260,7 @@ export function useDataGridEditing<T extends Record<string, any>>(props: Props<T
                             data: rowData,
                             originalData: row.original,
                             row: row,
-                            errors: parsed.error.errors,
+                            errors: parsed.error.issues,
                         })
                     }
                 }

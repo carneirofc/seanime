@@ -85,7 +85,7 @@ function HeaderCarouselDots({ className }: HeaderCarouselDotsProps) {
     return (
         <div
             className={cn(
-                "hidden lg:flex items-center gap-2 z-[10] pl-8 max-w-[20rem] flex-wrap top-[4.5rem]",
+                "hidden lg:flex items-center gap-2 z-10 pl-8 max-w-[20rem] flex-wrap top-18",
                 className,
             )}
         >
@@ -94,7 +94,7 @@ function HeaderCarouselDots({ className }: HeaderCarouselDotsProps) {
                     key={index}
                     className={cn(
                         "h-1.5 rounded-sm transition-all duration-300 cursor-pointer",
-                        index === currentIndex ? "w-6 bg-[--muted]" : "w-3 bg-[--subtle] hover:bg-gray-300",
+                        index === currentIndex ? "w-6 bg-(--muted)" : "w-3 bg-(--subtle) hover:bg-gray-300",
                     )}
                     onClick={() => {
                         setCurrentIndex(index)
@@ -119,25 +119,25 @@ function BannerImage({ media, isTransitioning, shouldBlurBanner, showTrailer, tr
         <div
             data-discover-page-header-banner-image
             className={cn(
-                "lg:h-[35rem] w-full flex-none object-cover object-center absolute top-0 bg-[--background]",
+                "lg:h-140 w-full flex-none object-cover object-center absolute top-0 bg-(--background)",
                 !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
-                __isDesktop__ && "top-[-2rem]",
-                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-[30rem]",
+                __isDesktop__ && "-top-8",
+                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-120",
             )}
         >
             {/* Gradients */}
-            <div className="w-full z-[2] absolute bottom-[-10rem] h-[10rem] bg-gradient-to-b from-[--background] via-transparent via-100% to-transparent" />
-            <div className="w-full absolute z-[2] top-0 h-[10rem] opacity-50 bg-gradient-to-b from-[--background] to-transparent" />
+            <div className="w-full z-2 absolute -bottom-40 h-40 bg-linear-to-b from-(--background) via-transparent via-100% to-transparent" />
+            <div className="w-full absolute z-2 top-0 h-40 opacity-50 bg-linear-to-b from-(--background) to-transparent" />
             <div
                 className={cn(
-                    "opacity-0 duration-1000 bg-[var(--background)] w-full h-full absolute z-[2]",
+                    "opacity-0 duration-1000 bg-(--background) w-full h-full absolute z-2",
                     isTransitioning && "opacity-70",
                 )}
             />
 
             {/* Banner Image */}
             <AnimatePresence>
-                <div className="w-full h-full absolute z-[1] overflow-hidden">
+                <div className="w-full h-full absolute z-1 overflow-hidden">
                     {bannerImage && (
                         <MotionImage
                             src={bannerImage}
@@ -146,7 +146,7 @@ function BannerImage({ media, isTransitioning, shouldBlurBanner, showTrailer, tr
                             quality={100}
                             priority
                             className={cn(
-                                "object-cover object-center z-[1] transition-all duration-1000",
+                                "object-cover object-center z-1 transition-all duration-1000",
                                 isTransitioning && "scale-[1.01] -translate-x-0.5",
                                 !isTransitioning && "scale-100 translate-x-0",
                                 !media?.bannerImage && "opacity-35",
@@ -161,7 +161,7 @@ function BannerImage({ media, isTransitioning, shouldBlurBanner, showTrailer, tr
             {(showTrailer && trailerId && trailerSite === "youtube") && (
                 <div
                     className={cn(
-                        "absolute w-full h-full overflow-hidden z-[1]",
+                        "absolute w-full h-full overflow-hidden z-1",
                         !trailerLoaded && "opacity-0",
                     )}
                 >
@@ -192,19 +192,19 @@ function BannerImage({ media, isTransitioning, shouldBlurBanner, showTrailer, tr
             )}
 
             {shouldBlurBanner && (
-                <div className="absolute top-0 w-full h-full backdrop-blur-2xl z-[2]" />
+                <div className="absolute top-0 w-full h-full backdrop-blur-2xl z-2" />
             )}
 
             <div
                 className={cn(
-                    "hidden lg:block max-w-[80rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] from-20% via-[--background] transition-opacity via-opacity-50 via-5% to-transparent",
+                    "hidden lg:block max-w-7xl w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) from-20% via-(--background) transition-opacity via-opacity-50 via-5% to-transparent",
                     "opacity-70 duration-500",
                 )}
             />
 
             {/*<div*/}
             {/*    className={cn(*/}
-            {/*        "hidden lg:block max-w-[60rem] w-[calc(100%_-_10rem)] z-[2] h-full absolute -right-[10rem] &-right-[25rem] &-bottom-[10rem] bg-gradient-to-l from-[--background] &rotate-45 via-[--background] via-opacity-50 via-5% transition-opacity to-transparent",*/}
+            {/*        "hidden lg:block max-w-240 w-[calc(100%-10rem)] z-2 h-full absolute -right-40 &-right-[25rem] &-bottom-[10rem] bg-linear-to-l from-(--background) &rotate-45 via-(--background) via-opacity-50 via-5% transition-opacity to-transparent",*/}
             {/*        "opacity-100 duration-500",*/}
             {/*    )}*/}
             {/*/>*/}
@@ -212,13 +212,13 @@ function BannerImage({ media, isTransitioning, shouldBlurBanner, showTrailer, tr
             {!ts.disableSidebarTransparency && (
                 <div
                     className={cn(
-                        "hidden lg:block max-w-[10rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] via-[--background] transition-opacity via-opacity-50 via-5% to-transparent",
+                        "hidden lg:block max-w-40 w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) via-(--background) transition-opacity via-opacity-50 via-5% to-transparent",
                         "opacity-70 duration-500",
                     )}
                 />
             )}
 
-            <div className="w-full z-[2] absolute bottom-0 h-[20rem] bg-gradient-to-t from-[--background] via-[--background] via-opacity-50 via-10% to-transparent" />
+            <div className="w-full z-2 absolute bottom-0 h-80 bg-linear-to-t from-(--background) via-(--background) via-opacity-50 via-10% to-transparent" />
         </div>
     )
 }
@@ -254,7 +254,7 @@ function MediaMetadata({ media, pageType, isTransitioning, onHoverChange }: Medi
             >
                 <SeaLink href={pageType === "manga" ? `/manga/entry?id=${media.id}` : `/entry?id=${media.id}`}>
                     {media.coverImage?.large && (
-                        <div className="w-[180px] h-[280px] relative rounded-[--radius-md] overflow-hidden bg-[--background] shadow-md">
+                        <div className="w-[180px] h-[280px] relative rounded-md overflow-hidden bg-(--background) shadow-md">
                             <SeaImage
                                 src={media.coverImage.large}
                                 alt="cover image"
@@ -273,14 +273,14 @@ function MediaMetadata({ media, pageType, isTransitioning, onHoverChange }: Medi
             </motion.div>
 
             <motion.div
-                className="flex-auto space-y-2 z-[1]"
+                className="flex-auto space-y-2 z-1"
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
             >
                 <SeaLink href={pageType === "manga" ? `/manga/entry?id=${media.id}` : `/entry?id=${media.id}`}>
                     <TextGenerateEffect
-                        className="[text-shadow:_0_1px_10px_rgb(0_0_0_/_20%)] text-white leading-8 line-clamp-2 pb-1 max-w-md text-pretty text-3xl overflow-ellipsis"
+                        className="[text-shadow:0_1px_10px_rgb(0_0_0/20%)] text-white leading-8 line-clamp-2 pb-1 max-w-md text-pretty text-3xl text-ellipsis"
                         words={media.title?.userPreferred || ""}
                     />
                 </SeaLink>
@@ -443,10 +443,10 @@ export function DiscoverPageHeader({ playTrailer }: { playTrailer?: boolean }) {
     if (!randomTrending) return <div>
         <Skeleton
             className={cn(
-                "lg:h-[35rem] w-full flex-none object-cover object-center absolute top-0 lg-[5rem]",
+                "lg:h-140 w-full flex-none object-cover object-center absolute top-0 lg-[5rem]",
                 !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
-                __isDesktop__ && "top-[-2rem]",
-                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-[30rem]",
+                __isDesktop__ && "-top-8",
+                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-120",
             )}
         />
     </div>
@@ -455,10 +455,10 @@ export function DiscoverPageHeader({ playTrailer }: { playTrailer?: boolean }) {
         <motion.div
             data-discover-page-header
             className={cn(
-                "__header lg:h-[28rem] overflow-hidden",
-                ts.hideTopNavbar && "lg:h-[32rem]",
-                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-[24rem]",
-                (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "lg:h-[28rem]",
+                "__header lg:h-112 overflow-hidden",
+                ts.hideTopNavbar && "lg:h-128",
+                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-96",
+                (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "lg:h-112",
             )}
             {...{
                 initial: { opacity: 0 },
@@ -478,11 +478,11 @@ export function DiscoverPageHeader({ playTrailer }: { playTrailer?: boolean }) {
 
             <div
                 className={cn(
-                    "absolute left-2 w-fit h-[20rem] bg-gradient-to-t z-[3] hidden lg:block",
-                    "top-[5rem]",
-                    ts.hideTopNavbar && "top-[4rem]",
-                    (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-[0rem]",
-                    (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-[2rem]",
+                    "absolute left-2 w-fit h-80 bg-linear-to-t z-3 hidden lg:block",
+                    "top-20",
+                    ts.hideTopNavbar && "top-16",
+                    (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-0",
+                    (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-8",
                 )}
                 data-media-id={randomTrending.id}
                 data-media-mal-id={randomTrending.idMal}

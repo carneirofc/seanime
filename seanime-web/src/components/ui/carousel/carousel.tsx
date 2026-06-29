@@ -35,7 +35,7 @@ export const CarouselAnatomy = defineStyleAnatomy({
             { gap: "lg", orientation: "horizontal", className: "-ml-6" },
             { gap: "xl", orientation: "horizontal", className: "-ml-8" },
             /**/
-            { gap: "none", orientation: "vertical", className: "-mt-0 flex-col" },
+            { gap: "none", orientation: "vertical", className: "mt-0 flex-col" },
             { gap: "sm", orientation: "vertical", className: "-mt-2 flex-col" },
             { gap: "md", orientation: "vertical", className: "-mt-4 flex-col" },
             { gap: "lg", orientation: "vertical", className: "-mt-6 flex-col" },
@@ -66,7 +66,7 @@ export const CarouselAnatomy = defineStyleAnatomy({
     }),
     button: cva([
         "UI-Carousel__button",
-        "rounded-full z-[10]",
+        "rounded-full z-10",
     ], {
         variants: {
             placement: { previous: null, next: null },
@@ -254,7 +254,7 @@ export function CarouselButtons(props: CarouselButtonsProps) {
 
     return (
         <>
-            {scrollSnaps.length > 30 && <div className={cn("flex gap-2 absolute top-[-2rem] right-0", containerClass)}>
+            {scrollSnaps.length > 30 && <div className={cn("flex gap-2 absolute -top-8 right-0", containerClass)}>
                 <CarouselPrevious />
                 <CarouselNext />
             </div>}
@@ -439,7 +439,7 @@ const DotButton = (props: React.ComponentPropsWithoutRef<"div">) => {
             {/* {children} */}
             <div
                 className={cn(
-                    "cursor-pointer w-full lg:h-2 lg:group-hover/dot-button:h-3 transition-all duration-300 rounded-full bg-gray-600 dark:bg-opacity-50",
+                    "cursor-pointer w-full lg:h-2 lg:group-hover/dot-button:h-3 transition-all duration-300 rounded-full bg-gray-600 dark:bg-gray-600/50",
                     className)} {...rest} />
         </div>
     )
@@ -490,7 +490,7 @@ export const CarouselDotButtons = (props: { className?: string, flag?: any }) =>
 
     return (
         <div
-            className={cn("absolute -top-8 right-0 hidden md:flex items-center z-[10]", props.className)}
+            className={cn("absolute -top-8 right-0 hidden md:flex items-center z-10", props.className)}
             onMouseEnter={stopAutoScroll}
             onMouseLeave={resumeAutoScroll}
         >
@@ -500,7 +500,7 @@ export const CarouselDotButtons = (props: { className?: string, flag?: any }) =>
                     onClick={() => onDotButtonClick(index)}
                     className={cn(
                         { "bg-white": index === selectedIndex },
-                        { "size-4 [&:nth-child(odd)]:hidden": scrollSnaps.length > 30 },
+                        { "size-4 odd:hidden": scrollSnaps.length > 30 },
                     )}
                 />
             ))}
@@ -517,8 +517,8 @@ export const CarouselMasks = () => {
 
     return (
         <>
-            <div className="absolute hidden md:block left-0 h-full w-8 bg-gradient-to-r from-[--background] to-transparent z-[1]" />
-            <div className="absolute hidden md:block right-0 h-full w-8 bg-gradient-to-l from-[--background] to-transparent z-[1]" />
+            <div className="absolute hidden md:block left-0 h-full w-8 bg-linear-to-r from-(--background) to-transparent z-1" />
+            <div className="absolute hidden md:block right-0 h-full w-8 bg-linear-to-l from-(--background) to-transparent z-1" />
         </>
     )
 }

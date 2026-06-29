@@ -101,12 +101,12 @@ export function ElectronWindowTitleBar(props: ElectronWindowTitleBarProps) {
         <>
             {/*{(currentPlatform === "win32" && showControls && !videoCore_isFullscreen) && (*/}
             {/*    <div*/}
-            {/*        className="__electron-window-title-bar scroll-locked-offset fixed top-0 right-0 h-10 z-[9999] flex items-center justify-end pointer-events-none"*/}
+            {/*        className="__electron-window-title-bar scroll-locked-offset fixed top-0 right-0 h-10 z-9999 flex items-center justify-end pointer-events-none"*/}
             {/*        style={{ WebkitAppRegion: "no-drag" } as any}*/}
             {/*    >*/}
-            {/*        <div className="flex h-10 items-center justify-center gap-1 mr-2 !cursor-default pointer-events-auto">*/}
+            {/*        <div className="flex h-10 items-center justify-center gap-1 mr-2 cursor-default! pointer-events-auto">*/}
             <div
-                className="__electron-window-title-bar scroll-locked-offset bg-transparent fixed top-0 left-0 h-10 z-[9999] w-full bg-opacity-90 flex pointer-events-[all]"
+                className="__electron-window-title-bar scroll-locked-offset bg-transparent fixed top-0 left-0 h-10 z-9999 w-full flex pointer-events-[all]"
                 style={{
                     pointerEvents: "all",
                 }}
@@ -114,21 +114,21 @@ export function ElectronWindowTitleBar(props: ElectronWindowTitleBarProps) {
                 {displayDragRegion &&
                     <div className="flex flex-1 cursor-grab active:cursor-grabbing" style={{ WebkitAppRegion: "drag" } as any}></div>}
                 {(currentPlatform === "win32" && showControls && !videoCore_isFullscreen) &&
-                    <div className="flex h-10 items-center justify-center gap-1 mr-2 !cursor-default">
+                    <div className="flex h-10 items-center justify-center gap-1 mr-2 cursor-default!">
                         <IconButton
-                            className="outline-none !border-0 w-11 size-8 rounded-lg duration-0 shadow-none text-white hover:text-white bg-transparent hover:bg-[rgba(255,255,255,0.05)] active:text-white active:bg-[rgba(255,255,255,0.1)]"
+                            className="outline-none border-0! w-11 size-8 rounded-lg duration-0 shadow-none text-white hover:text-white bg-transparent hover:bg-[rgba(255,255,255,0.05)] active:text-white active:bg-[rgba(255,255,255,0.1)]"
                             icon={<VscChromeMinimize className="text-[0.95rem]" />}
                             onClick={handleMinimize}
                             tabIndex={-1}
                         />
                         <IconButton
-                            className="outline-none !border-0 w-11 size-8 rounded-lg duration-0 shadow-none text-white hover:text-white bg-transparent hover:bg-[rgba(255,255,255,0.05)] active:text-white active:bg-[rgba(255,255,255,0.1)]"
+                            className="outline-none border-0! w-11 size-8 rounded-lg duration-0 shadow-none text-white hover:text-white bg-transparent hover:bg-[rgba(255,255,255,0.05)] active:text-white active:bg-[rgba(255,255,255,0.1)]"
                             icon={maximized ? <VscChromeRestore className="text-[0.95rem]" /> : <VscChromeMaximize className="text-[0.95rem]" />}
                             onClick={toggleMaximized}
                             tabIndex={-1}
                         />
                         <IconButton
-                            className="outline-none !border-0 w-11 size-8 rounded-lg duration-0 shadow-none text-white hover:text-white bg-transparent hover:bg-red-500 active:bg-red-600 active:text-white"
+                            className="outline-none border-0! w-11 size-8 rounded-lg duration-0 shadow-none text-white hover:text-white bg-transparent hover:bg-red-500 active:bg-red-600 active:text-white"
                             icon={<VscChromeClose className="text-[0.95rem]" />}
                             onClick={handleClose}
                             tabIndex={-1}

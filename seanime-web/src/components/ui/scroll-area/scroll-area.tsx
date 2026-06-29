@@ -15,7 +15,7 @@ export const ScrollAreaAnatomy = defineStyleAnatomy({
     viewport: cva([
         "UI-ScrollArea__viewport",
         "h-full w-full rounded-[inherit]",
-        "[&>div]:!block",
+        "[&>div]:block!",
     ]),
     scrollbar:
         cva([
@@ -24,8 +24,8 @@ export const ScrollAreaAnatomy = defineStyleAnatomy({
         ], {
             variants: {
                 orientation: {
-                    vertical: "h-full w-2.5 border-l border-l-transparent p-[1px]",
-                    horizontal: "h-2.5 flex-col border-t border-t-transparent p-[1px]",
+                    vertical: "h-full w-2.5 border-l border-l-transparent p-px",
+                    horizontal: "h-2.5 flex-col border-t border-t-transparent p-px",
                 },
             },
             defaultVariants: {
@@ -34,7 +34,7 @@ export const ScrollAreaAnatomy = defineStyleAnatomy({
         }),
     thumb: cva([
         "UI-ScrollArea__thumb",
-        "relative flex-1 rounded-full bg-[--border]",
+        "relative flex-1 rounded-full bg-(--border)",
     ]),
 })
 

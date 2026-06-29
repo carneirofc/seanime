@@ -37,7 +37,7 @@ export function TopNavbar(props: TopNavbarProps) {
             <div
                 data-top-navbar
                 className={cn(
-                    "w-full h-[5rem] relative overflow-hidden flex items-center",
+                    "w-full h-20 relative overflow-hidden flex items-center",
                     (ts.hideTopNavbar || __isDesktop__) && "lg:hidden",
                     // __isDesktop__ && "absolute top-0 left-0 z-[-1]"
                 )}
@@ -54,7 +54,7 @@ export function TopNavbar(props: TopNavbarProps) {
                     // className="relative z-10 px-4 w-full flex flex-row md:items-center overflow-x-auto overflow-y-hidden pointer-events-auto"
 
                 >
-                    <div data-top-navbar-content className="flex items-center w-full gap-3 z-[90]" style={{ WebkitAppRegion: "no-drag" } as any}>
+                    <div data-top-navbar-content className="flex items-center w-full gap-3 z-90" style={{ WebkitAppRegion: "no-drag" } as any}>
                         <AppSidebarTrigger />
                         {!isOffline ? <TopMenu /> : <OfflineTopMenu />}
                         <PlaybackManagerProgressTrackingButton />

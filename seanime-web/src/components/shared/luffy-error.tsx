@@ -22,7 +22,7 @@ export const LuffyError: React.FC<LuffyErrorProps> = (props) => {
             <div data-luffy-error className={cn("w-full flex flex-col items-center mt-10 space-y-4", className)}>
                 {<div
                     data-luffy-error-image-container
-                    className={cn("size-[8rem] mx-auto flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden",
+                    className={cn("size-32 mx-auto flex-none rounded-md object-cover object-center relative overflow-hidden",
                         imageContainerClass)}
                 >
                     <SeaImage

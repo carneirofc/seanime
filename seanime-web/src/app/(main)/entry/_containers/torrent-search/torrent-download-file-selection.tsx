@@ -175,7 +175,7 @@ export function TorrentDownloadFileSelection({ entry }: { entry: Anime_Entry }) 
 
                             <ScrollArea
                                 viewportRef={scrollRef}
-                                className="h-[60dvh] lg:h-[50dvh] overflow-y-auto p-4 border rounded-[--radius-md]"
+                                className="h-[60dvh] lg:h-[50dvh] overflow-y-auto p-4 border rounded-md"
                             >
                                 <FileTreeMultiSelector
                                     filePreviews={filePreviews}
@@ -185,7 +185,7 @@ export function TorrentDownloadFileSelection({ entry }: { entry: Anime_Entry }) 
                                 />
                             </ScrollArea>
 
-                            <div className="text-sm text-[--muted] mb-2">
+                            <div className="text-sm text-(--muted) mb-2">
                                 {selectedFileIndices.length} of {filePreviews.length} files selected
                             </div>
 

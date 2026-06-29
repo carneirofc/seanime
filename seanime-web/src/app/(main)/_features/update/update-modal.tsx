@@ -97,7 +97,7 @@ export function UpdateModal(props: UpdateModalProps) {
                 <div className="space-y-2">
                     <h3 className="text-center">A new update is available!</h3>
                     <h4 className="font-bold flex gap-2 text-center items-center justify-center">
-                        <span className="text-[--muted]">{updateData?.current_version}</span> <FiArrowRight />
+                        <span className="text-(--muted)">{updateData?.current_version}</span> <FiArrowRight />
                         <span className="text-indigo-200">{updateData?.release?.version}</span></h4>
 
                     {serverStatus?.isDesktopSidecar && <Alert
@@ -107,7 +107,7 @@ export function UpdateModal(props: UpdateModalProps) {
 
                     <UpdateChangelogBody updateData={updateData} />
 
-                    <div className="flex gap-2 w-full items-center !mt-4">
+                    <div className="flex gap-2 w-full items-center mt-4!">
                         {!serverStatus?.isDesktopSidecar && <Modal
                             trigger={<Button leftIcon={<GrInstall className="text-2xl" />}>
                                 Update now
@@ -186,13 +186,13 @@ export function Downloader(props: DownloaderProps) {
                         "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent",
                     )}
                     itemIndicatorClass="hidden"
-                    itemLabelClass="font-normal tracking-wide line-clamp-1 truncate flex flex-col items-center data-[state=checked]:text-[--brand] cursor-pointer"
+                    itemLabelClass="font-normal tracking-wide line-clamp-1 truncate flex flex-col items-center data-[state=checked]:text-(--brand) cursor-pointer"
                     itemContainerClass={cn(
-                        "items-start cursor-pointer transition border-transparent rounded-[--radius] py-1.5 px-2 w-full",
-                        "bg-gray-50 hover:bg-[--subtle] dark:bg-gray-900",
+                        "items-start cursor-pointer transition border-transparent rounded-(--radius) py-1.5 px-2 w-full",
+                        "bg-gray-50 hover:bg-(--subtle) dark:bg-gray-900",
                         "data-[state=checked]:bg-white dark:data-[state=checked]:bg-gray-950",
-                        "focus:ring-2 ring-transparent dark:ring-transparent outline-none ring-offset-1 ring-offset-[--background] focus-within:ring-2 transition",
-                        "border border-transparent data-[state=checked]:border-[--brand] data-[state=checked]:ring-offset-0",
+                        "focus:ring-2 ring-transparent dark:ring-transparent outline-none ring-offset-1 ring-offset-(--background) focus-within:ring-2 transition",
+                        "border border-transparent data-[state=checked]:border-(--brand) data-[state=checked]:ring-offset-0",
                     )}
                     value={asset}
                     onValueChange={v => !!v ? setAsset(v) : {}}

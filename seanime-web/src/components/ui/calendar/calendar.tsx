@@ -57,7 +57,7 @@ export const CalendarAnatomy = defineStyleAnatomy({
     ]),
     weekday: cva([
         "UI-Calendar__weekday",
-        "text-[--muted] rounded-[--radius] w-9 font-normal text-[0.8rem]",
+        "text-(--muted) rounded-(--radius) w-9 font-normal text-[0.8rem]",
     ]),
     week: cva([
         "UI-Calendar__week",
@@ -66,11 +66,11 @@ export const CalendarAnatomy = defineStyleAnatomy({
     day: cva([
         "UI-Calendar__day",
         "h-9 w-9 text-center text-sm p-0 relative",
-        "[&:has([aria-selected].range_end)]:rounded-r-[--radius]",
-        "[&:has([aria-selected].outside)]:bg-[--subtle]/50",
-        "[&:has([aria-selected])]:bg-[--subtle]",
-        "first:[&:has([aria-selected])]:rounded-l-[--radius]",
-        "last:[&:has([aria-selected])]:rounded-r-[--radius]",
+        "[&:has([aria-selected].range_end)]:rounded-r-(--radius)",
+        "[&:has([aria-selected].outside)]:bg-(--subtle)/50",
+        "has-aria-[selected]:bg-(--subtle)",
+        "first:has-aria-[selected]:rounded-l-(--radius)",
+        "last:has-aria-[selected]:rounded-r-(--radius)",
         "focus-within:relative focus-within:z-20",
     ]),
     dayButton: cva([
@@ -83,26 +83,26 @@ export const CalendarAnatomy = defineStyleAnatomy({
     selected: cva([
         "UI-Calendar__selected",
         "bg-brand text-white hover:bg-brand hover:text-white",
-        "focus:bg-brand focus:text-white rounded-[--radius] font-semibold",
+        "focus:bg-brand focus:text-white rounded-(--radius) font-semibold",
     ]),
     today: cva([
         "UI-Calendar__today",
-        "bg-[--subtle] text-[--foreground] rounded-[--radius]",
+        "bg-(--subtle) text-(--foreground) rounded-(--radius)",
     ]),
     outside: cva([
         "UI-Calendar__outside",
-        "!text-[--muted] opacity-20",
+        "text-(--muted)! opacity-20",
         "aria-selected:bg-transparent",
         "aria-selected:opacity-30",
     ]),
     disabled: cva([
         "UI-Calendar__disabled",
-        "text-[--muted] opacity-30",
+        "text-(--muted) opacity-30",
     ]),
     range_middle: cva([
         "UI-Calendar__range_middle",
-        "aria-selected:bg-[--subtle]",
-        "aria-selected:text-[--foreground]",
+        "aria-selected:bg-(--subtle)",
+        "aria-selected:text-(--foreground)",
     ]),
     hidden: cva([
         "UI-Calendar__hidden",

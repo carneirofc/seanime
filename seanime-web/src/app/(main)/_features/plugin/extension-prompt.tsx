@@ -108,16 +108,16 @@ export function ExtensionPrompt() {
                 event.preventDefault()
                 handleShake()
             }}
-            overlayClass="z-[100] bg-gray-950/70"
+            overlayClass="z-100 bg-gray-950/70"
             contentClass={cn(
-                "extension-prompt-content max-w-[30rem] gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl select-none",
-                "sm:rounded-[2rem]",
+                "extension-prompt-content max-w-120 gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl select-none",
+                "sm:rounded-4xl",
             )}
         >
             <div ref={frameRef} className="grid gap-0">
                 <div className="px-8 pb-6 pt-8">
                     <div className="mb-6 flex items-center gap-3 relative w-fit">
-                        <div className="grid size-16 place-items-center rounded-xl border bg-gradient-to-br text-white shadow-md">
+                        <div className="grid size-16 place-items-center rounded-xl border bg-linear-to-br text-white shadow-md">
                             <Icon className="size-8" />
                         </div>
                         {!!prompt.extension?.icon && (
@@ -129,7 +129,7 @@ export function ExtensionPrompt() {
                         )}
                     </div>
 
-                    <p className="text-sm text-[--muted] mb-2 text-pretty break-all">
+                    <p className="text-sm text-(--muted) mb-2 text-pretty break-all">
                         {prompt.extension?.name || "An extension"} would like to perform the following action{!!prompt.resource
                         ? ` on "${prompt.resource}"`
                         : ""}:
@@ -137,7 +137,7 @@ export function ExtensionPrompt() {
 
                     <p
                         className={cn(
-                            "text-pretty text-2xl font-semibold leading-[1.15] tracking-normal break-words",
+                            "text-pretty text-2xl font-semibold leading-[1.15] tracking-normal wrap-break-word",
                             title.length > 60 ? "text-lg leading-snug" : "text-2xl",
                         )}
                     >
@@ -151,7 +151,7 @@ export function ExtensionPrompt() {
                      )} */}
 
                     {!!prompt.details?.length && (
-                        <div className="mt-5 max-h-32 overflow-y-auto rounded-xl border bg-[--paper] p-3 text-sm max-w-full space-y-1.5 select-text">
+                        <div className="mt-5 max-h-32 overflow-y-auto rounded-xl border bg-(--paper) p-3 text-sm max-w-full space-y-1.5 select-text">
                             {prompt.details.map(detail => (
                                 <div key={detail} className="line-clamp-10 break-all">
                                     {detail}

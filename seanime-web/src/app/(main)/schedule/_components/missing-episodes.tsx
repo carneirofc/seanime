@@ -48,7 +48,7 @@ export function MissingEpisodes({ isLoading, data }: {
                                 {!isLoading && missingEpisodes?.map(episode => {
                                     return <CarouselItem
                                         key={episode?.baseAnime?.id + episode.displayTitle}
-                                        className="md:basis-1/2 lg:basis-1/3 2xl:basis-1/4 min-[2000px]:basis-1/5"
+                                        className="md:basis-1/2 lg:basis-1/3 2xl:basis-1/4 5xl:basis-1/5"
                                     >
                                         <EpisodeCard
                                             key={episode.displayTitle + episode.baseAnime?.id}
@@ -89,13 +89,13 @@ export function MissingEpisodes({ isLoading, data }: {
                         <Accordion
                             type="multiple"
                             defaultValue={[]}
-                            triggerClass="py-2 px-0 dark:hover:bg-transparent text-lg dark:text-[--muted] dark:hover:text-white"
+                            triggerClass="py-2 px-0 dark:hover:bg-transparent text-lg dark:text-(--muted) dark:hover:text-white"
                         >
                             <AccordionItem value="item-1">
                                 <AccordionTrigger>
                                     <p className="flex gap-3 items-center text-lg text-inherit"><LuBellOff /> Silenced episodes</p>
                                 </AccordionTrigger>
-                                <AccordionContent className="bg-gray-950 rounded-[--radius]">
+                                <AccordionContent className="bg-gray-950 rounded-(--radius)">
                                     <Carousel
                                         className="w-full max-w-full"
                                         gap="md"
@@ -110,7 +110,7 @@ export function MissingEpisodes({ isLoading, data }: {
                                                 return (
                                                     <CarouselItem
                                                         key={episode.baseAnime?.id + episode.displayTitle}
-                                                        className="md:basis-1/2 lg:basis-1/3 2xl:basis-1/5 min-[2000px]:basis-1/6"
+                                                        className="md:basis-1/2 lg:basis-1/3 2xl:basis-1/5 5xl:basis-1/6"
                                                     >
                                                         <EpisodeCard
                                                             key={episode.displayTitle + episode.baseAnime?.id}

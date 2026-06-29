@@ -147,7 +147,7 @@ export default function Page() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen text-[--muted]">
+            <div className="flex items-center justify-center min-h-screen text-(--muted)">
                 <p>Loading saved logs...</p>
             </div>
         )
@@ -175,7 +175,7 @@ export default function Page() {
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold text-gray-200 tracking-tight">Scan Log Analyzer</h1>
                         <label
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-[--border] rounded-md cursor-pointer hover:bg-gray-700 transition-colors text-sm text-gray-300"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 border border-(--border) rounded-md cursor-pointer hover:bg-gray-700 transition-colors text-sm text-gray-300"
                         >
                             <BiUpload />
                             <span>{content ? "Load another file" : "Load scan log file"}</span>

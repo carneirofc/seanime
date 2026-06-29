@@ -293,7 +293,7 @@ export const TorrentFilterSortControls: React.FC<{
 
     return (
         <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-[--muted] flex-none">{resultCount} results</p>
+            <p className="text-sm text-(--muted) flex-none">{resultCount} results</p>
             <div className="flex items-center gap-1 flex-wrap">
                 <Popover
                     trigger={<Button
@@ -306,20 +306,20 @@ export const TorrentFilterSortControls: React.FC<{
                         Filters
                     </Button>}
                 >
-                    <p className="text-xs text-[--muted] flex-none pb-2">
+                    <p className="text-xs text-(--muted) flex-none pb-2">
                         Filters are based on torrent names and can miss some results.
                     </p>
                     <div className="space-y-1">
                         <Checkbox
                             label={<div className="flex items-center gap-1">
-                                <PiChatCircleDotsDuotone className="text-lg text-[--blue]" /> Multi Subs
+                                <PiChatCircleDotsDuotone className="text-lg text-(--blue)" /> Multi Subs
                             </div>}
                             value={filters.multiSubs}
                             onValueChange={(value) => onFilterChange("multiSubs", value)}
                         />
                         {/*<Checkbox*/}
                         {/*    label={<div className="flex items-center gap-1">*/}
-                        {/*        <LiaMicrophoneSolid className="text-lg text-[--rose]" /> Dual Audio*/}
+                        {/*        <LiaMicrophoneSolid className="text-lg text-(--rose)" /> Dual Audio*/}
                         {/*    </div>}*/}
                         {/*    value={filters.dualAudio}*/}
                         {/*    onValueChange={(value) => onFilterChange("dualAudio", value)}*/}
@@ -327,12 +327,12 @@ export const TorrentFilterSortControls: React.FC<{
 
                         <Checkbox
                             label={<div className="flex items-center gap-1">
-                                <LiaMicrophoneSolid className="text-lg text-[--red]" /> Dubbed
+                                <LiaMicrophoneSolid className="text-lg text-(--red)" /> Dubbed
                             </div>}
                             value={filters.dubbed}
                             onValueChange={(value) => onFilterChange("dubbed", value)}
                         />
-                        <Separator className="!my-2" />
+                        <Separator className="my-2!" />
                         <div className="grid grid-cols-2 gap-2">
                             <Checkbox
                                 label={<div className="flex items-center gap-1">

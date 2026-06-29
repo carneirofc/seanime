@@ -89,7 +89,7 @@ function Content({ extension, userConfigError }: { extension: Extension_Extensio
                 <p>
                     {extension.name}
                 </p>
-                <div className="text-sm text-[--muted]">
+                <div className="text-sm text-(--muted)">
                     You can edit the preferences for this extension here.
                 </div>
             </div>

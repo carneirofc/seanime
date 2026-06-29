@@ -108,7 +108,7 @@ function RootErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
                 </LuffyError>
 
                 {!!(error as Error)?.message && (
-                    <pre className="max-h-48 overflow-auto rounded-xl bg-black/50 p-3 text-left text-xs text-red-200 whitespace-pre-wrap break-words">
+                    <pre className="max-h-48 overflow-auto rounded-xl bg-black/50 p-3 text-left text-xs text-red-200 whitespace-pre-wrap wrap-break-word">
                         {(error as Error).message}
                     </pre>
                 )}

@@ -137,7 +137,7 @@ export function ElectronRestartServerPrompt() {
     return (
         <>
             {(!isConnected && connectionErrorCount > 2 && connectionErrorCount < threshold && !isUpdating && !isUpdatedInstalled) && (
-                <div className="fixed top-4 left-1/2 z-[9999] -translate-x-1/2 rounded-full border bg-orange-950/85 px-4 py-2 text-sm text-gray-200 shadow-lg backdrop-blur-sm">
+                <div className="fixed top-4 left-1/2 z-9999 -translate-x-1/2 rounded-full border bg-orange-950/85 px-4 py-2 text-sm text-gray-200 shadow-lg backdrop-blur-sm">
                     {isServerUnavailable
                         ? "The background server is not responding. Trying to recover..."
                         : "Reconnecting to the background server..."}
@@ -165,7 +165,7 @@ export function ElectronRestartServerPrompt() {
                         >
                             Restart server
                         </Button>
-                        <p className="text-[--muted] text-sm max-w-xl">
+                        <p className="text-(--muted) text-sm max-w-xl">
                             If this message persists after multiple tries, please relaunch the application.
                         </p>
                     </div>

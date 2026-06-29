@@ -45,7 +45,7 @@ function IsomorphicPopover(props: PopoverProps & ModalProps & { media?: AL_BaseA
     if ((width && width > 1024) && !forceModal) {
         return <Popover
             {...rest}
-            className="max-w-5xl !w-full overflow-hidden bg-gray-950/95 backdrop-blur-sm rounded-xl"
+            className="max-w-5xl w-full! overflow-hidden bg-gray-950/95 backdrop-blur-sm rounded-xl"
         >
             <p className="mb-4 font-semibold text-center px-6 line-clamp-1">
                 {media?.title?.userPreferred}
@@ -62,7 +62,7 @@ function IsomorphicPopover(props: PopoverProps & ModalProps & { media?: AL_BaseA
     >
         {media?.bannerImage && <div
             data-anilist-media-entry-modal-banner-image-container
-            className="h-24 w-full flex-none object-cover object-center overflow-hidden absolute left-0 top-0 z-[0]"
+            className="h-24 w-full flex-none object-cover object-center overflow-hidden absolute left-0 top-0 z-0"
         >
             <SeaImage
                 data-anilist-media-entry-modal-banner-image
@@ -71,11 +71,11 @@ function IsomorphicPopover(props: PopoverProps & ModalProps & { media?: AL_BaseA
                 fill
                 quality={80}
                 sizes="20rem"
-                className="object-cover object-center opacity-5 z-[1]"
+                className="object-cover object-center opacity-5 z-1"
             />
             <div
                 data-anilist-media-entry-modal-banner-image-bottom-gradient
-                className="z-[5] absolute bottom-0 w-full h-[60%] bg-gradient-to-t from-[--background] to-transparent"
+                className="z-5 absolute bottom-0 w-full h-[60%] bg-linear-to-t from-(--background) to-transparent"
             />
         </div>}
         {children}

@@ -133,7 +133,7 @@ function SpotlightOverlay({ rect, onClick }: { rect: Rect; onClick?: (e: React.M
 
     return (
         <svg
-            className="fixed inset-0 z-[9998] pointer-events-auto"
+            className="fixed inset-0 z-9998 pointer-events-auto"
             width={vw}
             height={vh}
             style={{ width: vw, height: vh }}
@@ -183,7 +183,7 @@ function SpotlightOverlay({ rect, onClick }: { rect: Rect; onClick?: (e: React.M
 function ModalOverlay({ onClick }: { onClick?: (e: React.MouseEvent) => void }) {
     return (
         <motion.div
-            className="fixed inset-0 z-[9998] bg-black/70 pointer-events-auto"
+            className="fixed inset-0 z-9998 bg-black/70 pointer-events-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -214,8 +214,8 @@ const TourCard = React.forwardRef<HTMLDivElement, TourCardProps>(
             <motion.div
                 ref={ref}
                 className={cn(
-                    "z-[9999] pointer-events-auto",
-                    "rounded-xl border bg-[--paper] shadow-2xl",
+                    "z-9999 pointer-events-auto",
+                    "rounded-xl border bg-(--paper) shadow-2xl",
                     "flex flex-col overflow-hidden",
                 )}
                 style={{
@@ -240,14 +240,14 @@ const TourCard = React.forwardRef<HTMLDivElement, TourCardProps>(
                         </div>
                     )}
 
-                    <div className="text-sm text-[--muted] leading-relaxed">
+                    <div className="text-sm text-(--muted) leading-relaxed">
                         {step.content}
                     </div>
 
                     {!step.hideControls && (
                         <div className="flex items-center justify-between pt-1 gap-3">
                             {totalSteps > 1 && (
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <div className="flex items-center gap-1.5 shrink-0">
                                     {Array.from({ length: totalSteps }).map((_, i) => (
                                         <span
                                             key={i}
@@ -310,7 +310,7 @@ const TourCard = React.forwardRef<HTMLDivElement, TourCardProps>(
         // transform doesn't conflict with CSS centering
         if (isModal) {
             return (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none">
+                <div className="fixed inset-0 z-9999 flex items-center justify-center pointer-events-none">
                     {content}
                 </div>
             )
@@ -325,7 +325,7 @@ TourCard.displayName = "TourCard"
 function TourLoadingIndicator() {
     return (
         <motion.div
-            className="fixed inset-0 z-[10000] flex items-center justify-center pointer-events-none"
+            className="fixed inset-0 z-10000 flex items-center justify-center pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

@@ -11,7 +11,7 @@ export const InputAnatomy = defineStyleAnatomy({
         "UI-Input__root",
         "flex items-center",
         "w-full rounded-xl",
-        "bg-[--paper] border border-[--border] placeholder-gray-400 dark:placeholder-gray-500",
+        "bg-(--paper) border border-(--border) placeholder-gray-400 dark:placeholder-gray-500",
         "disabled:cursor-not-allowed",
         "data-[disable=true]:shadow-none data-[disable=true]:opacity-50",
         "focus:dark:border-gray-600 focus:ring-[0.5px] focus:ring-inset focus:dark:ring-gray-700",
@@ -74,7 +74,7 @@ export const InputAnatomy = defineStyleAnatomy({
 })
 
 export const hiddenInputStyles = cn(
-    "appearance-none absolute bottom-0 border-0 w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap [clip:rect(0px,0px,0px,0px)] [overflow-wrap:normal]")
+    "appearance-none absolute bottom-0 border-0 w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap [clip:rect(0px,0px,0px,0px)] wrap-normal")
 
 /* -------------------------------------------------------------------------------------------------
  * InputContainer
@@ -124,7 +124,7 @@ export const InputAddonsAnatomy = defineStyleAnatomy({
     icon: cva([
         "UI-Input__addons--icon",
         "pointer-events-none absolute inset-y-0 grid place-content-center text-gray-500",
-        "dark:text-gray-300 !z-[1]",
+        "dark:text-gray-300 z-1!",
     ], {
         variants: {
             size: { sm: "w-10 text-md", md: "w-12 text-lg", lg: "w-14 text-2xl" },
@@ -139,7 +139,7 @@ export const InputAddonsAnatomy = defineStyleAnatomy({
     addon: cva([
         "UI-Input__addons--addon",
         "bg-gray-50 inline-flex items-center flex-none px-3 border border-gray-300 text-gray-800 shadow-sm text-sm sm:text-md",
-        "dark:bg-[--paper] dark:border-[--border] dark:text-gray-300",
+        "dark:bg-(--paper) dark:border-(--border) dark:text-gray-300",
     ], {
         variants: {
             size: { sm: "text-sm", md: "text-md", lg: "text-lg" },

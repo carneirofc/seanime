@@ -113,7 +113,7 @@ export const DirectorySelector = React.memo(React.forwardRef<HTMLInputElement, D
                                     onOpenChange={setLibrarySelectionOpen}
                                     className="w-[400px] p-2 ml-[30px]"
                                     sideOffset={-4}
-                                    trigger={<Button size="sm" intent="gray-link" leftIcon={<HiMiniChevronUpDown />} className="!text-[--muted]">
+                                    trigger={<Button size="sm" intent="gray-link" leftIcon={<HiMiniChevronUpDown />} className="text-(--muted)!">
                                         Change library
                                     </Button>}
                                 >
@@ -141,7 +141,7 @@ export const DirectorySelector = React.memo(React.forwardRef<HTMLInputElement, D
                         onBlur={checkDirectoryExists}
                     />
 
-                    <div className="absolute z-[1] top-0 right-0 flex items-center">
+                    <div className="absolute z-1 top-0 right-0 flex items-center">
                         <BiFolderOpen
                             className="text-2xl cursor-pointer"
                             onClick={selectorState.on}
@@ -187,16 +187,16 @@ export const DirectorySelector = React.memo(React.forwardRef<HTMLInputElement, D
 
                 {(!data?.exists && data?.suggestions && data.suggestions.length > 0) &&
                     <div
-                        className="w-full flex flex-none flex-nowrap overflow-x-auto gap-2 items-center rounded-[--radius-md]"
+                        className="w-full flex flex-none flex-nowrap overflow-x-auto gap-2 items-center rounded-md"
                     >
                         <div className="flex-none">Suggestions:</div>
                         {data.suggestions.map(folder => (
                             <div
                                 key={folder.fullPath}
-                                className="py-1 flex items-center gap-2 text-sm px-3 rounded-[--radius-md] border flex-none cursor-pointer bg-gray-900 hover:bg-gray-800"
+                                className="py-1 flex items-center gap-2 text-sm px-3 rounded-md border flex-none cursor-pointer bg-gray-900 hover:bg-gray-800"
                                 onClick={() => setInput(folder.fullPath)}
                             >
-                                <FiFolder className="w-4 h-4 text-[--brand]" />
+                                <FiFolder className="w-4 h-4 text-(--brand)" />
                                 <span className="break-normal">{folder.folderName}</span>
                             </div>
                         ))}
@@ -205,7 +205,7 @@ export const DirectorySelector = React.memo(React.forwardRef<HTMLInputElement, D
 
                 {(data && !!data?.content?.length) &&
                     <ScrollArea
-                        className="h-60 rounded-[--radius-md] border !mt-0"
+                        className="h-60 rounded-md border mt-0!"
                     >
                         {data.content.map(folder => (
                             <div
@@ -213,7 +213,7 @@ export const DirectorySelector = React.memo(React.forwardRef<HTMLInputElement, D
                                 className="flex items-center gap-2 py-2 px-3 cursor-pointer hover:bg-gray-800"
                                 onClick={() => setInput(folder.fullPath)}
                             >
-                                <FiFolder className="w-4 h-4 text-[--brand]" />
+                                <FiFolder className="w-4 h-4 text-(--brand)" />
                                 <span className="break-normal">{folder.folderName}</span>
                             </div>
                         ))}

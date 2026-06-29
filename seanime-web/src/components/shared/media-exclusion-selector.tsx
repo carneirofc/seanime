@@ -166,14 +166,14 @@ export const MediaExclusionSelector = React.forwardRef<HTMLDivElement, MediaExcl
                 {...rest}
             >
                 <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-4 border rounded-[--radius-md] bg-gray-900">
+                    <div className="flex items-center gap-3 p-4 border rounded-md bg-gray-900">
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-sm font-medium">
                                     {selectedIds.length} anime excluded from sharing
                                 </span>
                                 {selectedIds.length > 0 && (
-                                    <span className="text-xs text-[--muted]">(will not be visible to other clients)</span>
+                                    <span className="text-xs text-(--muted)">(will not be visible to other clients)</span>
                                 )}
                             </div>
 
@@ -197,7 +197,7 @@ export const MediaExclusionSelector = React.forwardRef<HTMLDivElement, MediaExcl
                                         ))}
                                     </div>
                                     {selectedIds.length > 5 && (
-                                        <span className="text-xs text-[--muted]">
+                                        <span className="text-xs text-(--muted)">
                                             +{selectedIds.length - 5} more
                                         </span>
                                     )}
@@ -223,12 +223,12 @@ export const MediaExclusionSelector = React.forwardRef<HTMLDivElement, MediaExcl
                             }
                         >
                             <div className="space-y-4">
-                                <p className="text-[--muted]">
+                                <p className="text-(--muted)">
                                     Select anime that you don't want to share with other clients. Selected anime will not be visible to connected
                                     clients.
                                 </p>
 
-                                <div className="flex items-center gap-2 flex-wrap p-4 bg-[--subtle] rounded-[--radius-md]">
+                                <div className="flex items-center gap-2 flex-wrap p-4 bg-(--subtle) rounded-md">
                                     <Button
                                         type="button"
                                         intent="gray-subtle"
@@ -257,7 +257,7 @@ export const MediaExclusionSelector = React.forwardRef<HTMLDivElement, MediaExcl
                                         Select adult
                                     </Button>
                                     <div className="flex-1" />
-                                    <span className="text-sm text-[--muted]">
+                                    <span className="text-sm text-(--muted)">
                                         {selectedIds.length} selected (will not be shared)
                                     </span>
                                 </div>
@@ -368,7 +368,7 @@ function MediaExclusionItem(props: {
     return (
         <div
             className={cn(
-                "col-span-1 aspect-[6/7] rounded-[--radius-md] overflow-hidden relative bg-[var(--background)] cursor-pointer transition-all select-none group",
+                "col-span-1 aspect-6/7 rounded-md overflow-hidden relative bg-(--background) cursor-pointer transition-all select-none group",
                 disabled && "pointer-events-none opacity-50",
                 isSelected && "ring-2 ring-red-500",
             )}
@@ -381,24 +381,24 @@ function MediaExclusionItem(props: {
                 fill
                 alt=""
                 className={cn(
-                    "object-center object-cover rounded-[--radius-md] transition-opacity",
+                    "object-center object-cover rounded-md transition-opacity",
                     isSelected ? "opacity-50" : "opacity-90 group-hover:opacity-100",
                 )}
             />
 
-            <p className="line-clamp-2 text-sm absolute m-2 bottom-0 font-semibold z-[10] text-white drop-shadow-lg">
+            <p className="line-clamp-2 text-sm absolute m-2 bottom-0 font-semibold z-10 text-white drop-shadow-lg">
                 {entry.media?.title?.userPreferred || entry.media?.title?.romaji}
             </p>
 
             {entry.media?.isAdult && (
-                <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded font-semibold z-[10]">
+                <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded font-semibold z-10">
                     18+
                 </div>
             )}
 
             <div
                 className={cn(
-                    "absolute top-2 right-2 size-6 rounded-full flex items-center justify-center z-[10] transition-all",
+                    "absolute top-2 right-2 size-6 rounded-full flex items-center justify-center z-10 transition-all",
                     isSelected
                         ? "bg-red-500 text-white"
                         : "bg-black/50 text-white/70 group-hover:bg-black/70",
@@ -411,9 +411,9 @@ function MediaExclusionItem(props: {
                 )}
             </div>
 
-            <div className="z-[5] absolute bottom-0 w-full h-[80%] bg-gradient-to-t from-black/80 to-transparent" />
+            <div className="z-5 absolute bottom-0 w-full h-[80%] bg-linear-to-t from-black/80 to-transparent" />
             {!isSelected && (
-                <div className="z-[5] absolute top-0 w-full h-[80%] bg-gradient-to-b from-black/50 to-transparent opacity-100 group-hover:opacity-60 transition-opacity" />
+                <div className="z-5 absolute top-0 w-full h-[80%] bg-linear-to-b from-black/50 to-transparent opacity-100 group-hover:opacity-60 transition-opacity" />
             )}
         </div>
     )

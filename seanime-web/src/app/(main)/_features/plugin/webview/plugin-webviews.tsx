@@ -624,7 +624,7 @@ function WebviewIframe({ webview, onUpdatePosition, onClose }: WebviewIframeProp
             {!!options?.window?.draggable && webview.slot === "fixed" && <div
                 data-plugin-webview-el="drag-handle"
                 onMouseDown={handleMouseDown}
-                className="absolute top-0 left-0 right-0 h-8 cursor-move z-[9999]" // bg-gradient-to-b from-black/20 to-transparent
+                className="absolute top-0 left-0 right-0 h-8 cursor-move z-9999" // bg-linear-to-b from-black/20 to-transparent
                 style={{ pointerEvents: "auto", width: iframeWidth }}
             />}
 

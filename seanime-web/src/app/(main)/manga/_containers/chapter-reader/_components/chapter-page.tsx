@@ -80,14 +80,14 @@ export function ChapterPage(props: ChapterPageProps) {
                 {(isLoading || !isReady) &&
                     <LoadingSpinner
                         data-chapter-page-loading-spinner
-                        containerClass="h-full absolute inset-0 z-[1] w-full mx-auto"
+                        containerClass="h-full absolute inset-0 z-1 w-full mx-auto"
                         style={{ zoom: pageZoom !== 1 ? 1 / pageZoom : undefined }}
                         tabIndex={-1}
                     />}
                 {hasError &&
                     <div
                         data-chapter-page-retry-container
-                        className="h-full w-full flex justify-center items-center absolute inset-0 z-[10]"
+                        className="h-full w-full flex justify-center items-center absolute inset-0 z-10"
                         style={{ zoom: pageZoom !== 1 ? 1 / pageZoom : undefined }}
                         id="retry-container"
                         tabIndex={-1}

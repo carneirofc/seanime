@@ -15,7 +15,7 @@ export function MediaCardBodyBottomGradient() {
         return (
             <div
                 data-media-card-body-bottom-gradient
-                className="z-[5] absolute inset-x-0 -bottom-1 w-full h-[40%] opacity-80 bg-gradient-to-t from-[#0c0c0c] to-transparent"
+                className="z-5 absolute inset-x-0 -bottom-1 w-full h-[40%] opacity-80 bg-linear-to-t from-[#0c0c0c] to-transparent"
             />
         )
     }
@@ -23,7 +23,7 @@ export function MediaCardBodyBottomGradient() {
     return (
         <div
             data-media-card-body-bottom-gradient
-            className="z-[5] absolute inset-x-0 -bottom-1 w-full opacity-90 to-40% h-[50%] bg-gradient-to-t from-[#0c0c0c] to-transparent"
+            className="z-5 absolute inset-x-0 -bottom-1 w-full opacity-90 to-40% h-[50%] bg-linear-to-t from-[#0c0c0c] to-transparent"
         />
     )
 }
@@ -36,14 +36,14 @@ export function EpisodeItemBottomGradient({ isSingleContainer, className }: { is
     // if (!!ts.libraryScreenCustomBackgroundImage || ts.hasCustomBackgroundColor) {
     //     return (
     //         <div
-    //             className="z-[1] absolute inset-x-0 bottom-0 w-full h-full opacity-80 md:h-[60%] bg-gradient-to-t from-[--background]
+    //             className="z-1 absolute inset-x-0 bottom-0 w-full h-full opacity-80 md:h-[60%] bg-linear-to-t from-(--background)
     // to-transparent" /> ) }
 
     if (isSingleContainer) {
         return <div
             data-episode-item-bottom-gradient
             className={cn(
-                "z-[1] absolute inset-x-0 bottom-0 w-full h-full opacity-90 md:h-[80%] bg-gradient-to-t from-[#0c0c0c] to-transparent",
+                "z-1 absolute inset-x-0 bottom-0 w-full h-full opacity-90 md:h-[80%] bg-linear-to-t from-[#0c0c0c] to-transparent",
                 className,
             )}
         />
@@ -52,7 +52,7 @@ export function EpisodeItemBottomGradient({ isSingleContainer, className }: { is
     return <div
         data-episode-item-bottom-gradient
         className={cn(
-            "z-[1] absolute inset-x-0 bottom-0 w-full h-full opacity-50 md:h-[70%] bg-gradient-to-t from-[#0c0c0c] to-transparent",
+            "z-1 absolute inset-x-0 bottom-0 w-full h-full opacity-50 md:h-[70%] bg-linear-to-t from-[#0c0c0c] to-transparent",
             className,
         )}
     />

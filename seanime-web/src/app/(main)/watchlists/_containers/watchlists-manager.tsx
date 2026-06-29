@@ -54,7 +54,7 @@ function EditableTitle(props: { value: string, onChange: (v: string) => void, cl
         <button
             type="button"
             onClick={() => { setDraft(props.value); setEditing(true) }}
-            className={cn("group inline-flex items-center gap-1.5 text-left hover:text-[--brand] transition-colors", props.className)}
+            className={cn("group inline-flex items-center gap-1.5 text-left hover:text-(--brand) transition-colors", props.className)}
         >
             <span className="truncate">{props.value}</span>
             <LuPencil className="size-3.5 opacity-0 group-hover:opacity-60 shrink-0" />
@@ -67,19 +67,19 @@ function WatchlistMediaCard(props: { media: WatchlistMedia, onRemove: () => void
     return (
         <div data-watchlist-media-card className="group relative">
             <SeaLink href={entryLink(media)} className="block">
-                <div className="aspect-[6/8] w-full rounded-lg overflow-hidden bg-gray-900 border border-[--border]">
+                <div className="aspect-6/8 w-full rounded-lg overflow-hidden bg-gray-900 border border-(--border)">
                     {media.image
                         ? <img src={media.image} alt={media.title} className="w-full h-full object-cover" loading="lazy" />
-                        : <div className="w-full h-full flex items-center justify-center text-[--muted] text-xs p-2 text-center">{media.title}</div>}
+                        : <div className="w-full h-full flex items-center justify-center text-(--muted) text-xs p-2 text-center">{media.title}</div>}
                 </div>
                 <p className="text-sm mt-1.5 line-clamp-2 leading-tight">{media.title}</p>
-                <p className="text-xs text-[--muted] capitalize">{media.type}{media.year ? ` • ${media.year}` : ""}</p>
+                <p className="text-xs text-(--muted) capitalize">{media.type}{media.year ? ` • ${media.year}` : ""}</p>
             </SeaLink>
             <IconButton
                 icon={<LuX />}
                 intent="alert"
                 size="sm"
-                className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full !h-7 !w-7"
+                className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full h-7! w-7!"
                 onClick={onRemove}
             />
         </div>
@@ -98,13 +98,13 @@ function WatchlistSection(props: {
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 font-medium min-w-0">
                     <EditableTitle value={watchlist.name} onChange={onRename} />
-                    <span className="text-xs text-[--muted] shrink-0">{watchlist.media.length}</span>
+                    <span className="text-xs text-(--muted) shrink-0">{watchlist.media.length}</span>
                 </div>
                 <IconButton icon={<BiTrash />} intent="alert-subtle" size="sm" onClick={onDelete} />
             </div>
 
             {watchlist.media.length === 0 ? (
-                <p className="text-sm text-[--muted] italic">
+                <p className="text-sm text-(--muted) italic">
                     No media yet. Add anime or manga from their card's right-click menu.
                 </p>
             ) : (
@@ -130,8 +130,8 @@ function GroupingSection(props: {
     const { renameGrouping, deleteGrouping, createWatchlist, renameWatchlist, deleteWatchlist, removeMediaFromWatchlist } = useWatchlists()
 
     return (
-        <div data-watchlist-grouping className="rounded-xl border border-[--border] bg-gray-50 dark:bg-white/[0.02] p-4 sm:p-5 space-y-5">
-            <div className="flex items-center justify-between gap-2 border-b border-[--border] pb-3">
+        <div data-watchlist-grouping className="rounded-xl border border-(--border) bg-gray-50 dark:bg-white/2 p-4 sm:p-5 space-y-5">
+            <div className="flex items-center justify-between gap-2 border-b border-(--border) pb-3">
                 <EditableTitle
                     value={grouping.name}
                     onChange={name => renameGrouping(grouping.id, name)}
@@ -150,7 +150,7 @@ function GroupingSection(props: {
             </div>
 
             {grouping.watchlists.length === 0 && (
-                <p className="text-sm text-[--muted] italic">No watchlists in this grouping yet.</p>
+                <p className="text-sm text-(--muted) italic">No watchlists in this grouping yet.</p>
             )}
 
             <div className="space-y-6">
@@ -207,7 +207,7 @@ export function WatchlistsManager() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
                     <h2 className="text-2xl font-bold">Watchlists</h2>
-                    <p className="text-[--muted] text-sm">
+                    <p className="text-(--muted) text-sm">
                         Organize anime and manga into watchlists, grouped into folders. Stored in this browser.
                     </p>
                 </div>
@@ -219,7 +219,7 @@ export function WatchlistsManager() {
             </div>
 
             {groupings.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-[--border] py-16 text-center text-[--muted]">
+                <div className="rounded-xl border border-dashed border-(--border) py-16 text-center text-(--muted)">
                     <p className="font-medium">No groupings yet</p>
                     <p className="text-sm mt-1">Create a grouping above to start building watchlists.</p>
                 </div>

@@ -84,18 +84,18 @@ export function LibraryHeader({ list }: { list: Anime_Episode[] }) {
             <div
                 data-library-header-container
                 className={cn(
-                    "LIB_HEADER_CONTAINER __header h-[25rem] z-[1] !mt-0 !pt-0 top-0 w-full absolute group/library-header pointer-events-none",
+                    "LIB_HEADER_CONTAINER __header h-100 z-1 mt-0! pt-0! top-0 w-full absolute group/library-header pointer-events-none",
                     // Make it not fixed when the user scrolls down if a background image is set
                     !ts.libraryScreenCustomBackgroundImage && "fixed",
-                    !!ts.libraryScreenCustomBackgroundImage && __isDesktop__ && "top-[-2rem]",
-                    !ts.libraryScreenCustomBackgroundImage && __isDesktop__ && "h-[22rem]",
+                    !!ts.libraryScreenCustomBackgroundImage && __isDesktop__ && "-top-8",
+                    !ts.libraryScreenCustomBackgroundImage && __isDesktop__ && "h-88",
                 )}
             >
 
                 <div
                     data-library-header-banner-top-gradient
                     className={cn(
-                        "w-full z-[3] absolute bottom-[-10rem] h-[10rem] bg-gradient-to-b from-[--background] via-transparent via-100% to-transparent",
+                        "w-full z-3 absolute -bottom-40 h-40 bg-linear-to-b from-(--background) via-transparent via-100% to-transparent",
                         !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
                     )}
                 />
@@ -107,23 +107,23 @@ export function LibraryHeader({ list }: { list: Anime_Episode[] }) {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1, delay: 0.2 }}
                     className={cn(
-                        "LIB_HEADER_INNER_CONTAINER h-full z-[0] w-full flex-none object-cover object-center absolute top-0 overflow-hidden bg-[--background]",
+                        "LIB_HEADER_INNER_CONTAINER h-full z-0 w-full flex-none object-cover object-center absolute top-0 overflow-hidden bg-(--background)",
                         !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
                     )}
                 >
 
                     {!ts.disableSidebarTransparency && <div
                         data-library-header-banner-inner-container-top-gradient
-                        className="hidden lg:block h-full absolute z-[2] w-[20%] opacity-70 left-0 top-0 bg-gradient bg-gradient-to-r from-[var(--background)] to-transparent"
+                        className="hidden lg:block h-full absolute z-2 w-[20%] opacity-70 left-0 top-0 bg-gradient bg-linear-to-r from-(--background) to-transparent"
                     />}
 
                     <div
                         data-library-header-banner-inner-container-bottom-gradient
-                        className="w-full z-[3] opacity-50 absolute top-0 h-[5rem] bg-gradient-to-b from-[--background] via-transparent via-100% to-transparent"
+                        className="w-full z-3 opacity-50 absolute top-0 h-20 bg-linear-to-b from-(--background) via-transparent via-100% to-transparent"
                     />
 
                     {/*<div*/}
-                    {/*    className="LIB_HEADER_TOP_FADE w-full absolute z-[2] top-0 h-[10rem] opacity-20 bg-gradient-to-b from-[var(--background)] to-transparent via"*/}
+                    {/*    className="LIB_HEADER_TOP_FADE w-full absolute z-2 top-0 h-40 opacity-20 bg-linear-to-b from-(--background) to-transparent via"*/}
                     {/*/>*/}
                     <AnimatePresence>
                         {!!actualImage && (
@@ -143,7 +143,7 @@ export function LibraryHeader({ list }: { list: Anime_Episode[] }) {
                                     quality={100}
                                     sizes="100vw"
                                     className={cn(
-                                        "object-cover object-center z-[1] opacity-100 transition-opacity duration-700",
+                                        "object-cover object-center z-1 opacity-100 transition-opacity duration-700",
                                         !ts.libraryScreenCustomBackgroundImage && "scroll-locked-offset", // if fixed
                                         (shouldHideBanner || shouldBlurBanner) && "opacity-15",
                                         { "opacity-5": dimmed },
@@ -168,7 +168,7 @@ export function LibraryHeader({ list }: { list: Anime_Episode[] }) {
                      priority
                      sizes="100vw"
                      className={cn(
-                     "object-cover object-center z-[1] opacity-50 transition-opacity scroll-locked-offset",
+                     "object-cover object-center z-1 opacity-50 transition-opacity scroll-locked-offset",
                      (shouldHideBanner || shouldBlurBanner) && "opacity-15",
                      { "opacity-5": dimmed },
                      )}
@@ -179,7 +179,7 @@ export function LibraryHeader({ list }: { list: Anime_Episode[] }) {
                      />} */}
                     <div
                         data-library-header-banner-bottom-gradient
-                        className="LIB_HEADER_IMG_BOTTOM_FADE w-full z-[2] absolute bottom-0 h-[20rem] lg:h-[15rem] bg-gradient-to-t from-[--background] lg:via-opacity-50 lg:via-10% to-transparent"
+                        className="LIB_HEADER_IMG_BOTTOM_FADE w-full z-2 absolute bottom-0 h-80 lg:h-60 bg-linear-to-t from-(--background) lg:via-opacity-50 lg:via-10% to-transparent"
                     />
                 </motion.div>
             </div>

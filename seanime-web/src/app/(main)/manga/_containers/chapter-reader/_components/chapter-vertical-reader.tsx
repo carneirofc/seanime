@@ -191,7 +191,7 @@ export function MangaVerticalReader({ pageContainer }: MangaVerticalReaderProps)
             >
                 <div
                     data-chapter-vertical-reader-inner-container-spacer
-                    className="absolute w-full h-full z-[5] focus-visible:outline-none"
+                    className="absolute w-full h-full z-5 focus-visible:outline-none"
                     tabIndex={-1}
                 >
 
@@ -221,9 +221,9 @@ export function MangaVerticalReader({ pageContainer }: MangaVerticalReaderProps)
                         pageZoom={pageZoom}
                         pageFit={pageFit}
                         imageClass={cn(
-                            "max-w-full h-auto mx-auto select-none z-[4] relative focus-visible:outline-none",
+                            "max-w-full h-auto mx-auto select-none z-4 relative focus-visible:outline-none",
 
-                            // "h-full inset-0 object-center select-none z-[4] relative",
+                            // "h-full inset-0 object-center select-none z-4 relative",
 
                             pageFit === MangaPageFit.CONTAIN ?
                                 pageStretch === MangaPageStretch.NONE ? "w-auto h-full object-center" : "object-fill w-full max-w-[1400px] h-full" :

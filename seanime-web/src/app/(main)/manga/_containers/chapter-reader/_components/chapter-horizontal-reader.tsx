@@ -177,7 +177,7 @@ export function MangaHorizontalReader({ pageContainer }: MangaHorizontalReaderPr
             ref={containerRef}
             tabIndex={-1}
         >
-            {/*<div className="absolute w-full h-full right-8 flex z-[5] cursor-pointer" tabIndex={-1}>*/}
+            {/*<div className="absolute w-full h-full right-8 flex z-5 cursor-pointer" tabIndex={-1}>*/}
             {/*    <div className="h-full w-full flex flex-1 focus-visible:outline-none" onClick={() => onPaginate("left")} tabIndex={-1} />*/}
             {/*    <div className="h-full w-full flex flex-1 focus-visible:outline-none" onClick={() => onPaginate("right")} tabIndex={-1} />*/}
             {/*</div>*/}
@@ -209,15 +209,15 @@ export function MangaHorizontalReader({ pageContainer }: MangaHorizontalReaderPr
                             !currentPages?.includes(index) ? "hidden" : "displayed",
                             // Double Page, gap
                             (showShadows && readingMode === MangaReadingMode.DOUBLE_PAGE && currentPages?.[0] === index)
-                            && "before:content-[''] before:absolute before:w-[3%] before:z-[5] before:h-full before:[background:_linear-gradient(-90deg,_rgba(17,_17,_17,_0)_0,_rgba(17,_17,_17,_.3)_100%)]",
+                            && "before:content-[''] before:absolute before:w-[3%] before:z-5 before:h-full before:[background:linear-gradient(-90deg,rgba(17,17,17,0)_0,rgba(17,17,17,.3)_100%)]",
                             (showShadows && readingMode === MangaReadingMode.DOUBLE_PAGE && currentPages?.[1] === index)
-                            && "before:content-[''] before:absolute before:right-0 before:w-[3%] before:z-[5] before:h-full before:[background:_linear-gradient(90deg,_rgba(17,_17,_17,_0)_0,_rgba(17,_17,_17,_.3)_100%)]",
+                            && "before:content-[''] before:absolute before:right-0 before:w-[3%] before:z-5 before:h-full before:[background:linear-gradient(90deg,rgba(17,17,17,0)_0,rgba(17,17,17,.3)_100%)]",
                             // Page fit
                             pageFit === MangaPageFit.LARGER && "h-full",
                         )}
                         imageClass={cn(
                             "focus-visible:outline-none",
-                            "h-full inset-0 object-center select-none z-[4] relative",
+                            "h-full inset-0 object-center select-none z-4 relative",
 
                             //
                             // Page fit
@@ -252,9 +252,9 @@ export function MangaHorizontalReader({ pageContainer }: MangaHorizontalReaderPr
                             // Double page - Page position
                             //
                             (twoPages && currentPages?.[0] === index)
-                            && "[object-position:0%_50%] before:content-['']",
+                            && "object-[0%_50%] before:content-['']",
                             (twoPages && currentPages?.[1] === index)
-                            && "[object-position:100%_50%]",
+                            && "object-[100%_50%]",
                         )}
                         imageWidth={pageFit === MangaPageFit.LARGER && readingMode === MangaReadingMode.PAGED
                             ? pageOverflowContainerWidth + "%"

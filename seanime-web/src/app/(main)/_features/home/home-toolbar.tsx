@@ -85,7 +85,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
 
     return (
         <>
-            <div className={cn("flex flex-wrap w-full justify-end gap-1 p-4 relative z-[10]", className)} data-home-toolbar-container>
+            <div className={cn("flex flex-wrap w-full justify-end gap-1 p-4 relative z-10", className)} data-home-toolbar-container>
                 <div className="flex flex-1 pointer-events-none" data-home-toolbar-spacer></div>
                 {isNakamaLibrary && <Tooltip
                     trigger={<div className="flex items-center px-2 h-10">
@@ -196,7 +196,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
                         {/*<DropdownMenuItem*/}
                         {/*    data-home-toolbar-open-library-explorer-button*/}
                         {/*    disabled={!hasLibraryPath}*/}
-                        {/*    className={cn("cursor-pointer", { "!text-[--muted]": !hasLibraryPath })}*/}
+                        {/*    className={cn("cursor-pointer", { "text-(--muted)!": !hasLibraryPath })}*/}
                         {/*    onClick={() => {*/}
                         {/*        setLibraryExplorerDrawerOpen(true)*/}
                         {/*    }}*/}
@@ -208,7 +208,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
                         <DropdownMenuItem
                             data-home-toolbar-search-library
                             disabled={!hasLibraryPath}
-                            className={cn("cursor-pointer", { "!text-[--muted]": !hasLibraryPath })}
+                            className={cn("cursor-pointer", { "text-(--muted)!": !hasLibraryPath })}
                             onClick={() => {
                                 setSeaCommandOpen(true)
                                 React.startTransition(() => {
@@ -225,7 +225,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
                         <DropdownMenuItem
                             data-home-toolbar-open-directory-button
                             disabled={!hasLibraryPath}
-                            className={cn("cursor-pointer", { "!text-[--muted]": !hasLibraryPath })}
+                            className={cn("cursor-pointer", { "text-(--muted)!": !hasLibraryPath })}
                             onClick={() => {
                                 openInExplorer({ path: status?.settings?.library?.libraryPath ?? "" })
                             }}
@@ -238,7 +238,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
                             data-home-toolbar-bulk-actions-button
                             onClick={() => setBulkActionIsOpen(true)}
                             disabled={!hasEntries}
-                            className={cn({ "!text-[--muted]": !hasEntries })}
+                            className={cn({ "text-(--muted)!": !hasEntries })}
                         >
                             <BiCollection />
                             <span>Bulk actions</span>
@@ -248,7 +248,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
                             data-home-toolbar-ignored-files-button
                             onClick={() => setIgnoredFileManagerOpen(true)}
                             // disabled={!hasEntries}
-                            className={cn({ "!text-[--muted]": !hasEntries })}
+                            className={cn({ "text-(--muted)!": !hasEntries })}
                         >
                             <TbFileSad />
                             <span>Ignored files</span>
@@ -257,7 +257,7 @@ export function HomeToolbar(props: HomeToolbarProps) {
                         <SeaLink href="/scan-summaries">
                             <DropdownMenuItem
                                 data-home-toolbar-scan-summaries-button
-                                // className={cn({ "!text-[--muted]": !hasEntries })}
+                                // className={cn({ "text-(--muted)!": !hasEntries })}
                             >
                                 <TbReportSearch />
                                 <span>Scan summaries</span>

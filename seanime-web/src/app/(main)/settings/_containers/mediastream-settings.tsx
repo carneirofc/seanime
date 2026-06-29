@@ -131,7 +131,7 @@ export function MediastreamSettings(props: MediastreamSettingsProps) {
                         </SettingsCard>
 
                         {/* <SettingsCard title="Client Playback">
-                         <div className="flex gap-4 items-center rounded-[--radius-md]">
+                         <div className="flex gap-4 items-center rounded-md">
                          <MdOutlineDevices className="text-4xl" />
                          <div className="space-y-1">
                          <Checkbox

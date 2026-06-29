@@ -52,13 +52,13 @@ const PlaylistManagerPopup: React.FC<PlaylistManagerPopupProps> = ({
 
     return (
         <div
-            className={cn(`fixed ${containerConfig.positions[position]} z-[25]`, className)}
+            className={cn(`fixed ${containerConfig.positions[position]} z-25`, className)}
             {...props}
         >
             <div
                 ref={containerRef}
                 className={cn(
-                    "flex flex-col bg-[--paper] overflow-hidden border sm:rounded-2xl shadow-md transition-all duration-250 ease-out sm:absolute sm:w-[90vw] sm:h-[80vh] fixed inset-0 w-full h-full sm:inset-auto",
+                    "flex flex-col bg-(--paper) overflow-hidden border sm:rounded-2xl shadow-md transition-all duration-250 ease-out sm:absolute sm:w-[90vw] sm:h-[80vh] fixed inset-0 w-full h-full sm:inset-auto",
                     containerConfig.containerPositions[position],
                     containerConfig.dimensions[size],
                     isOpen ? containerConfig.states.open : containerConfig.states.closed,
@@ -104,7 +104,7 @@ PlaylistManagerPopupHeader.displayName = "PlaylistManagerPopupHeader"
 const PlaylistManagerPopupBody: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
     className,
     ...props
-}) => <div className={cn("flex-grow overflow-y-auto", className)} {...props} />
+}) => <div className={cn("grow overflow-y-auto", className)} {...props} />
 
 PlaylistManagerPopupBody.displayName = "PlaylistManagerPopupBody"
 

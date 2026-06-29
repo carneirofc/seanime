@@ -23,7 +23,7 @@ export const LegendAnatomy = defineStyleAnatomy({
     ]),
     label: cva([
         "UI-Legend__label",
-        "whitespace-nowrap truncate text-sm font-medium text-[--muted]",
+        "whitespace-nowrap truncate text-sm font-medium text-(--muted)",
     ]),
 })
 

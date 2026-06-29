@@ -277,7 +277,7 @@ export function VideoCoreInlineLayout(props: VideoCoreInlineLayoutProps) {
                     data-vc-element="inline-layout-player-container"
                     className={cn(
                         "aspect-video relative w-full self-start mx-auto",
-                        theaterMode && "max-h-[90vh] !w-auto aspect-video mx-auto",
+                        theaterMode && "max-h-[90vh] w-auto! aspect-video mx-auto",
                     )}
                 >
                     {mediaPlayer}
@@ -299,7 +299,7 @@ export function VideoCoreInlineLayout(props: VideoCoreInlineLayoutProps) {
                 </ScrollArea>
             </div> : <div
                 data-vc-element="inline-layout-loading-container"
-                className="grid 2xl:grid-cols-[1fr,450px] gap-4 xl:gap-4"
+                className="grid 2xl:grid-cols-[1fr_450px] gap-4 xl:gap-4"
             >
                 <div className="w-full min-h-[70dvh] relative">
                     <Skeleton className="h-full w-full absolute" />

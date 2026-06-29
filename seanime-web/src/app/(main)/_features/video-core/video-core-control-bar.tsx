@@ -182,8 +182,8 @@ export function VideoCoreControlBar(props: {
                 data-vc-element="control-bar-gradient-bottom"
                 className={cn(
                     "pointer-events-none",
-                    "absolute bottom-0 left-0 right-0 w-full z-[5] h-28 transition-opacity duration-300 opacity-0",
-                    "bg-gradient-to-t to-transparent",
+                    "absolute bottom-0 left-0 right-0 w-full z-5 h-28 transition-opacity duration-300 opacity-0",
+                    "bg-linear-to-t to-transparent",
                     !isMiniPlayer ? "from-black/40" : "from-black/80 via-black/40",
                     isMiniPlayer && "h-20",
                     !hideShadow && "opacity-100",
@@ -193,8 +193,8 @@ export function VideoCoreControlBar(props: {
                 data-vc-element="control-bar-time-range-bottom-gradient"
                 className={cn(
                     "pointer-events-none",
-                    "absolute bottom-0 left-0 right-0 w-full z-[5] h-14 transition-opacity duration-400 opacity-0",
-                    "bg-gradient-to-t to-transparent",
+                    "absolute bottom-0 left-0 right-0 w-full z-5 h-14 transition-opacity duration-400 opacity-0",
+                    "bg-linear-to-t to-transparent",
                     !isMiniPlayer ? "from-black/40" : "from-black/60",
                     isMiniPlayer && "h-10",
                     (showOnlyTimeRange && paused && hideShadow) && "opacity-100",
@@ -206,7 +206,7 @@ export function VideoCoreControlBar(props: {
                 className={cn(
                     "absolute left-0 bottom-0 right-0 flex flex-col text-white",
                     "transition-[opacity,transform] duration-300 opacity-0",
-                    "z-[10] h-28 transform-gpu will-change-[opacity,transform]",
+                    "z-10 h-28 transform-gpu will-change-[opacity,transform]",
                     !hideControlBar && "opacity-100",
                     VIDEOCORE_DEBUG_ELEMENTS && "bg-purple-500/20",
                 )}
@@ -240,7 +240,7 @@ export function VideoCoreControlBar(props: {
                     <div
                         data-vc-element="control-bar-main-section"
                         className={cn(
-                            "z-[100] relative",
+                            "z-100 relative",
                             "transform-gpu duration-100 flex items-center",
                             isMobile ? "pb-1" : "pb-2",
                         )}
@@ -305,8 +305,8 @@ export function VideoCoreMobileControlBar(props: {
                 data-vc-element="mobile-control-bar-gradient-bottom"
                 className={cn(
                     "vc-mobile-control-bar-bottom-gradient pointer-events-none",
-                    "absolute bottom-0 left-0 right-0 w-full z-[10] h-28 transition-opacity duration-300 opacity-0",
-                    "bg-gradient-to-t to-transparent",
+                    "absolute bottom-0 left-0 right-0 w-full z-10 h-28 transition-opacity duration-300 opacity-0",
+                    "bg-linear-to-t to-transparent",
                     !isMiniPlayer ? "from-black/40" : "from-black/80 via-black/40",
                     "h-20",
                     (showShadow || isSwiping) && "opacity-100",
@@ -316,8 +316,8 @@ export function VideoCoreMobileControlBar(props: {
                 data-vc-element="mobile-control-bar-gradient-top"
                 className={cn(
                     "vc-mobile-control-bar-top-gradient pointer-events-none",
-                    "absolute top-0 left-0 right-0 w-full z-[10] h-28 transition-opacity duration-300 opacity-0",
-                    "bg-gradient-to-b to-transparent",
+                    "absolute top-0 left-0 right-0 w-full z-10 h-28 transition-opacity duration-300 opacity-0",
+                    "bg-linear-to-b to-transparent",
                     !isMiniPlayer ? "from-black/40" : "from-black/80 via-black/40",
                     "h-20",
                     (showShadow) && "opacity-100",
@@ -329,7 +329,7 @@ export function VideoCoreMobileControlBar(props: {
                 data-vc-element="mobile-control-bar-top-section"
                 className={cn(
                     "vc-mobile-control-bar-top-section",
-                    "absolute transition-transform left-0 right-0 top-0 w-full z-[11] transform-gpu",
+                    "absolute transition-transform left-0 right-0 top-0 w-full z-11 transform-gpu",
                     "px-2 pt-3",
                     VIDEOCORE_DEBUG_ELEMENTS && "bg-purple-800/40",
                 )}
@@ -354,7 +354,7 @@ export function VideoCoreMobileControlBar(props: {
                 data-vc-element="mobile-control-bar-bottom-section"
                 className={cn(
                     "vc-mobile-control-bar-bottom-section",
-                    "absolute transition-transform left-0 right-0 bottom-0 w-full z-[11] transform-gpu",
+                    "absolute transition-transform left-0 right-0 bottom-0 w-full z-11 transform-gpu",
                     "px-2",
                     VIDEOCORE_DEBUG_ELEMENTS && "bg-purple-800/40",
                     isSwiping && "transition-none",
@@ -561,7 +561,7 @@ export function VideoCoreVolumeButton() {
                 <div
                     data-vc-element="control-volume-slider-container"
                     className={cn(
-                        "vc-control-volume-slider-container relative w-0 flex group-hover/vc-control-volume:w-[6rem] h-6",
+                        "vc-control-volume-slider-container relative w-0 flex group-hover/vc-control-volume:w-24 h-6",
                         "transition-[width] duration-300",
                     )}
                 >

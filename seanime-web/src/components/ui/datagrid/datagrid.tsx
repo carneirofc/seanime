@@ -69,18 +69,18 @@ export const DataGridAnatomy = defineStyleAnatomy({
     ]),
     td: cva([
         "UI-DataGrid__td",
-        "px-2 py-2 w-full whitespace-nowrap text-base font-normal text-[--foreground]",
+        "px-2 py-2 w-full whitespace-nowrap text-base font-normal text-(--foreground)",
         "data-[is-selection-col=true]:px-2 data-[is-selection-col=true]:sm:px-0 data-[is-selection-col=true]:text-center",
-        "data-[action-col=false]:truncate data-[action-col=false]:overflow-ellipsis",
+        "data-[action-col=false]:truncate data-[action-col=false]:text-ellipsis",
         "data-[row-selected=true]:bg-brand-50 dark:data-[row-selected=true]:bg-gray-800",
-        "data-[editing=true]:ring-1 data-[editing=true]:ring-[--ring] ring-inset",
-        "data-[editable=true]:hover:bg-[--subtle] md:data-[editable=true]:focus:ring-2 md:data-[editable=true]:focus:ring-[--slate]",
+        "data-[editing=true]:ring-1 data-[editing=true]:ring-(--ring) ring-inset",
+        "data-[editable=true]:hover:bg-(--subtle) md:data-[editable=true]:focus:ring-2 md:data-[editable=true]:focus:ring-(--slate)",
         "focus:outline-none",
         "border-b",
     ]),
     tr: cva([
         "UI-DataGrid__tr",
-        "hover:bg-[--subtle] truncate",
+        "hover:bg-(--subtle) truncate",
     ]),
     footer: cva([
         "UI-DataGrid__footer",
@@ -96,12 +96,12 @@ export const DataGridAnatomy = defineStyleAnatomy({
     ]),
     filterDropdownButton: cva([
         "UI-DataGrid__filterDropdownButton",
-        "flex gap-2 items-center bg-[--paper] border rounded-[--radius] h-10 py-1 px-3 cursor-pointer hover:bg-[--subtle]",
-        "select-none focus-visible:ring-2 outline-none ring-[--ring]",
+        "flex gap-2 items-center bg-(--paper) border rounded-(--radius) h-10 py-1 px-3 cursor-pointer hover:bg-(--subtle)",
+        "select-none focus-visible:ring-2 outline-none ring-(--ring)",
     ]),
     editingCard: cva([
         "UI-DataGrid__editingCard",
-        "flex items-center gap-2 rounded-[--radius-md] px-3 py-2",
+        "flex items-center gap-2 rounded-md px-3 py-2",
     ]),
 })
 
@@ -491,7 +491,7 @@ export function DataGrid<T extends Record<string, any>>(props: DataGridProps<T>)
                 </table>
 
                 {(isInLoadingState && displayedRows.length > 0) && (
-                    <LoadingOverlay className="backdrop-blur-[1px] bg-opacity-40 pt-0" />
+                    <LoadingOverlay className="backdrop-blur-[1px] bg-(--background)/40 pt-0" />
                 )}
 
                 {/*Skeleton*/}
@@ -588,7 +588,7 @@ export function DataGrid<T extends Record<string, any>>(props: DataGridProps<T>)
                                 }
                             })
                         }}
-                        className="inline-flex flex-none items-center w-[3rem]"
+                        className="inline-flex flex-none items-center w-12"
                         size="sm"
                     />}
                     <Select
@@ -648,7 +648,7 @@ export function DataGridSearchInput(props: DataGridSearchInputProps) {
     return (
         <TextInput
             size="md"
-            fieldClass="md:max-w-[30rem]"
+            fieldClass="md:max-w-120"
             {...rest}
             value={value}
             onChange={e => setValue(e.target.value)}
@@ -656,7 +656,7 @@ export function DataGridSearchInput(props: DataGridSearchInputProps) {
                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor"
                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                className="w-5 h-5 text-[--muted]"
+                className="w-5 h-5 text-(--muted)"
             >
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />

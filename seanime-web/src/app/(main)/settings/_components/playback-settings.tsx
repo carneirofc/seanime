@@ -89,12 +89,12 @@ export function PlaybackSettings(props: PlaybackSettingsProps) {
             {__isElectronDesktop__ && (
                 <SettingsCard
                     title="Seanime Denshi"
-                    className="border-2 border-dashed dark:border-gray-700 bg-gradient-to-r from-indigo-50/50 to-pink-50/50 dark:from-gray-900/20 dark:to-gray-900/20"
+                    className="border-2 border-dashed dark:border-gray-700 bg-linear-to-r from-indigo-50/50 to-pink-50/50 dark:from-gray-900/20 dark:to-gray-900/20"
                 >
                     <div className="space-y-4">
 
                         <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-gradient-to-br from-indigo-500/20 to-indigo-500/20 border border-indigo-500/20">
+                            <div className="p-3 rounded-lg bg-linear-to-br from-indigo-500/20 to-indigo-500/20 border border-indigo-500/20">
                                 <LuClapperboard className="text-2xl text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <div className="flex-1">
@@ -130,7 +130,7 @@ export function PlaybackSettings(props: PlaybackSettingsProps) {
                             className={cn(
                                 "p-4 rounded-lg border cursor-pointer transition-all",
                                 downloadedMediaPlayback === PlaybackDownloadedMedia.Default && !activeOnDevice
-                                    ? "border-[--brand] bg-brand-900/10"
+                                    ? "border-(--brand) bg-brand-900/10"
                                     : "border-gray-700 hover:border-gray-600",
                             )}
                             onClick={() => {
@@ -156,7 +156,7 @@ export function PlaybackSettings(props: PlaybackSettingsProps) {
                             className={cn(
                                 "p-4 rounded-lg border cursor-pointer transition-all",
                                 downloadedMediaPlayback === PlaybackDownloadedMedia.Default && activeOnDevice
-                                    ? "border-[--brand] bg-brand-900/10"
+                                    ? "border-(--brand) bg-brand-900/10"
                                     : "border-gray-700 hover:border-gray-600",
                                 !serverStatus?.mediastreamSettings?.transcodeEnabled && "opacity-50",
                             )}
@@ -189,7 +189,7 @@ export function PlaybackSettings(props: PlaybackSettingsProps) {
                             className={cn(
                                 "p-4 rounded-lg border cursor-pointer transition-all",
                                 downloadedMediaPlayback === PlaybackDownloadedMedia.ExternalPlayerLink
-                                    ? "border-[--brand] bg-brand-900/10"
+                                    ? "border-(--brand) bg-brand-900/10"
                                     : "border-gray-700 hover:border-gray-600",
                             )}
                             onClick={() => {
@@ -228,7 +228,7 @@ export function PlaybackSettings(props: PlaybackSettingsProps) {
                             className={cn(
                                 "p-4 rounded-lg border cursor-pointer transition-all",
                                 torrentStreamingPlayback === PlaybackTorrentStreaming.Default
-                                    ? "border-[--brand] bg-brand-900/10"
+                                    ? "border-(--brand) bg-brand-900/10"
                                     : "border-gray-700 hover:border-gray-600",
                             )}
                             onClick={() => {
@@ -253,7 +253,7 @@ export function PlaybackSettings(props: PlaybackSettingsProps) {
                             className={cn(
                                 "p-4 rounded-lg border cursor-pointer transition-all",
                                 torrentStreamingPlayback === PlaybackTorrentStreaming.ExternalPlayerLink
-                                    ? "border-[--brand] bg-brand-900/10"
+                                    ? "border-(--brand) bg-brand-900/10"
                                     : "border-gray-700 hover:border-gray-600",
                             )}
                             onClick={() => {

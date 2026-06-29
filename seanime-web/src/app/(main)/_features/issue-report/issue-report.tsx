@@ -730,7 +730,7 @@ export function IssueReport() {
             {open && <div
                 className={cn(
                     "issue-reporter-ui",
-                    "fixed z-[100] bottom-8 w-fit left-20 h-fit flex",
+                    "fixed z-100 bottom-8 w-fit left-20 h-fit flex",
                     "transition-all duration-300 select-none",
                     !isRecording && "hover:translate-y-[-2px]",
                     isRecording && "justify-end",
@@ -742,13 +742,13 @@ export function IssueReport() {
                         "transition-colors duration-300",
                         isRecording
                             ? "p-3 bg-gray-950/95 border-red-900/50"
-                            : "p-4 bg-gray-900/95 border-[--border] text-white",
+                            : "p-4 bg-gray-900/95 border-(--border) text-white",
                     )}
                 >
                     {!isRecording ? <div className="space-y-3 min-w-[280px]">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-brand-900/30">
-                                <VscDebugAlt className="text-xl text-[--brand]" />
+                                <VscDebugAlt className="text-xl text-(--brand)" />
                             </div>
                             <div>
                                 <p className="font-semibold text-sm text-gray-100">Issue Recorder</p>
@@ -762,7 +762,7 @@ export function IssueReport() {
                                 />
                             </div>
                         </div>
-                        <div className="border-t border-[--border] pt-2 space-y-2">
+                        <div className="border-t border-(--border) pt-2 space-y-2">
                             <Checkbox
                                 label="Include library scanner logs"
                                 value={recordLocalFiles}
@@ -822,7 +822,7 @@ export function IssueReport() {
                                         {description ? "Edit note" : "Add note"}
                                     </button>
                                 }
-                                className="z-[101]"
+                                className="z-101"
                             >
                                 Add a description of what you're experiencing
                             </Tooltip>
@@ -856,7 +856,7 @@ export function IssueReport() {
                                     icon={<BiX />}
                                     onClick={() => setRecording(false)}
                                 />}
-                                className="z-[101]"
+                                className="z-101"
                             >
                                 Cancel recording
                             </Tooltip>

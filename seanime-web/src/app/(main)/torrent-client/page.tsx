@@ -58,14 +58,14 @@ const getBadgeClass = (value: StatusFilter, isSelected: boolean, count: number) 
             case "paused":
                 return "bg-gray-500/20 text-gray-300"
             case "active":
-                return "bg-[--brand]/15 text-[--brand]"
+                return "bg-(--brand)/15 text-(--brand)"
             case "inactive":
                 return "bg-gray-500/20 text-gray-300"
             default:
-                return "bg-gray-800 text-[--muted]"
+                return "bg-gray-800 text-(--muted)"
         }
     }
-    return "bg-gray-800 text-[--muted] group-hover/filter:bg-gray-700/80 group-hover/filter:text-[--foreground]"
+    return "bg-gray-800 text-(--muted) group-hover/filter:bg-gray-700/80 group-hover/filter:text-(--foreground)"
 }
 
 function parseSpeed(speedStr: string): number {
@@ -166,11 +166,11 @@ function getVisiblePages(currentPage: number, totalPages: number) {
 
 const filters: Array<{ value: StatusFilter, label: string, icon: React.ReactNode }> = [
     { value: "all", label: "All", icon: <BiFolder /> },
-    { value: "downloading", label: "Downloading", icon: <BiDownArrow className="text-[--muted] text-lg" /> },
-    { value: "seeding", label: "Seeding", icon: <BiUpArrow className="text-[--muted] text-lg" /> },
-    { value: "paused", label: "Paused", icon: <BiPause className="text-[--muted] text-lg" /> },
-    { value: "active", label: "Active", icon: <BiPlay className="text-[--muted] text-lg" /> },
-    { value: "inactive", label: "Inactive", icon: <BiStop className="text-[--muted] text-lg" /> },
+    { value: "downloading", label: "Downloading", icon: <BiDownArrow className="text-(--muted) text-lg" /> },
+    { value: "seeding", label: "Seeding", icon: <BiUpArrow className="text-(--muted) text-lg" /> },
+    { value: "paused", label: "Paused", icon: <BiPause className="text-(--muted) text-lg" /> },
+    { value: "active", label: "Active", icon: <BiPlay className="text-(--muted) text-lg" /> },
+    { value: "inactive", label: "Inactive", icon: <BiStop className="text-(--muted) text-lg" /> },
 ]
 
 export default function Page() {
@@ -308,7 +308,7 @@ function Dashboard() {
         <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
                 <h2>Torrent client</h2>
-                <p className="text-[--muted]">Manage downloads running directly in Seanime.</p>
+                <p className="text-(--muted)">Manage downloads running directly in Seanime.</p>
             </div>
             <div className="flex flex-wrap gap-2">
                 <Button leftIcon={<LuMagnet />} intent="white" onClick={() => setAddOpen(true)}>Add torrent</Button>
@@ -328,16 +328,16 @@ function Dashboard() {
         </header>
 
         <div className="grid xl:min-h-[68vh] grid-cols-1 gap-4 xl:grid-cols-[12rem_minmax(0,1fr)]">
-            <div className="flex items-center h-fit gap-4 border-b border-[--border] pb-px overflow-x-auto xl:flex-col xl:items-stretch xl:gap-1 xl:border-b-0 xl:pb-0 xl:overflow-visible">
+            <div className="flex items-center h-fit gap-4 border-b border-(--border) pb-px overflow-x-auto xl:flex-col xl:items-stretch xl:gap-1 xl:border-b-0 xl:pb-0 xl:overflow-visible">
                 {filters.map(item => {
                     const count = torrents.filter(torrent => matchesFilter(torrent.status, item.value)).length
                     return <button
                         key={item.value}
                         className={cn(
-                            "group/filter flex min-w-max items-center gap-2.5 text-sm text-[--muted] transition-colors hover:text-[--foreground] pb-3 px-1 border-b-2 border-transparent xl:pb-2 xl:pl-3 xl:pr-3.5 xl:py-2 xl:border-b-0 xl:border-l-2 xl:border-transparent xl:rounded-r-lg xl:rounded-l-none xl:w-full xl:justify-between xl:hover:bg-[--subtle]",
+                            "group/filter flex min-w-max items-center gap-2.5 text-sm text-(--muted) transition-colors hover:text-(--foreground) pb-3 px-1 border-b-2 border-transparent xl:pb-2 xl:pl-3 xl:pr-3.5 xl:py-2 xl:border-b-0 xl:border-l-2 xl:border-transparent xl:rounded-r-lg xl:rounded-l-none xl:w-full xl:justify-between xl:hover:bg-(--subtle)",
                             filter === item.value
-                                ? "border-[--brand] text-[--foreground] xl:bg-gray-800/80 xl:border-b-0 xl:border-l-[--brand] xl:text-white"
-                                : "xl:hover:bg-[--subtle]",
+                                ? "border-(--brand) text-(--foreground) xl:bg-gray-800/80 xl:border-b-0 xl:border-l-(--brand) xl:text-white"
+                                : "xl:hover:bg-(--subtle)",
                         )}
                         onClick={() => setFilter(item.value)}
                     >
@@ -353,16 +353,16 @@ function Dashboard() {
                         >{count}</span>
                     </button>
                 })}
-                <div className="hidden xl:block mt-auto text-xs text-[--muted] px-3 py-2">
+                <div className="hidden xl:block mt-auto text-xs text-(--muted) px-3 py-2">
                     {torrents.length} torrents
                 </div>
             </div>
 
             <main className="min-w-0 space-y-4">
-                <Card className="p-0 overflow-hidden flex flex-col border border-[--border]">
-                    <div className="p-2 sm:p-3 border-b border-[--border] bg-gray-950/20 w-full">
+                <Card className="p-0 overflow-hidden flex flex-col border border-(--border)">
+                    <div className="p-2 sm:p-3 border-b border-(--border) bg-gray-950/20 w-full">
                         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between w-full">
-                            <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+                            <div className="flex flex-wrap items-center gap-2 shrink-0">
                                 <div className="flex items-center gap-1">
                                     <Tooltip
                                         trigger={<IconButton
@@ -386,7 +386,7 @@ function Dashboard() {
                                     </Tooltip>
                                 </div>
 
-                                <span className="mx-1 h-5 w-px bg-[--border]" />
+                                <span className="mx-1 h-5 w-px bg-(--border)" />
 
                                 <div className="flex items-center gap-1">
                                     <Tooltip
@@ -411,7 +411,7 @@ function Dashboard() {
                                     </Tooltip>
                                 </div>
 
-                                <span className="mx-1 h-5 w-px bg-[--border]" />
+                                <span className="mx-1 h-5 w-px bg-(--border)" />
 
                                 <div className="flex items-center gap-1">
                                     <Tooltip
@@ -489,7 +489,7 @@ function Dashboard() {
                                     </Popover>
                                 </div>
 
-                                <span className="mx-1 h-5 w-px bg-[--border]" />
+                                <span className="mx-1 h-5 w-px bg-(--border)" />
 
                                 <div className="flex items-center gap-1">
                                     <Tooltip
@@ -507,14 +507,14 @@ function Dashboard() {
 
                             <div className="flex-1 flex"></div>
 
-                            <div className="hidden lg:flex items-center gap-4 text-xs font-semibold tabular-nums text-[--muted] bg-gray-950/40 px-3 py-1.5 h-10 rounded-xl border border-[--border] whitespace-nowrap flex-shrink-0">
+                            <div className="hidden lg:flex items-center gap-4 text-xs font-semibold tabular-nums text-(--muted) bg-gray-950/40 px-3 py-1.5 h-10 rounded-xl border border-(--border) whitespace-nowrap shrink-0">
                                 <span className="flex items-center gap-1.5 whitespace-nowrap" title="Global download speed">
-                                    <BiDownArrow className="text-green-500 flex-shrink-0" />
+                                    <BiDownArrow className="text-green-500 shrink-0" />
                                     <span>DL: {formatSpeed(totalDownSpeed)}</span>
                                 </span>
-                                <span className="mx-0.5 h-3 w-px bg-[--border] flex-shrink-0" />
+                                <span className="mx-0.5 h-3 w-px bg-(--border) shrink-0" />
                                 <span className="flex items-center gap-1.5 whitespace-nowrap" title="Global upload speed">
-                                    <BiUpArrow className="text-blue-400 flex-shrink-0" />
+                                    <BiUpArrow className="text-blue-400 shrink-0" />
                                     <span>UL: {formatSpeed(totalUpSpeed)}</span>
                                 </span>
                             </div>
@@ -524,7 +524,7 @@ function Dashboard() {
                                 onValueChange={setSearch}
                                 leftIcon={<BiSearch />}
                                 placeholder="Filter torrents"
-                                className="lg:w-64 flex-shrink-0"
+                                className="lg:w-64 shrink-0"
                                 fieldClass="w-fit"
                             />
                         </div>
@@ -558,7 +558,7 @@ function Dashboard() {
                                     key={torrent.hash}
                                     content={
                                         <ContextMenuGroup>
-                                            <ContextMenuLabel className="text-[--muted] line-clamp-1 py-0 my-1 font-semibold text-xs">
+                                            <ContextMenuLabel className="text-(--muted) line-clamp-1 py-0 my-1 font-semibold text-xs">
                                                 {torrent.name}
                                             </ContextMenuLabel>
                                             <ContextMenuSeparator />
@@ -678,10 +678,10 @@ function Dashboard() {
                             ))}
                         </TableBody>
                     </Table>
-                    {!visible.length && <div className="py-16 text-center text-[--muted]">No torrents match this view.</div>}
+                    {!visible.length && <div className="py-16 text-center text-(--muted)">No torrents match this view.</div>}
 
                     {totalPages > 1 && (
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[--border] bg-gray-950/10">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-(--border) bg-gray-950/10">
                             <div className="flex items-center gap-2">
                                 <Select
                                     value={String(pageSize)}
@@ -699,7 +699,7 @@ function Dashboard() {
                                     fieldClass="w-36"
                                     className="w-36"
                                 />
-                                <span className="text-xs text-[--muted]">
+                                <span className="text-xs text-(--muted)">
                                     Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, visible.length)} of {visible.length}
                                 </span>
                             </div>
@@ -836,7 +836,7 @@ const TorrentRow = React.forwardRef<HTMLTableRowElement, {
         data-state={selected ? "selected" : undefined}
         className={cn(
             "cursor-pointer transition-all border-l-2",
-            focused ? "bg-gray-800/80 border-l-[--brand]" : "border-l-transparent",
+            focused ? "bg-gray-800/80 border-l-(--brand)" : "border-l-transparent",
         )}
         onClick={onFocus}
         onContextMenu={(e) => {
@@ -854,13 +854,13 @@ const TorrentRow = React.forwardRef<HTMLTableRowElement, {
                 <div className="truncate font-medium" title={torrent.name}>{torrent.name}</div>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-gray-700/70">
                     <div
-                        className={cn("h-full bg-[--brand]",
+                        className={cn("h-full bg-(--brand)",
                             torrent.status === "seeding" && "bg-blue-400",
                             torrent.status === "paused" && "bg-gray-500",
                             torrent.status === "error" && "bg-red-500")} style={{ width: `${Math.max(0, Math.min(100, torrent.progress * 100))}%` }}
                     />
                 </div>
-                <div className="mt-1 text-xs text-[--muted] flex items-center gap-1">
+                <div className="mt-1 text-xs text-(--muted) flex items-center gap-1">
                     <span>{(torrent.progress * 100).toFixed(1)}%</span>
                     <span>·</span>
                     {torrent.error ? (
@@ -868,7 +868,7 @@ const TorrentRow = React.forwardRef<HTMLTableRowElement, {
                             {torrent.error}
                         </span>
                     ) : (
-                        <span title={torrent.contentPath} className="cursor-help hover:text-[--foreground] transition-colors">
+                        <span title={torrent.contentPath} className="cursor-help hover:text-(--foreground) transition-colors">
                             {truncatePath(torrent.contentPath, 35)}
                         </span>
                     )}
@@ -883,7 +883,7 @@ const TorrentRow = React.forwardRef<HTMLTableRowElement, {
         <TableCell className="text-right whitespace-nowrap tabular-nums">{torrent.eta}</TableCell>
         <TableCell className="text-right whitespace-nowrap tabular-nums">{torrent.ratio.toFixed(2)}</TableCell>
         <TableCell className="whitespace-nowrap">{torrent.addedAt ? new Date(torrent.addedAt).toLocaleString() : "Unknown"}</TableCell>
-        <TableCell className="max-w-80 truncate cursor-help hover:text-[--foreground] transition-colors" title={torrent.contentPath}>
+        <TableCell className="max-w-80 truncate cursor-help hover:text-(--foreground) transition-colors" title={torrent.contentPath}>
             {truncatePath(torrent.contentPath, 45)}
         </TableCell>
     </TableRow>
@@ -902,14 +902,14 @@ function Inspector(props: {
     const { torrent, details, isLoading, perform, onRename, isPending, openInExplorer } = props
     const [tracker, setTracker] = React.useState("")
 
-    if (!torrent) return <Card className="py-10 text-center text-[--muted]">Select a torrent to inspect files, trackers, and peers.</Card>
+    if (!torrent) return <Card className="py-10 text-center text-(--muted)">Select a torrent to inspect files, trackers, and peers.</Card>
     if (isLoading && !details) return <Card className="py-10"><LoadingSpinner /></Card>
 
     return <Card className="p-0 overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[--border] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-(--border) px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
                 <h5 className="truncate text-sm tracking-wise font-semibold">{torrent.name}</h5>
-                <p className="truncate text-xs text-[--muted]">{torrent.hash}</p>
+                <p className="truncate text-xs text-(--muted)">{torrent.hash}</p>
             </div>
             <div className="flex flex-wrap gap-2">
                 <Button
@@ -929,7 +929,7 @@ function Inspector(props: {
             </div>
         </div>
         <Tabs defaultValue="general">
-            <TabsList className="justify-start overflow-x-auto overflow-y-hidden border-b border-[--border] px-2">
+            <TabsList className="justify-start overflow-x-auto overflow-y-hidden border-b border-(--border) px-2">
                 <TabsTrigger value="general"><LuSettings2 className="mr-2" />General</TabsTrigger>
                 <TabsTrigger value="files"><LuFileCheck2 className="mr-2" />Files</TabsTrigger>
                 <TabsTrigger value="trackers"><LuRadioTower className="mr-2" />Trackers</TabsTrigger>
@@ -972,7 +972,7 @@ function Inspector(props: {
                         </TableCell>
                     </TableRow>)}</TableBody>
                 </Table>
-                {!details?.files?.length && <div className="p-8 text-center text-[--muted]">Waiting for torrent metadata.</div>}
+                {!details?.files?.length && <div className="p-8 text-center text-(--muted)">Waiting for torrent metadata.</div>}
             </TabsContent>
             <TabsContent value="trackers" className="p-4 space-y-3">
                 <div className="flex gap-2"><TextInput
@@ -985,7 +985,7 @@ function Inspector(props: {
                     setTracker("")
                 }}
                 >Add</Button></div>
-                <div className="divide-y divide-[--border]">{details?.trackers?.map(item => <div
+                <div className="divide-y divide-(--border)">{details?.trackers?.map(item => <div
                     key={item}
                     className="flex items-center justify-between gap-3 py-2 text-sm"
                 ><span className="break-all">{item}</span><Tooltip
@@ -1001,13 +1001,13 @@ function Inspector(props: {
                         })}
                     />}
                 >Remove tracker</Tooltip></div>)}</div>
-                {!details?.trackers?.length && <div className="py-6 text-center text-[--muted]">No trackers are listed.</div>}
+                {!details?.trackers?.length && <div className="py-6 text-center text-(--muted)">No trackers are listed.</div>}
             </TabsContent>
             <TabsContent value="peers" className="p-0">
                 <Table><TableHeader><TableRow><TableHead>Address</TableHead><TableHead>Client</TableHead></TableRow></TableHeader><TableBody>{details?.peers?.map(
                     (peer, index) =>
                         <TableRow key={`${peer.address}-${index}`}><TableCell>{peer.address || "Unknown"}</TableCell><TableCell>{peer.client || "Unknown"}</TableCell></TableRow>)}</TableBody></Table>
-                {!details?.peers?.length && <div className="p-8 text-center text-[--muted]">No connected peers.</div>}
+                {!details?.peers?.length && <div className="p-8 text-center text-(--muted)">No connected peers.</div>}
             </TabsContent>
         </Tabs>
     </Card>
@@ -1015,7 +1015,7 @@ function Inspector(props: {
 
 function Metric({ label, value, wide, disableCapitalize }: { label: string, value: string, wide?: boolean, disableCapitalize?: boolean }) {
     return <div className={cn(wide && "col-span-2")}>
-        <dt className="text-xs text-[--muted]">{label}</dt>
+        <dt className="text-xs text-(--muted)">{label}</dt>
         <dd className={cn("mt-1 break-all", !disableCapitalize && "capitalize")}>{value}</dd>
     </div>
 }

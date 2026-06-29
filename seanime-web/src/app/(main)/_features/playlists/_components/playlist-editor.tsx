@@ -121,7 +121,7 @@ export function PlaylistEditor(props: PlaylistEditorProps) {
                     >Add episodes</Button>}
                 >
 
-                    <div className="grid grid-cols-[150px,1fr] gap-2">
+                    <div className="grid grid-cols-[150px_1fr] gap-2">
                         <Select
                             value={selectedCategory}
                             onValueChange={v => setSelectedCategory(v)}
@@ -195,16 +195,16 @@ function PlaylistMediaEntryTrigger(props: PlaylistMediaEntryTriggerProps) {
     return (
         <div
             key={entry.mediaId}
-            className="col-span-1 aspect-[7/7] rounded-md border overflow-hidden relative transition cursor-pointer bg-[--background] md:opacity-60 md:hover:opacity-100"
+            className="col-span-1 aspect-7/7 rounded-md border overflow-hidden relative transition cursor-pointer bg-(--background) md:opacity-60 md:hover:opacity-100"
             onClick={() => setSelectedMedia(entry.mediaId)}
         >
-            {entry.libraryData && <div data-media-entry-card-body-library-badge className="absolute z-[1] left-0 top-0">
+            {entry.libraryData && <div data-media-entry-card-body-library-badge className="absolute z-1 left-0 top-0">
                 <Badge
                     size="lg" intent="warning-solid"
                     className="rounded-md rounded-bl-none rounded-tr-none text-orange-900 opacity-80"
                 ><IoLibrarySharp /></Badge>
             </div>}
-            {added > 0 && <div data-media-entry-card-body-library-badge className="absolute z-[1] right-1 top-1">
+            {added > 0 && <div data-media-entry-card-body-library-badge className="absolute z-1 right-1 top-1">
                 <Badge
                     size="lg" intent="warning-solid"
                     className="rounded-full bg-black text-white opacity-80 size-6"
@@ -219,11 +219,11 @@ function PlaylistMediaEntryTrigger(props: PlaylistMediaEntryTriggerProps) {
                 alt=""
                 className="object-center object-cover"
             />
-            <p className="line-clamp-2 text-sm absolute m-2 bottom-0 font-semibold z-[10]">
+            <p className="line-clamp-2 text-sm absolute m-2 bottom-0 font-semibold z-10">
                 {entry.media?.title?.userPreferred || entry.media?.title?.romaji}
             </p>
             <div
-                className="z-[5] absolute bottom-0 w-full h-[80%] bg-gradient-to-t from-[--background] to-transparent"
+                className="z-5 absolute bottom-0 w-full h-[80%] bg-linear-to-t from-(--background) to-transparent"
             />
 
 
@@ -341,7 +341,7 @@ function SortableItem({ id, episode, setEpisodes }: {
                     }}
                     onPointerDown={(e) => e.stopPropagation()}
                 />
-                <div className="size-24 aspect-square flex-none rounded-md overflow-hidden relative transition bg-[--background]">
+                <div className="size-24 aspect-square flex-none rounded-md overflow-hidden relative transition bg-(--background)">
                     {episode.episode!.episodeMetadata?.image && <SeaImage
                         data-episode-card-image
                         src={getImageUrl(episode.episode!.episodeMetadata?.image)}
@@ -357,7 +357,7 @@ function SortableItem({ id, episode, setEpisodes }: {
                     />}
                 </div>
                 <div className="max-w-full space-y-1">
-                    <p className="text-sm text-[--muted] font-medium">{episode.episode?.baseAnime?.title?.userPreferred}</p>
+                    <p className="text-sm text-(--muted) font-medium">{episode.episode?.baseAnime?.title?.userPreferred}</p>
                     <p className="">{episode.episode?.baseAnime?.format !== "MOVIE"
                         ? `Episode ${episode.episode!.episodeNumber}`
                         : "Movie"}{episode.isCompleted ? ` (Watched)` : ""}</p>
@@ -367,8 +367,8 @@ function SortableItem({ id, episode, setEpisodes }: {
                             return <div
                                 key={option.value}
                                 className={cn(
-                                    "text-sm flex w-fit py-1 px-2 rounded-xl hover:bg-[--subtle] text-[--muted] hover:text-[--foreground] transition border border-transparent cursor-pointer",
-                                    option.value === episode.watchType && "border-white/20 bg-[--subtle] text-white hover:text-white",
+                                    "text-sm flex w-fit py-1 px-2 rounded-xl hover:bg-(--subtle) text-(--muted) hover:text-(--foreground) transition border border-transparent cursor-pointer",
+                                    option.value === episode.watchType && "border-white/20 bg-(--subtle) text-white hover:text-white",
                                 )}
                                 onPointerDown={e => e.stopPropagation()}
                                 onClick={e => {
@@ -394,7 +394,7 @@ function SortableItem({ id, episode, setEpisodes }: {
                     </div>}
 
                     {!!episode.episode?.localFile && <div>
-                        <div className="text-sm text-[--muted] line-clamp-1 tracking-wide">
+                        <div className="text-sm text-(--muted) line-clamp-1 tracking-wide">
                             {episode.episode?.localFile?.name}
                         </div>
                     </div>}
@@ -503,21 +503,21 @@ function EntryEpisodeList(props: EntryEpisodeListProps) {
                 </Button>
             </div>
             {isLoading && <LoadingSpinner />}
-            {data?.length === 0 && <p className="text-center text-sm text-[--muted]">No episodes found</p>}
+            {data?.length === 0 && <p className="text-center text-sm text-(--muted)">No episodes found</p>}
             {episodes?.map(ep => {
                 return (
                     <div
                         key={playlist_getEpisodeKey(ep)}
                         className={cn(
-                            "grid grid-cols-[auto,1fr] px-2.5 py-2 bg-[--background] rounded-md border cursor-pointer overflow-hidden items-center gap-3 opacity-80 max-w-full",
+                            "grid grid-cols-[auto_1fr] px-2.5 py-2 bg-(--background) rounded-md border cursor-pointer overflow-hidden items-center gap-3 opacity-80 max-w-full",
                             selectedEpisodes.find(n => playlist_isSameEpisode(ep, n))
-                                ? "bg-gray-800 opacity-100 text-white ring-1 ring-[--zinc]"
-                                : "hover:bg-[--subtle]",
+                                ? "bg-gray-800 opacity-100 text-white ring-1 ring-(--zinc)"
+                                : "hover:bg-(--subtle)",
                             "transition",
                         )}
                         onClick={() => handleSelect(ep)}
                     >
-                        <div className="w-16 flex-none aspect-square rounded-md overflow-hidden relative transition bg-[--background]">
+                        <div className="w-16 flex-none aspect-square rounded-md overflow-hidden relative transition bg-(--background)">
                             {ep.episode!.episodeMetadata?.image && <SeaImage
                                 data-episode-card-image
                                 src={getImageUrl(ep.episode!.episodeMetadata?.image)}
@@ -534,7 +534,7 @@ function EntryEpisodeList(props: EntryEpisodeListProps) {
                         <div className="max-w-full">
                             <p className="">{entry.media?.format !== "MOVIE" ? `Episode ${ep.episode!.episodeNumber}` : "Movie"}</p>
                             {ep.episode!.localFile &&
-                                <p className="text-xs text-[--muted] tracking-wide italic max-w-full line-clamp-2">{ep.episode!.localFile?.name}</p>}
+                                <p className="text-xs text-(--muted) tracking-wide italic max-w-full line-clamp-2">{ep.episode!.localFile?.name}</p>}
 
                         </div>
                     </div>

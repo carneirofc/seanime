@@ -15,10 +15,10 @@ export const StaticTabsAnatomy = defineStyleAnatomy({
     trigger: cva([
         "UI-StaticTabs__trigger",
         "group/staticTabs__trigger inline-flex flex-none shrink-0 basis-auto items-center font-medium text-sm transition outline-none min-w-0 justify-center",
-        "text-[--muted] hover:text-[--foreground]",
+        "text-(--muted) hover:text-(--foreground)",
         "h-10 px-4 rounded-full",
-        "data-[current=true]:bg-[--subtle] data-[current=true]:font-semibold data-[current=true]:text-[--foreground]",
-        "focus-visible:bg-[--subtle]",
+        "data-[current=true]:bg-(--subtle) data-[current=true]:font-semibold data-[current=true]:text-(--foreground)",
+        "focus-visible:bg-(--subtle)",
     ]),
     icon: cva([
         "UI-StaticTabs__icon",

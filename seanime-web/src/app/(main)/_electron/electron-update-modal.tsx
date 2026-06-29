@@ -241,7 +241,7 @@ export function ElectronUpdateModal(props: UpdateModalProps) {
     if (!updateModalOpen && (serverStatus?.settings?.library?.disableUpdateCheck || isLoading || updateLoading || !updateData || !updateData.release)) return null
 
     if (isInstalled) return (
-        <div className="fixed top-0 left-0 w-full h-full bg-[--background] flex items-center z-[9999]">
+        <div className="fixed top-0 left-0 w-full h-full bg-(--background) flex items-center z-9999">
             <div className="container max-w-4xl py-10">
                 <div className="mb-4 flex justify-center w-full">
                     <img src="/seanime-logo.png" alt="logo" className="w-14 h-auto" />
@@ -274,7 +274,7 @@ export function ElectronUpdateModal(props: UpdateModalProps) {
                 <div className="space-y-2">
                     <h3 className="text-center">A new update is available!</h3>
                     <h4 className="font-bold flex gap-2 text-center items-center justify-center">
-                        <span className="text-[--muted]">{updateData?.current_version}</span> <FiArrowRight />
+                        <span className="text-(--muted)">{updateData?.current_version}</span> <FiArrowRight />
                         <span className="text-indigo-200">{updateData?.release?.version}</span></h4>
 
                     {!electronUpdate && !isMacOS && (
@@ -286,7 +286,7 @@ export function ElectronUpdateModal(props: UpdateModalProps) {
 
                     <UpdateChangelogBody updateData={updateData} />
 
-                    <div className="flex gap-2 w-full !mt-4">
+                    <div className="flex gap-2 w-full mt-4!">
                         {electronUpdate && !isMacOS && <Button
                             leftIcon={<GrInstall className="text-2xl" />}
                             onClick={handleInstallUpdate}

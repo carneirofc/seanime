@@ -10,7 +10,7 @@ import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
 export const ProgressBarAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-ProgressBar__root",
-        "relative w-full overflow-hidden rounded-full bg-[--subtle] translate-z-0",
+        "relative w-full overflow-hidden rounded-full bg-(--subtle) translate-z-0",
     ], {
         variants: {
             size: {

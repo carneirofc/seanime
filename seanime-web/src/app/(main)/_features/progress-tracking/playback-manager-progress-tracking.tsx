@@ -313,7 +313,7 @@ export function PlaybackManagerProgressTracking() {
                 open={showModal && shouldBeDisplayed}
                 onOpenChange={v => setShowModal(v)}
                 titleClass="text-center"
-                contentClass="!space-y-0 relative max-w-2xl overflow-hidden"
+                contentClass="space-y-0! relative max-w-2xl overflow-hidden"
             >
                 {!!state?.completionPercentage && <div data-progress-tracking-modal-progress-bar className="absolute left-0 top-0 w-full">
                     <ProgressBar className="h-2 rounded-lg" value={state.completionPercentage * 100} />
@@ -322,15 +322,15 @@ export function PlaybackManagerProgressTracking() {
                     {state.mediaCoverImage && <div className="size-16 rounded-full relative mx-auto overflow-hidden mb-3">
                         <SeaImage src={state.mediaCoverImage} alt="cover image" fill className="object-cover object-center" />
                     </div>}
-                    {/*<p className="text-[--muted]">Currently watching</p>*/}
+                    {/*<p className="text-(--muted)">Currently watching</p>*/}
                     <div data-progress-tracking-title>
                         <h3 className="text-lg font-medium line-clamp-1">{state?.mediaTitle}</h3>
                         <p className="text-2xl font-bold">Episode {state?.episodeNumber}
-                            <span className="text-[--muted]">{" / "}{state?.mediaTotalEpisodes || "-"}</span>
+                            <span className="text-(--muted)">{" / "}{state?.mediaTotalEpisodes || "-"}</span>
                         </p>
                     </div>
                     {(serverStatus?.settings?.library?.autoUpdateProgress && !state?.progressUpdated) && (
-                        <p data-progress-tracking-auto-update-progress className="text-[--muted] text-center text-sm">
+                        <p data-progress-tracking-auto-update-progress className="text-(--muted) text-center text-sm">
                             Your progress will be automatically updated
                         </p>
                     )}
@@ -378,14 +378,14 @@ export function PlaybackManagerProgressTracking() {
                     </Button>
                 </div>}
                 {!!playlistState?.next && (
-                    <div data-progress-tracking-playlist className="border rounded-[--radius-md] p-4 text-center relative overflow-hidden">
+                    <div data-progress-tracking-playlist className="border rounded-md p-4 text-center relative overflow-hidden">
                         <div className="space-y-3">
                             <div>
-                                <h4 className="text-lg font-medium text-center text-[--muted] mb-2 uppercase tracking-wide">Playlist</h4>
+                                <h4 className="text-lg font-medium text-center text-(--muted) mb-2 uppercase tracking-wide">Playlist</h4>
                                 {!!playlistState.remaining &&
                                     <p
                                         data-progress-tracking-playlist-remaining
-                                        className="text-[--muted]"
+                                        className="text-(--muted)"
                                     >{playlistState.remaining} episode{playlistState.remaining > 1 ? "s" : ""} after this
                                                                one</p>}
                                 <p
@@ -397,7 +397,7 @@ export function PlaybackManagerProgressTracking() {
                             <div
                                 data-progress-tracking-playlist-next-episode-button
                                 className={cn(
-                                    "w-full rounded-[--radius-md] relative overflow-hidden",
+                                    "w-full rounded-md relative overflow-hidden",
                                     submittedPlaylistNext ? "opacity-50 pointer-events-none" : "cursor-pointer",
                                 )}
                                 onClick={() => {
@@ -414,11 +414,11 @@ export function PlaybackManagerProgressTracking() {
                                     sizes="10rem"
                                     fill
                                     alt=""
-                                    className="object-center object-cover z-[1]"
+                                    className="object-center object-cover z-1"
                                 />}
                                 <div
                                     data-progress-tracking-playlist-next-episode-button-container
-                                    className="inset-0 relative z-[2] bg-black border bg-opacity-70 hover:bg-opacity-80 transition flex flex-col gap-2 items-center justify-center p-4"
+                                    className="inset-0 relative z-2 bg-black/70 border hover:bg-black/80 transition flex flex-col gap-2 items-center justify-center p-4"
                                 >
                                     <p data-progress-tracking-playlist-next-episode-button-text className="flex gap-2 items-center">
                                         <BiSolidSkipNextCircle className="block text-2xl" /> Play next</p>

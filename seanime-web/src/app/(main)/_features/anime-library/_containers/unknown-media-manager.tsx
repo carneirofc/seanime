@@ -107,7 +107,7 @@ export function UnknownMediaManager(props: UnknownMediaManagerProps) {
                     Add all to {!hasCustomSources ? "AniList" : "collection"}
                 </Button>
 
-                <div className="divide divide-y divide-[--border] space-y-4">
+                <div className="divide divide-y divide-(--border) space-y-4">
 
                     {unknownGroups.map(group => {
                         return (
@@ -150,14 +150,14 @@ export function UnknownMediaManager(props: UnknownMediaManagerProps) {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="bg-gray-900 border rounded-[--radius-md] space-y-1 max-h-52 max-w-full overflow-x-auto overflow-y-auto text-sm">
+                                <div className="bg-gray-900 border rounded-md space-y-1 max-h-52 max-w-full overflow-x-auto overflow-y-auto text-sm">
                                     {group.localFiles?.sort((a, b) => ((Number(a.parsedInfo?.episode ?? 0)) - (Number(b.parsedInfo?.episode ?? 0))))
                                         .map(lf => {
                                             return <p
                                                 key={lf.path}
-                                                className="p-2 text-[--muted] line-clamp-2 tracking-wide select-text even:bg-gray-800"
+                                                className="p-2 text-(--muted) line-clamp-2 tracking-wide select-text even:bg-gray-800"
                                             >
-                                                <span>{upath.dirname(lf.path)}/</span><span className="text-[--foreground]">{lf.parsedInfo?.original || upath.basename(
+                                                <span>{upath.dirname(lf.path)}/</span><span className="text-(--foreground)">{lf.parsedInfo?.original || upath.basename(
                                                 lf.path)}</span>
                                             </p>
                                         })}

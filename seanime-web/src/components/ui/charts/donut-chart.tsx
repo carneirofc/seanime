@@ -96,7 +96,7 @@ export const DonutChart = React.forwardRef<HTMLDivElement, DonutChartProps>((pro
                                 y="50%"
                                 textAnchor="middle"
                                 dominantBaseline="middle"
-                                className="fill-[--foreground] dark:fill-[--foreground] font-semibold"
+                                className="fill-(--foreground) dark:fill-(--foreground) font-semibold"
                             >
                                 {parsedLabelInput}
                             </text>
@@ -117,10 +117,9 @@ export const DonutChart = React.forwardRef<HTMLDivElement, DonutChartProps>((pro
                             isAnimationActive={showAnimation}
                             inactiveShape={renderInactiveShape}
                             style={{ outline: "none" }}
-                            className="stroke-[--background] dark:stroke-[--background]"
+                            className="stroke-(--background) dark:stroke-(--background)"
                         />
                         <Tooltip
-                            cursorStyle={{ outline: "none" }}
                             wrapperStyle={{ outline: "none" }}
                             isAnimationActive={false}
                             content={showTooltip ? ({ active, payload }) => (

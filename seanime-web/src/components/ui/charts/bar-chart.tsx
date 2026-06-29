@@ -98,7 +98,7 @@ export const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>((props, 
                                 interval="preserveStartEnd"
                                 tick={{ transform: "translate(0, 6)" }} // Padding between labels and axis
                                 ticks={startEndOnly ? [data[0][index], data[data.length - 1][index]] : undefined}
-                                className="font-medium text-[--muted] text-xs mt-4"
+                                className="font-medium text-(--muted) text-xs mt-4"
                                 tickLine={false}
                                 axisLine={false}
                             />
@@ -108,7 +108,7 @@ export const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>((props, 
                                 type="number"
                                 tick={{ transform: "translate(-3, 0)" }}
                                 domain={yAxisDomain as AxisDomain}
-                                className="font-medium text-[--muted] text-xs"
+                                className="font-medium text-(--muted) text-xs"
                                 tickLine={false}
                                 axisLine={false}
                                 tickFormatter={valueFormatter}
@@ -126,7 +126,7 @@ export const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>((props, 
                                 type="number"
                                 domain={yAxisDomain as AxisDomain}
                                 tick={{ transform: "translate(-3, 0)" }}
-                                className="font-medium text-[--muted] text-xs"
+                                className="font-medium text-(--muted) text-xs"
                                 tickFormatter={
                                     relative ? (value: number) => `${(value * 100).toString()} %` : valueFormatter
                                 }
@@ -143,7 +143,7 @@ export const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>((props, 
                                 type="category"
                                 interval="preserveStartEnd"
                                 tick={{ transform: "translate(0, 6)" }}
-                                className="font-medium text-[--muted] text-xs"
+                                className="font-medium text-(--muted) text-xs"
                             />
                         )}
                         <Tooltip

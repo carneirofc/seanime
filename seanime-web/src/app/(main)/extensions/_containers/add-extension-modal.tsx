@@ -95,7 +95,7 @@ export function AddExtensionModal(props: AddExtensionModalProps) {
                 <div className="flex gap-4 flex-col lg:flex-row">
                     <div className="lg:w-1/3">
                         <h3 className="text-2xl font-bold">Install from URL</h3>
-                        <p className="text-[--muted]">Install an extension by entering the manifest URL.</p>
+                        <p className="text-(--muted)">Install an extension by entering the manifest URL.</p>
                     </div>
                     <div className="lg:w-2/3 gap-3 flex flex-col">
                         <TextInput
@@ -141,14 +141,14 @@ export function AddExtensionModal(props: AddExtensionModalProps) {
                     <>
                         <Separator />
 
-                        <p className="text-center text-[--muted]">
+                        <p className="text-center text-(--muted)">
                             You can also install many extensions at once by importing them from a repository.
                         </p>
 
                         <div className="flex gap-4 flex-col lg:flex-row-reverse">
                             <div className="lg:w-1/3">
                                 <h3 className="text-xl font-bold">Import from repository</h3>
-                                <p className="text-[--muted]">Import and automatically install extensions by entering a repository URL.</p>
+                                <p className="text-(--muted)">Import and automatically install extensions by entering a repository URL.</p>
                             </div>
                             <div className="lg:w-2/3 gap-3 flex flex-col">
                                 <TextInput

@@ -18,12 +18,12 @@ type Props = {
 const tabsRootClass = cn("w-full contents space-y-4")
 
 const tabsTriggerClass = cn(
-    "text-base px-6 rounded-[--radius-md] w-fit border-none data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white",
+    "text-base px-6 rounded-md w-fit border-none data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white",
     "h-10 lg:justify-center px-3 flex-1",
 )
 
 const tabsListClass = cn(
-    "w-full flex flex-row lg:flex-row flex-wrap h-fit !mt-4",
+    "w-full flex flex-row lg:flex-row flex-wrap h-fit mt-4!",
 )
 
 const tabContentClass = cn(
@@ -79,7 +79,7 @@ export function NakamaSettings(props: Props) {
                 triggerClass={tabsTriggerClass}
                 listClass={tabsListClass}
             >
-                <TabsList className="flex-wrap max-w-full bg-[--paper] p-2 border rounded-xl">
+                <TabsList className="flex-wrap max-w-full bg-(--paper) p-2 border rounded-xl">
                     <TabsTrigger value="peer">Connect as a Peer</TabsTrigger>
                     <TabsTrigger value="host">Hosting {serverStatus?.settings?.nakama?.isHost &&
                         <Badge intent="info" className="ml-3">Currently hosting</Badge>}</TabsTrigger>
@@ -95,7 +95,7 @@ export function NakamaSettings(props: Props) {
                             description="Add a password to your config file before exposing your server to the internet."
                         />}
 
-                    <SettingsCard className="!bg-gray-900 text-sm">
+                    <SettingsCard className="bg-gray-900! text-sm">
                         <div>
                             <p>
                                 Host mode is intended for Seanime servers that are accessible over the internet.

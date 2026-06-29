@@ -40,7 +40,7 @@ export function EpisodeCardImage(props: EpisodeCardImageProps) {
             <span
                 aria-hidden="true"
                 className={cn(
-                    "absolute inset-0 z-0 bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-950/80",
+                    "absolute inset-0 z-0 bg-linear-to-br from-gray-900/80 via-gray-800/70 to-gray-950/80",
                     "transition-opacity duration-300 ease-out motion-reduce:transition-none",
                     loaded ? "opacity-0" : "opacity-100",
                 )}

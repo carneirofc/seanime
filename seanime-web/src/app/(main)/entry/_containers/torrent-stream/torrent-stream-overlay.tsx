@@ -158,8 +158,8 @@ export function TorrentStreamOverlay({ isNativePlayerComponent, show }: {
                 {(isLoaded && nativePlayerState.active && status) &&
                     <div
                         className={cn(
-                            "absolute left-0 top-8 w-full flex justify-center z-[100] pointer-events-none",
-                            isNativePlayerComponent === "overlay" && "fixed left-0 top-8 w-full flex justify-center z-[100] pointer-events-none",
+                            "absolute left-0 top-8 w-full flex justify-center z-100 pointer-events-none",
+                            isNativePlayerComponent === "overlay" && "fixed left-0 top-8 w-full flex justify-center z-100 pointer-events-none",
                             // isNativePlayerComponent === "info" && "relative justify-left w-fit top-0 items-center text-white/90",
                             isNativePlayerComponent === "control-bar" && "relative justify-left w-fit top-0 h-full flex items-center px-2 truncate",
                             show === false && "hidden",
@@ -169,7 +169,7 @@ export function TorrentStreamOverlay({ isNativePlayerComponent, show }: {
                             className={cn(
                                 (isNativePlayerComponent === "control-bar" || isNativePlayerComponent === "top-section") && "flex-wrap w-fit h-14 flex gap-3 items-center text-sm pointer-events-auto",
                                 isNativePlayerComponent === "overlay" && "bg-gray-950 flex-wrap rounded-full border lg:max-w-[50%] w-fit h-14 px-6 flex gap-3 items-center text-sm lg:text-base pointer-events-auto",
-                                // isNativePlayerComponent === "info" && "!font-medium h-auto py-1",
+                                // isNativePlayerComponent === "info" && "font-medium! h-auto py-1",
                             )}
                         >
 
@@ -183,8 +183,8 @@ export function TorrentStreamOverlay({ isNativePlayerComponent, show }: {
                             </div>
 
                             <span
-                                className={cn("text-[--muted]",
-                                    { "text-[--muted] animate-pulse": status.progressPercentage < 5 })}
+                                className={cn("text-(--muted)",
+                                    { "text-(--muted) animate-pulse": status.progressPercentage < 5 })}
                             >{status.progressPercentage.toFixed(
                                 2)}%</span>
 
@@ -207,7 +207,7 @@ export function TorrentStreamOverlay({ isNativePlayerComponent, show }: {
                     </div>}
 
                 {(!(isLoaded && status) && !!loadingState && loadingState !== "SENDING_STREAM_TO_MEDIA_PLAYER") &&
-                    <div className={cn("fixed left-0 top-8 w-full flex justify-center z-[100] pointer-events-none", show === false && "hidden")}>
+                    <div className={cn("fixed left-0 top-8 w-full flex justify-center z-100 pointer-events-none", show === false && "hidden")}>
                         <div className="lg:max-w-[50%] w-fit h-14 px-6 flex gap-2 items-center text-sm lg:text-base pointer-events-auto">
                             <Spinner className="w-4 h-4" />
                             <div className="truncate max-w-[500px]">
@@ -228,17 +228,17 @@ export function TorrentStreamOverlay({ isNativePlayerComponent, show }: {
     if (isLoaded && status) {
         return (
             <>
-                {/*{!mediaPlayerStartedPlaying && !nativePlayerState.active && <div className="w-full bg-gray-950 fixed top-0 left-0 z-[100]">*/}
+                {/*{!mediaPlayerStartedPlaying && !nativePlayerState.active && <div className="w-full bg-gray-950 fixed top-0 left-0 z-100">*/}
                 {/*    <ProgressBar size="xs" isIndeterminate />*/}
                 {/*</div>}*/}
                 {/* Normal overlay / Native player is not fullscreen */}
                 {(!nativePlayerState.active) &&
-                    <div className="fixed left-0 top-8 w-full flex justify-center z-[100] pointer-events-none">
+                    <div className="fixed left-0 top-8 w-full flex justify-center z-100 pointer-events-none">
                         <div className="bg-gray-950 flex-wrap rounded-full border lg:max-w-[50%] w-fit h-14 px-6 flex gap-3 items-center text-sm lg:text-base pointer-events-auto">
 
                             <span
                                 className={cn("text-green-300",
-                                    { "text-[--muted] animate-pulse": status.progressPercentage < 70 })}
+                                    { "text-(--muted) animate-pulse": status.progressPercentage < 70 })}
                             >{status.progressPercentage.toFixed(
                                 2)}%</span>
 
@@ -274,10 +274,10 @@ export function TorrentStreamOverlay({ isNativePlayerComponent, show }: {
 
     if (loadingState && !nativePlayerState.active) {
         return <>
-            {/*<div className="w-full bg-gray-950 fixed top-0 left-0 z-[100]">*/}
+            {/*<div className="w-full bg-gray-950 fixed top-0 left-0 z-100">*/}
             {/*    <ProgressBar size="xs" isIndeterminate />*/}
             {/*</div>*/}
-            <div className="fixed left-0 top-8 w-full flex justify-center z-[100] pointer-events-none">
+            <div className="fixed left-0 top-8 w-full flex justify-center z-100 pointer-events-none">
                 <div className="bg-gray-950 rounded-full border lg:max-w-[50%] w-fit h-14 px-6 flex gap-2 items-center text-sm lg:text-base pointer-events-auto">
                     <Spinner className="w-4 h-4" />
                     <div className="truncate max-w-[500px]">

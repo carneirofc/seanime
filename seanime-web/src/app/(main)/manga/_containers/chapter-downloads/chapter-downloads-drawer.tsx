@@ -150,7 +150,7 @@ export function ChapterDownloadQueue(props: ChapterDownloadQueueProps) {
                         </LuffyError> : null)}
 
                     {!!downloadQueue?.length ? (
-                        <ScrollArea className="h-[14rem]" data-chapter-download-queue-scroll-area>
+                        <ScrollArea className="h-56" data-chapter-download-queue-scroll-area>
                             <div className="space-y-2" data-chapter-download-queue-scroll-area-content>
                                 {downloadQueue.map(item => {
 
@@ -160,7 +160,7 @@ export function ChapterDownloadQueue(props: ChapterDownloadQueueProps) {
                                         <Card
                                             key={item.mediaId + item.provider + item.chapterId} className={cn(
                                             "px-3 py-2 bg-gray-900 space-y-1.5",
-                                            item.status === "errored" && "border-[--orange]",
+                                            item.status === "errored" && "border-(--orange)",
                                         )}
                                         >
                                             <div className="flex items-center gap-2">
@@ -168,11 +168,11 @@ export function ChapterDownloadQueue(props: ChapterDownloadQueueProps) {
                                                     className="font-semibold max-w-[180px] text-ellipsis truncate underline"
                                                     href={`/manga/entry?id=${media.id}`}
                                                 >{media.title?.userPreferred}</SeaLink>}
-                                                <p>Chapter {item.chapterNumber} <span className="text-[--muted] italic">(id: {item.chapterId})</span>
+                                                <p>Chapter {item.chapterNumber} <span className="text-(--muted) italic">(id: {item.chapterId})</span>
                                                 </p>
                                                 {item.status === "errored" && (
-                                                    <div className="flex gap-1 items-center text-[--orange]">
-                                                        <PiWarningOctagonDuotone className="text-2xl text-[--orange]" />
+                                                    <div className="flex gap-1 items-center text-(--orange)">
+                                                        <PiWarningOctagonDuotone className="text-2xl text-(--orange)" />
                                                         <p>
                                                             Errored
                                                         </p>
@@ -188,7 +188,7 @@ export function ChapterDownloadQueue(props: ChapterDownloadQueueProps) {
                             </div>
                         </ScrollArea>
                     ) : ((!downloadQueueLoading && !downloadQueueError) && (
-                        <p className="text-center text-[--muted] text-sm" data-chapter-download-queue-empty-state>
+                        <p className="text-center text-(--muted) text-sm" data-chapter-download-queue-empty-state>
                             Nothing in the queue
                         </p>
                     ))}
@@ -247,7 +247,7 @@ export function ChapterDownloadList(props: ChapterDownloadListProps) {
 
                                             <div className="flex items-center gap-2">
                                                 <p>{Object.values(item.downloadData)
-                                                    .flatMap(n => n).length} chapters</p> - <em className="text-[--muted]">Not in your AniList
+                                                    .flatMap(n => n).length} chapters</p> - <em className="text-(--muted)">Not in your AniList
                                                                                                                            collection</em>
                                             </div>
                                         </Card>
@@ -271,7 +271,7 @@ export function ChapterDownloadList(props: ChapterDownloadListProps) {
                                                 hideUnseenCountBadge
                                                 hideAnilistEntryEditButton
                                                 overlay={<p
-                                                    className="font-semibold text-white bg-gray-950 z-[-1] absolute right-0 w-fit px-4 py-1.5 text-center !bg-opacity-90 text-sm lg:text-base rounded-none rounded-bl-lg"
+                                                    className="font-semibold text-white bg-gray-950/90 z-[-1] absolute right-0 w-fit px-4 py-1.5 text-center text-sm lg:text-base rounded-none rounded-bl-lg"
                                                 >{nb} chapter{nb === 1 ? "" : "s"}</p>}
                                             />
                                         </div>
@@ -279,7 +279,7 @@ export function ChapterDownloadList(props: ChapterDownloadListProps) {
                             </div>
                         </>
                     ) : ((!isLoading && !isError) && (
-                        <p className="text-center text-[--muted] italic" data-chapter-download-list-empty-state>
+                        <p className="text-center text-(--muted) italic" data-chapter-download-list-empty-state>
                             No chapters downloaded
                         </p>
                     ))}

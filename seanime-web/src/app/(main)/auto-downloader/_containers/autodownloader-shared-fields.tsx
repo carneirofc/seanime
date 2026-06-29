@@ -70,7 +70,7 @@ export function TextArrayField<T extends string | number>(props: TextArrayFieldP
                         />
                     </div>
                     {(!!props.separatorText && index < fields.length - 1) && (
-                        <p className="text-center text-[--muted]">{props.separatorText}</p>
+                        <p className="text-center text-(--muted)">{props.separatorText}</p>
                     )}
                 </React.Fragment>
             ))}
@@ -101,7 +101,7 @@ export function ReleaseGroupsField(props: ReleaseGroupsFieldProps) {
     ]
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Release Groups</div>
             <p className="text-sm">
                 List of release groups to look for. If empty, any release group will be accepted.
@@ -128,7 +128,7 @@ export function ResolutionsField(props: ResolutionsFieldProps) {
     const suggestions = ["1080p", "720p", "2160p", "480p"]
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Resolutions</div>
             <p className="text-sm">
                 List of resolutions to look for. If empty, the highest resolution will be accepted.
@@ -180,7 +180,7 @@ export function AdditionalTermsField(props: AdditionalTermsFieldProps) {
     ]
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Video, Audio, Source, Subs
             </div>
             <div>
@@ -223,7 +223,7 @@ export function ExcludeTermsField(props: AdditionalTermsFieldProps) {
     ]
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Exclude Terms</div>
             <p className="text-sm"><span className="font-semibold">
                 All options must be included for the torrent to be rejected.</span> Torrents containing any of these terms will be rejected. (Case
@@ -252,7 +252,7 @@ export function ProvidersField(props: ProvidersFieldProps) {
     const { data: extensions } = useAnimeListTorrentProviderExtensions()
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Providers</div>
             <p className="text-sm">
                 Select specific providers to look for. If empty, the default provider will be used.
@@ -280,7 +280,7 @@ export function ProfileSelectField(props: ProfileSelectFieldProps) {
     const { data: profiles } = useGetAutoDownloaderProfiles()
 
     return (
-        <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+        <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
             <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Profile</div>
             <p className="text-sm">
                 Select a profile to apply shared filters. Local filters will override profile filters.

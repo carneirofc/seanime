@@ -47,24 +47,24 @@ export function LibraryView(props: LibraryViewProps) {
     const [params, setParams] = useAtom(__mainLibrary_paramsAtom)
 
     if (isLoading) return <React.Fragment>
-        <div className="p-4 space-y-4 relative z-[4]">
+        <div className="p-4 space-y-4 relative z-4">
             <Skeleton className="h-12 w-full max-w-lg relative" />
             <div
                 className={cn(
-                    "grid h-[22rem] min-[2000px]:h-[24rem] grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 min-[2000px]:grid-cols-8 gap-4",
+                    "grid h-88 5xl:h-96 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 5xl:grid-cols-8 gap-4",
                     type === "carousel" && "grid-cols-1",
                 )}
             >
                 {(type === "carousel" ? [2] : [1, 2, 3, 4, 5, 6, 7, 8])?.map((_, idx) => {
                     return <Skeleton
                         key={idx} className={cn(
-                            "h-[22rem] min-[2000px]:h-[24rem] col-span-1 aspect-[6/7] flex-none rounded-[--radius-md] relative overflow-hidden",
-                            "[&:nth-child(8)]:hidden min-[2000px]:[&:nth-child(8)]:block",
-                            "[&:nth-child(7)]:hidden 2xl:[&:nth-child(7)]:block",
-                            "[&:nth-child(6)]:hidden xl:[&:nth-child(6)]:block",
-                            "[&:nth-child(5)]:hidden xl:[&:nth-child(5)]:block",
-                            "[&:nth-child(4)]:hidden lg:[&:nth-child(4)]:block",
-                            "[&:nth-child(3)]:hidden md:[&:nth-child(3)]:block",
+                            "h-88 5xl:h-96 col-span-1 aspect-6/7 flex-none rounded-md relative overflow-hidden",
+                            "nth-8:hidden 5xl:nth-8:block",
+                            "nth-7:hidden 2xl:nth-7:block",
+                            "nth-6:hidden xl:nth-6:block",
+                            "nth-5:hidden xl:nth-5:block",
+                            "nth-4:hidden lg:nth-4:block",
+                            "nth-3:hidden md:nth-3:block",
                         )}
                     />
                 })}
@@ -80,7 +80,7 @@ export function LibraryView(props: LibraryViewProps) {
                 collectionList.flatMap(n => n.entries)?.length > 2
             ) && <GenreSelector genres={genres} />}
 
-            <PageWrapper key="library-collection-lists" className="px-4 space-y-8 relative z-[4]" data-library-collection-lists-container>
+            <PageWrapper key="library-collection-lists" className="px-4 space-y-8 relative z-4" data-library-collection-lists-container>
                 <AnimatePresence mode="wait" initial={false}>
 
                     {!params.genre?.length ?
@@ -121,7 +121,7 @@ function GenreSelector({
     if (!genres.length) return null
 
     return (
-        <PageWrapper className="space-y-3 lg:space-y-6 relative z-[4]" data-library-genre-selector-container>
+        <PageWrapper className="space-y-3 lg:space-y-6 relative z-4" data-library-genre-selector-container>
             <MediaGenreSelector
                 items={[
                     ...genres.map(genre => ({

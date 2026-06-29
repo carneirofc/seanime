@@ -87,7 +87,7 @@ export function AnimeEntryDropdownMenu({ entry, details }: { entry: Anime_Entry,
                     className="flex justify-between items-center"
                 >
                     <span className="flex items-center gap-2"><LuGlobe className="text-lg" /> Open on AniDB</span>
-                    <FiArrowUpRight className="text-[--muted] text-sm" />
+                    <FiArrowUpRight className="text-(--muted) text-sm" />
                 </DropdownMenuItem>}
 
                 {!!entry.media?.idMal && <DropdownMenuItem
@@ -95,7 +95,7 @@ export function AnimeEntryDropdownMenu({ entry, details }: { entry: Anime_Entry,
                     className="flex justify-between items-center"
                 >
                     <span className="flex items-center gap-2"><SiMyanimelist className="text-lg" /> Open on MAL</span>
-                    <FiArrowUpRight className="text-[--muted] text-sm" />
+                    <FiArrowUpRight className="text-(--muted) text-sm" />
                 </DropdownMenuItem>}
 
                 {isCustomSource(entry.mediaId) && <DropdownMenuItem

@@ -139,7 +139,7 @@ export const EpisodeItem = memo(({ episode, media, isWatched, watchedProgress, o
 
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                className="text-[--orange]"
+                                className="text-(--orange)"
                                 onClick={() => {
                                     if (episode.localFile) {
                                         updateLocalFile(episode.localFile, {
@@ -255,7 +255,7 @@ function IsomorphicPopover(props: PopoverProps & ModalProps) {
     if (width && width > 1024) {
         return <Popover
             {...rest}
-            className="max-w-xl !w-full overflow-hidden"
+            className="max-w-xl w-full! overflow-hidden"
         >
             {children}
         </Popover>
@@ -283,7 +283,7 @@ export function EpisodeItemInfoModalButton({ episode }: { episode: Anime_Episode
     >
 
         {episode.episodeMetadata?.image && <div
-            className="h-[8rem] w-full flex-none object-cover object-center overflow-hidden absolute left-0 top-0 z-[0] rounded-t-lg"
+            className="h-32 w-full flex-none object-cover object-center overflow-hidden absolute left-0 top-0 z-0 rounded-t-lg"
         >
             <SeaImage
                 src={getImageUrl(episode.episodeMetadata?.image)}
@@ -295,16 +295,16 @@ export function EpisodeItemInfoModalButton({ episode }: { episode: Anime_Episode
                 className="object-cover object-center opacity-30"
             />
             <div
-                className="z-[5] absolute bottom-0 w-full h-[80%] bg-gradient-to-t from-[--background] to-transparent"
+                className="z-5 absolute bottom-0 w-full h-[80%] bg-linear-to-t from-(--background) to-transparent"
             />
         </div>}
 
-        <div className="space-y-4 z-[5] relative">
+        <div className="space-y-4 z-5 relative">
             <p className="text-lg line-clamp-2 font-semibold">
                 {episode.episodeTitle?.replaceAll("`", "'")}
                 {episode.isInvalid && <AiFillWarning />}
             </p>
-            <p className="text-[--muted]">
+            <p className="text-(--muted)">
                 {episode.episodeMetadata?.airDate || "Unknown airing date"} - {episode.episodeMetadata?.length || "N/A"} minutes
             </p>
             <p className="text-gray-300">
@@ -312,7 +312,7 @@ export function EpisodeItemInfoModalButton({ episode }: { episode: Anime_Episode
                     ?.replace(/source:.*/gi, "") || "No summary"}
             </p>
             <Separator />
-            <p className="text-[--muted] line-clamp-2 tracking-wide text-sm">
+            <p className="text-(--muted) line-clamp-2 tracking-wide text-sm">
                 {episode.localFile?.parsedInfo?.original}
             </p>
             {
@@ -322,7 +322,7 @@ export function EpisodeItemInfoModalButton({ episode }: { episode: Anime_Episode
                         <a
                             href={"https://anidb.net/episode/" + episode.episodeMetadata?.anidbId + "#layout-footer"}
                             target="_blank"
-                            className="hover:underline text-[--muted]"
+                            className="hover:underline text-(--muted)"
                         >Open on AniDB
                         </a>
                     </div>

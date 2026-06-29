@@ -13,11 +13,11 @@ export const PaginationAnatomy = defineStyleAnatomy({
     ]),
     item: cva([
         "UI-Pagination__item",
-        "bg-transparent dark:bg-transparent text-sm text-[--muted] inline-flex h-8 w-8 items-center justify-center rounded-[--radius] border cursor-pointer",
-        "hover:bg-[--subtle] dark:hover:bg-[--subtle] hover:border-[--subtle] select-none",
+        "bg-transparent dark:bg-transparent text-sm text-(--muted) inline-flex h-8 w-8 items-center justify-center rounded-(--radius) border cursor-pointer",
+        "hover:bg-(--subtle) dark:hover:bg-(--subtle) hover:border-(--subtle) select-none",
         "data-[selected=true]:bg-brand-500 data-[selected=true]:border-transparent data-[selected=true]:text-white data-[selected=true]:hover:bg-brand data-[selected=true]:pointer-events-none", // Selected
         "data-[disabled=true]:opacity-50 data-[disabled=true]:pointer-events-none data-[disabled=true]:cursor-not-allowed", // Disabled
-        "outline-none ring-[--ring] focus-visible:ring-2",
+        "outline-none ring-(--ring) focus-visible:ring-2",
     ]),
     ellipsis: cva([
         "UI-Pagination__ellipsis",

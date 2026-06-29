@@ -52,7 +52,7 @@ export function TorrentSearchDrawer(props: { entry: Anime_Entry, isPlaylistDrawe
     //         open={selectionType !== undefined}
     //         onOpenChange={() => setSelection(undefined)}
     //         // size="xl"
-    //         contentClass="max-w-5xl bg-gray-950 bg-opacity-75 firefox:bg-opacity-100 sm:rounded-xl"
+    //         contentClass="max-w-5xl bg-gray-950/75 firefox:bg-gray-950/100 sm:rounded-xl"
     //         title={`${entry?.media?.title?.userPreferred || "Anime"}`}
     //         titleClass="max-w-[500px] text-ellipsis truncate"
     //         data-torrent-search-drawer
@@ -60,7 +60,7 @@ export function TorrentSearchDrawer(props: { entry: Anime_Entry, isPlaylistDrawe
     //         onInteractOutside={e => {if (isPlaylistDrawer) e.preventDefault()}}
     //     >
     //
-    //         <AppLayoutStack className="relative z-[1]" data-torrent-search-drawer-content>
+    //         <AppLayoutStack className="relative z-1" data-torrent-search-drawer-content>
     //             {selectionType === "download" && <EpisodeList episodes={entry.downloadInfo?.episodesToDownload} />}
     //             {!!selectionType && <TorrentSearchContainer type={selectionType} entry={entry} />}
     //         </AppLayoutStack>
@@ -77,13 +77,13 @@ export function TorrentSearchDrawer(props: { entry: Anime_Entry, isPlaylistDrawe
 
             <VaulContent
                 className={cn(
-                    "bg-gray-950 h-[90%] lg:h-[80%] bg-opacity-90 6xl:max-w-[1800px] firefox:bg-opacity-100 mx-4  6xl:mx-auto overflow-hidden",
-                    selectionType === "download" && "lg:h-[92.5%] xl:mx-[10rem] 2xl:mx-[17rem]",
-                    selectionType === undefined && "lg:h-[80%] xl:mx-[10rem] 2xl:mx-[20rem]",
+                    "bg-gray-950/90 h-[90%] lg:h-[80%] 6xl:max-w-[1800px] firefox:bg-gray-950/100 mx-4  6xl:mx-auto overflow-hidden",
+                    selectionType === "download" && "lg:h-[92.5%] xl:mx-40 2xl:mx-68",
+                    selectionType === undefined && "lg:h-[80%] xl:mx-40 2xl:mx-80",
                 )}
             >
                 <div className="p-4 lg:p-8 flex-1 overflow-y-auto">
-                    <AppLayoutStack className="relative z-[1]" data-torrent-search-drawer-content>
+                    <AppLayoutStack className="relative z-1" data-torrent-search-drawer-content>
                         {selectionType === "download" && <EpisodeList episodes={entry.downloadInfo?.episodesToDownload} />}
                         {!!selectionType && <TorrentSearchContainer type={selectionType} entry={entry} />}
                     </AppLayoutStack>

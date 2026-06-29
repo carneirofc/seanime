@@ -151,7 +151,7 @@ export default function Page() {
         <>
             <CustomLibraryBanner discrete />
 
-            <AppLayoutStack className="px-4 lg:px-8 z-[5]">
+            <AppLayoutStack className="px-4 lg:px-8 z-5">
 
                 <div className="flex flex-col lg:flex-row gap-2 w-full justify-between">
                     <div className="flex gap-4 items-center relative w-full">

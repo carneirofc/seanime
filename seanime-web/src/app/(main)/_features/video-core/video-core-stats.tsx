@@ -180,7 +180,7 @@ export function VideoCoreStatsForNerds({ playbackInfo, videoRef }: VideoCoreStat
     return (
         <div
             data-vc-element="stats-for-nerds"
-            className="absolute top-24 left-4 z-[100] bg-black/80 text-white p-4 rounded-md font-mono text-xs pointer-events-none select-none max-w-lg"
+            className="absolute top-24 left-4 z-100 bg-black/80 text-white p-4 rounded-md font-mono text-xs pointer-events-none select-none max-w-lg"
         >
             <p className="font-bold mb-2">Stats for Nerds</p>
             <div className="space-y-1">

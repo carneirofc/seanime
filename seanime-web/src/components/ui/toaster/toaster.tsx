@@ -8,7 +8,7 @@ import { cn, defineStyleAnatomy } from "../core/styling"
  * -----------------------------------------------------------------------------------------------*/
 
 export const ToasterAnatomy = defineStyleAnatomy({
-    toaster: cva(["group toaster z-[150]"]),
+    toaster: cva(["group toaster z-150"]),
     toast: cva([
         "group/toast",
         "select-none cursor-default",
@@ -18,29 +18,29 @@ export const ToasterAnatomy = defineStyleAnatomy({
         // "group-[.toaster]:ring-1 group-[.toaster]:ring-inset",
         "group-[.toaster]:transition-all group-[.toaster]:duration-200",
         // Default/Base style
-        // "group-[.toaster]:bg-gradient-to-br group-[.toaster]:from-[--paper] group-[.toaster]:to-[--paper]/80",
-        "group-[.toaster]:text-[--foreground] group-[.toaster]:border-[--border]",
-        "group-[.toaster]:ring-[--border]",
+        // "group-[.toaster]:bg-linear-to-br group-[.toaster]:from-(--paper) group-[.toaster]:to-(--paper)/80",
+        "group-[.toaster]:text-(--foreground) group-[.toaster]:border-(--border)",
+        "group-[.toaster]:ring-(--border)",
         // Success
-        "group-[.toaster]:data-[type=success]:bg-gradient-to-br",
+        "group-[.toaster]:data-[type=success]:bg-linear-to-br",
         "group-[.toaster]:data-[type=success]:from-emerald-950/95 group-[.toaster]:data-[type=success]:to-emerald-900/60",
         "group-[.toaster]:data-[type=success]:text-emerald-100",
         "group-[.toaster]:data-[type=success]:border-emerald-800/50",
         "group-[.toaster]:data-[type=success]:ring-emerald-700/40",
         // Warning
-        "group-[.toaster]:data-[type=warning]:bg-gradient-to-br",
+        "group-[.toaster]:data-[type=warning]:bg-linear-to-br",
         "group-[.toaster]:data-[type=warning]:from-amber-950/95 group-[.toaster]:data-[type=warning]:to-amber-900/60",
         "group-[.toaster]:data-[type=warning]:text-amber-100",
         "group-[.toaster]:data-[type=warning]:border-amber-800/50",
         "group-[.toaster]:data-[type=warning]:ring-amber-700/40",
         // Error
-        "group-[.toaster]:data-[type=error]:bg-gradient-to-br",
+        "group-[.toaster]:data-[type=error]:bg-linear-to-br",
         "group-[.toaster]:data-[type=error]:from-red-950/95 group-[.toaster]:data-[type=error]:to-red-900/60",
         "group-[.toaster]:data-[type=error]:text-red-100",
         "group-[.toaster]:data-[type=error]:border-red-800/50",
         "group-[.toaster]:data-[type=error]:ring-red-700/40",
         // Info
-        "group-[.toaster]:data-[type=info]:bg-gradient-to-br",
+        "group-[.toaster]:data-[type=info]:bg-linear-to-br",
         "group-[.toaster]:data-[type=info]:from-blue-950/95 group-[.toaster]:data-[type=info]:to-blue-900/60",
         "group-[.toaster]:data-[type=info]:text-blue-100",
         "group-[.toaster]:data-[type=info]:border-blue-800/50",

@@ -281,7 +281,7 @@ export function ChapterList(props: ChapterListProps) {
             enableSorting: true,
             cell: ({ getValue }: any) => {
                 const value = getValue()
-                return value ? <span className="text-sm text-[--muted]">{value}</span> : null
+                return value ? <span className="text-sm text-(--muted)">{value}</span> : null
             },
         }] : []),
         ...(hasChapterScanlators ? [{
@@ -290,7 +290,7 @@ export function ChapterList(props: ChapterListProps) {
             size: 30,
             accessorFn: (row: any) => row.scanlator,
             enableSorting: true,
-            cell: ({ getValue }: any) => <span className="text-sm text-[--muted]">{getValue()}</span>,
+            cell: ({ getValue }: any) => <span className="text-sm text-(--muted)">{getValue()}</span>,
         }] : []),
         ...(selectedExtension?.settings?.supportsMultiLanguage ? [{
             id: "language",
@@ -298,7 +298,7 @@ export function ChapterList(props: ChapterListProps) {
             size: 40,
             accessorFn: (row: any) => LANGUAGES_LIST[row.language]?.nativeName || row.language,
             enableSorting: true,
-            cell: ({ getValue }: any) => <span className="text-sm text-[--muted]">{getValue()}</span>,
+            cell: ({ getValue }: any) => <span className="text-sm text-(--muted)">{getValue()}</span>,
         }] : []),
         {
             id: "number",
@@ -346,7 +346,7 @@ export function ChapterList(props: ChapterListProps) {
                                         >
                                             <div className="flex items-center gap-2 w-full">
                                                 <span className="truncate">{getProviderOptionLabel(option)}</span>
-                                                <span className="ml-auto text-xs text-[--muted]">
+                                                <span className="ml-auto text-xs text-(--muted)">
                                                     {isDownloaded ? "Downloaded" : isQueued ? "Queued" : ""}
                                                 </span>
                                             </div>
@@ -362,8 +362,8 @@ export function ChapterList(props: ChapterListProps) {
                             icon={<LuDownload className="text-xl" />}
                             className="opacity-50 hover:opacity-100"
                         />)}
-                        {isChapterQueued(row.original) && <p className="text-[--muted]">Queued</p>}
-                        {isChapterDownloaded(row.original) && <p className="text-[--green] px-1"><MdOutlineOfflinePin className="text-2xl" /></p>}
+                        {isChapterQueued(row.original) && <p className="text-(--muted)">Queued</p>}
+                        {isChapterDownloaded(row.original) && <p className="text-(--green) px-1"><MdOutlineOfflinePin className="text-2xl" /></p>}
                         {row.original.url && (
                             <a href={row.original.url} target="_blank" rel="noopener noreferrer">
                                 <IconButton
@@ -462,7 +462,7 @@ export function ChapterList(props: ChapterListProps) {
                     <div className="flex gap-1 items-center w-full">
                         <p className="max-w-[70%] truncate">Chapter {nextChapter.chapter}</p>
                         {nextChapter.scanlator && (
-                            <p className="text-[--muted]">({nextChapter.scanlator})</p>
+                            <p className="text-(--muted)">({nextChapter.scanlator})</p>
                         )}
                     </div>
                 ),
@@ -487,7 +487,7 @@ export function ChapterList(props: ChapterListProps) {
                     <div className="flex gap-1 items-center w-full">
                         <p className="max-w-[70%] truncate">Chapter {chapter.chapter}</p>
                         {chapter.scanlator && (
-                            <p className="text-[--muted]">({chapter.scanlator})</p>
+                            <p className="text-(--muted)">({chapter.scanlator})</p>
                         )}
                     </div>
                 ),
@@ -653,7 +653,7 @@ export function ChapterList(props: ChapterListProps) {
             {(chapterContainerLoading || isClearingMangaCache) ? <LoadingSpinner /> : (
                 sourceMatchRequired ? <div className="space-y-4">
                     <LuffyError title={sourceMatchCandidates.length > 0 ? "Select a source match" : "Source match required"}>
-                        <p className="text-sm text-[--muted] max-w-lg text-center mt-2">
+                        <p className="text-sm text-(--muted) max-w-lg text-center mt-2">
                             {sourceMatchCandidates.length > 0
                                 ? `We found ${sourceMatchCandidates.length} possible matches from ${selectedExtension?.name || selectedProvider}. Choose the correct result before loading chapters.`
                                 : (sourceMatchCandidatesErrorMessage || "We couldn't automatically confirm a source match. Search the selected provider and choose the correct manga to continue.")}
@@ -672,7 +672,7 @@ export function ChapterList(props: ChapterListProps) {
                 </div> : chapterContainerError ? <div className="space-y-4">
                     <LuffyError title="No chapters found">
                         {chapterContainerErrorMessage && (
-                            <p className="text-sm text-[--muted] max-w-lg text-center mt-2">
+                            <p className="text-sm text-(--muted) max-w-lg text-center mt-2">
                                 {chapterContainerErrorMessage}
                             </p>
                         )}
@@ -738,7 +738,7 @@ export function ChapterList(props: ChapterListProps) {
                                  isChapterLocal={isChapterLocal}
                                  /> */}
 
-                                <div data-chapter-list-bulk-actions-container className="space-y-4 rounded-2xl border bg-[--paper] p-4">
+                                <div data-chapter-list-bulk-actions-container className="space-y-4 rounded-2xl border bg-(--paper) p-4">
 
                                     <div data-chapter-list-bulk-actions-checkboxes-container className="flex flex-wrap items-center gap-4">
                                         <Checkbox
@@ -798,7 +798,7 @@ export function ChapterList(props: ChapterListProps) {
                                         tableBodyClass="border-0"
                                         tdClass="border-[rgba(255,255,255,0.05)]"
                                         // tableBodyClass="divide-0 space-y-2"
-                                        // trClass="p-3 border-0 bg-[--paper] rounded-lg"
+                                        // trClass="p-3 border-0 bg-(--paper) rounded-lg"
                                         // tdClass="p-3 border-0 rounded-lg"
                                     />
                                 </div>

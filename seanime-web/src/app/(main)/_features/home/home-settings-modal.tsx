@@ -199,8 +199,8 @@ export function HomeSettingsModal({ emptyLibrary, isNakamaLibrary }: { emptyLibr
                     Home
                 </div>}
                 contentClass={cn(
-                    "max-w-5xl bg-gray-950 bg-opacity-90 sm:rounded-3xl",
-                    ts.enableBlurringEffects && "bg-gray-950 bg-opacity-80 backdrop-blur-sm firefox:bg-opacity-100 firefox:backdrop-blur-none",
+                    "max-w-5xl bg-gray-950/90 sm:rounded-3xl",
+                    ts.enableBlurringEffects && "bg-gray-950/80 backdrop-blur-sm firefox:bg-gray-950/100 firefox:backdrop-blur-none",
                 )}
                 overlayClass={cn(ts.enableBlurringEffects && "bg-gray-950/70 backdrop-blur-sm")}
             >
@@ -211,7 +211,7 @@ export function HomeSettingsModal({ emptyLibrary, isNakamaLibrary }: { emptyLibr
                 {/*    disabled={false}*/}
                 {/*    proximity={64}*/}
                 {/*    inactiveZone={0.01}*/}
-                {/*    className="opacity-50 !mt-0"*/}
+                {/*    className="opacity-50 mt-0!"*/}
                 {/*/>*/}
 
                 <div className="space-y-6">
@@ -264,12 +264,12 @@ export function HomeSettingsModal({ emptyLibrary, isNakamaLibrary }: { emptyLibr
                                 ),
                                 stackClass: "space-y-0 flex flex-row gap-2",
                                 itemIndicatorClass: "hidden",
-                                itemLabelClass: "font-normal tracking-wide line-clamp-1 truncate flex flex-col items-center data-[state=checked]:text-[--gray] cursor-pointer",
+                                itemLabelClass: "font-normal tracking-wide line-clamp-1 truncate flex flex-col items-center data-[state=checked]:text-(--gray) cursor-pointer",
                                 itemContainerClass: cn(
-                                    "items-start cursor-pointer transition border-transparent rounded-[--radius] py-1.5 px-3 w-full",
-                                    "hover:bg-[--subtle] dark:bg-gray-900",
+                                    "items-start cursor-pointer transition border-transparent rounded-(--radius) py-1.5 px-3 w-full",
+                                    "hover:bg-(--subtle) dark:bg-gray-900",
                                     "data-[state=checked]:bg-white dark:data-[state=unchecked]:hover:bg-gray-800 dark:data-[state=checked]:bg-gray-900",
-                                    "focus:ring-2 ring-transparent dark:ring-transparent outline-none ring-offset-1 ring-offset-[--background] focus-within:ring-2 transition",
+                                    "focus:ring-2 ring-transparent dark:ring-transparent outline-none ring-offset-1 ring-offset-(--background) focus-within:ring-2 transition",
                                     "border border-transparent data-[state=checked]:border-gray-500 data-[state=checked]:ring-offset-0",
                                 ),
                             }}
@@ -283,7 +283,7 @@ export function HomeSettingsModal({ emptyLibrary, isNakamaLibrary }: { emptyLibr
                             // </>}
                         />
 
-                        <p className="text-sm text-[--muted] pt-4">
+                        <p className="text-sm text-(--muted) pt-4">
                             {animeLibraryType === "local"
                                 ? "Only anime in your local library will be displayed"
                                 : "All anime in your currently watching list will be included in the library"}
@@ -431,7 +431,7 @@ function SortableHomeItem({ item, onRemove, onEditOptions, isUpdating, index }: 
                     {(item.type === "centered-title" && item.options?.text) && `: "${item.options.text}"`}
                     {(item.type === "my-lists") && `: ${item.options?.type === "manga" ? "Manga" : "Anime"}`}
                 </div>
-                <p className="text-xs text-[--muted] line-clamp-1">
+                <p className="text-xs text-(--muted) line-clamp-1">
                     {homeItemConfig.description}
                 </p>
                 <div className="text-sm text-gray-400">
@@ -490,7 +490,7 @@ function AvailableHomeItem({ id, type, onAdd, isUpdating }: AvailableHomeItemPro
 
             <div className="flex-1">
                 <div className="font-medium text-white">{homeItemConfig.name}</div>
-                <p className="text-xs text-[--muted]">
+                <p className="text-xs text-(--muted)">
                     {homeItemConfig.description}
                 </p>
                 <div className="text-sm text-gray-400">
@@ -555,7 +555,7 @@ function HomeItemOptionsModal({ id, item, isOpen, onClose, onSave, isUpdating }:
                     Configure {homeItemConfig.name}
                 </div>
             }
-            contentClass="max-w-2xl bg-gray-950 bg-opacity-90 firefox:bg-opacity-100 firefox:backdrop-blur-none sm:rounded-3xl"
+            contentClass="max-w-2xl bg-gray-950/90 firefox:bg-gray-950/100 firefox:backdrop-blur-none sm:rounded-3xl"
             overlayClass="bg-black/80"
         >
             <div className="space-y-6">

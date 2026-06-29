@@ -247,7 +247,7 @@ function CastDeviceModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
                 )}
 
                 {isDiscovering && (
-                    <div className="flex items-center gap-2 text-sm text-[--muted]">
+                    <div className="flex items-center gap-2 text-sm text-(--muted)">
                         <LoadingSpinner />
                         <span>Searching for devices...</span>
                     </div>
@@ -255,7 +255,7 @@ function CastDeviceModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
                 {devices.length === 0 && !isDiscovering && (
                     <div className="text-center py-6">
-                        <p className="text-sm text-[--muted]">No devices found</p>
+                        <p className="text-sm text-(--muted)">No devices found</p>
                         <Button intent="gray-subtle" size="sm" className="mt-2" onClick={discover}>
                             Scan again
                         </Button>
@@ -281,7 +281,7 @@ function CastDeviceModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
                                 <BiCast className="text-xl text-gray-400" />
                                 <div>
                                     <p className="text-sm font-medium">{device.name}</p>
-                                    <p className="text-xs text-[--muted]">{device.host}</p>
+                                    <p className="text-xs text-(--muted)">{device.host}</p>
                                 </div>
                             </button>
                         ))}

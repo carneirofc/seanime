@@ -88,7 +88,7 @@ export function PlaylistListModal() {
                 size="lg"
                 side="bottom"
                 contentClass={cn(
-                    ts.enableBlurringEffects && "bg-gray-950 bg-opacity-95 backdrop-blur-sm firefox:bg-opacity-100 firefox:backdrop-blur-none",
+                    ts.enableBlurringEffects && "bg-gray-950/95 backdrop-blur-sm firefox:bg-gray-950/100 firefox:backdrop-blur-none",
                 )}
                 overlayClass={cn(ts.enableBlurringEffects && "bg-gray-950/70 backdrop-blur-sm")}
             >
@@ -134,8 +134,8 @@ function PlaylistLists({ libraryCollection }: { libraryCollection: Anime_Library
 
     if (!playlists?.length) {
         return (
-            <div className="text-center text-[--muted] space-y-1 py-6">
-                <MdOutlineVideoLibrary className="mx-auto text-5xl text-[--muted]" />
+            <div className="text-center text-(--muted) space-y-1 py-6">
+                <MdOutlineVideoLibrary className="mx-auto text-5xl text-(--muted)" />
                 <div>
                     No playlists
                 </div>
@@ -161,8 +161,8 @@ function PlaylistLists({ libraryCollection }: { libraryCollection: Anime_Library
                         <CarouselItem
                             key={p.dbId}
                             className={cn(
-                                "md:basis-1/3 lg:basis-1/4 2xl:basis-1/6 min-[2000px]:basis-1/6",
-                                "aspect-[7/6] p-2",
+                                "md:basis-1/3 lg:basis-1/4 2xl:basis-1/6 5xl:basis-1/6",
+                                "aspect-7/6 p-2",
                             )}
                             // onClick={() => handleSelect(lf.path)}
                         >
@@ -173,11 +173,11 @@ function PlaylistLists({ libraryCollection }: { libraryCollection: Anime_Library
                                     sizes="10rem"
                                     fill
                                     alt=""
-                                    className="object-center object-cover z-[1]"
+                                    className="object-center object-cover z-1"
                                 />}
 
-                                <div className="absolute inset-0 z-[2] bg-gray-900 opacity-50 hover:opacity-70 transition-opacity flex items-center justify-center" />
-                                <div className="absolute inset-0 z-[6] flex items-center justify-center">
+                                <div className="absolute inset-0 z-2 bg-gray-900 opacity-50 hover:opacity-70 transition-opacity flex items-center justify-center" />
+                                <div className="absolute inset-0 z-6 flex items-center justify-center">
                                     {/*<StartPlaylistModal*/}
                                     {/*    canStart={serverStatus?.settings?.library?.autoUpdateProgress}*/}
                                     {/*    playlist={p}*/}
@@ -194,7 +194,7 @@ function PlaylistLists({ libraryCollection }: { libraryCollection: Anime_Library
                                         <FaCirclePlay className="block text-5xl cursor-pointer opacity-95 hover:opacity-70 hover:scale-[1.1] transition-all" />
                                     </div>}
                                 </div>
-                                <div className="absolute top-2 right-2 z-[6] flex items-center justify-center">
+                                <div className="absolute top-2 right-2 z-6 flex items-center justify-center">
                                     <PlaylistEditorModal
                                         libraryCollection={libraryCollection}
                                         trigger={<Button
@@ -209,11 +209,11 @@ function PlaylistLists({ libraryCollection }: { libraryCollection: Anime_Library
                                         >{selectedMedia ? "Add to Playlist" : "Edit"}</Button>} playlist={p}
                                     />
                                 </div>
-                                <div className="absolute w-full bottom-0 h-fit z-[6]">
+                                <div className="absolute w-full bottom-0 h-fit z-6">
                                     <div className="space-y-0 pb-3 items-center">
                                         <p className="text-md font-bold text-white max-w-lg truncate text-center">{p.name}</p>
                                         {p.episodes &&
-                                            <p className="text-sm text-[--muted] font-normal line-clamp-1 text-center">{p.episodes.length} episode{p.episodes.length > 1
+                                            <p className="text-sm text-(--muted) font-normal line-clamp-1 text-center">{p.episodes.length} episode{p.episodes.length > 1
                                                 ? `s`
                                                 : ""}</p>}
                                     </div>

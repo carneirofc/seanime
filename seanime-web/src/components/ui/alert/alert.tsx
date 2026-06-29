@@ -9,14 +9,14 @@ import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
 export const AlertAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Alert__root",
-        "py-3 px-4 flex justify-between rounded-[--radius]",
+        "py-3 px-4 flex justify-between rounded-(--radius)",
     ], {
         variants: {
             intent: {
-                "info": "bg-blue-50 text-blue-500 dark:bg-opacity-10 dark:text-blue-200",
-                "success": "bg-green-50 text-green-500 dark:bg-opacity-10 dark:text-green-200",
-                "warning": "bg-orange-50 text-orange-500 dark:bg-opacity-10 dark:text-orange-200",
-                "alert": "bg-red-50 text-red-500 dark:bg-opacity-10 dark:text-red-200",
+                "info": "bg-blue-50 text-blue-500 dark:bg-blue-50/10 dark:text-blue-200",
+                "success": "bg-green-50 text-green-500 dark:bg-green-50/10 dark:text-green-200",
+                "warning": "bg-orange-50 text-orange-500 dark:bg-orange-50/10 dark:text-orange-200",
+                "alert": "bg-red-50 text-red-500 dark:bg-red-50/10 dark:text-red-200",
                 "info-basic": "bg-white text-gray-800 border dark:bg-gray-800 dark:text-gray-200",
                 "success-basic": "bg-white text-gray-800 border dark:bg-gray-800 dark:text-gray-200",
                 "warning-basic": "bg-white text-gray-800 border dark:bg-gray-800 dark:text-gray-200",

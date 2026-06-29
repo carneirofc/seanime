@@ -54,7 +54,7 @@ export default function Page() {
         >
             <MetaSection entry={mangaEntry} details={mangaDetails} detailsLoading={mangaDetailsLoading} />
 
-            <div data-manga-entry-page-content-container className="px-4 md:px-8 relative z-[8]">
+            <div data-manga-entry-page-content-container className="px-4 md:px-8 relative z-8">
 
                 <PageWrapper
                     data-manga-entry-page-content
@@ -74,7 +74,7 @@ export default function Page() {
 
                     <div
                         data-manga-entry-page-grid
-                        className="grid gap-8 xl:grid-cols-[1fr,480px] 2xl:grid-cols-[1fr,650px]"
+                        className="grid gap-8 xl:grid-cols-[1fr_480px] 2xl:grid-cols-[1fr_650px]"
                     >
                         <div className="space-y-2">
                             <ChapterList

@@ -43,7 +43,7 @@ export function AutoDownloaderRuleItem(props: AutoDownloaderRuleItemProps) {
 
     return (
         <>
-            <div className="rounded-[--radius] bg-gray-900 hover:bg-gray-800/50 transition-colors">
+            <div className="rounded-(--radius) bg-gray-900 hover:bg-gray-800/50 transition-colors">
                 <div className="flex justify-between p-3 gap-2 items-center cursor-pointer" onClick={() => modal.on()}>
 
                     {media && <div
@@ -52,7 +52,7 @@ export function AutoDownloaderRuleItem(props: AutoDownloaderRuleItemProps) {
                             e.stopPropagation()
                             setPreviewModalMediaId(media?.id, "anime")
                         }}
-                        className="!mr-2 cursor-pointer size-10 rounded-full bg-gray-800 hidden lg:flex items-center justify-center relative overflow-hidden flex-none"
+                        className="mr-2! cursor-pointer size-10 rounded-full bg-gray-800 hidden lg:flex items-center justify-center relative overflow-hidden flex-none"
                     >
                         <Image
                             src={media?.coverImage?.medium ?? "/no-cover.png"}
@@ -68,7 +68,7 @@ export function AutoDownloaderRuleItem(props: AutoDownloaderRuleItemProps) {
                                 "font-medium text-base tracking-wide line-clamp-1",
                             )}
                         ><span className="text-gray-400 italic font-normal pr-1">Rule for</span> "{rule.comparisonTitle}"</p>
-                        <div className="text-sm text-gray-400 line-clamp-1 flex space-x-2 items-center divide-x divide-[--border] [&>span]:pl-2">
+                        <div className="text-sm text-gray-400 line-clamp-1 flex space-x-2 items-center divide-x divide-(--border) [&>span]:pl-2">
                             <FaSquareRss
                                 className={cn(
                                     "text-xl",

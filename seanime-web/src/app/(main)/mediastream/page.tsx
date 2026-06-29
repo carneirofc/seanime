@@ -49,7 +49,7 @@ const __mediastream_episodeViewModeAtom = atomWithStorage<"list" | "grid">("sea-
 export default function Page() {
     const vc_fullscreen = useAtomValue(vc_isFullscreen)
     return (
-        <PageWrapper className={cn("px-4", vc_fullscreen && "z-[100]")}>
+        <PageWrapper className={cn("px-4", vc_fullscreen && "z-100")}>
             <MediastreamPage />
         </PageWrapper>
     )
@@ -289,7 +289,7 @@ function MediastreamPage() {
         <div className="flex gap-4 items-center relative">
             <Skeleton className="h-12" />
         </div>
-        <div className="grid 2xl:grid-cols-[1fr,450px] gap-4 xl:gap-4">
+        <div className="grid 2xl:grid-cols-[1fr_450px] gap-4 xl:gap-4">
             <div className="w-full min-h-[70dvh] relative">
                 <Skeleton className="h-full w-full absolute" />
             </div>
@@ -411,7 +411,7 @@ function MediastreamPage() {
                                         />
                                     )
                                 })}
-                                {!!episodes?.length && <p className="text-center text-[--muted] py-2">End</p>}
+                                {!!episodes?.length && <p className="text-center text-(--muted) py-2">End</p>}
                             </motion.div>
                         ) : (
                             <EpisodePillsGrid
@@ -469,7 +469,7 @@ function MediastreamPlaybackInfo({
             contentClass="sm:rounded-3xl"
         >
             <div className="space-y-4">
-                <p className="tracking-wide text-sm text-[--muted] break-all">
+                <p className="tracking-wide text-sm text-(--muted) break-all">
                     {mediaContainer.mediaInfo?.path}
                 </p>
                 {isCodecSupported(mediaContainer.mediaInfo?.mimeCodec || "") ? <Alert
@@ -504,7 +504,7 @@ function MediastreamPlaybackInfo({
                     }
                     contentClass="max-w-3xl"
                 >
-                    <pre className="overflow-x-auto overflow-y-auto max-h-[calc(100dvh-300px)] whitespace-pre-wrap p-2 rounded-[--radius-md] bg-gray-900 text-xs text-white">
+                    <pre className="overflow-x-auto overflow-y-auto max-h-[calc(100dvh-300px)] whitespace-pre-wrap p-2 rounded-md bg-gray-900 text-xs text-white">
                         {JSON.stringify(mediaContainer, null, 2)}
                     </pre>
                 </Modal>
@@ -521,7 +521,7 @@ function MediastreamPlaybackInfo({
                         >
                             Switch to transcoding
                         </Button>
-                        {!mediastreamSettings?.disableAutoSwitchToDirectPlay && <p className="text-[--muted] text-sm italic opacity-50">
+                        {!mediastreamSettings?.disableAutoSwitchToDirectPlay && <p className="text-(--muted) text-sm italic opacity-50">
                             Enable 'Prefer transcoding' in the media streaming settings if you want to switch to transcoding
                         </p>}
                     </div>}

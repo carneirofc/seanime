@@ -156,7 +156,7 @@ export function Announcements() {
             {bannerAnnouncements.map((announcement, index) => (
                 <div
                     key={announcement.id + "" + String(index)} className={cn(
-                    "fixed bottom-0 left-0 right-0 z-[999] bg-[--background] border-b border-[--border] shadow-lg bg-gradient-to-br",
+                    "fixed bottom-0 left-0 right-0 z-999 bg-(--background) border-b border-(--border) shadow-lg bg-linear-to-br",
                 )}
                 >
                     <Alert
@@ -185,7 +185,7 @@ export function Announcements() {
                         icon={getSeverityIcon(announcement.severity)}
                         onClose={!announcement.notDismissible ? () => dismissAnnouncement(announcement.id) : undefined}
                         className={cn(
-                            "rounded-none border-0 border-t shadow-[0_0_10px_0_rgba(0,0,0,0.05)] bg-gradient-to-br",
+                            "rounded-none border-0 border-t shadow-[0_0_10px_0_rgba(0,0,0,0.05)] bg-linear-to-br",
                             announcement.severity === "critical" && "from-red-950/95 to-red-900/60 dark:text-red-100",
                             announcement.severity === "error" && "from-red-950/95 to-red-900/60 dark:text-red-100",
                             announcement.severity === "warning" && "from-amber-950/95 to-amber-900/60 dark:text-amber-100",
@@ -229,7 +229,7 @@ export function Announcements() {
                     overlayClass="bg-gray-950/10"
                 >
                     <div className="space-y-4">
-                        <p className="text-[--muted]">
+                        <p className="text-(--muted)">
                             {announcement.message}
                         </p>
 

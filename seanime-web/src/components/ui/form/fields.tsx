@@ -223,7 +223,7 @@ const ColorPickerField = React.memo(withControlledInput(forwardRef<HTMLInputElem
             onBlur={handleColorChange}
             rightAddon={<Popover
                 className="flex justify-center"
-                trigger={<div className="cursor-pointer size-7 rounded-[--radius-md]" style={{ backgroundColor: value }} />}
+                trigger={<div className="cursor-pointer size-7 rounded-md" style={{ backgroundColor: value }} />}
             >
                 <HexColorPicker
                     color={value}
@@ -316,24 +316,24 @@ const RadioCardsField = React.memo(withControlledInput(forwardRef<HTMLButtonElem
     ({ onChange, itemContainerClass, itemClass, radioGroupStackClass, ...props }, ref) => {
         return <RadioGroup
             // itemContainerClass={cn(
-            //     "items-start cursor-pointer transition border-transparent rounded-[--radius] p-4 w-full",
-            //     "bg-gray-50 hover:bg-[--subtle] dark:bg-gray-900",
+            //     "items-start cursor-pointer transition border-transparent rounded-(--radius) p-4 w-full",
+            //     "bg-gray-50 hover:bg-(--subtle) dark:bg-gray-900",
             //     "data-[state=checked]:bg-white dark:data-[state=checked]:bg-gray-950",
-            //     "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-[--background] focus-within:ring-2 transition",
-            //     "border border-transparent data-[state=checked]:border-[--brand] data-[state=checked]:ring-offset-0",
+            //     "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-(--background) focus-within:ring-2 transition",
+            //     "border border-transparent data-[state=checked]:border-(--brand) data-[state=checked]:ring-offset-0",
             // )}
             // itemClass={cn(
             //     "border-transparent absolute top-2 right-2 bg-transparent dark:bg-transparent dark:data-[state=unchecked]:bg-transparent",
             //     "data-[state=unchecked]:bg-transparent data-[state=unchecked]:hover:bg-transparent
             // dark:data-[state=unchecked]:hover:bg-transparent", "focus-visible:ring-0 focus-visible:ring-offset-0
             // focus-visible:ring-offset-transparent", )} itemIndicatorClass="hidden" itemLabelClass="font-medium flex flex-col items-center
-            // data-[state=checked]:text-[--brand] cursor-pointer"
+            // data-[state=checked]:text-(--brand) cursor-pointer"
             itemContainerClass={cn(
-                "items-start cursor-pointer transition border-transparent rounded-[--radius] p-3 w-full md:w-fit",
+                "items-start cursor-pointer transition border-transparent rounded-(--radius) p-3 w-full md:w-fit",
                 "bg-transparent dark:hover:bg-gray-900 dark:bg-transparent",
                 "data-[state=checked]:bg-brand-500/5 dark:data-[state=checked]:bg-gray-900",
-                "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-[--background] focus-within:ring-transparent transition",
-                "dark:border dark:data-[state=checked]:border-[--border] data-[state=checked]:ring-offset-0",
+                "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-(--background) focus-within:ring-transparent transition",
+                "dark:border dark:data-[state=checked]:border-(--border) data-[state=checked]:ring-offset-0",
                 itemContainerClass,
             )}
             itemClass={cn(
@@ -343,7 +343,7 @@ const RadioCardsField = React.memo(withControlledInput(forwardRef<HTMLButtonElem
                 itemClass,
             )}
             itemIndicatorClass="hidden"
-            itemLabelClass="font-medium flex flex-col items-center data-[state=unchecked]:hover:text-[--foreground] data-[state=checked]:text-[--brand] text-[--muted] cursor-pointer"
+            itemLabelClass="font-medium flex flex-col items-center data-[state=unchecked]:hover:text-(--foreground) data-[state=checked]:text-(--brand) text-(--muted) cursor-pointer"
             // stackClass="flex flex-col md:flex-row flex-wrap gap-2 space-y-0"
             {...props}
             onValueChange={onChange}
@@ -427,7 +427,7 @@ const MultiDirectorySelectorField = React.memo(withControlledInput(forwardRef<HT
         return <div className="space-y-2">
             <div>
                 {label && <label className="block text-md font-medium">{label}</label>}
-                {help && <p className="text-sm text-[--muted]">{help}</p>}
+                {help && <p className="text-sm text-(--muted)">{help}</p>}
             </div>
             {paths?.map((v, i) => (
                 <div className="flex items-center gap-2" key={i}>

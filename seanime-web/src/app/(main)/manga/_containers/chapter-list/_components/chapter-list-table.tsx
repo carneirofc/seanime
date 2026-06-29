@@ -124,7 +124,7 @@
 
 //     return (
 //         <div className="space-y-4">
-//             <div className="flex items-center gap-2 px-2 pb-2 border-b border-[--border] text-sm text-[--muted]">
+//             <div className="flex items-center gap-2 px-2 pb-2 border-b border-(--border) text-sm text-(--muted)">
 //                 <div className="flex items-center gap-2">
 //                     <Checkbox
 //                         value={areAllSelected}
@@ -139,7 +139,7 @@
 //             </div>
 
 //             {chapters.length === 0 && (
-//                 <div className="p-4 text-center text-[--muted]">
+//                 <div className="p-4 text-center text-(--muted)">
 //                     No chapters found
 //                 </div>
 //             )}
@@ -250,8 +250,8 @@
 //     return (
 //         <div
 //             className={cn(
-//                 "group relative overflow-hidden rounded-[--radius] bg-gray-950 hover:bg-gray-800/50 transition-colors",
-//                 isSelected && "ring-2 ring-[--border]",
+//                 "group relative overflow-hidden rounded-(--radius) bg-gray-950 hover:bg-gray-800/50 transition-colors",
+//                 isSelected && "ring-2 ring-(--border)",
 //                 // (isQueued) && "opacity-80",
 //             )}
 //             onClick={onClick}
@@ -259,7 +259,7 @@
 //             <div className="flex justify-between py-2 px-3 gap-3 items-center cursor-pointer">
 
 //                 <div className="flex items-center gap-3 w-full overflow-hidden">
-//                     <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+//                     <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
 //                         <Checkbox
 //                             value={isSelected}
 //                             onValueChange={(ch) => onSelect(ch as boolean, false)}
@@ -292,9 +292,9 @@
 //                     </div>
 //                 </div>
 
-//                 <div className="flex items-center gap-2 flex-shrink-0">
+//                 <div className="flex items-center gap-2 shrink-0">
 //                     {isQueued && (
-//                         <span className="text-xs font-medium text-[--muted] flex items-center gap-1">
+//                         <span className="text-xs font-medium text-(--muted) flex items-center gap-1">
 //                             <RiDownloadLine className="animate-pulse" /> Queued
 //                         </span>
 //                     )}

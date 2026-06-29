@@ -18,11 +18,11 @@ export const NavigationMenuAnatomy = defineStyleAnatomy({
     ]),
     item: cva([
         "UI-NavigationMenu__item",
-        "relative group/navigationMenu_item inline-flex !text-[1.15rem] items-center h-full select-none rounded-[--radius] leading-none no-underline outline-none transition-colors",
-        "text-[--muted] hover:text-[--foreground]",
+        "relative group/navigationMenu_item inline-flex text-[1.15rem]! items-center h-full select-none rounded-(--radius) leading-none no-underline outline-none transition-colors",
+        "text-(--muted) hover:text-(--foreground)",
         "data-[current=true]:text-white", // Selected
-        "font-[600] leading-none",
-        "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[--ring]",
+        "font-semibold leading-none",
+        "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-(--ring)",
     ], {
         variants: {
             size: {
@@ -37,8 +37,8 @@ export const NavigationMenuAnatomy = defineStyleAnatomy({
     }),
     icon: cva([
         "UI-VerticalNav__icon",
-        "flex-shrink-0 mr-3",
-        "text-[--muted] group-hover/navigationMenu_item:text-[--foreground] data-[current=true]:text-[--brand] data-[current=true]:group-hover/navigationMenu_item:text-[--brand]",
+        "shrink-0 mr-3",
+        "text-(--muted) group-hover/navigationMenu_item:text-(--foreground) data-[current=true]:text-(--brand) data-[current=true]:group-hover/navigationMenu_item:text-(--brand)",
     ], {
         variants: {
             size: {
@@ -73,8 +73,8 @@ export const NavigationMenuAnatomy = defineStyleAnatomy({
     }),
     mobileTrigger: cva([
         "UI-VerticalNav__mobileTrigger",
-        "items-center justify-center rounded-[--radius] p-2 text-[--muted] hover:bg-[--subtle] hover:text-[--foreground]",
-        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[--ring]",
+        "items-center justify-center rounded-(--radius) p-2 text-(--muted) hover:bg-(--subtle) hover:text-(--foreground)",
+        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-(--ring)",
     ], {
         variants: {
             switchToDrawerBelow: {
@@ -97,8 +97,8 @@ export const NavigationMenuAnatomy = defineStyleAnatomy({
     ]),
     viewport: cva([
         "UI-NavigationMenu__viewport",
-        "relative mt-1.5 duration-300 h-[var(--radix-navigation-menu-viewport-height)]",
-        "w-full min-w-96 rounded-[--radius] shadow-sm border bg-[--paper] text-[--foreground]",
+        "relative mt-1.5 duration-300 h-(--radix-navigation-menu-viewport-height)",
+        "w-full min-w-96 rounded-(--radius) shadow-sm border bg-(--paper) text-(--foreground)",
         "data-[state=open]:animate-in data-[state=open]:zoom-in-90 data-[state=open]:fade-in-25",
         "data-[state=closed]:animate-out data-[state=closed]:zoom-out-100 data-[state=closed]:fade-out-0",
     ]),

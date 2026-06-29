@@ -80,7 +80,7 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
             {(ts.enableMediaPageBlurredBackground) && <div
                 data-media-page-header-blurred-background
                 className={cn(
-                    "fixed opacity-0 transition-opacity duration-300 top-0 left-0 w-full h-full z-[4] bg-[--background] rounded-xl",
+                    "fixed opacity-0 transition-opacity duration-300 top-0 left-0 w-full h-full z-4 bg-(--background) rounded-xl",
                     shouldShowBlurredBackground && "opacity-100",
                 )}
             >
@@ -99,7 +99,7 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
 
                 <div
                     data-media-page-header-blurred-background-blur
-                    className="absolute top-0 w-full h-full backdrop-blur-2xl z-[2]"
+                    className="absolute top-0 w-full h-full backdrop-blur-2xl z-2"
                 ></div>
             </div>}
 
@@ -108,9 +108,9 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
             <div
                 data-media-page-header-banner
                 className={cn(
-                    "w-full scroll-locked-offset flex-none object-cover object-center z-[3] bg-[--background] h-[20rem]",
-                    ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small ? "lg:h-[26rem]" : "h-[20rem] lg:h-[30rem] 2xl:h-[30rem]",
-                    ts.libraryScreenCustomBackgroundImage ? "absolute -top-[5rem]" : "fixed transition-opacity top-0 duration-300",
+                    "w-full scroll-locked-offset flex-none object-cover object-center z-3 bg-(--background) h-80",
+                    ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small ? "lg:h-104" : "h-80 lg:h-120 2xl:h-120",
+                    ts.libraryScreenCustomBackgroundImage ? "absolute -top-20" : "fixed transition-opacity top-0 duration-300",
                     !ts.libraryScreenCustomBackgroundImage && y > 100 && (ts.enableMediaPageBlurredBackground ? "opacity-0" : shouldDimBanner
                         ? "opacity-15"
                         : (y > 300 ? "opacity-5" : "opacity-15")),
@@ -125,7 +125,7 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
                 <div
                     data-media-page-header-banner-top-gradient
                     className={cn(
-                        "w-full absolute z-[2] top-0 h-[8rem] opacity-40 bg-gradient-to-b from-[--background] to-transparent via",
+                        "w-full absolute z-2 top-0 h-32 opacity-40 bg-linear-to-b from-(--background) to-transparent via",
                     )}
                 />
 
@@ -133,7 +133,7 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
                 <div
                     data-media-page-header-banner-bottom-gradient
                     className={cn(
-                        "w-full z-[2] absolute scroll-locked-offset bottom-[-5rem] h-[5em] bg-gradient-to-b from-[--background] via-transparent via-100% to-transparent",
+                        "w-full z-2 absolute scroll-locked-offset -bottom-20 h-[5em] bg-linear-to-b from-(--background) via-transparent via-100% to-transparent",
                         !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
                         shouldHideBanner && "hidden",
                     )}
@@ -163,8 +163,8 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
                         priority
                         sizes="100vw"
                         className={cn(
-                            "object-cover object-center scroll-locked-offset z-[1]",
-                            // shouldDimBanner && "!opacity-30",
+                            "object-cover object-center scroll-locked-offset z-1",
+                            // shouldDimBanner && "opacity-30!",
                         )}
                         initial={{ scale: 1, x: 0, y: -0, opacity: 0 }}
                         animate={{ scale: 1, x: 0, y: 1, opacity: shouldDimBanner ? 0.3 : 1 }}
@@ -173,14 +173,14 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
 
                     {shouldBlurBanner && <div
                         data-media-page-header-banner-blur
-                        className="absolute top-0 w-full h-full backdrop-blur-xl z-[2] "
+                        className="absolute top-0 w-full h-full backdrop-blur-xl z-2 "
                     ></div>}
 
                     {/*LEFT MASK*/}
                     <div
                         data-media-page-header-banner-left-gradient
                         className={cn(
-                            "hidden lg:block max-w-[60rem] lg:max-w-[100rem] xl:max-w-[90%] lg:group-hover/media-page-header:max-w-[110rem] xl:group-hover/media-page-header:max-w-[95%] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] transition-all to-transparent",
+                            "hidden lg:block max-w-240 lg:max-w-[100rem] xl:max-w-[90%] lg:group-hover/media-page-header:max-w-[110rem] xl:group-hover/media-page-header:max-w-[95%] w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) transition-all to-transparent",
                             "opacity-95 lg:group-hover/media-page-header:opacity-100 duration-500 ease-out",
                             // y > 300 && "opacity-70",
                         )}
@@ -188,7 +188,7 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
                     <div
                         data-media-page-header-banner-right-gradient
                         className={cn(
-                            "hidden lg:block max-w-[60rem] xl:max-w-[80rem] lg:group-hover/media-page-header:max-w-[70rem] xl:group-hover/media-page-header:max-w-[90rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] from-25% transition-all to-transparent",
+                            "hidden lg:block max-w-240 xl:max-w-7xl lg:group-hover/media-page-header:max-w-280 xl:group-hover/media-page-header:max-w-360 w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) from-25% transition-all to-transparent",
                             "opacity-50 lg:group-hover/media-page-header:opacity-65 duration-500 ease-out",
                         )}
                     />
@@ -198,8 +198,8 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
                 <div
                     data-media-page-header-banner-bottom-gradient
                     className={cn(
-                        // "w-full z-[3] absolute bottom-0 h-[50%] bg-gradient-to-t from-[--background] via-transparent via-100% to-transparent",
-                        "w-full z-[3] absolute bottom-0 h-[70%] bg-gradient-to-t from-[--background] from-0% via-[--background]/80 via-30% to-transparent to-100%",
+                        // "w-full z-3 absolute bottom-0 h-[50%] bg-linear-to-t from-(--background) via-transparent via-100% to-transparent",
+                        "w-full z-3 absolute bottom-0 h-[70%] bg-linear-to-t from-(--background) from-0% via-(--background)/80 via-30% to-transparent to-100%",
                         shouldHideBanner && "hidden",
                     )}
                 />
@@ -207,7 +207,7 @@ export function MediaPageHeader(props: MediaPageHeaderProps) {
                 <div
                     data-media-page-header-banner-dim
                     className={cn(
-                        "absolute h-full w-full block lg:hidden bg-[--background] opacity-70 z-[2]",
+                        "absolute h-full w-full block lg:hidden bg-(--background) opacity-70 z-2",
                         shouldHideBanner && "hidden",
                     )}
                 />
@@ -243,14 +243,14 @@ export function MediaPageHeaderDetailsContainer(props: MediaPageHeaderDetailsCon
                     y: (width >= 1024 && y > 200) ? Math.max(y * -0.05, -40) : 0,
                 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="relative z-[4]"
+                className="relative z-4"
             >
                 <motion.div
                     initial={{ opacity: 0, x: 0 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 0 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="relative z-[4]"
+                    className="relative z-4"
                     data-media-page-header-details-container
                 >
                     <div
@@ -260,7 +260,7 @@ export function MediaPageHeaderDetailsContainer(props: MediaPageHeaderDetailsCon
                             ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "p-6 sm:py-4 sm:px-8",
                             ts.mediaPageBannerInfoBoxSize === ThemeMediaPageInfoBoxSize.Fluid
                                 ? "w-full"
-                                : "lg:max-w-[100%] xl:max-w-[80%] 2xl:max-w-[65rem] 5xl:max-w-[80rem]",
+                                : "lg:max-w-full xl:max-w-[80%] 2xl:max-w-260 5xl:max-w-7xl",
                         )}
                     >
                         <motion.div
@@ -355,7 +355,7 @@ export function MediaPageHeaderEntryDetails(props: MediaPageHeaderEntryDetailsPr
                     transition={{ duration: 0.15 }}
                     data-media-page-header-entry-details-cover-image-container
                     className={cn(
-                        "flex-none aspect-[6/8] max-w-[150px] mx-auto lg:m-0 h-auto sm:max-w-[200px] lg:max-w-[230px] w-full relative rounded-[--radius-md] overflow-hidden bg-[--background] shadow-md block",
+                        "flex-none aspect-6/8 max-w-[150px] mx-auto lg:m-0 h-auto sm:max-w-[200px] lg:max-w-[230px] w-full relative rounded-md overflow-hidden bg-(--background) shadow-md block",
                         ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "max-w-[150px] lg:m-0 h-auto sm:max-w-[195px] lg:max-w-[210px] -top-1",
                         ts.mediaPageBannerInfoBoxSize === ThemeMediaPageInfoBoxSize.Fluid && "lg:max-w-[270px]",
                         (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.mediaPageBannerInfoBoxSize === ThemeMediaPageInfoBoxSize.Fluid) && "lg:max-w-[220px]",
@@ -394,15 +394,15 @@ export function MediaPageHeaderEntryDetails(props: MediaPageHeaderEntryDetailsPr
                     <div className="space-y-2" data-media-page-header-entry-details-title-container>
                         <TextGenerateEffect
                             className={cn(
-                                "[text-shadow:_0_1px_10px_rgb(0_0_0_/_20%)] text-white/95 line-clamp-2 pb-1 text-center lg:text-left text-pretty text-[1.5rem] lg:text-[2rem] 2xl:text-[2.6rem] 2xl:leading-[3rem] xl:max-w-[50vw]",
+                                "[text-shadow:0_1px_10px_rgb(0_0_0/20%)] text-white/95 line-clamp-2 pb-1 text-center lg:text-left text-pretty text-[1.5rem] lg:text-[2rem] 2xl:text-[2.6rem] 2xl:leading-12 xl:max-w-[50vw]",
                                 smallerTitle && "text-3xl 2xl:text-3xl",
                             )}
                             words={title || ""}
                         />
                         {(!!englishTitle && title?.toLowerCase() !== englishTitle?.toLowerCase()) &&
-                            <p className="text-[--muted] line-clamp-1 font-bold text-md 2xl:text-[1.4rem] text-center lg:text-left xl:max-w-[50vw]">{englishTitle}</p>}
+                            <p className="text-(--muted) line-clamp-1 font-bold text-md 2xl:text-[1.4rem] text-center lg:text-left xl:max-w-[50vw]">{englishTitle}</p>}
                         {(!!romajiTitle && title?.toLowerCase() !== romajiTitle?.toLowerCase()) &&
-                            <p className="text-[--muted] line-clamp-1 font-bold text-md 2xl:text-[1.4rem] text-center lg:text-left xl:max-w-[50vw]">{romajiTitle}</p>}
+                            <p className="text-(--muted) line-clamp-1 font-bold text-md 2xl:text-[1.4rem] text-center lg:text-left xl:max-w-[50vw]">{romajiTitle}</p>}
                     </div>
 
                     <div className="flex flex-wrap gap-3 lg:gap-4 items-center justify-center lg:justify-start">
@@ -448,7 +448,7 @@ export function MediaPageHeaderEntryDetails(props: MediaPageHeaderEntryDetailsPr
 
                         </div>
 
-                        <div className="hidden lg:flex h-5 relative w-0.5 bg-[--border] rounded-full"></div>
+                        <div className="hidden lg:flex h-5 relative w-0.5 bg-(--border) rounded-full"></div>
 
                         {/*DATE*/}
                         {!!startDate?.year && (
@@ -456,7 +456,7 @@ export function MediaPageHeaderEntryDetails(props: MediaPageHeaderEntryDetailsPr
                                 className="flex gap-2 lg:gap-4 items-center flex-wrap justify-center lg:justify-start"
                                 data-media-page-header-entry-details-date-container
                             >
-                                <p className="text-lg text-[--foreground] flex gap-1 items-center">
+                                <p className="text-lg text-(--foreground) flex gap-1 items-center">
                                     <LuCalendar /> {new Intl.DateTimeFormat("en-US", {
                                     year: "numeric",
                                     month: "short",
@@ -484,7 +484,7 @@ export function MediaPageHeaderEntryDetails(props: MediaPageHeaderEntryDetailsPr
                                 {/*            icon={<MdOutlineSegment />}*/}
                                 {/*        />*/}
                                 {/*    }*/}
-                                {/*    className="max-w-[40rem] bg-gray-950/90 p-4 w-[20rem] lg:w-[40rem] text-md"*/}
+                                {/*    className="max-w-160 bg-gray-950/90 p-4 w-[20rem] lg:w-160 text-md"*/}
                                 {/*>*/}
                                 {/*    <span className="transition-colors text-pretty">{description?.replace(/(<([^>]+)>)/ig, "")}</span>*/}
                                 {/*</Popover>}*/}
@@ -499,15 +499,15 @@ export function MediaPageHeaderEntryDetails(props: MediaPageHeaderEntryDetailsPr
                     {<Popover
                         trigger={<div
                             className={cn(
-                                "cursor-pointer line-clamp-3 col-span-2 left-[-.5rem] text-[--muted] 2xl:max-w-[50vw] hover:text-[--foreground] transition-colors duration-500 text-sm pr-2",
-                                "bg-transparent rounded-[--radius-md] text-center lg:text-left",
+                                "cursor-pointer line-clamp-3 col-span-2 left-[-.5rem] text-(--muted) 2xl:max-w-[50vw] hover:text-(--foreground) transition-colors duration-500 text-sm pr-2",
+                                "bg-transparent rounded-md text-center lg:text-left",
                                 ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "max-h-auto line-clamp-2 2xl:max-w-[40vw]",
                             )}
                             data-media-page-header-details-description-trigger
                         >
                             {description?.replace(/(<([^>]+)>)/ig, "")}
                         </div>}
-                        className="max-w-[40rem] bg-[--background] p-4 w-[20rem] lg:w-[40rem] text-md"
+                        className="max-w-160 bg-(--background) p-4 w-[20rem] lg:w-160 text-md"
                         data-media-page-header-details-description-popover
                     >
                         <span className="transition-colors">{description?.replace(/(<([^>]+)>)/ig, "")}</span>
@@ -546,7 +546,7 @@ export function MediaPageHeaderScoreAndProgress({ score, progress, episodes }: {
             <Badge
                 size="xl"
                 intent="basic"
-                className="!text-xl font-bold !text-white px-0 gap-0 rounded-none"
+                className="text-xl! font-bold text-white! px-0 gap-0 rounded-none"
                 data-media-page-header-progress-badge
             >
                 <span data-media-page-header-progress-badge-progress>{`${progress ?? 0}`}</span><span

@@ -18,7 +18,7 @@ export default function Error({
             <LuffyError
                 title="Client side error"
             >
-                <p className="max-w-xl text-sm text-[--muted] mb-4">
+                <p className="max-w-xl text-sm text-(--muted) mb-4">
                     {error.message || "An unexpected error occurred."}
                 </p>
                 <Button

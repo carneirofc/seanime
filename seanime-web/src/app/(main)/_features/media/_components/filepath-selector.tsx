@@ -41,13 +41,13 @@ export function FilepathSelector(props: FilepathSelectorProps) {
                                 onFilepathSelected(checked ? allFilepaths : [])
                             }
                         }}
-                        fieldClass="w-[fit-content]"
+                        fieldClass="w-fit"
                     />
                 </div>
 
                 <Separator />
 
-                <div className="divide-[--border] divide-y">
+                <div className="divide-(--border) divide-y">
                     {allFilepaths?.toSorted((a, b) => a.localeCompare(b)).map((path, index) => (
                         <div
                             key={`${path}-${index}`}
@@ -55,9 +55,9 @@ export function FilepathSelector(props: FilepathSelectorProps) {
                         >
                             <div className="flex items-center">
                                 <Checkbox
-                                    label={<span className={cn("", showFullPath && "text-[--muted]")}>
+                                    label={<span className={cn("", showFullPath && "text-(--muted)")}>
                                         {showFullPath ? path.replace(upath.basename(path), "") : upath.basename(path)}{showFullPath &&
-                                        <span className="text-[--foreground]">{upath.basename(path)}</span>}
+                                        <span className="text-(--foreground)">{upath.basename(path)}</span>}
                                     </span>}
                                     value={filepaths.includes(path)}
                                     onValueChange={checked => {
@@ -70,7 +70,7 @@ export function FilepathSelector(props: FilepathSelectorProps) {
                                     }}
                                     labelClass="break-all tracking-wide text-sm"
                                     fieldLabelClass="break-all"
-                                    fieldClass="w-[fit-content]"
+                                    fieldClass="w-fit"
                                 />
                             </div>
                         </div>

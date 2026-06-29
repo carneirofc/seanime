@@ -18,6 +18,7 @@ import React, { useMemo, useState } from "react"
 import { AiOutlineExclamationCircle } from "react-icons/ai"
 import { BiListCheck, BiPlus, BiTrash } from "react-icons/bi"
 import { toast } from "sonner"
+import { z } from "zod"
 
 const superUpdateSchema = defineSchema(({ z }) => z.object({
     searchText: z.string(),
@@ -29,7 +30,7 @@ const superUpdateSchema = defineSchema(({ z }) => z.object({
     editMetadata: z.boolean().default(false),
 }))
 
-type SuperUpdateFormData = typeof superUpdateSchema._type
+type SuperUpdateFormData = z.infer<typeof superUpdateSchema>
 
 type MetadataEditType = "episode" | "anidb" | "type"
 
@@ -704,11 +705,11 @@ export function LibraryExplorerSuperUpdateDrawer(props: LibraryExplorerSuperUpda
         >
             <VaulContent
                 className={cn(
-                    "bg-gray-950 h-[90%] lg:h-[85%] bg-opacity-95 firefox:bg-opacity-100 lg:mx-[2rem]",
+                    "bg-gray-950/95 h-[90%] lg:h-[85%] firefox:bg-gray-950/100 lg:mx-8",
                 )}
             >
                 <p className="p-4 pb-0">
-                    <span className="text-sm text-[--muted]">
+                    <span className="text-sm text-(--muted)">
                         Update multiple file names and metadata at once.
                     </span>
                 </p>
@@ -921,7 +922,7 @@ export function LibraryExplorerSuperUpdateDrawer(props: LibraryExplorerSuperUpda
                                                 )}
                                             </div>
                                             {(item.willChange || item.metadataWillChange) && (
-                                                <div className="text-xs flex-shrink-0 flex flex-col gap-1">
+                                                <div className="text-xs shrink-0 flex flex-col gap-1">
                                                     {item.willChange && (
                                                         <div
                                                             className={cn(

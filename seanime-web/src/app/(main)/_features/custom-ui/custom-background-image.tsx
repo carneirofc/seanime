@@ -29,7 +29,7 @@ export function CustomBackgroundImage(props: CustomBackgroundImageProps) {
 
                     {ts.libraryScreenCustomBackgroundBlur !== "" && <div
                         data-custom-background-image-blur
-                        className="fixed w-full h-full inset-0 z-[0]"
+                        className="fixed w-full h-full inset-0 z-0"
                         style={{ backdropFilter: `blur(${ts.libraryScreenCustomBackgroundBlur})` }}
                     >
                     </div>}

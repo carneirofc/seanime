@@ -67,7 +67,7 @@ export function SettingsCard({ title, description, children, className }: Settin
                  }}
                  /> */}
                 {title && <CardHeader className="p-0 pb-2 flex flex-col lg:flex-row items-center gap-0 mx-3 mt-3 space-y-0">
-                    {/* <CardTitle className="font-semibold tracking-wide text-base transition-colors duration-300 group-hover/settings-card:text-white bg-gradient-to-br group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 bg-[--subtle] w-fit rounded-tl-md rounded-br-md ">
+                    {/* <CardTitle className="font-semibold tracking-wide text-base transition-colors duration-300 group-hover/settings-card:text-white bg-linear-to-br group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 bg-(--subtle) w-fit rounded-tl-md rounded-br-md ">
                      {title}
                      </CardTitle> */}
                     <CardTitle
@@ -98,12 +98,12 @@ export function SettingsCard({ title, description, children, className }: Settin
 export function SettingsPageHeader({ title, description, icon: Icon }: { title: string, description: string, icon: React.ElementType }) {
     return (
         <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-brand-500/10 to-purple-500/10 border border-brand-500/15">
+            <div className="p-2 rounded-lg bg-linear-to-br from-brand-500/10 to-purple-500/10 border border-brand-500/15">
                 <Icon className="text-2xl text-brand-600 dark:text-brand-400" />
             </div>
             <div>
                 <h3 className="text-xl font-semibold">{title}</h3>
-                <p className="text-base text-[--muted]">{description}</p>
+                <p className="text-base text-(--muted)">{description}</p>
             </div>
         </div>
     )

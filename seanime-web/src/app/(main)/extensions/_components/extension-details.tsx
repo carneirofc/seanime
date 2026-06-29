@@ -25,7 +25,7 @@ export function ExtensionDetails(props: ExtensionDetailsProps) {
 
     return (
         <>
-            <div className="relative rounded-[--radius-md] size-12 bg-gray-900 overflow-hidden">
+            <div className="relative rounded-md size-12 bg-gray-900 overflow-hidden">
                 {!!extension.icon ? (
                     <SeaImage
                         src={extension.icon}
@@ -46,7 +46,7 @@ export function ExtensionDetails(props: ExtensionDetailsProps) {
             <div className="space-y-2">
                 <div className="flex items-center flex-wrap">
                     <p className="text-md font-semibold flex gap-2 flex-wrap">
-                        {extension.name} {!!extension.version && <Badge className="rounded-[--radius-md] text-md">
+                        {extension.name} {!!extension.version && <Badge className="rounded-md text-md">
                         {extension.version}
                     </Badge>}</p>
 
@@ -67,7 +67,7 @@ export function ExtensionDetails(props: ExtensionDetailsProps) {
                     </SeaLink>}
                 </div>
 
-                <p className="text-[--muted] text-sm text-pretty">
+                <p className="text-(--muted) text-sm text-pretty">
                     {extension.description}
                 </p>
 
@@ -92,7 +92,7 @@ export function ExtensionDetails(props: ExtensionDetailsProps) {
                 </div>
 
                 {(!!extension.manifestURI && !isBuiltin) && <p className="text-sm w-full tracking-wide">
-                    <span className="text-[--muted]">Manifest URL:</span> <span className="select-all break-all">{extension.manifestURI}</span>
+                    <span className="text-(--muted)">Manifest URL:</span> <span className="select-all break-all">{extension.manifestURI}</span>
                 </p>}
 
                 {!!extension.readme && <div className="">
@@ -107,7 +107,7 @@ export function ExtensionDetails(props: ExtensionDetailsProps) {
                 </div>}
 
                 {(!!extension.notes) && <div className="text-md w-full tracking-wide space-y-1 py-2">
-                    <p className="text-[--muted] text-sm">Notes:</p>
+                    <p className="text-(--muted) text-sm">Notes:</p>
                     <div className="text-pretty space-y-1">{extension.notes.split("\n").map((line, i) => {
                         // return <p>
                         //     {line.replaceAll("\t", "    ")}
@@ -122,20 +122,20 @@ export function ExtensionDetails(props: ExtensionDetailsProps) {
                 </div>}
 
                 {/*<p className="text-md line-clamp-1">*/}
-                {/*    <span className="text-[--muted]">ID:</span> <span className="">{extension.id}</span>*/}
+                {/*    <span className="text-(--muted)">ID:</span> <span className="">{extension.id}</span>*/}
                 {/*</p>*/}
                 {/*<p className="text-md line-clamp-1">*/}
-                {/*    <span className="text-[--muted]">Author:</span> <span className="">{extension.author}</span>*/}
+                {/*    <span className="text-(--muted)">Author:</span> <span className="">{extension.author}</span>*/}
                 {/*</p>*/}
                 {/*<p className="text-md line-clamp-1">*/}
-                {/*    <span className="text-[--muted]">Language: </span>*/}
+                {/*    <span className="text-(--muted)">Language: </span>*/}
                 {/*    <span className="">{LANGUAGES_LIST[extension.lang?.toLowerCase()]?.nativeName || extension.lang}</span>*/}
                 {/*</p>*/}
                 {/*<p className="text-md line-clamp-1">*/}
-                {/*    <span className="text-[--muted]">Programming language:</span> <span className="">{capitalize(extension.language)}</span>*/}
+                {/*    <span className="text-(--muted)">Programming language:</span> <span className="">{capitalize(extension.language)}</span>*/}
                 {/*</p>*/}
                 {/*{(!!extension.manifestURI && !isBuiltin) && <p className="text-md w-full">*/}
-                {/*    <span className="text-[--muted]">Manifest URL:</span> <span className="">{extension.manifestURI}</span>*/}
+                {/*    <span className="text-(--muted)">Manifest URL:</span> <span className="">{extension.manifestURI}</span>*/}
                 {/*</p>}*/}
             </div>
         </>

@@ -192,10 +192,10 @@ export function VideoCoreInSight() {
     return (
         <div
             id="in-sight-container" data-vc-element="in-sight" className={cn(
-            "absolute z-[50] bottom-32 left-0 w-full flex flex-col gap-2 items-end pointer-events-none",
+            "absolute z-50 bottom-32 left-0 w-full flex flex-col gap-2 items-end pointer-events-none",
         )}
         >
-            <div className="absolute z-[1] -bottom-32 w-full h-full opacity-90 bg-gradient-to-t from-black to-transparent"></div>
+            <div className="absolute z-1 -bottom-32 w-full h-full opacity-90 bg-linear-to-t from-black to-transparent"></div>
             <div className="px-12 relative z-10 pointer-events-auto w-full flex">
                 <div className="w-fit flex items-center gap-3">
                     <div className="w-fit">
@@ -219,7 +219,7 @@ export function VideoCoreInSight() {
                     placeholder="Search characters..."
                     value={searchQuery}
                     onValueChange={(v) => setSearchQuery(v)}
-                    fieldClass="w-[300px] !rounded-full"
+                    fieldClass="w-[300px] rounded-full!"
                     className="bg-gray-950/70"
                 />
             </div>
@@ -227,7 +227,7 @@ export function VideoCoreInSight() {
                 ref={scrollContainerRef}
                 data-vc-element="in-sight-scroll-container"
                 className={cn(
-                    "overflow-x-scroll z-[2] scrollbar-hide max-w-full w-full h-auto mask-image-fade pointer-events-auto",
+                    "overflow-x-scroll z-2 scrollbar-hide max-w-full w-full h-auto mask-image-fade pointer-events-auto",
                 )}
                 style={{
                     maskImage: "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)",
@@ -238,13 +238,13 @@ export function VideoCoreInSight() {
                     ref={scrollContentRef}
                     data-vc-element="in-sight-scroll-content"
                     className={cn(
-                        "flex gap-4 flex-nowrap relative px-12 pb-4 py-6 !pr-20 h-[20rem] items-start",
+                        "flex gap-4 flex-nowrap relative px-12 pb-4 py-6 pr-20! h-80 items-start",
                     )}
                 >
                     {characters?.map(character => (
                         <Popover
                             key={character.mal_id}
-                            className="z-[100] bg-gray-950/95 max-h-[14rem] w-[25rem] overflow-y-auto"
+                            className="z-100 bg-gray-950/95 max-h-56 w-100 overflow-y-auto"
                             side="top"
                             sideOffset={8}
                             trigger={<div
@@ -255,7 +255,7 @@ export function VideoCoreInSight() {
                                 <div
                                     data-vc-element="in-sight-character-image"
                                     className={cn(
-                                        "w-32 pointer-events-none aspect-[2/3] overflow-hidden rounded-3xl relative shadow-lg bg-gray-900 border border-gray-900/20 transition-[transform,opacity,border-radius] duration-300",
+                                        "w-32 pointer-events-none aspect-2/3 overflow-hidden rounded-3xl relative shadow-lg bg-gray-900 border border-gray-900/20 transition-[transform,opacity,border-radius] duration-300",
                                         "scale-90 opacity-90 group-hover/in-sight-character:scale-110 group-hover/in-sight-character:opacity-100 ease-in-out group-hover/in-sight-character:rounded-3xl origin-bottom z-0 group-hover/in-sight-character:z-10",
                                     )}
                                 >
@@ -265,7 +265,7 @@ export function VideoCoreInSight() {
                                         className="object-cover object-center transition-transform duration-500 ease-in-out group-hover/in-sight-character:scale-105"
                                     />
                                 </div>
-                                <div className="w-32 p-1.5 rounded-lg tracking-wide bg-gray-950 group-hover/in-sight-character:bg-opacity-70 bg-opacity-50 backdrop-blur-sm line-clamp-3 text-base font-semibold mt-2 text-center text-white transition-opacity duration-300 text-shadow-md">
+                                <div className="w-32 p-1.5 rounded-lg tracking-wide bg-gray-950/50 group-hover/in-sight-character:bg-gray-950/70 backdrop-blur-sm line-clamp-3 text-base font-semibold mt-2 text-center text-white transition-opacity duration-300 text-shadow-md">
                                     {character.name}
                                 </div>
                             </div>}

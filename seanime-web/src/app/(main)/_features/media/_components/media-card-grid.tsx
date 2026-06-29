@@ -4,19 +4,19 @@ import { Skeleton } from "@/components/ui/skeleton"
 import React from "react"
 
 const gridClass = cn(
-    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-6 min-[1850px]:grid-cols-7 min-[2000px]:grid-cols-8 gap-4",
+    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-6 min-[1850px]:grid-cols-7 5xl:grid-cols-8 gap-4",
 )
 const gridClassMax7 = cn(
-    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-6 min-[1850px]:grid-cols-7 min-[2000px]:grid-cols-7 gap-4",
+    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-6 min-[1850px]:grid-cols-7 5xl:grid-cols-7 gap-4",
 )
 const gridClassMax6 = cn(
-    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-6 min-[1850px]:grid-cols-6 min-[2000px]:grid-cols-6 gap-4",
+    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-6 min-[1850px]:grid-cols-6 5xl:grid-cols-6 gap-4",
 )
 const gridClassMax5 = cn(
-    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-5 min-[1850px]:grid-cols-5 min-[2000px]:grid-cols-5 gap-4",
+    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-5 min-[1750px]:grid-cols-5 min-[1850px]:grid-cols-5 5xl:grid-cols-5 gap-4",
 )
 const gridClassMax4 = cn(
-    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-4 min-[1750px]:grid-cols-4 min-[1850px]:grid-cols-4 min-[2000px]:grid-cols-4 gap-4",
+    "grid grid-cols-2 min-[768px]:grid-cols-3 min-[1080px]:grid-cols-4 min-[1320px]:grid-cols-4 min-[1750px]:grid-cols-4 min-[1850px]:grid-cols-4 5xl:grid-cols-4 gap-4",
 )
 
 type MediaCardGridProps = {

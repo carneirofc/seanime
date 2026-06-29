@@ -139,12 +139,12 @@ export function TagsPanelModal(props: TagsPanelModalProps) {
 
                 <ScrollArea className="h-[60vh] pr-3">
                     {groups.length === 0 ? (
-                        <p className="text-[--muted] text-center py-8">No tags found</p>
+                        <p className="text-(--muted) text-center py-8">No tags found</p>
                     ) : (
                         <div className="space-y-5">
                             {groups.map(group => (
                                 <div key={group.category} data-tags-panel-group>
-                                    <h5 className="text-[--muted] font-medium mb-2 sticky top-0 bg-[--background] py-1 z-[1]">
+                                    <h5 className="text-(--muted) font-medium mb-2 sticky top-0 bg-(--background) py-1 z-1">
                                         {group.label}
                                     </h5>
                                     <div className="flex flex-wrap gap-1.5">

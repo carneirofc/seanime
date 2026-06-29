@@ -143,7 +143,7 @@ function Content(props: { layout: "fixed" | "videocore" }) {
     return (
         <div
             className={cn(
-                "fixed bottom-4 left-20 z-[40] hidden lg:flex flex-col bg-gray-900 border rounded-xl shadow-2xl transition-all duration-300",
+                "fixed bottom-4 left-20 z-40 hidden lg:flex flex-col bg-gray-900 border rounded-xl shadow-2xl transition-all duration-300",
                 minimized ? "w-64 h-14" : "w-[400px] h-[500px]",
             )}
         >
@@ -230,7 +230,7 @@ function ChatContent(props: {
                 )}
             >
                 {messages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-[--muted] text-sm">
+                    <div className="flex items-center justify-center h-full text-(--muted) text-sm">
                         No messages yet
                     </div>
                 ) : (
@@ -253,14 +253,14 @@ function ChatContent(props: {
                                     >
                                         {isOwnMessage ? "Me" : msg.username}{isHostMessage(msg) && " (Host)"}:{" "}
                                     </span>
-                                    <span className="text-xs text-[--muted]">
+                                    <span className="text-xs text-(--muted)">
                                         {new Date(msg.timestamp).toLocaleTimeString([], {
                                             hour: "2-digit",
                                             minute: "2-digit",
                                         })}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-200 break-words whitespace-pre-wrap">{msg.message}</p>
+                                <p className="text-sm text-gray-200 wrap-break-word whitespace-pre-wrap">{msg.message}</p>
                             </div>
                         )
                     })

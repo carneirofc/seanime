@@ -374,11 +374,11 @@ const PlayerContent = React.memo<PlayerContentProps>(({
             {(state?.playbackError) && (
                 <div
                     data-vc-element="playback-error-container"
-                    className="h-full w-full bg-black/100 flex items-center justify-center z-[20] absolute p-4"
+                    className="h-full w-full bg-black flex items-center justify-center z-20 absolute p-4"
                 >
                     <div className="text-white text-center" data-vc-element="playback-error-content">
                         {!isMiniPlayer ? (
-                            <LuffyError title="Playback Error" imageContainerClass="size-[3.5rem] lg:size-[8rem]" />
+                            <LuffyError title="Playback Error" imageContainerClass="size-14 lg:size-32" />
                         ) : (
                             <h1 data-vc-element="playback-error-title" className={cn("text-2xl font-bold", isMiniPlayer && "text-lg")}>Playback
                                                                                                                                        Error</h1>
@@ -428,7 +428,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                         {buffering && (
                             <div
                                 data-vc-element="buffering-indicator"
-                                className="absolute inset-0 flex items-center justify-center z-[50] pointer-events-none"
+                                className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
                             >
                                 <div className="bg-black/20 backdrop-blur-sm rounded-full p-4">
                                     <PiSpinnerDuotone className="size-12 text-white animate-spin" />
@@ -442,7 +442,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                                     <div
                                         data-vc-element="skip-oped-button-container"
                                         data-vc-for="opening"
-                                        className="absolute left-5 bottom-28 z-[60] native-player-hide-on-fullscreen"
+                                        className="absolute left-5 bottom-28 z-60 native-player-hide-on-fullscreen"
                                     >
                                         <Button
                                             size="sm"
@@ -462,7 +462,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                                     <div
                                         data-vc-element="skip-oped-button-container"
                                         data-vc-for="ending"
-                                        className="absolute right-5 bottom-28 z-[60] native-player-hide-on-fullscreen"
+                                        className="absolute right-5 bottom-28 z-60 native-player-hide-on-fullscreen"
                                     >
                                         <Button
                                             size="sm"
@@ -557,7 +557,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                         {isPip && (
                             <div
                                 data-vc-element="pip-overlay"
-                                className="absolute top-0 left-0 w-full h-full z-[100] bg-black flex items-center justify-center"
+                                className="absolute top-0 left-0 w-full h-full z-100 bg-black flex items-center justify-center"
                             >
                                 <Button
                                     intent="gray-outline"
@@ -574,7 +574,7 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                         {isCastingActive && (
                             <div
                                 data-vc-element="cast-overlay"
-                                className="absolute bottom-20 left-4 right-4 z-[60]"
+                                className="absolute bottom-20 left-4 right-4 z-60"
                             >
                                 <CastPlaybackControls />
                             </div>
@@ -629,11 +629,11 @@ const PlayerContent = React.memo<PlayerContentProps>(({
                             <LoadingSpinner
                                 title={state.loadingState || "Loading..."}
                                 spinner={<ImSpinner2 className="size-20 text-white animate-spin" />}
-                                containerClass="z-[1]"
+                                containerClass="z-1"
                             />
                         )}
                         {!isMiniPlayer && !inline && (
-                            <div className="opacity-50 absolute inset-0 z-[0] overflow-hidden" data-vc-element="loading-overlay-gradient">
+                            <div className="opacity-50 absolute inset-0 z-0 overflow-hidden" data-vc-element="loading-overlay-gradient">
                                 <GradientBackground duration={10} breathingRange={5} />
                             </div>
                         )}
@@ -1731,7 +1731,7 @@ export function VideoCore(props: VideoCoreProps) {
                     className={cn(
                         "relative w-full h-full",
                         inlineClassName,
-                        fullscreen && "fixed z-[99999] inset-0",
+                        fullscreen && "fixed z-99999 inset-0",
                     )}
                 >
                     <PlayerContent
@@ -1808,7 +1808,7 @@ export function VideoCore(props: VideoCoreProps) {
                     )}
                     hideCloseButton
                     closeClass={cn(
-                        "z-[99]",
+                        "z-99",
                         __isDesktop__ && !isMiniPlayer && "top-8",
                         isMiniPlayer && "left-4",
                     )}
@@ -1905,7 +1905,7 @@ function FloatingButtons(props: { part: "video" | "loading", onTerminateStream: 
                         data-vc-for={part}
                         icon={<FiMinimize2 className="text-2xl" />}
                         intent="gray-basic"
-                        className="rounded-full absolute top-0 flex-none right-4 z-[999]"
+                        className="rounded-full absolute top-0 flex-none right-4 z-999"
                         onClick={() => {
                             fullscreenManager?.exitFullscreen()
                         }}
@@ -1919,7 +1919,7 @@ function FloatingButtons(props: { part: "video" | "loading", onTerminateStream: 
                             data-vc-for={part}
                             icon={<FiMinimize2 className="text-2xl" />}
                             intent="gray-basic"
-                            className="rounded-full absolute top-0 flex-none right-4 z-[999]"
+                            className="rounded-full absolute top-0 flex-none right-4 z-999"
                             onClick={() => {
                                 startVideoCoreMiniPlayerTransition(() => {
                                     setIsMiniPlayer(true)
@@ -1936,7 +1936,7 @@ function FloatingButtons(props: { part: "video" | "loading", onTerminateStream: 
                             intent="gray"
                             size="sm"
                             className={cn(
-                                "rounded-full text-2xl flex-none absolute z-[999] right-4 top-4 pointer-events-auto bg-black/30 hover:bg-black/40",
+                                "rounded-full text-2xl flex-none absolute z-999 right-4 top-4 pointer-events-auto bg-black/30 hover:bg-black/40",
                                 isMiniPlayer && "text-xl",
                             )}
                             icon={<BiExpand />}
@@ -1951,7 +1951,7 @@ function FloatingButtons(props: { part: "video" | "loading", onTerminateStream: 
                             intent="alert-subtle"
                             size="sm"
                             className={cn(
-                                "rounded-full text-2xl flex-none absolute z-[999] left-4 top-4 pointer-events-auto",
+                                "rounded-full text-2xl flex-none absolute z-999 left-4 top-4 pointer-events-auto",
                                 isMiniPlayer && "text-xl",
                             )}
                             icon={<BiX />}
@@ -1971,7 +1971,7 @@ function FloatingButtons(props: { part: "video" | "loading", onTerminateStream: 
                 data-vc-element="loading-floating-buttons-container"
                 data-vc-for={part}
                 className={cn(
-                    "absolute top-8 w-full z-[100]",
+                    "absolute top-8 w-full z-100",
                     isMiniPlayer && "top-0",
                 )}
             >

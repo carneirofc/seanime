@@ -70,20 +70,20 @@ export function AnimeLibrarySettings(props: LibrarySettingsProps) {
             <Accordion
                 type="single"
                 collapsible
-                className="border rounded-[--radius-md]"
-                triggerClass="dark:bg-[--paper]"
-                contentClass="!pt-2 dark:bg-[--paper]"
+                className="border rounded-md"
+                triggerClass="dark:bg-(--paper)"
+                contentClass="pt-2! dark:bg-(--paper)"
                 defaultValue={(useLegacyMatching) ? "more" : undefined}
             >
                 <AccordionItem value="more">
-                    <AccordionTrigger className="bg-gray-900 rounded-[--radius-md]" data-settings-anime-library="advanced-accordion-trigger">
+                    <AccordionTrigger className="bg-gray-900 rounded-md" data-settings-anime-library="advanced-accordion-trigger">
                         Advanced
                     </AccordionTrigger>
                     <AccordionContent className="space-y-4">
                         {!useLegacyMatching && <div className="space-y-4">
                             <div>
                                 <p className="font-semibold text-lg mb-2">Scanner Configuration</p>
-                                <p className="text-sm text-[--muted] mb-4">
+                                <p className="text-sm text-(--muted) mb-4">
                                     Configure advanced scanner rules in JSON format. This allows you to define custom matching and hydration rules for
                                     your library.
                                 </p>
@@ -152,8 +152,8 @@ function DiskUsageCard() {
                 {data.paths.map((info) => (
                     <div key={info.path} className="space-y-1.5">
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-[--muted] truncate max-w-[60%]" title={info.path}>{info.path}</span>
-                            <span className="text-[--muted] shrink-0">
+                            <span className="text-(--muted) truncate max-w-[60%]" title={info.path}>{info.path}</span>
+                            <span className="text-(--muted) shrink-0">
                                 {info.usedGB.toFixed(1)} GB / {info.totalGB.toFixed(1)} GB
                                 &nbsp;·&nbsp;
                                 <span className={info.usedPct > 90 ? "text-red-400" : info.usedPct > 75 ? "text-yellow-400" : "text-green-400"}>
@@ -166,7 +166,7 @@ function DiskUsageCard() {
                             size="sm"
                             indicatorClass={info.usedPct > 90 ? "bg-red-500" : info.usedPct > 75 ? "bg-yellow-500" : "bg-green-500"}
                         />
-                        <p className="text-xs text-[--muted]">{info.freeGB.toFixed(1)} GB free ({info.freePct.toFixed(1)}%)</p>
+                        <p className="text-xs text-(--muted)">{info.freeGB.toFixed(1)} GB free ({info.freePct.toFixed(1)}%)</p>
                     </div>
                 ))}
             </div>
@@ -190,7 +190,7 @@ function ScannerConfigEditor() {
     }, [setValue])
 
     return (
-        <div className="overflow-hidden rounded-[--radius-md] border">
+        <div className="overflow-hidden rounded-md border">
             <CodeMirror
                 value={value}
                 height="400px"

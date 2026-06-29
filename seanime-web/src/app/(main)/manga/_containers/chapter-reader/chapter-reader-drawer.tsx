@@ -386,7 +386,7 @@ export function ChapterReaderDrawer(props: ChapterDrawerProps) {
             side="bottom"
             headerClass="absolute h-0"
             contentClass={cn(
-                "p-0 pt-0 !m-0 !rounded-none overflow-hidden",
+                "p-0 pt-0 m-0! rounded-none! overflow-hidden",
                 "w-full inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
             )}
             hideCloseButton
@@ -396,7 +396,7 @@ export function ChapterReaderDrawer(props: ChapterDrawerProps) {
             <div
                 data-chapter-reader-drawer-progress-container
                 className={cn(
-                    "fixed left-0 w-full z-[6] opacity-0 transition-opacity hidden duration-500",
+                    "fixed left-0 w-full z-6 opacity-0 transition-opacity hidden duration-500",
                     !__isDesktop__ && "top-0 justify-center",
                     __isDesktop__ && cn(
                         "bottom-12",
@@ -422,7 +422,7 @@ export function ChapterReaderDrawer(props: ChapterDrawerProps) {
             </div>
 
             {/*Exit fullscreen button*/}
-            {hiddenBar && <div data-chapter-reader-drawer-exit-fullscreen-button className="fixed right-0 bottom-4 group/hiddenBarArea z-[10] px-4">
+            {hiddenBar && <div data-chapter-reader-drawer-exit-fullscreen-button className="fixed right-0 bottom-4 group/hiddenBarArea z-10 px-4">
                 <IconButton
                     rounded
                     icon={<TbLayoutBottombarExpandFilled />}

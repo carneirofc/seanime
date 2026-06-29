@@ -17,7 +17,7 @@ export function DiscoverMissedSequelsSection({ title = "You Might Have Missed" }
     if (!data?.length) return null
 
     return (
-        <PageWrapper className="space-y-2 z-[5] relative" data-discover-missed-sequels-container>
+        <PageWrapper className="space-y-2 z-5 relative" data-discover-missed-sequels-container>
             <h2>{title}</h2>
             <Carousel
                 className="w-full max-w-full"

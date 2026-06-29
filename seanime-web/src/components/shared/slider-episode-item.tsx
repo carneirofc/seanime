@@ -21,16 +21,16 @@ export const SliderEpisodeItem = React.forwardRef<HTMLDivElement, SliderEpisodeI
             ref={ref}
             key={episode.localFile?.path}
             className={cn(
-                "rounded-[--radius-md] border overflow-hidden aspect-[4/2] relative flex items-end flex-none group/missed-episode-item cursor-pointer",
+                "rounded-md border overflow-hidden aspect-4/2 relative flex items-end flex-none group/missed-episode-item cursor-pointer",
                 "select-none",
-                "focus-visible:ring-2 ring-[--brand]",
+                "focus-visible:ring-2 ring-(--brand)",
                 "w-full",
             )}
             onClick={() => onPlay?.({ path: episode.localFile?.path ?? "" })}
             tabIndex={0}
             {...rest}
         >
-            <div className="absolute w-full h-full overflow-hidden z-[1]">
+            <div className="absolute w-full h-full overflow-hidden z-1">
                 {!!episode.episodeMetadata?.image ? <SeaImage
                     src={episode.episodeMetadata?.image}
                     alt={""}
@@ -40,7 +40,7 @@ export const SliderEpisodeItem = React.forwardRef<HTMLDivElement, SliderEpisodeI
                     sizes="20rem"
                     className="object-cover object-center transition"
                 /> : <div
-                    className="h-full block absolute w-full bg-gradient-to-t from-gray-800 to-transparent z-[2]"
+                    className="h-full block absolute w-full bg-linear-to-t from-gray-800 to-transparent z-2"
                 ></div>}
                 {/*[CUSTOM UI] BOTTOM GRADIENT*/}
                 <EpisodeItemBottomGradient />
@@ -48,14 +48,14 @@ export const SliderEpisodeItem = React.forwardRef<HTMLDivElement, SliderEpisodeI
             <div
                 className={cn(
                     "group-hover/missed-episode-item:opacity-100 text-6xl text-gray-200",
-                    "cursor-pointer opacity-0 transition-opacity bg-gray-950 bg-opacity-60 z-[2] absolute w-[105%] h-[105%] items-center justify-center",
+                    "cursor-pointer opacity-0 transition-opacity bg-gray-950/60 z-2 absolute w-[105%] h-[105%] items-center justify-center",
                     "hidden md:flex",
                 )}
             >
                 <AiFillPlayCircle className="opacity-50" />
             </div>
-            <div className="relative z-[3] w-full p-4 space-y-1">
-                <p className="w-[80%] line-clamp-1 text-[--muted] font-semibold">{episode.episodeTitle?.replaceAll("`", "'")}</p>
+            <div className="relative z-3 w-full p-4 space-y-1">
+                <p className="w-[80%] line-clamp-1 text-(--muted) font-semibold">{episode.episodeTitle?.replaceAll("`", "'")}</p>
                 <div className="w-full justify-between flex items-center">
                     <p className="text-base md:text-xl lg:text-2xl font-semibold line-clamp-2">
                         <span>{episode.displayTitle} {!!episode.baseAnime?.episodes &&
@@ -65,7 +65,7 @@ export const SliderEpisodeItem = React.forwardRef<HTMLDivElement, SliderEpisodeI
                     </p>
                     <div className="flex flex-1"></div>
                     {!!episode.episodeMetadata?.length &&
-                        <p className="text-[--muted] text-sm md:text-base">{episode.episodeMetadata?.length + "m" || ""}</p>}
+                        <p className="text-(--muted) text-sm md:text-base">{episode.episodeMetadata?.length + "m" || ""}</p>}
                 </div>
                 {episode.isInvalid && <p className="text-red-300">No metadata found</p>}
             </div>

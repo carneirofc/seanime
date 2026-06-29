@@ -260,7 +260,7 @@ export function ScanLogViewer({ content }: { content: string }) {
 
     if (!content) {
         return (
-            <div className="flex items-center justify-center h-[40vh] text-[--muted]">
+            <div className="flex items-center justify-center h-[40vh] text-(--muted)">
                 <p className="text-lg">Load a scan log file to begin analysis</p>
             </div>
         )
@@ -271,7 +271,7 @@ export function ScanLogViewer({ content }: { content: string }) {
         const group = fileGroupMap.get(selectedFile)
         return (
             <div className="space-y-0">
-                <div className="flex items-center gap-2 bg-gray-950 border-b border-[--border] p-2 rounded-t-lg sticky top-0 z-20">
+                <div className="flex items-center gap-2 bg-gray-950 border-b border-(--border) p-2 rounded-t-lg sticky top-0 z-20">
                     <Button intent="gray" size="sm" onClick={() => setSelectedFile(null)}>
                         ← Back
                     </Button>
@@ -291,7 +291,7 @@ export function ScanLogViewer({ content }: { content: string }) {
 
     return (
         <div className="space-y-0">
-            <div className="flex gap-1 bg-gray-950 border-b border-[--border] p-1 rounded-t-lg sticky top-0 z-20">
+            <div className="flex gap-1 bg-gray-950 border-b border-(--border) p-1 rounded-t-lg sticky top-0 z-20">
                 {([
                     { key: "overview", label: "Overview", icon: BiInfoCircle },
                     { key: "parsing", label: "Parsed Files", icon: BiFile },
@@ -383,13 +383,13 @@ function OverviewPanel({ stats, lines }: { stats: ScanStats; lines: ParsedLogLin
                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Pipeline</h3>
                 <div className="flex items-center gap-2 flex-wrap">
                     <PipelineStep label="File Discovery" detail={`${stats.totalFiles} files`} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Media Fetch" detail={`${stats.fetchedMediaCount} media (${stats.unknownMediaCount} new)`} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Token Index" detail={`${stats.tokenIndexSize} tokens`} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Matcher" detail={stats.matcherDuration || "—"} />
-                    <BiChevronRight className="text-[--muted] text-lg flex-shrink-0" />
+                    <BiChevronRight className="text-(--muted) text-lg shrink-0" />
                     <PipelineStep label="Hydrator" detail={stats.hydratorDuration || "—"} />
                 </div>
             </div>
@@ -412,7 +412,7 @@ function OverviewPanel({ stats, lines }: { stats: ScanStats; lines: ParsedLogLin
 
 function StatCard({ label, value, icon, color, sub }: { label: string; value: number; icon: React.ReactNode; color: string; sub?: string }) {
     return (
-        <div className="bg-gray-900 border border-[--border] rounded-lg p-3 space-y-1">
+        <div className="bg-gray-900 border border-(--border) rounded-lg p-3 space-y-1">
             <div className="flex items-center gap-2">
                 <span className={cn("text-lg", color)}>{icon}</span>
                 <span className="text-sm text-gray-400 font-medium">{label}</span>
@@ -427,7 +427,7 @@ function StatCard({ label, value, icon, color, sub }: { label: string; value: nu
 
 function PipelineStep({ label, detail }: { label: string; detail: string }) {
     return (
-        <div className="bg-gray-900 border border-[--border] rounded-md px-3 py-2 text-center min-w-[120px]">
+        <div className="bg-gray-900 border border-(--border) rounded-md px-3 py-2 text-center min-w-[120px]">
             <p className="text-sm font-semibold text-gray-300">{label}</p>
             <p className="text-sm text-gray-500 mt-0.5">{detail}</p>
         </div>
@@ -446,14 +446,14 @@ function SystemLogLine({ line }: { line: ParsedLogLine }) {
             )}
         >
             <LevelBadge level={line.level} />
-            {d.context && <span className="text-indigo-400 flex-shrink-0">[{d.context}]</span>}
+            {d.context && <span className="text-indigo-400 shrink-0">[{d.context}]</span>}
             <span className="break-all">{d.message}</span>
-            {d.count !== undefined && <span className="text-gray-500 flex-shrink-0">count={d.count}</span>}
+            {d.count !== undefined && <span className="text-gray-500 shrink-0">count={d.count}</span>}
             {d.startTime !== undefined &&
-                <span className="text-gray-500 flex-shrink-0">start=<span className="text-white">{d.startTime}</span></span>}
+                <span className="text-gray-500 shrink-0">start=<span className="text-white">{d.startTime}</span></span>}
             {d.duration !== undefined &&
-                <span className="text-gray-500 flex-shrink-0">duration=<span className="text-white">{d.duration}</span></span>}
-            {d.ms !== undefined && <span className="text-white flex-shrink-0">{d.ms}ms</span>}
+                <span className="text-gray-500 shrink-0">duration=<span className="text-white">{d.duration}</span></span>}
+            {d.ms !== undefined && <span className="text-white shrink-0">{d.ms}ms</span>}
         </div>
     )
 }
@@ -537,15 +537,15 @@ function ParsedFileLine({ line, onSelectFile, isExpanded, toggleExpanded }: {
     const title = pd.title || ""
 
     return (
-        <div className="bg-gray-900 border border-[--border] rounded-md overflow-hidden">
+        <div className="bg-gray-900 border border-(--border) rounded-md overflow-hidden">
             <button
                 onClick={handleToggle}
                 className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
             >
-                {expanded ? <BiChevronDown className="text-gray-500 flex-shrink-0" /> : <BiChevronRight className="text-gray-500 flex-shrink-0" />}
-                <BiFile className="text-blue-400 flex-shrink-0" />
+                {expanded ? <BiChevronDown className="text-gray-500 shrink-0" /> : <BiChevronRight className="text-gray-500 shrink-0" />}
+                <BiFile className="text-blue-400 shrink-0" />
                 <span className="text-sm text-blue-200 font-mono truncate flex-1">{d.filename}</span>
-                <div className="flex gap-1 flex-shrink-0">
+                <div className="flex gap-1 shrink-0">
                     {title && <Badge size="sm" intent="unstyled">{title}</Badge>}
                     {hasSeason && <Badge size="sm" intent="blue">S{pd.season}</Badge>}
                     {hasEpisode && <Badge size="sm" intent="gray">{pd.episode}</Badge>}
@@ -553,7 +553,7 @@ function ParsedFileLine({ line, onSelectFile, isExpanded, toggleExpanded }: {
                 </div>
             </button>
             {expanded && (
-                <div className="px-3 py-2 border-t border-[--border] bg-gray-950 space-y-2">
+                <div className="px-3 py-2 border-t border-(--border) bg-gray-950 space-y-2">
                     {onSelectFile && (
                         <div className="flex justify-start">
                             <Button
@@ -718,7 +718,7 @@ function MatcherFileGroup({ group, onSelectFile, isExpanded, toggleExpanded }: {
         <div
             className={cn(
                 "bg-gray-900 border rounded-md overflow-hidden",
-                group.hasError ? "border-red-800/50" : group.isUnmatched ? "border-orange-800/50" : "border-[--border]",
+                group.hasError ? "border-red-800/50" : group.isUnmatched ? "border-orange-800/50" : "border-(--border)",
             )}
         >
             <button
@@ -728,14 +728,14 @@ function MatcherFileGroup({ group, onSelectFile, isExpanded, toggleExpanded }: {
                 {expanded ? <BiChevronDown className="text-gray-500" /> : <BiChevronRight className="text-gray-500" />}
 
                 {mr ? (
-                    <BiCheck className="text-green-400 text-lg flex-shrink-0" />
+                    <BiCheck className="text-green-400 text-lg shrink-0" />
                 ) : (
-                    <BiX className="text-orange-400 text-lg flex-shrink-0" />
+                    <BiX className="text-orange-400 text-lg shrink-0" />
                 )}
 
                 <span className="text-[0.8rem] leading-5 text-gray-200 truncate flex-1">{group.filename}</span>
 
-                <div className="flex gap-1.5 items-center flex-shrink-0">
+                <div className="flex gap-1.5 items-center shrink-0">
                     {mr && (
                         <>
                             <BiLinkAlt className="text-gray-500" />
@@ -753,7 +753,7 @@ function MatcherFileGroup({ group, onSelectFile, isExpanded, toggleExpanded }: {
             </button>
 
             {expanded && (
-                <div className="border-t border-[--border] bg-gray-950">
+                <div className="border-t border-(--border) bg-gray-950">
                     <div className="flex justify-start px-2 pt-2">
                         <Button
                             intent="primary-subtle" size="xs" onClick={(e) => {
@@ -818,9 +818,9 @@ function MatcherLogLine({ line }: { line: ParsedLogLine }) {
                         <>
                             <span className="text-gray-500 mr-1">vs</span>
                             <span className="text-indigo-300">{d.match}</span>
-                            <span className="text-[--muted] mx-1">[{d.id}]</span>
+                            <span className="text-(--muted) mx-1">[{d.id}]</span>
                             <span className="text-gray-300">= {d.score}</span>
-                            <span className="text-[--muted] ml-1">(title={d.titleScore} base={d.baseTitleScore} season={d.seasonPartScore} year={d.yearScore})</span>
+                            <span className="text-(--muted) ml-1">(title={d.titleScore} base={d.baseTitleScore} season={d.seasonPartScore} year={d.yearScore})</span>
                         </>
                     )}
                     {isVariations && d.titleVariations && (
@@ -878,8 +878,8 @@ function MatcherLogLine({ line }: { line: ParsedLogLine }) {
                                         {t.Season > 0 && <Badge size="sm" intent="blue">S{t.Season}</Badge>}
                                         {t.Part > 0 && <Badge size="sm" intent="gray">P{t.Part}</Badge>}
                                         {t.Year > 0 && <Badge size="sm" intent="gray">{t.Year}</Badge>}
-                                        <span className="text-[--muted]">→ {t.Normalized}</span>
-                                        {t.Tokens && <span className="text-[--muted]">[{t.Tokens.join(", ")}]</span>}
+                                        <span className="text-(--muted)">→ {t.Normalized}</span>
+                                        {t.Tokens && <span className="text-(--muted)">[{t.Tokens.join(", ")}]</span>}
                                     </div>
                                 ))}
                             </div>
@@ -1010,7 +1010,7 @@ function HydratorFileGroup({ group, onSelectFile, isExpanded, toggleExpanded }: 
         <div
             className={cn(
                 "bg-gray-900 border rounded-md overflow-hidden",
-                group.hasError ? "border-red-800/50" : group.hasWarning ? "border-orange-800/50" : "border-[--border]",
+                group.hasError ? "border-red-800/50" : group.hasWarning ? "border-orange-800/50" : "border-(--border)",
             )}
         >
             <button
@@ -1018,10 +1018,10 @@ function HydratorFileGroup({ group, onSelectFile, isExpanded, toggleExpanded }: 
                 className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
             >
                 {expanded ? <BiChevronDown className="text-gray-500" /> : <BiChevronRight className="text-gray-500" />}
-                <RiFileSettingsFill className="text-cyan-400 flex-shrink-0" />
+                <RiFileSettingsFill className="text-cyan-400 shrink-0" />
                 <span className="text-[0.8rem] leading-5 text-gray-200 truncate flex-1">{group.filename}</span>
 
-                <div className="flex gap-1.5 items-center flex-shrink-0">
+                <div className="flex gap-1.5 items-center shrink-0">
                     {mediaId && <Badge size="sm" intent="primary">{mediaId}</Badge>}
                     {hr && (
                         <>
@@ -1037,7 +1037,7 @@ function HydratorFileGroup({ group, onSelectFile, isExpanded, toggleExpanded }: 
             </button>
 
             {expanded && (
-                <div className="border-t border-[--border] bg-gray-950 p-2 space-y-1">
+                <div className="border-t border-(--border) bg-gray-950 p-2 space-y-1">
                     <div className="flex justify-start">
                         <Button
                             intent="primary-subtle" size="xs" onClick={(e) => {
@@ -1181,8 +1181,8 @@ function IssueLine({ line, isExpanded, toggleExpanded }: { line: ParsedLogLine; 
                 className="flex items-start gap-2 w-full px-3 py-2 text-left hover:bg-gray-800/50 transition-colors"
             >
                 <LevelBadge level={line.level} />
-                {d.context && <span className="text-sm text-indigo-400 flex-shrink-0">[{d.context}]</span>}
-                {d.filename && <span className="text-sm text-blue-300 font-mono flex-shrink-0 max-w-[250px] truncate">{d.filename}</span>}
+                {d.context && <span className="text-sm text-indigo-400 shrink-0">[{d.context}]</span>}
+                {d.filename && <span className="text-sm text-blue-300 font-mono shrink-0 max-w-[250px] truncate">{d.filename}</span>}
                 <span
                     className={cn(
                         "text-sm break-all flex-1",
@@ -1193,7 +1193,7 @@ function IssueLine({ line, isExpanded, toggleExpanded }: { line: ParsedLogLine; 
                 </span>
             </button>
             {expanded && (
-                <div className="border-t border-[--border] bg-gray-950 p-3">
+                <div className="border-t border-(--border) bg-gray-950 p-3">
                     <DataGrid data={d} />
                 </div>
             )}
@@ -1220,7 +1220,7 @@ function LevelDot({ level }: { level: LogLevel }) {
     return (
         <span
             className={cn(
-                "inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0",
+                "inline-block w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
                 level === "error" && "bg-red-400",
                 level === "warn" && "bg-orange-400",
                 level === "info" && "bg-blue-400",
@@ -1275,7 +1275,7 @@ function FileFlowPanel({ group }: { group: FileGroup }) {
                     title="Matcher"
                     icon={<BiSearch className="text-indigo-400" />}
                     badge={group.matchResult
-                        ? <Badge size="sm" intent="unstyled" className="text-[--green]">→ {group.matchResult.match} [{group.matchResult.id}]
+                        ? <Badge size="sm" intent="unstyled" className="text-(--green)">→ {group.matchResult.match} [{group.matchResult.id}]
                                                                                         (score: {group.matchResult.score})</Badge>
                         : group.isUnmatched
                             ? <Badge size="sm" intent="warning">unmatched</Badge>
@@ -1318,7 +1318,7 @@ function FileFlowPanel({ group }: { group: FileGroup }) {
 
 function FlowSection({ title, icon, badge, children }: { title: string; icon: React.ReactNode; badge?: React.ReactNode; children: React.ReactNode }) {
     return (
-        <div className="border border-[--border] rounded-lg overflow-hidden">
+        <div className="border border-(--border) rounded-lg overflow-hidden">
             <div className="flex items-center gap-2 px-3 py-2 bg-gray-900">
                 {icon}
                 <span className="text-sm font-semibold text-gray-200">{title}</span>

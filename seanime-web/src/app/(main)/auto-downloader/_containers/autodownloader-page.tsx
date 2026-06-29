@@ -115,10 +115,10 @@ export function AutoDownloaderPage() {
 
             <Tabs
                 defaultValue="rules"
-                triggerClass={"text-base px-6 h-auto py-2 rounded-[--radius-md] w-fit md:w-full border-none data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white"}
+                triggerClass={"text-base px-6 h-auto py-2 rounded-md w-fit md:w-full border-none data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white"}
                 listClass={"w-full flex flex-wrap md:flex-nowrap h-fit"}
             >
-                <TabsList className="flex-wrap max-w-full bg-[--paper] p-2 border rounded-xl">
+                <TabsList className="flex-wrap max-w-full bg-(--paper) p-2 border rounded-xl">
                     <TabsTrigger value="rules">Rules</TabsTrigger>
                     <TabsTrigger value="profiles">Profiles</TabsTrigger>
                     <TabsTrigger value="queue">
@@ -138,7 +138,7 @@ export function AutoDownloaderPage() {
                             <div className="space-y-4">
 
                                 <Card className="p-4 space-y-4">
-                                    <ul className="text-base text-[--muted]">
+                                    <ul className="text-base text-(--muted)">
                                         <li>Rules allow you to programmatically download new episodes based on the
                                             parameters you set.
                                         </li>
@@ -184,7 +184,7 @@ export function AutoDownloaderPage() {
                                         >
                                             <DropdownMenuItem
                                                 onClick={confirmDeleteNoLongerAiring.open}
-                                                className="text-[--red]"
+                                                className="text-(--red)"
                                                 disabled={deletingRule}
                                             >
                                                 <LuTrash /> Remove no longer airing media
@@ -192,7 +192,7 @@ export function AutoDownloaderPage() {
                                         </DropdownMenu>
                                     </div>
 
-                                    {(!data?.length) && <div className="p-4 text-[--muted] text-center">No rules</div>}
+                                    {(!data?.length) && <div className="p-4 text-(--muted) text-center">No rules</div>}
                                     {(!!data?.length) && <div className="space-y-2">
                                         {data?.toSorted(sortRules)?.map(rule => (
                                             <AutoDownloaderRuleItem
@@ -341,7 +341,7 @@ export function AutoDownloaderPage() {
                 title="Create new rules"
                 size="xl"
             >
-                <p className="text-[--muted] py-4">
+                <p className="text-(--muted) py-4">
                     Create multiple rules at once. Each rule will be created with the same parameters, except for the destination folder.
                     By default, the episode type will be "Recent releases".
                 </p>

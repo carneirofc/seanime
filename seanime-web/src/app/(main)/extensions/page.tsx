@@ -29,7 +29,7 @@ export default function Page() {
             <CustomLibraryBanner discrete />
             <PageWrapper className="p-4 sm:p-8 space-y-4">
 
-                {/*<div className="flex-wrap max-w-full bg-[--paper] p-2 border rounded-lg">*/}
+                {/*<div className="flex-wrap max-w-full bg-(--paper) p-2 border rounded-lg">*/}
                 <StaticTabs
                     data-anilist-collection-lists-tabs
                     className="h-10 w-fit border rounded-full mx-auto"
@@ -42,7 +42,7 @@ export default function Page() {
                             iconType: LuPackageCheck,
                             addon: unauthorizedPluginCount > 0 && (
                                 <span className="ml-2 bottom-1 right-1 rounded-full relative">
-                                    <FaExclamation className="text-[--orange] animate-bounce size-6" />
+                                    <FaExclamation className="text-(--orange) animate-bounce size-6" />
                                 </span>
                             ),
                         },
@@ -69,7 +69,7 @@ export default function Page() {
                                     stiffness: 135,
                                 },
                             }}
-                            key="installed" className="pt-0 space-y-8 relative z-[4]"
+                            key="installed" className="pt-0 space-y-8 relative z-4"
                         >
                             <ExtensionList />
                         </PageWrapper>
@@ -86,7 +86,7 @@ export default function Page() {
                                     stiffness: 135,
                                 },
                             }}
-                            key="marketplace" className="pt-0 space-y-8 relative z-[4]"
+                            key="marketplace" className="pt-0 space-y-8 relative z-4"
                         >
                             <MarketplaceExtensions />
                         </PageWrapper>

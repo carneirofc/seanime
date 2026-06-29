@@ -17,7 +17,7 @@ export const AutocompleteAnatomy = defineStyleAnatomy({
     ]),
     popover: cva([
         "UI-Autocomplete__popover",
-        "w-[--radix-popover-trigger-width] p-0",
+        "w-(--radix-popover-trigger-width) p-0",
     ]),
     checkIcon: cva([
         "UI-Autocomplete__checkIcon",
@@ -30,7 +30,7 @@ export const AutocompleteAnatomy = defineStyleAnatomy({
     ]),
     command: cva([
         "UI-Autocomplete__command",
-        "focus-within:ring-2 ring-[--ring] transition",
+        "focus-within:ring-2 ring-(--ring) transition",
     ]),
 })
 
@@ -328,7 +328,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
                         {...commandProps}
                     >
                         {isFetching && inputValue.length > 0 && <div className="w-full absolute top-0 left-0 px-1">
-                            <div className="h-1 w-full bg-[--subtle] overflow-hidden relative rounded-full">
+                            <div className="h-1 w-full bg-(--subtle) overflow-hidden relative rounded-full">
                                 <div className="animate-indeterminate-progress absolute left-0 w-full h-full bg-brand origin-left-right"></div>
                             </div>
                         </div>}

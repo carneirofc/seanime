@@ -16,10 +16,10 @@ export function OfflineLibraryToolbar(props: OfflineLibraryToolbarProps) {
         <PageWrapper className="py-2">
             <div className="flex items-center gap-2">
                 {isNakamaLibrary && (
-                    <span className="text-sm text-[--muted]">Nakama Library</span>
+                    <span className="text-sm text-(--muted)">Nakama Library</span>
                 )}
                 {isStreamingOnly && (
-                    <span className="text-sm text-[--muted]">Streaming Only</span>
+                    <span className="text-sm text-(--muted)">Streaming Only</span>
                 )}
             </div>
         </PageWrapper>

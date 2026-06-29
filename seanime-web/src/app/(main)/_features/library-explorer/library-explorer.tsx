@@ -781,22 +781,22 @@ const VirtualizedTreeNode = memo(({
                 <RiFolderOpenFill
                     className={cn(
                         "size-5 text-brand-400/90",
-                        !node.mediaIds?.length && "text-[--muted]",
+                        !node.mediaIds?.length && "text-(--muted)",
                     )}
                 /> :
                 <FiFolder
                     className={cn(
                         "size-5 text-brand-400/80",
-                        !node.mediaIds?.length && "text-[--muted]",
+                        !node.mediaIds?.length && "text-(--muted)",
                     )}
                 />
         }
 
-        if (!node.localFile) return <LuFileQuestion className="size-4 text-[--muted]" />
+        if (!node.localFile) return <LuFileQuestion className="size-4 text-(--muted)" />
 
         return <LuFileVideo2
             className={cn(
-                "size-4 text-[--muted]",
+                "size-4 text-(--muted)",
                 node.localFile.metadata?.type === "main" && "text-brand-400/70",
                 node.localFile.metadata?.type === "special" && "text-cyan-200/50",
                 node.localFile.metadata?.type === "nc" && "text-gray-200/30",
@@ -989,7 +989,7 @@ const VirtualizedTreeNode = memo(({
                 onOpenChange={setContextMenuOpen}
                 content={
                     <ContextMenuGroup>
-                        <ContextMenuLabel className="text-[--muted] line-clamp-2 py-0 my-2 text-xs tracking-wide">
+                        <ContextMenuLabel className="text-(--muted) line-clamp-2 py-0 my-2 text-xs tracking-wide">
                             {node.name}
                         </ContextMenuLabel>
                         {node.mediaIds?.length === 1 && <ContextMenuItem
@@ -1004,7 +1004,7 @@ const VirtualizedTreeNode = memo(({
                         </ContextMenuItem>}
                         <ContextMenuItem
                             onClick={handleOpenSuperUpdate}
-                            // className={cn("text-[--violet]")}
+                            // className={cn("text-(--violet)")}
                         >
                             <FaRegEdit /> Super update
                         </ContextMenuItem>
@@ -1017,13 +1017,13 @@ const VirtualizedTreeNode = memo(({
                         {(isDirectory && !!nonIgnoredFileCount) && <>
                             {allFileMatched && <ContextMenuItem
                                 onClick={handleUnmatchDirectory}
-                                className={cn("text-[--orange]", isPending && "opacity-50 pointer-events-none")}
+                                className={cn("text-(--orange)", isPending && "opacity-50 pointer-events-none")}
                             >
                                 <MdOutlineRemoveDone className="text-lg" /> Unmatch files
                             </ContextMenuItem>}
                             {!allFileMatched && <ContextMenuItem
                                 onClick={handleMatchDirectory}
-                                className={cn("text-[--green]", isPending && "opacity-50 pointer-events-none")}
+                                className={cn("text-(--green)", isPending && "opacity-50 pointer-events-none")}
                             >
                                 <MdOutlineAdd className="text-lg" /> Match files
                             </ContextMenuItem>}
@@ -1037,19 +1037,19 @@ const VirtualizedTreeNode = memo(({
                         {(!isDirectory && isScannedFile) && <>
                             {!!node.localFile?.mediaId && <ContextMenuItem
                                 onClick={() => setMetadataModalOpen(true)}
-                                className={cn("text-[--blue]", isPending && "opacity-50 pointer-events-none")}
+                                className={cn("text-(--blue)", isPending && "opacity-50 pointer-events-none")}
                             >
                                 <LuFilePen className="text-lg" /> Edit metadata
                             </ContextMenuItem>}
                             {!!node.localFile?.mediaId && <ContextMenuItem
                                 onClick={handleUnmatchSingleFile}
-                                className={cn("text-[--orange]", isPending && "opacity-50 pointer-events-none")}
+                                className={cn("text-(--orange)", isPending && "opacity-50 pointer-events-none")}
                             >
                                 <MdOutlineRemoveDone className="text-lg" /> Unmatch file
                             </ContextMenuItem>}
                             {!node.localFile?.mediaId && <ContextMenuItem
                                 onClick={handleMatchSingleFile}
-                                className={cn("text-[--green]", isPending && "opacity-50 pointer-events-none")}
+                                className={cn("text-(--green)", isPending && "opacity-50 pointer-events-none")}
                             >
                                 <MdOutlineAdd className="text-lg" /> Match file
                             </ContextMenuItem>}
@@ -1066,19 +1066,19 @@ const VirtualizedTreeNode = memo(({
                                 <LuClipboardPlus className="text-lg" /> Un-ignore file
                             </ContextMenuItem>}
                         </>}
-                        <ContextMenuSeparator className="!my-2" />
+                        <ContextMenuSeparator className="my-2!" />
                         <ContextMenuSub
                             triggerContent="More"
                         >
                             {isDirectory && !!nonIgnoredFileCount && <ContextMenuItem
                                 onClick={handleDeleteDirectory}
-                                className={cn("text-[--red]")}
+                                className={cn("text-(--red)")}
                             >
                                 <LuTrash2 className="text-lg" /> Delete files
                             </ContextMenuItem>}
                             {(!isDirectory && isScannedFile) && <ContextMenuItem
                                 onClick={handleDeleteSingleFile}
-                                className={cn("text-[--red]")}
+                                className={cn("text-(--red)")}
                             >
                                 <LuTrash2 className="text-lg" /> Delete file
                             </ContextMenuItem>}
@@ -1115,18 +1115,18 @@ const VirtualizedTreeNode = memo(({
                             {(isSelectingPaths && (isDirectory || isScannedFile)) && <div className="flex h-full items-center">
                                 <Checkbox
                                     size="md"
-                                    fieldClass="flex-shrink-0 flex items-center"
+                                    fieldClass="shrink-0 flex items-center"
                                     value={libraryExplorer_getCheckboxState(node, selectedPaths)}
                                     onClick={handleCheckboxStopPropagation}
                                     onValueChange={handleCheckboxValueChange}
                                 />
                             </div>}
 
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                                 {getFileIcon()}
                             </div>
                             {isDirectory && !!media &&
-                                <div className="size-6 flex-none rounded-[--radius-md] object-cover object-center relative overflow-hidden ml-2">
+                                <div className="size-6 flex-none rounded-md object-cover object-center relative overflow-hidden ml-2">
                                     <SeaImage
                                         src={media.coverImage?.medium || ""}
                                         alt={media.title?.userPreferred || ""}
@@ -1136,7 +1136,7 @@ const VirtualizedTreeNode = memo(({
                                     />
                                 </div>}
                             {isDirectory && !media && !!node.mediaIds?.length && node.mediaIds?.length > 1 &&
-                                <div className="h-6 px-2 flex-none rounded-[--radius-md] flex items-center justify-center bg-gray-800 ml-2 text-white text-xs font-semibold">
+                                <div className="h-6 px-2 flex-none rounded-md flex items-center justify-center bg-gray-800 ml-2 text-white text-xs font-semibold">
                                     {node.mediaIds?.length}
                                 </div>}
 
@@ -1149,13 +1149,13 @@ const VirtualizedTreeNode = memo(({
                                         "truncate min-w-0",
                                         !isDirectory && !!node.localFile && !node.localFile.mediaId && "text-orange-200",
                                         !isDirectory && !isScannedFile && "text-red-200",
-                                        !isDirectory && node.localFile?.ignored && "text-[--muted] italic",
+                                        !isDirectory && node.localFile?.ignored && "text-(--muted) italic",
                                     )}
                                 >{node.name === "root" ? "Anime Libraries" : node.name}</span>
                                 {(!!media || isUnknownMedia) && (
                                     <span
                                         className={cn(
-                                            "hidden tracking-normal 2xl:flex text-[--muted] text-sm flex-shrink whitespace-nowrap line-clamp-1 items-center gap-1",
+                                            "hidden tracking-normal 2xl:flex text-(--muted) text-sm shrink whitespace-nowrap line-clamp-1 items-center gap-1",
                                         )}
                                         style={{ maxWidth: 200 }}
                                     >
@@ -1169,7 +1169,7 @@ const VirtualizedTreeNode = memo(({
                                 {(allFileIgnored && isDirectory) && (
                                     <span
                                         className={cn(
-                                            "hidden 2xl:flex text-[--muted] text-sm flex-shrink whitespace-nowrap line-clamp-1 items-center gap-1",
+                                            "hidden 2xl:flex text-(--muted) text-sm shrink whitespace-nowrap line-clamp-1 items-center gap-1",
                                         )}
                                         style={{ maxWidth: 200 }}
                                     >
@@ -1184,9 +1184,9 @@ const VirtualizedTreeNode = memo(({
                             <Tooltip
                                 trigger={<span
                                     className={cn(
-                                        "text-xs bg-green-500/20 text-[--green] px-2 py-0.5 rounded-full",
-                                        nonIgnoredFileCount !== matchedFileCount && "bg-orange-500/20 text-[--orange]",
-                                        !allFileScanned && "bg-red-500/20 text-[--red]",
+                                        "text-xs bg-green-500/20 text-(--green) px-2 py-0.5 rounded-full",
+                                        nonIgnoredFileCount !== matchedFileCount && "bg-orange-500/20 text-(--orange)",
+                                        !allFileScanned && "bg-red-500/20 text-(--red)",
                                     )}
                                 >
                                     {matchedFileCount} / {nonIgnoredFileCount}
@@ -1347,13 +1347,13 @@ function LibraryInfoPanel({}: { localFiles: Record<string, Anime_LocalFile> | un
                         <FiFolder
                             className={cn(
                                 "w-12 h-12 text-brand-400",
-                                !selectedNode.mediaIds?.length && "text-[--muted]",
+                                !selectedNode.mediaIds?.length && "text-(--muted)",
                             )}
                         />
                     ) : (
                         <MdVideoFile
                             className={cn(
-                                "w-12 h-12 text-[--muted]",
+                                "w-12 h-12 text-(--muted)",
                                 selectedNode.localFile?.metadata?.type === "main" && "text-brand-400/80",
                                 selectedNode.localFile?.metadata?.type === "special" && "text-cyan-200/50",
                                 selectedNode.localFile?.metadata?.type === "nc" && "text-gray-200/30",
@@ -1416,8 +1416,8 @@ function LibraryInfoPanel({}: { localFiles: Record<string, Anime_LocalFile> | un
                         <dt className="text-gray-400 text-sm uppercase tracking-wide">
                             Library File
                         </dt>
-                        {selectedNode.localFile?.mediaId > 0 && <dd className="text-[--green] text-sm">✓ Matched</dd>}
-                        {selectedNode.localFile?.mediaId === 0 && <dd className="text-[--orange] text-sm">Not matched</dd>}
+                        {selectedNode.localFile?.mediaId > 0 && <dd className="text-(--green) text-sm">✓ Matched</dd>}
+                        {selectedNode.localFile?.mediaId === 0 && <dd className="text-(--orange) text-sm">Not matched</dd>}
                         <dd className="text-gray-200 text-sm">
                             Episode: <span className="font-semibold">{selectedNode.localFile?.metadata?.episode ?? "N/A"}</span>
                         </dd>

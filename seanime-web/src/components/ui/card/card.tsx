@@ -9,7 +9,7 @@ import { cn, defineStyleAnatomy } from "../core/styling"
 export const CardAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Card__root",
-        "rounded-xl border bg-[--paper] shadow-sm",
+        "rounded-xl border bg-(--paper) shadow-sm",
     ]),
     header: cva([
         "UI-Card__header",
@@ -21,7 +21,7 @@ export const CardAnatomy = defineStyleAnatomy({
     ]),
     description: cva([
         "UI-Card__description",
-        "text-sm text-[--muted]",
+        "text-sm text-(--muted)",
     ]),
     content: cva([
         "UI-Card__content",

@@ -28,7 +28,7 @@ export default function Page() {
 
                     <div className="hidden lg:block space-y-2">
                         <h2>Release schedule</h2>
-                        <p className="text-[--muted]">Based on your anime list</p>
+                        <p className="text-(--muted)">Based on your anime list</p>
                     </div>
 
                     <ScheduleCalendar />

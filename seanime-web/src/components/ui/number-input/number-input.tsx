@@ -15,12 +15,12 @@ import { extractInputPartProps, InputAddon, InputAnatomy, InputContainer, InputI
 export const NumberInputAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-NumberInput__root",
-        "z-[2]",
+        "z-2",
     ], {
         variants: {
             hideControls: {
                 true: false,
-                false: "border-r border-r-transparent hover:border-r-[--border]",
+                false: "border-r border-r-transparent hover:border-r-(--border)",
             },
             size: {
                 sm: null,
@@ -44,7 +44,7 @@ export const NumberInputAnatomy = defineStyleAnatomy({
     controlsContainer: cva([
         "UI-NumberInput__controlsContainer",
         "form-input w-auto p-0 flex flex-col items-stretch justify-center overflow-hidden max-h-full",
-        "border-l-0 relative z-[1]",
+        "border-l-0 relative z-1",
         "shadow-xs",
     ], {
         variants: {

@@ -50,7 +50,7 @@ export function SyncAddMediaModal(props: SyncAddMediaModalProps) {
             </Button>}
         >
 
-            <p className="text-[--muted]">
+            <p className="text-(--muted)">
                 Select the media you want to save locally. Click on already saved media to remove it from local storage.
             </p>
 
@@ -394,7 +394,7 @@ function MediaItem(props: {
             <div
                 key={entry.mediaId}
                 className={cn(
-                    "col-span-1 aspect-[6/7] rounded-[--radius-md] overflow-hidden relative bg-[var(--background)] cursor-pointer transition-opacity select-none",
+                    "col-span-1 aspect-6/7 rounded-md overflow-hidden relative bg-(--background) cursor-pointer transition-opacity select-none",
                     isSaved && "",
                     isPending && "pointer-events-none",
                 )}
@@ -408,12 +408,12 @@ function MediaItem(props: {
                 }}
             >
                 {isSaved && (
-                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-[10]">
+                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-10">
                         <FaCircleCheck className="text-3xl" />
                     </div>
                 )}
                 {(isSelected && !isSaved) && (
-                    <div className="absolute top-2 left-2 w-full h-full flex z-[10]">
+                    <div className="absolute top-2 left-2 w-full h-full flex z-10">
                         <FaRegCircleCheck className="text-xl bg-black/50 rounded-full p-1" />
                     </div>
                 )}
@@ -424,24 +424,24 @@ function MediaItem(props: {
                     fill
                     alt=""
                     className={cn(
-                        "object-center object-cover rounded-[--radius-md] transition-opacity",
+                        "object-center object-cover rounded-md transition-opacity",
                         isSelected ? "opacity-100" : "opacity-60",
                     )}
                 />
                 <p
                     className={cn(
-                        "line-clamp-2 text-sm absolute m-2 bottom-0 font-semibold z-[10]",
-                        isSaved && "text-[--green]",
+                        "line-clamp-2 text-sm absolute m-2 bottom-0 font-semibold z-10",
+                        isSaved && "text-(--green)",
                     )}
                 >
                     {entry.media?.title?.userPreferred || entry.media?.title?.romaji}
                 </p>
                 <div
-                    className="z-[5] absolute -bottom-1 w-full h-[80%] bg-gradient-to-t from-[--background] to-transparent"
+                    className="z-5 absolute -bottom-1 w-full h-[80%] bg-linear-to-t from-(--background) to-transparent"
                 />
                 <div
                     className={cn(
-                        "z-[5] absolute top-0 w-full h-[80%] bg-gradient-to-b from-[--background] to-transparent transition-opacity",
+                        "z-5 absolute top-0 w-full h-[80%] bg-linear-to-b from-(--background) to-transparent transition-opacity",
                         isSelected ? "opacity-0" : "opacity-100 hover:opacity-80",
                     )}
                 />

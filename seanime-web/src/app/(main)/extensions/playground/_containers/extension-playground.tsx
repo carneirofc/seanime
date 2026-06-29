@@ -350,7 +350,7 @@ export function ExtensionPlayground(props: ExtensionPlaygroundProps) {
                     <ResizablePanelGroup
                         autoSaveId="sea-extension-playground-1"
                         direction="horizontal"
-                        className="w-full border rounded-md !h-[calc(100vh-16rem)] xl:!h-[calc(100vh-14rem)] mt-8"
+                        className="w-full border rounded-md h-[calc(100vh-16rem)]! xl:h-[calc(100vh-14rem)]! mt-8"
                     >
                         <ResizablePanel defaultSize={75}>
                             <ResizablePanelGroup direction="vertical" autoSaveId="sea-extension-playground-2">
@@ -379,7 +379,7 @@ export function ExtensionPlayground(props: ExtensionPlaygroundProps) {
                                     </div>
                                 </ResizablePanel>
                                 <ResizableHandle />
-                                <ResizablePanel defaultSize={25} className="!overflow-y-auto">
+                                <ResizablePanel defaultSize={25} className="overflow-y-auto!">
                                     <div className="flex w-full h-full p-2">
                                         <div className="w-full">
                                             <div className="bg-gray-950 rounded-md border max-w-full overflow-x-auto h-full">
@@ -394,7 +394,7 @@ export function ExtensionPlayground(props: ExtensionPlaygroundProps) {
                                                                 l.includes("|ERR|") && "text-white bg-red-800/10",
                                                                 l.includes("|WRN|") && "text-orange-500",
                                                                 l.includes("|INF|") && "text-blue-200",
-                                                                l.includes("|TRC|") && "text-[--muted]",
+                                                                l.includes("|TRC|") && "text-(--muted)",
                                                                 l.includes("extension > (console.warn):") && "text-orange-200/80",
                                                             )}
                                                         >
@@ -430,13 +430,13 @@ export function ExtensionPlayground(props: ExtensionPlaygroundProps) {
                             </ResizablePanelGroup>
                         </ResizablePanel>
                         <ResizableHandle />
-                        <ResizablePanel defaultSize={25} className="!overflow-y-auto">
+                        <ResizablePanel defaultSize={25} className="overflow-y-auto!">
                             <div className="flex w-full h-full max-w-full overflow-y-auto">
                                 <div className="w-full">
                                     <ResizablePanelGroup direction="vertical" autoSaveId="sea-extension-playground-3">
 
-                                        <ResizablePanel defaultSize={30} className="!overflow-y-auto">
-                                            {/* <div className="p-3 sticky z-[2] top-0 right-0 w-full border-b bg-[--background]">
+                                        <ResizablePanel defaultSize={30} className="overflow-y-auto!">
+                                            {/* <div className="p-3 sticky z-2 top-0 right-0 w-full border-b bg-(--background)">
                                              <Button intent="primary" size="sm" className="w-full" loading={isRunning} onClick={() => handleRunCode()} leftIcon={<BiTerminal className="size-6" />}>
                                              {isRunning ? "Running..." : "Run"}
                                              </Button>

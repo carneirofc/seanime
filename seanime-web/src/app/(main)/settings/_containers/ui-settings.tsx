@@ -83,7 +83,7 @@ const selectUISettingTabAtom = atom("main")
 const tabsRootClass = cn("w-full contents space-y-4")
 
 const tabsTriggerClass = cn(
-    "text-base px-6 rounded-[--radius-md] w-fit border-none data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white",
+    "text-base px-6 rounded-md w-fit border-none data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white",
     "h-10 lg:justify-center px-3 flex-1",
 )
 
@@ -112,16 +112,16 @@ function BannerBehaviorThumb({ type }: { type: string }) {
     const fullBand = (
         <div className="absolute top-0 left-0 right-0 h-1/2">
             {baseType === "blur" && (
-                <div className="absolute inset-0 bg-gradient-to-b from-gray-600/80 to-transparent [filter:blur(2px)] scale-105 origin-top" />
+                <div className="absolute inset-0 bg-linear-to-b from-gray-600/80 to-transparent filter-[blur(2px)] scale-105 origin-top" />
             )}
             {baseType === "dim" && (
-                <div className="absolute inset-0 bg-gradient-to-b from-gray-600/25 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-gray-600/25 to-transparent" />
             )}
             {baseType === "hide" && (
                 <div className="absolute inset-0 bg-gray-950" />
             )}
             {baseType === "default" && (
-                <div className="absolute inset-0 bg-gradient-to-b from-gray-600/80 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-gray-600/80 to-transparent" />
             )}
         </div>
     )
@@ -132,14 +132,14 @@ function BannerBehaviorThumb({ type }: { type: string }) {
 
     // conditional: left half is always clear, right half shows the effect
     const rightHalf =
-        baseType === "blur" ? <div className="flex-1 bg-gradient-to-b from-gray-600/80 to-transparent [filter:blur(2px)] scale-110 origin-top" />
-            : baseType === "dim" ? <div className="flex-1 bg-gradient-to-b from-gray-600/25 to-transparent" />
+        baseType === "blur" ? <div className="flex-1 bg-linear-to-b from-gray-600/80 to-transparent filter-[blur(2px)] scale-110 origin-top" />
+            : baseType === "dim" ? <div className="flex-1 bg-linear-to-b from-gray-600/25 to-transparent" />
                 : <div className="flex-1 bg-gray-950" />
 
     return (
         <SelThumb>
             <div className="absolute top-0 left-0 right-0 h-1/2 flex overflow-hidden">
-                <div className="flex-1 bg-gradient-to-b from-gray-600/80 to-transparent" />
+                <div className="flex-1 bg-linear-to-b from-gray-600/80 to-transparent" />
                 <div className="w-px bg-white/[0.07]" />
                 {rightHalf}
             </div>
@@ -149,7 +149,7 @@ function BannerBehaviorThumb({ type }: { type: string }) {
 
 // shared classes for thumbnail-bearing radio cards
 const thumbLabelClass = cn(
-    "font-medium flex flex-row items-center data-[state=unchecked]:hover:text-[--foreground] data-[state=checked]:text-[--brand] text-[--muted] cursor-pointer")
+    "font-medium flex flex-row items-center data-[state=unchecked]:hover:text-(--foreground) data-[state=checked]:text-(--brand) text-(--muted) cursor-pointer")
 const thumbContainerClass = "sea-selector-card"
 
 const libraryBannerTypeOptions = [
@@ -158,7 +158,7 @@ const libraryBannerTypeOptions = [
         label: (
             <span className="flex items-center gap-3">
                 <SelThumb>
-                    <div className="absolute inset-x-0 top-0 h-3/5 bg-gradient-to-b from-gray-600/80 to-transparent" />
+                    <div className="absolute inset-x-0 top-0 h-3/5 bg-linear-to-b from-gray-600/80 to-transparent" />
                     <div className="absolute bottom-3 left-1 flex flex-col gap-0.5">
                         <div className="h-px w-7 rounded-full bg-white/30" />
                         <div className="h-px w-5 rounded-full bg-white/20" />
@@ -215,7 +215,7 @@ const bannerSizeOptions = ThemeMediaPageBannerSizeOptions.map(n => ({
         <span className="flex items-center gap-3">
             <SelThumb>
                 <div
-                    className="absolute inset-x-0 top-0 bg-gradient-to-b from-gray-600/80 to-transparent"
+                    className="absolute inset-x-0 top-0 bg-linear-to-b from-gray-600/80 to-transparent"
                     style={{ height: n.value === "default" ? "65%" : "35%" }}
                 />
             </SelThumb>
@@ -234,7 +234,7 @@ function NavigationPreloadThumb({ mode }: { mode: NavigationPreloadMode }) {
                     <div className="absolute left-1 top-3 h-1 w-6 rounded-full bg-gray-700/45" />
                     <div className="absolute right-1 top-1.5 h-4 w-3 rounded-sm border border-gray-400/40 bg-gray-500/25" />
                     <div className="absolute top-0 left-0 right-0 bottom-0 flex items-start justify-start pt-1.5 pl-0.5">
-                        <div className="h-px w-11 bg-white/25 rotate-[20deg] origin-left" />
+                        <div className="h-px w-11 bg-white/25 rotate-20 origin-left" />
                     </div>
                 </SelThumb>
             )
@@ -301,7 +301,7 @@ const navigationPreloadOptions: Array<{
 // smaller thumbnail for Field.Switch label prop
 function SwThumb({ children }: { children?: React.ReactNode }) {
     return (
-        <div className="relative w-9 h-6 shrink-0 rounded overflow-hidden border border-white/[0.06] bg-gray-950">
+        <div className="relative w-9 h-6 shrink-0 rounded overflow-hidden border border-white/6 bg-gray-950">
             {children}
         </div>
     )
@@ -517,7 +517,7 @@ export function UISettings() {
                         triggerClass={tabsTriggerClass}
                         listClass={tabsListClass}
                     >
-                        <TabsList data-settings-ui-panel-tabs className="flex-wrap max-w-full bg-[--paper] p-2 border rounded-xl">
+                        <TabsList data-settings-ui-panel-tabs className="flex-wrap max-w-full bg-(--paper) p-2 border rounded-xl">
                             <TabsTrigger value="main">General</TabsTrigger>
                             <TabsTrigger value="css">CSS</TabsTrigger>
                         </TabsList>
@@ -541,7 +541,7 @@ export function UISettings() {
                                     </Button>
                                 )}
 
-                                <p className="text-[--muted] text-sm">
+                                <p className="text-(--muted) text-sm">
                                     The custom CSS will be saved on the server and needs to be applied manually to each client.
                                     <br />
                                     In case of an error rendering the UI unusable, you can always remove it from the local storage using the
@@ -668,7 +668,7 @@ export function UISettings() {
                                                 key={opt.name}
                                                 className={cn(
                                                     "flex gap-3 items-center w-fit rounded-full border p-1 cursor-pointer",
-                                                    themeSettings.backgroundColor === opt.backgroundColor && themeSettings.accentColor === opt.accentColor && "border-[--brand] ring-[--brand] ring-offset-1 ring-offset-[--background]",
+                                                    themeSettings.backgroundColor === opt.backgroundColor && themeSettings.accentColor === opt.accentColor && "border-(--brand) ring-(--brand) ring-offset-1 ring-offset-(--background)",
                                                 )}
                                                 onClick={() => {
                                                     f.setValue("backgroundColor", opt.backgroundColor)
@@ -810,7 +810,7 @@ export function UISettings() {
                                                 <NavigationPreloadThumb mode={option.value} />
                                                 <span className="flex flex-col gap-0.5">
                                                     <span>{option.title}</span>
-                                                    <span className="text-xs leading-4 text-[--muted] data-[state=checked]:text-[--muted]">
+                                                    <span className="text-xs leading-4 text-(--muted) data-[state=checked]:text-(--muted)">
                                                         {option.description}
                                                     </span>
                                                 </span>
@@ -822,11 +822,11 @@ export function UISettings() {
                                         isSimulatedUser && "pointer-events-none opacity-50",
                                     )}
                                     itemContainerClass={cn(
-                                        "cursor-pointer transition border-transparent rounded-[--radius] p-3 w-full md:w-fit",
+                                        "cursor-pointer transition border-transparent rounded-(--radius) p-3 w-full md:w-fit",
                                         "bg-transparent dark:hover:bg-gray-900 dark:bg-transparent",
                                         "data-[state=checked]:bg-brand-500/5 dark:data-[state=checked]:bg-gray-900",
-                                        "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-[--background] focus-within:ring-transparent transition",
-                                        "dark:border dark:data-[state=checked]:border-[--border] data-[state=checked]:ring-offset-0",
+                                        "focus:ring-2 ring-brand-100 dark:ring-brand-900 ring-offset-1 ring-offset-(--background) focus-within:ring-transparent transition",
+                                        "dark:border dark:data-[state=checked]:border-(--border) data-[state=checked]:ring-offset-0",
                                         "items-center",
                                     )}
                                     itemClass={cn(
@@ -835,7 +835,7 @@ export function UISettings() {
                                         "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent",
                                     )}
                                     itemIndicatorClass="hidden"
-                                    itemLabelClass="font-medium justify-center flex flex-col items-center data-[state=unchecked]:hover:text-[--foreground] data-[state=checked]:text-[--brand] text-[--muted] cursor-pointer"
+                                    itemLabelClass="font-medium justify-center flex flex-col items-center data-[state=unchecked]:hover:text-(--foreground) data-[state=checked]:text-(--brand) text-(--muted) cursor-pointer"
                                     // stackClass="flex flex-col md:flex-row flex-wrap gap-2 space-y-0"
                                     stackClass={cn("flex flex-col md:flex-row gap-2 space-y-0 flex-wrap")}
                                     help="Applies to media pages on this client. Preloading can cause you to hit rate limits faster."
@@ -856,7 +856,7 @@ export function UISettings() {
                                                 <div className="h-2 w-4 rounded-full bg-gray-700/60 border border-white/[0.07]" />
                                             </div>
                                             <div className="absolute top-0 left-0 right-0 bottom-0 flex items-start justify-start pt-1.5 pl-0.5">
-                                                <div className="h-px w-9 bg-white/25 rotate-[20deg] origin-left" />
+                                                <div className="h-px w-9 bg-white/25 rotate-20 origin-left" />
                                             </div>
                                         </SwThumb>,
                                         "Remove genre selector",
@@ -876,8 +876,8 @@ export function UISettings() {
                                     side="right"
                                     label={swLabel(
                                         <SwThumb>
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-600/60 to-gray-900/60" />
-                                            <div className="absolute inset-1 rounded-sm bg-white/[0.08] border border-white/10" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-gray-600/60 to-gray-900/60" />
+                                            <div className="absolute inset-1 rounded-sm bg-white/8 border border-white/10" />
                                         </SwThumb>,
                                         "Enable blurring effects",
                                     )}
@@ -890,8 +890,8 @@ export function UISettings() {
                                     label={swLabel(
                                         <SwThumb>
                                             <div className="absolute inset-0 bg-gray-950" />
-                                            <div className="absolute inset-x-0 top-0 h-[90%] bg-gradient-to-b from-gray-600/60 to-transparent [filter:blur(3px)] scale-105 origin-top" />
-                                            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-gray-600/20 to-transparent" />
+                                            <div className="absolute inset-x-0 top-0 h-[90%] bg-linear-to-b from-gray-600/60 to-transparent filter-[blur(3px)] scale-105 origin-top" />
+                                            <div className="absolute inset-x-0 top-0 h-1/2 bg-linear-to-b from-gray-600/20 to-transparent" />
                                         </SwThumb>,
                                         "Media screen blurred background",
                                     )}
@@ -903,8 +903,8 @@ export function UISettings() {
                                     side="right"
                                     label={swLabel(
                                         <SwThumb>
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-800/80 to-gray-950" />
-                                            <div className="absolute inset-1 rounded-sm bg-gray-900/60 border border-white/[0.06]" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-gray-800/80 to-gray-950" />
+                                            <div className="absolute inset-1 rounded-sm bg-gray-900/60 border border-white/6" />
                                             <div className="absolute top-0.5 right-0.5 w-3 h-3 rounded-full bg-gray-600 flex items-center justify-center">
                                                 <span className="text-[5px] text-white leading-none font-bold">3</span>
                                             </div>
@@ -918,8 +918,8 @@ export function UISettings() {
                                     side="right"
                                     label={swLabel(
                                         <SwThumb>
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-800/80 to-gray-950" />
-                                            <div className="absolute inset-1 rounded-sm bg-gray-900/60 border border-white/[0.06]" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-gray-800/80 to-gray-950" />
+                                            <div className="absolute inset-1 rounded-sm bg-gray-900/60 border border-white/6" />
                                             <div className="absolute top-0.5 right-0.5 w-3 h-3 rounded-full bg-gray-700 flex items-center justify-center">
                                                 <span className="text-[5px] text-white leading-none font-bold">5</span>
                                             </div>
@@ -933,7 +933,7 @@ export function UISettings() {
                                     side="right"
                                     label={swLabel(
                                         <SwThumb>
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-600/40 to-gray-950" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-gray-600/40 to-gray-950" />
                                             <div className="absolute inset-1 rounded-sm bg-white/[0.07] border border-white/10" />
                                         </SwThumb>,
                                         "Media card glassy background",
@@ -976,13 +976,13 @@ export function UISettings() {
                                                     <div className="h-px w-full bg-white/20 rounded" />
                                                     <div className="h-px w-full bg-white/20 rounded" />
                                                     <div className="h-px w-full bg-white/20 rounded" />
-                                                    <div className="h-px w-3/4 bg-white/[0.05] rounded" />
-                                                    <div className="h-px w-1/2 bg-white/[0.05] rounded" />
+                                                    <div className="h-px w-3/4 bg-white/5 rounded" />
+                                                    <div className="h-px w-1/2 bg-white/5 rounded" />
                                                 </div>
 
                                             </div>
                                             <div className="absolute top-0 left-0 right-0 bottom-0 flex items-start justify-start pt-1.5 pl-0.5">
-                                                <div className="h-px w-9 bg-white/25 rotate-[20deg] origin-left" />
+                                                <div className="h-px w-9 bg-white/25 rotate-20 origin-left" />
                                             </div>
                                         </SwThumb>,
                                         "Episode items: Hide summary",
@@ -998,11 +998,11 @@ export function UISettings() {
                                             <div className="absolute inset-0.5 rounded-sm border border-white/10 flex overflow-hidden">
                                                 <div className="flex-1 p-0.5 flex flex-col justify-between">
                                                     <div className="h-px w-full bg-white/20 rounded" />
-                                                    <div className="h-px w-full bg-white/[0.04] rounded" />
+                                                    <div className="h-px w-full bg-white/4 rounded" />
                                                 </div>
                                             </div>
                                             <div className="absolute top-0 left-0 right-0 bottom-0 flex items-start justify-start pt-1.5 pl-0.5">
-                                                <div className="h-px w-9 bg-white/25 rotate-[20deg] origin-left" />
+                                                <div className="h-px w-9 bg-white/25 rotate-20 origin-left" />
                                             </div>
                                         </SwThumb>,
                                         "Episode items: Hide filename",
@@ -1022,7 +1022,7 @@ export function UISettings() {
                                                 <LuChevronRight className="absolute -right-1 top-0 text-gray-500" />
                                             </div>
                                             <div className="absolute top-0 left-0 right-0 bottom-0 flex items-start justify-start pt-1.5 pl-0.5">
-                                                <div className="h-px w-9 bg-white/25 rotate-[20deg] origin-left" />
+                                                <div className="h-px w-9 bg-white/25 rotate-20 origin-left" />
                                             </div>
                                         </SwThumb>,
                                         "Disable carousel auto-scroll",
@@ -1051,7 +1051,7 @@ export function UISettings() {
                                     side="right"
                                     label={swLabel(
                                         <SwThumb>
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-600/30 to-gray-950" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-gray-600/30 to-gray-950" />
                                             <div className="absolute left-0 top-0 bottom-0 w-6 bg-gray-950 border-r" />
                                             <div className="absolute left-1 top-1.5 flex flex-col gap-0.5">
                                                 <div className="h-0.5 w-1.5 bg-white/30 rounded" />
@@ -1069,7 +1069,7 @@ export function UISettings() {
                                     side="right"
                                     label={swLabel(
                                         <SwThumb>
-                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-600/30 to-gray-950" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-gray-600/30 to-gray-950" />
                                             <div className="absolute left-0 top-0 bottom-0 w-3.5 bg-gray-900" />
                                             <div className="absolute left-1 top-1.5 flex flex-col gap-0.5">
                                                 <div className="h-0.5 w-1.5 bg-white/30 rounded" />

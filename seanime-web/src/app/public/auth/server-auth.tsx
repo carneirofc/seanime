@@ -16,7 +16,7 @@ export function ServerAuth() {
             description="This Seanime server requires authentication."
             open={true}
             onOpenChange={(v) => {}}
-            overlayClass="bg-opacity-100 bg-gray-900"
+            overlayClass="bg-gray-900/100"
             contentClass="border focus:outline-none focus-visible:outline-none outline-none"
             hideCloseButton
         >

@@ -18,9 +18,9 @@ export const VerticalMenuAnatomy = defineStyleAnatomy({
     item: cva([
         "UI-VerticalMenu__item",
         "group/verticalMenu_item relative flex flex-none items-center w-full font-medium rounded-lg transition cursor-pointer",
-        "hover:text-[--foreground]",
-        "focus-visible:bg-[--subtle] outline-none text-[--muted]",
-        "data-[current=true]:bg-[--subtle] data-[current=true]:text-[--foreground]",
+        "hover:text-(--foreground)",
+        "focus-visible:bg-(--subtle) outline-none text-(--muted)",
+        "data-[current=true]:bg-(--subtle) data-[current=true]:text-(--foreground)",
     ], {
         variants: {
             collapsed: {
@@ -93,10 +93,10 @@ export const VerticalMenuAnatomy = defineStyleAnatomy({
     }),
     itemIcon: cva([
         "UI-VerticalMenu__itemIcon",
-        "flex-shrink-0 mr-3 transition",
-        "text-[--muted] text-xl",
-        "group-hover/verticalMenu_item:text-[--foreground]", // Item Hover
-        "group-data-[current=true]/verticalMenu_item:text-[--foreground]", // Item Current
+        "shrink-0 mr-3 transition",
+        "text-(--muted) text-xl",
+        "group-hover/verticalMenu_item:text-(--foreground)", // Item Hover
+        "group-data-[current=true]/verticalMenu_item:text-(--foreground)", // Item Current
     ], {
         variants: {
             size: {

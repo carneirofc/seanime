@@ -230,7 +230,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
             <AppLayoutStack
                 className={cn(
                     "space-y-4",
-                    type !== "download" && "xl:space-y-0 xl:grid xl:grid-cols-[35%,1fr] xl:gap-4",
+                    type !== "download" && "xl:space-y-0 xl:grid xl:grid-cols-[35%_1fr] xl:gap-4",
                 )} data-torrent-search-container
             >
 
@@ -241,7 +241,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
 
                     {(type !== "download" && torrentSearchStreamEpisode) &&
                         <div className="hidden xl:block space-y-3" data-torrent-search-container-stream-episode>
-                            <h4 className="!mb-4">
+                            <h4 className="mb-4!">
                                 Select a torrent to stream
                             </h4>
                             <EpisodeCard
@@ -276,7 +276,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
                         </div>
 
                         <div
-                            className="h-10 rounded-[--radius] px-2 flex items-center"
+                            className="h-10 rounded-(--radius) px-2 flex items-center"
                             data-torrent-search-container-param-container-smart-search-switch-container
                         >
                             <Switch
@@ -293,7 +293,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
                         </div>
 
                         <div
-                            className="h-10 rounded-[--radius] px-2 flex items-center"
+                            className="h-10 rounded-(--radius) px-2 flex items-center"
                             data-torrent-search-container-param-container-search-across-providers-switch-container
                         >
                             <Switch
@@ -307,7 +307,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
                         </div>
 
                         {/*{<div*/}
-                        {/*    className="h-10 rounded-[--radius] px-2 flex items-center"*/}
+                        {/*    className="h-10 rounded-(--radius) px-2 flex items-center"*/}
                         {/*    data-torrent-search-container-param-container-adult-switch-container*/}
                         {/*>*/}
                         {/*    <Switch*/}
@@ -397,7 +397,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
                                         fieldLabelClass={cn(
                                             "flex-none self-center font-normal !text-md sm:text-md lg:text-md",
                                         )}
-                                        className="max-w-[4rem]"
+                                        className="max-w-16"
                                     />}
 
                                     {selectedProviderExtension?.settings?.smartSearchFilters?.includes("batch") && <Switch
@@ -434,7 +434,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
                                             { "opacity-50 cursor-not-allowed pointer-events-none": searchType != Torrent_SearchType.SMART || smartSearchBest },
                                         )}
                                         fieldLabelClass="flex-none self-center font-normal !text-md sm:text-md lg:text-md"
-                                        className="w-[6rem]"
+                                        className="w-24"
                                     />}
 
                                     {selectedProviderExtension?.settings?.smartSearchFilters?.includes("bestReleases") && <Switch
@@ -530,7 +530,7 @@ export function TorrentSearchContainer({ type, entry }: { type: TorrentSelection
                                     title="Search failed"
                                 >
                                     <div className="flex flex-col items-center gap-2">
-                                        <p className="text-sm text-[--muted]">Failed to retrieve torrents from the provider.</p>
+                                        <p className="text-sm text-(--muted)">Failed to retrieve torrents from the provider.</p>
                                         <Button
                                             size="sm"
                                             intent="gray-outline"

@@ -126,7 +126,7 @@ function Content({ entry }: { entry: Anime_Entry }) {
                                 </Button>
                             </AppLayoutStack>
                         ) : (
-                            <p className="text-[--muted] italic">No manual match</p>
+                            <p className="text-(--muted) italic">No manual match</p>
                         )}
                     </div>
 
@@ -137,7 +137,7 @@ function Content({ entry }: { entry: Anime_Entry }) {
                             <Field.Text
                                 name="query"
                                 placeholder="Enter a title..."
-                                leftIcon={<FiSearch className="text-xl text-[--muted]" />}
+                                leftIcon={<FiSearch className="text-xl text-(--muted)" />}
                                 fieldClass="w-full"
                             />
 

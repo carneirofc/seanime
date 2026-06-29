@@ -67,9 +67,9 @@ function HeaderCarouselDots({ totalEpisodes, currentIndex, onIndexChange, classN
     return (
         <div
             className={cn(
-                "hidden lg:flex items-center gap-2 z-[10] pl-8 max-w-[20rem] flex-wrap top-[4.5rem]",
-                // ts.hideTopNavbar && !__isDesktop__ && "top-[4rem]",
-                // (ts.hideTopNavbar || __isDesktop__) && "top-[1.5rem]",
+                "hidden lg:flex items-center gap-2 z-10 pl-8 max-w-[20rem] flex-wrap top-18",
+                // ts.hideTopNavbar && !__isDesktop__ && "top-16",
+                // (ts.hideTopNavbar || __isDesktop__) && "top-6",
                 // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && (__isDesktop__ || ts.hideTopNavbar) && "top-[0.6rem]",
                 className,
             )}
@@ -79,7 +79,7 @@ function HeaderCarouselDots({ totalEpisodes, currentIndex, onIndexChange, classN
                     key={index}
                     className={cn(
                         "h-1.5 rounded-sm transition-all duration-300 cursor-pointer",
-                        index === currentIndex ? "w-6 bg-[--muted]" : "w-3 bg-[--subtle] hover:bg-gray-300",
+                        index === currentIndex ? "w-6 bg-(--muted)" : "w-3 bg-(--subtle) hover:bg-gray-300",
                     )}
                     onClick={() => onIndexChange(index)}
                     aria-label={`Go to episode ${index + 1}`}
@@ -126,13 +126,13 @@ function MediaMetadata({ episode, episodes, onHoverChange }: MediaMetadataProps)
     return (
         <div
             className={cn(
-                "absolute left-2 w-fit h-[20rem] bg-gradient-to-t z-[3] hidden lg:block",
-                "top-[5rem]",
-                ts.hideTopNavbar && "top-[4rem]",
-                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-[4rem]",
-                // (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "top-[2rem]",
-                (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-[0rem]",
-                (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-[2rem]",
+                "absolute left-2 w-fit h-80 bg-linear-to-t z-3 hidden lg:block",
+                "top-20",
+                ts.hideTopNavbar && "top-16",
+                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-16",
+                // (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "top-8",
+                (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-0",
+                (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-8",
             )}
             data-media-id={anime.id}
             data-media-mal-id={anime.idMal}
@@ -161,7 +161,7 @@ function MediaMetadata({ episode, episodes, onHoverChange }: MediaMetadataProps)
                 >
                     <SeaLink href={`/entry?id=${anime.id}`}>
                         {anime.coverImage?.large && (
-                            <div className="w-[180px] h-[280px] relative rounded-[--radius-md] overflow-hidden bg-[--background] shadow-md">
+                            <div className="w-[180px] h-[280px] relative rounded-md overflow-hidden bg-(--background) shadow-md">
                                 <SeaImage
                                     src={anime.coverImage.large}
                                     alt="cover image"
@@ -180,14 +180,14 @@ function MediaMetadata({ episode, episodes, onHoverChange }: MediaMetadataProps)
                 </motion.div>
 
                 <motion.div
-                    className="flex-auto space-y-2 z-[1]"
+                    className="flex-auto space-y-2 z-1"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
                 >
                     <SeaLink href={`/entry?id=${anime.id}`}>
                         <TextGenerateEffect
-                            className="[text-shadow:_0_1px_10px_rgb(0_0_0_/_20%)] text-white leading-8 line-clamp-2 pb-1 max-w-md text-pretty text-3xl overflow-ellipsis"
+                            className="[text-shadow:0_1px_10px_rgb(0_0_0/20%)] text-white leading-8 line-clamp-2 pb-1 max-w-md text-pretty text-3xl text-ellipsis"
                             words={anime.title?.userPreferred || ""}
                         />
                     </SeaLink>
@@ -271,13 +271,13 @@ function EpisodeCardSidebar({ episode, isTransitioning }: EpisodeCardSidebarProp
     return (
         <motion.div
             className={cn(
-                "absolute right-6 w-fit h-[25rem] z-[3] hidden lg:block overflow-hidden",
-                "top-[5rem]",
-                ts.hideTopNavbar && "top-[4rem]",
-                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-[4rem]",
-                // (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "top-[2rem]",
-                (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-[1rem]",
-                (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-[3rem]",
+                "absolute right-6 w-fit h-100 z-3 hidden lg:block overflow-hidden",
+                "top-20",
+                ts.hideTopNavbar && "top-16",
+                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-16",
+                // (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "top-8",
+                (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-4",
+                (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-12",
             )}
         >
             <div className="p-6 w-fit">
@@ -297,7 +297,7 @@ function EpisodeCardSidebar({ episode, isTransitioning }: EpisodeCardSidebarProp
                     }}
                     className="2xl:w-[500px] xl:w-[400px] lg:w-[300px] rounded-xl overflow-hidden"
                 >
-                    {/* <div className="w-[160%] h-[120%] -left-[30%] -top-0 opacity-50 absolute z-[1]">
+                    {/* <div className="w-[160%] h-[120%] left-[-30%] top-0 opacity-50 absolute z-1">
                      <img src="/radial-shadow.png" alt="radial shadow" className="w-full h-full object-contain" />
                      </div> */}
                     <EpisodeCard
@@ -360,24 +360,24 @@ function BannerImage({ episode, isTransitioning, shouldBlurBanner }: BannerImage
         <div
             data-continue-watching-header-banner-image
             className={cn(
-                "lg:h-[35rem] w-full flex-none object-cover object-center top-0 bg-[--background] absolute",
+                "lg:h-140 w-full flex-none object-cover object-center top-0 bg-(--background) absolute",
                 !ts.libraryScreenCustomBackgroundImage && "fixed",
                 !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
-                __isDesktop__ && "top-[-2rem]",
-                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-[30rem]",
+                __isDesktop__ && "-top-8",
+                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-120",
             )}
         >
-            <div className="w-full z-[2] absolute bottom-[-10rem] h-[10rem] bg-gradient-to-b from-[--background] via-transparent via-100% to-transparent" />
-            <div className="w-full absolute z-[2] top-0 h-[10rem] opacity-50 bg-gradient-to-b from-[--background] to-transparent" />
+            <div className="w-full z-2 absolute -bottom-40 h-40 bg-linear-to-b from-(--background) via-transparent via-100% to-transparent" />
+            <div className="w-full absolute z-2 top-0 h-40 opacity-50 bg-linear-to-b from-(--background) to-transparent" />
             <div
                 className={cn(
-                    "opacity-0 duration-1000 bg-[var(--background)] w-full h-full absolute z-[2]",
+                    "opacity-0 duration-1000 bg-(--background) w-full h-full absolute z-2",
                     isTransitioning && "opacity-70",
                 )}
             />
 
             <AnimatePresence>
-                <div className="w-full h-full absolute z-[1] overflow-hidden scroll-locked-offset-width">
+                <div className="w-full h-full absolute z-1 overflow-hidden scroll-locked-offset-width">
                     {bannerImage && (
                         <MotionImage
                             src={bannerImage}
@@ -386,7 +386,7 @@ function BannerImage({ episode, isTransitioning, shouldBlurBanner }: BannerImage
                             quality={100}
                             priority
                             className={cn(
-                                "object-cover object-center z-[1] transition-all duration-1000",
+                                "object-cover object-center z-1 transition-all duration-1000",
                                 isTransitioning && "scale-[1.01] -translate-x-0.5",
                                 !isTransitioning && "scale-100 translate-x-0",
                                 !episode?.baseAnime?.bannerImage && "opacity-35",
@@ -398,19 +398,19 @@ function BannerImage({ episode, isTransitioning, shouldBlurBanner }: BannerImage
             </AnimatePresence>
 
             {shouldBlurBanner && (
-                <div className="absolute top-0 w-full h-full backdrop-blur-2xl z-[2]" />
+                <div className="absolute top-0 w-full h-full backdrop-blur-2xl z-2" />
             )}
 
             <div
                 className={cn(
-                    "hidden lg:block max-w-[80rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] from-5% via-[--background] transition-opacity via-opacity-50 via-5% to-transparent",
+                    "hidden lg:block max-w-7xl w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) from-5% via-(--background) transition-opacity via-opacity-50 via-5% to-transparent",
                     "opacity-100 duration-500",
                 )}
             />
 
             <div
                 className={cn(
-                    "hidden lg:block max-w-[60rem] w-full right-0 z-[2] h-full absolute &-bottom-[10rem] bg-gradient-to-l from-[--background] from-5% via-[--background] via-opacity-50 via-5% transition-opacity to-transparent",
+                    "hidden lg:block max-w-240 w-full right-0 z-2 h-full absolute &-bottom-[10rem] bg-linear-to-l from-(--background) from-5% via-(--background) via-opacity-50 via-5% transition-opacity to-transparent",
                     "opacity-90 duration-500",
                 )}
             />
@@ -418,13 +418,13 @@ function BannerImage({ episode, isTransitioning, shouldBlurBanner }: BannerImage
             {!ts.disableSidebarTransparency && (
                 <div
                     className={cn(
-                        "hidden lg:block max-w-[10rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] via-[--background] transition-opacity via-opacity-50 via-5% to-transparent",
+                        "hidden lg:block max-w-40 w-full z-2 h-full absolute left-0 bg-linear-to-r from-(--background) via-(--background) transition-opacity via-opacity-50 via-5% to-transparent",
                         "opacity-70 duration-500",
                     )}
                 />
             )}
 
-            <div className="w-full z-[2] absolute bottom-0 h-[20rem] bg-gradient-to-t from-[--background] via-[--background] via-opacity-50 via-10% to-transparent" />
+            <div className="w-full z-2 absolute bottom-0 h-80 bg-linear-to-t from-(--background) via-(--background) via-opacity-50 via-10% to-transparent" />
         </div>
     )
 }
@@ -458,10 +458,10 @@ export function ContinueWatchingHeader({ episodes, className }: ContinueWatching
     return (
         <motion.div
             className={cn(
-                "__header lg:h-[28rem] max-w-full overflow-hidden",
-                ts.hideTopNavbar && "lg:h-[32rem]",
-                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-[26rem]",
-                (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "lg:h-[28rem]",
+                "__header lg:h-112 max-w-full overflow-hidden",
+                ts.hideTopNavbar && "lg:h-128",
+                ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-104",
+                (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "lg:h-112",
                 className,
             )}
             {...{

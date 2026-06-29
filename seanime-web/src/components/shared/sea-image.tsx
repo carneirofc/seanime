@@ -190,7 +190,7 @@ export const SeaImage = forwardRef<HTMLImageElement, ImageProps & { isExternal?:
                         priority={priority}
                         placeholder={placeholder}
                     />
-                    <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center">
+                    <div className="pointer-events-none absolute inset-0 z-1 flex items-center justify-center">
                         <SeaImageRetryButton
                             className="pointer-events-auto"
                             onClick={retryImage}

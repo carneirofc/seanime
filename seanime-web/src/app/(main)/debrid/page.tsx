@@ -139,7 +139,7 @@ function Content() {
             <div className="flex items-center w-full">
                 <div>
                     <h2>{getServiceName(serverStatus?.debridSettings?.provider!)}</h2>
-                    <p className="text-[--muted]">
+                    <p className="text-(--muted)">
                         See your debrid service torrents
                     </p>
                 </div>
@@ -168,7 +168,7 @@ function Content() {
                 <AppLayoutStack className={""}>
 
                     <div>
-                        <ul className="text-[--muted] flex flex-wrap gap-4">
+                        <ul className="text-(--muted) flex flex-wrap gap-4">
                             <li>Downloading: {data?.filter(t => t.status === "downloading" || t.status === "paused")?.length ?? 0}</li>
                             <li>Seeding: {data?.filter(t => t.status === "seeding")?.length ?? 0}</li>
                         </ul>
@@ -260,9 +260,9 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, isPending, downlo
     return (
         <div
             data-torrent-item-container className={cn(
-            "hover:bg-gray-900 hover:bg-opacity-70 px-4 py-3 relative flex gap-4 group/torrent-item",
+            "hover:bg-gray-900/70 px-4 py-3 relative flex gap-4 group/torrent-item",
             torrent.status === "paused" && "bg-gray-900 hover:bg-gray-900",
-            torrent.status === "downloading" && "bg-green-900 bg-opacity-20 hover:hover:bg-opacity-30 hover:bg-green-900",
+            torrent.status === "downloading" && "bg-green-900/20 hover:hover:bg-green-900/30 hover:bg-green-900",
         )}
         >
             <div className="w-full">
@@ -271,7 +271,7 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, isPending, downlo
                         "opacity-50": torrent.status === "paused",
                     })}
                 >{torrent.name}</div>
-                <div className="text-[--muted]">
+                <div className="text-(--muted)">
                     <span className={cn({ "text-green-300": torrent.status === "downloading" })}>{torrent.completionPercentage}%</span>
                     {` `}
                     <BiDownArrow className="inline-block mx-2" />
@@ -282,7 +282,7 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, isPending, downlo
                         {torrent.eta}
                     </>}
                     {` - `}
-                    <span className="text-[--muted]">
+                    <span className="text-(--muted)">
                         {formatDate(torrent.added, "yyyy-MM-dd HH:mm")}
                     </span>
                     {` - `}
@@ -304,10 +304,10 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, isPending, downlo
                     )}
                 </div>
                 {torrent.status !== "seeding" && torrent.status !== "completed" &&
-                    <div data-torrent-item-progress-bar className="w-full h-1 mr-4 mt-2 relative z-[1] bg-gray-700 left-0 overflow-hidden rounded-xl">
+                    <div data-torrent-item-progress-bar className="w-full h-1 mr-4 mt-2 relative z-1 bg-gray-700 left-0 overflow-hidden rounded-xl">
                         <div
                             className={cn(
-                                "h-full absolute z-[2] left-0 bg-gray-200 transition-all",
+                                "h-full absolute z-2 left-0 bg-gray-200 transition-all",
                                 {
                                     "bg-green-300": torrent.status === "downloading",
                                     "bg-gray-500": torrent.status === "paused",
@@ -332,17 +332,17 @@ const TorrentItem = React.memo(function TorrentItem({ torrent, isPending, downlo
                 {isDownloadingLocally && <div className="flex gap-2 items-center">
                     <Tooltip
                         trigger={<p>
-                            <HiFolderDownload className="text-2xl animate-pulse text-[--blue]" />
+                            <HiFolderDownload className="text-2xl animate-pulse text-(--blue)" />
                         </p>}
                     >
                         Downloading locally
                     </Tooltip>
                     {downloadProgress ? (
                         <p>
-                            {downloadProgress.totalBytes}<span className="text-[--muted]"> / {downloadProgress.totalSize}</span>
+                            {downloadProgress.totalBytes}<span className="text-(--muted)"> / {downloadProgress.totalSize}</span>
                         </p>
                     ) : (
-                        <p className="text-sm text-[--muted]">Preparing local files</p>
+                        <p className="text-sm text-(--muted)">Preparing local files</p>
                     )}
                     <Tooltip
                         trigger={<p>

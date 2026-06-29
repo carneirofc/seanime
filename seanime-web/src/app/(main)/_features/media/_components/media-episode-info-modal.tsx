@@ -27,7 +27,7 @@ function IsomorphicPopover(props: PopoverProps & ModalProps) {
     if (width && width > 1024) {
         return <Popover
             {...rest}
-            className="max-w-xl !w-full overflow-clip min-w-[400px] min-h-[9rem]"
+            className="max-w-xl w-full! overflow-clip min-w-[400px] min-h-36"
         >
             {children}
         </Popover>
@@ -76,7 +76,7 @@ export function MediaEpisodeInfoModal(props: MediaEpisodeInfoModalProps) {
 
                 {image && <div
                     data-media-episode-info-modal-image-container
-                    className="h-[8rem] rounded-t-xl w-full flex-none border border-transparent object-cover object-center overflow-hidden absolute left-0 top-0 z-[0]"
+                    className="h-32 rounded-t-xl w-full flex-none border border-transparent object-cover object-center overflow-hidden absolute left-0 top-0 z-0"
                 >
                     <SeaImage
                         data-media-episode-info-modal-image
@@ -89,16 +89,16 @@ export function MediaEpisodeInfoModal(props: MediaEpisodeInfoModalProps) {
                     />
                     <div
                         data-media-episode-info-modal-image-gradient
-                        className="z-[5] absolute bottom-0 w-full h-[80%] bg-gradient-to-t from-[--background] to-transparent"
+                        className="z-5 absolute bottom-0 w-full h-[80%] bg-linear-to-t from-(--background) to-transparent"
                     />
                 </div>}
 
-                <div data-media-episode-info-modal-content className="space-y-4 z-[5] relative">
+                <div data-media-episode-info-modal-content className="space-y-4 z-5 relative">
                     <p data-media-episode-info-modal-content-title className="text-lg line-clamp-2 font-semibold">
                         {episodeTitle?.replaceAll("`", "'")}
                         {isInvalid && <AiFillWarning />}
                     </p>
-                    {!(!airDate && !length) && <p className="text-[--muted]">
+                    {!(!airDate && !length) && <p className="text-(--muted)">
                         {airDate || "Unknown airing date"} - {length || "N/A"} minutes
                     </p>}
                     <p className="text-gray-300">
@@ -107,7 +107,7 @@ export function MediaEpisodeInfoModal(props: MediaEpisodeInfoModalProps) {
 
                     {filename && <>
                         <Separator />
-                        <p className="text-[--muted] line-clamp-2">
+                        <p className="text-(--muted) line-clamp-2">
                             {filename}
                         </p>
                     </>}

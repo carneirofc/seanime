@@ -150,7 +150,7 @@ export function AutoDownloaderRuleForm(props: AutoDownloaderRuleFormProps) {
     }
 
     if (type === "create" && allMedia.length === 0) {
-        return <div className="p-4 text-[--muted] text-center">No media found in your library</div>
+        return <div className="p-4 text-(--muted) text-center">No media found in your library</div>
     }
 
     return (
@@ -244,7 +244,7 @@ export function AutoDownloaderMediaCombobox(props: {
                 Anime
             </p>
             {props.type !== "edit" && <Button
-                leftIcon={<MdFilterAlt />} intent="gray-link" className="!text-[--muted] cursor-pointer hover:underline underline-offset-2 py-0 px-2"
+                leftIcon={<MdFilterAlt />} intent="gray-link" className="text-(--muted)! cursor-pointer hover:underline underline-offset-2 py-0 px-2"
                 onClick={() => setShowReleasingOnly(prev => {
                     const currentIndex = listActiveMediaOptions.indexOf(prev)
                     const nextIndex = (currentIndex + 1) % listActiveMediaOptions.length
@@ -268,7 +268,7 @@ export function AutoDownloaderMediaCombobox(props: {
                     />
                 </div>
                 <p>{media.title?.userPreferred || "N/A"}</p>
-                <p className="text-[--muted] text-sm">{capitalize(media.status)?.replaceAll("_", " ")}</p>
+                <p className="text-(--muted) text-sm">{capitalize(media.status)?.replaceAll("_", " ")}</p>
             </div>,
             value: String(media.id),
             textValue: media.title?.userPreferred || "N/A",
@@ -363,7 +363,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
     }, [form_mediaId, selectedMedia, libraryCollection, rule, animeFolderName])
 
     if (!selectedMedia) {
-        return <div className="p-4 text-[--muted] text-center">Media is not in your library</div>
+        return <div className="p-4 text-(--muted) text-center">Media is not in your library</div>
     }
 
     return (
@@ -387,7 +387,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                     />
                 </div>}
 
-                {selectedMedia?.status === "FINISHED" && <div className="py-2 text-[--orange] text-center">No longer airing</div>}
+                {selectedMedia?.status === "FINISHED" && <div className="py-2 text-(--orange) text-center">No longer airing</div>}
 
                 <Field.DirectorySelector
                     name="destination"
@@ -398,7 +398,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                     libraryPathSelectionProps={libraryPathSelectionProps}
                 />
 
-                <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+                <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
                     <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Title</div>
                     <Field.Text
                         name="comparisonTitle"
@@ -412,7 +412,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                             {
                                 label: <div className="w-full">
                                     <p className="mb-1 flex items-center"><MdVerified className="text-lg inline-block mr-2" />Most likely</p>
-                                    <p className="font-normal text-sm text-[--muted]">The torrent name will be parsed and analyzed using a comparison
+                                    <p className="font-normal text-sm text-(--muted)">The torrent name will be parsed and analyzed using a comparison
                                                                                       algorithm</p>
                                 </div>,
                                 value: "likely",
@@ -420,7 +420,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                             {
                                 label: <div className="w-full">
                                     <p className="mb-1 flex items-center"><LuTextCursorInput className="text-lg inline-block mr-2" />Exact match</p>
-                                    <p className="font-normal text-sm text-[--muted]">The torrent name must contain the comparison title you set (case
+                                    <p className="font-normal text-sm text-(--muted)">The torrent name must contain the comparison title you set (case
                                                                                       insensitive)</p>
                                 </div>,
                                 value: "contains",
@@ -428,8 +428,8 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                         ]}
                     />
 
-                    {titleComparisonType === "likely" && <div className="text-sm text-[--muted]">
-                        <p className="!text-[--foreground]">Will also use these titles:</p>
+                    {titleComparisonType === "likely" && <div className="text-sm text-(--muted)">
+                        <p className="text-(--foreground)!">Will also use these titles:</p>
                         {selectedMedia?.title?.english && <p className="font-medium">{selectedMedia?.title?.english}</p>}
                         {selectedMedia?.title?.romaji && <p className="font-medium">{selectedMedia?.title?.romaji}</p>}
                         {!!selectedMedia?.synonyms?.length &&
@@ -438,7 +438,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                 </div>
                 <div
                     className={cn(
-                        "border  rounded-[--radius] p-4 relative !mt-8 space-y-3",
+                        "border  rounded-(--radius) p-4 relative mt-8! space-y-3",
                         (selectedMedia?.format === "MOVIE" || (!!selectedMedia.episodes && selectedMedia.episodes === 1)) && "opacity-50 pointer-events-none",
                     )}
                 >
@@ -447,19 +447,19 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                         name="episodeType"
                         label="Episodes to look for"
                         fieldClass="w-full"
-                        itemContainerClass="!w-full"
+                        itemContainerClass="w-full!"
                         options={[
                             {
                                 label: <div className="w-full">
                                     <p>Recent releases</p>
-                                    <p className="font-normal text-sm text-[--muted]">New episodes you have not yet watched</p>
+                                    <p className="font-normal text-sm text-(--muted)">New episodes you have not yet watched</p>
                                 </div>,
                                 value: "recent",
                             },
                             {
                                 label: <div className="w-full">
                                     <p>Select</p>
-                                    <p className="font-normal text-sm text-[--muted]">Only the specified episodes that aren't in your library</p>
+                                    <p className="font-normal text-sm text-(--muted)">Only the specified episodes that aren't in your library</p>
                                 </div>,
                                 value: "selected",
                             },
@@ -488,7 +488,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
 
                 <ResolutionsField name="resolutions" control={form.control} />
 
-                <div className="border rounded-[--radius] p-4 relative !mt-8 space-y-3">
+                <div className="border rounded-(--radius) p-4 relative mt-8! space-y-3">
                     <div className="absolute -top-2.5 tracking-wide font-semibold uppercase text-sm left-4 bg-gray-950 px-2">Constraints</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <Field.Number
@@ -549,10 +549,10 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                 <p>
                     Simulation results for rule "<strong>{rule?.comparisonTitle}</strong>" (ID: {rule?.dbId})
                 </p>
-                <p className="text-[--muted] text-sm">
+                <p className="text-(--muted) text-sm">
                     Check the server logs for more details.
                 </p>
-                <pre className="overflow-x-auto overflow-y-auto max-h-[calc(100dvh-300px)] whitespace-pre-wrap p-2 rounded-[--radius-md] bg-gray-900">
+                <pre className="overflow-x-auto overflow-y-auto max-h-[calc(100dvh-300px)] whitespace-pre-wrap p-2 rounded-md bg-gray-900">
                     {JSON.stringify(simulationResults, null, 2)}
                 </pre>
             </Modal>

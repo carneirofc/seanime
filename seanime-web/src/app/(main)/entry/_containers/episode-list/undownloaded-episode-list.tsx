@@ -74,7 +74,7 @@ export function UndownloadedEpisodeList({ downloadInfo, media, watchedProgress, 
                             </>}
                         >
                             <div data-undownloaded-episode-list-episode-metadata-container className="mt-1">
-                                <p data-undownloaded-episode-list-episode-metadata-text className="flex gap-1 items-center text-sm text-[--muted]">
+                                <p data-undownloaded-episode-list-episode-metadata-text className="flex gap-1 items-center text-sm text-(--muted)">
                                     <BiCalendarAlt /> {episode.episodeMetadata?.airDate
                                     ? `Aired on ${new Date(episode.episodeMetadata?.airDate).toLocaleDateString()}`
                                     : "Aired"}

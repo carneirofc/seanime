@@ -14,15 +14,15 @@ export const BadgeAnatomy = defineStyleAnatomy({
     ], {
         variants: {
             intent: {
-                "gray": "text-gray-800 bg-gray-100 border border-gray-500 border-opacity-40 dark:text-gray-300 dark:bg-opacity-10",
-                "primary": "text-indigo bg-indigo-50 border border-indigo-500 border-opacity-40 dark:text-indigo-300 dark:bg-opacity-10",
-                "success": "text-green bg-green-50 border border-green-500 border-opacity-40 dark:text-green-300 dark:bg-opacity-10",
-                "warning": "text-orange bg-orange-50 border border-orange-500 border-opacity-40 dark:text-orange-300 dark:bg-opacity-10",
-                "alert": "text-red bg-red-50 border border-red-500 border-opacity-40 dark:text-red-300 dark:bg-opacity-10",
-                "blue": "text-blue bg-blue-50 border border-blue-500 border-opacity-40 dark:text-blue-300 dark:bg-opacity-10",
-                "indigo": "text-indigo bg-indigo-50 border border-indigo-500 border-opacity-40 dark:text-indigo-300 dark:bg-opacity-10",
-                "info": "text-blue bg-blue-50 border border-blue-500 border-opacity-40 dark:text-blue-300 dark:bg-opacity-10",
-                "white": "text-white bg-gray-800 border border-gray-500 border-opacity-40 dark:text-white dark:bg-opacity-10",
+                "gray": "text-gray-800 bg-gray-100 border border-gray-500/40 dark:text-gray-300 dark:bg-gray-100/10",
+                "primary": "text-indigo bg-indigo-50 border border-indigo-500/40 dark:text-indigo-300 dark:bg-indigo-50/10",
+                "success": "text-green bg-green-50 border border-green-500/40 dark:text-green-300 dark:bg-green-50/10",
+                "warning": "text-orange bg-orange-50 border border-orange-500/40 dark:text-orange-300 dark:bg-orange-50/10",
+                "alert": "text-red bg-red-50 border border-red-500/40 dark:text-red-300 dark:bg-red-50/10",
+                "blue": "text-blue bg-blue-50 border border-blue-500/40 dark:text-blue-300 dark:bg-blue-50/10",
+                "indigo": "text-indigo bg-indigo-50 border border-indigo-500/40 dark:text-indigo-300 dark:bg-indigo-50/10",
+                "info": "text-blue bg-blue-50 border border-blue-500/40 dark:text-blue-300 dark:bg-blue-50/10",
+                "white": "text-white bg-gray-800 border border-gray-500/40 dark:text-white dark:bg-gray-800/10",
                 "basic": "text-gray-900 bg-transparent",
                 "primary-solid": "text-white bg-indigo-500",
                 "success-solid": "text-white bg-green-500",
@@ -43,7 +43,7 @@ export const BadgeAnatomy = defineStyleAnatomy({
             },
             tag: {
                 false: "font-semibold tracking-wide rounded-full",
-                true: "font-semibold border-none rounded-[--radius]",
+                true: "font-semibold border-none rounded-(--radius)",
             },
         },
         defaultVariants: {
@@ -55,11 +55,11 @@ export const BadgeAnatomy = defineStyleAnatomy({
     closeButton: cva([
         "UI-Badge__close-button",
         "appearance-none outline-none text-lg -mr-1 cursor-pointer transition ease-in hover:opacity-60",
-        "focus-visible:ring-2 focus-visible:ring-[--ring]",
+        "focus-visible:ring-2 focus-visible:ring-(--ring)",
     ]),
     icon: cva([
         "UI-Badge__icon",
-        "inline-flex self-center flex-shrink-0",
+        "inline-flex self-center shrink-0",
     ]),
 })
 

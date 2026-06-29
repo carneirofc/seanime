@@ -131,7 +131,7 @@ export function ExtensionList(props: ExtensionListProps) {
                     <h2>
                         Extensions
                     </h2>
-                    <p className="text-[--muted] text-sm">
+                    <p className="text-(--muted) text-sm">
                         Manage your plugins and content providers.
                     </p>
                 </div>
@@ -216,7 +216,7 @@ export function ExtensionList(props: ExtensionListProps) {
 
             {!!searchTerm && !hasVisibleResults && (
                 <Card className="p-8 text-center">
-                    <p className="text-[--muted]">No extensions found matching your search.</p>
+                    <p className="text-(--muted)">No extensions found matching your search.</p>
                 </Card>
             )}
 
@@ -297,7 +297,7 @@ export function ExtensionList(props: ExtensionListProps) {
                 <Card className="p-4 space-y-6">
                     <div className="flex items-center gap-4">
                         <h3 className="flex gap-3 items-center"><MdDataSaverOn />Custom Sources</h3>
-                        <SeaLink href="/custom-sources" className="text-sm underline underline-offset-2 text-[--muted] hover:text-[--foreground]">
+                        <SeaLink href="/custom-sources" className="text-sm underline underline-offset-2 text-(--muted) hover:text-(--foreground)">
                             Browse all sources
                         </SeaLink>
                     </div>

@@ -23,7 +23,7 @@ export function AutoDownloaderProfiles() {
     return (
         <div className="pt-4">
             <Card className="p-4 space-y-3">
-                <p className="text-[--muted]">
+                <p className="text-(--muted)">
                     Profiles allow you to define a set of filters that can be applied to your rules.
                 </p>
                 <div className="flex items-center">
@@ -46,7 +46,7 @@ export function AutoDownloaderProfiles() {
                         />
                     ))}
                     {!profiles?.length && (
-                        <div className="p-4 text-center text-[--muted]">
+                        <div className="p-4 text-center text-(--muted)">
                             No profiles created yet.
                         </div>
                     )}
@@ -99,7 +99,7 @@ function ProfileItem({ profile, onEdit }: { profile: Anime_AutoDownloaderProfile
         <>
             <Card className="p-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 w-full">
-                    <div className="size-10 rounded-full bg-[--subtle] flex items-center justify-center">
+                    <div className="size-10 rounded-full bg-(--subtle) flex items-center justify-center">
                         <PiTargetBold
                             className={cn(
                                 "text-xl opacity-50",
@@ -112,8 +112,8 @@ function ProfileItem({ profile, onEdit }: { profile: Anime_AutoDownloaderProfile
                             {profile.name}
                             {profile.global && <span className="text-xs bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded-md">Global</span>}
                         </h5>
-                        <div className="text-sm text-[--muted] line-clamp-1 gap-2 space-x-3">
-                            {!!profile.resolutions?.length && <span className="!pl-0">{profile.resolutions.join(", ")}</span>}
+                        <div className="text-sm text-(--muted) line-clamp-1 gap-2 space-x-3">
+                            {!!profile.resolutions?.length && <span className="pl-0!">{profile.resolutions.join(", ")}</span>}
                             {!!profile.conditions?.length &&
                                 <span>{profile.conditions?.length} condition{(profile.conditions?.length !== 1) ? "s" : ""}</span>}
                             {!!profile.minimumScore && <span>{`>=`} {profile.minimumScore}</span>}
@@ -124,7 +124,7 @@ function ProfileItem({ profile, onEdit }: { profile: Anime_AutoDownloaderProfile
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="items-center gap-2 mr-4 hidden lg:flex">
-                        <span className="text-sm text-[--muted]">Global</span>
+                        <span className="text-sm text-(--muted)">Global</span>
                         <Switch
                             value={profile.global}
                             onValueChange={(v) => updateProfile({ ...profile, global: v })}

@@ -56,10 +56,10 @@ export function UpdateChangelogBody(props: UpdateChangelogBodyProps) {
 
     return (
         <>
-            <div className="bg-gray-950/50 rounded-[--radius] p-4 max-h-[70vh] overflow-y-auto halo-2">
+            <div className="bg-gray-950/50 rounded-(--radius) p-4 max-h-[70vh] overflow-y-auto halo-2">
                 {body.some(n => n.includes("🚑️")) &&
                     <p className="text-red-300 font-semibold flex gap-2 items-center">This update includes a critical patch</p>}
-                <div className="rounded-[--radius] space-y-1">
+                <div className="rounded-(--radius) space-y-1">
                     <h5>What's new?</h5>
                     <RenderLines lines={body} />
                 </div>
@@ -67,9 +67,9 @@ export function UpdateChangelogBody(props: UpdateChangelogBodyProps) {
 
             {!!changelog?.length && <>
                 <p className="text-center font-semibold">Other updates you've missed</p>
-                <div className="bg-gray-950/50 rounded-[--radius] p-4 max-h-[40vh] overflow-y-auto space-y-1.5">
+                <div className="bg-gray-950/50 rounded-(--radius) p-4 max-h-[40vh] overflow-y-auto space-y-1.5">
                     {changelog?.map((item) => (
-                        <div key={item.version} className="rounded-[--radius]">
+                        <div key={item.version} className="rounded-(--radius)">
                             <p key={item.version} className="text-center font-bold">{item.version}</p>
                             <div className="text-sm">
                                 <RenderLines lines={item.lines} />

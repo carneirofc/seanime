@@ -92,7 +92,7 @@ export const Slider: React.FC<SliderProps> = (props) => {
         >
             <div
                 onClick={slideLeft}
-                className={`flex items-center cursor-pointer hover:text-action absolute left-0 bg-gradient-to-r from-[--background] z-40 h-full w-16 hover:opacity-100 ${
+                className={`flex items-center cursor-pointer hover:text-action absolute left-0 bg-linear-to-r from-(--background) z-40 h-full w-16 hover:opacity-100 ${
                     !isScrolledToLeft ? "lg:visible" : "invisible"
                 }`}
             >
@@ -109,7 +109,7 @@ export const Slider: React.FC<SliderProps> = (props) => {
             <div
                 onClick={slideRight}
                 className={cn(
-                    "flex items-center invisible cursor-pointer hover:text-action absolute right-0 bg-gradient-to-l from-[--background] z-40 h-full w-16 hover:opacity-100",
+                    "flex items-center invisible cursor-pointer hover:text-action absolute right-0 bg-linear-to-l from-(--background) z-40 h-full w-16 hover:opacity-100",
                     {
                         "lg:visible": !isScrolledToRight && showChevronRight,
                     })}

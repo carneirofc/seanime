@@ -35,7 +35,7 @@ export function useAppSidebarContext() {
 export const AppSidebarAnatomy = defineStyleAnatomy({
     sidebar: cva([
         "UI-AppSidebar__sidebar",
-        "flex flex-grow flex-col overflow-y-auto border-r border-transparent bg-[--background]",
+        "flex grow flex-col overflow-y-auto border-r border-transparent bg-(--background)",
     ]),
 })
 
@@ -43,8 +43,8 @@ export const AppSidebarTriggerAnatomy = defineStyleAnatomy({
     trigger: cva([
         "UI-AppSidebarTrigger__trigger",
         "block lg:hidden",
-        "items-center justify-center rounded-[--radius] p-2 text-[--muted] hover:bg-[--subtle] hover:text-[--foreground] transition-colors",
-        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[--ring]",
+        "items-center justify-center rounded-(--radius) p-2 text-(--muted) hover:bg-(--subtle) hover:text-(--foreground) transition-colors",
+        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-(--ring)",
     ]),
 })
 

@@ -235,7 +235,7 @@ export function SeaCommandNavigation() {
                                     })
                                 }}
                             >
-                                <span className="text-sm tracking-wide font-bold text-[--muted]">Go to:&nbsp;</span>{" "}{page.name}
+                                <span className="text-sm tracking-wide font-bold text-(--muted)">Go to:&nbsp;</span>{" "}{page.name}
                                 {command === page.flag ? <CommandShortcut>Enter</CommandShortcut> : <CommandShortcut>/{page.flag}</CommandShortcut>}
                             </CommandItem>
                         ))}

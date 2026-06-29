@@ -32,7 +32,7 @@ export const AvatarAnatomy = defineStyleAnatomy({
     ]),
     fallback: cva([
         "UI-Avatar__fallback",
-        "flex h-full w-full items-center justify-center rounded-full bg-[--muted] text-white dark:text-gray-800 font-semibold",
+        "flex h-full w-full items-center justify-center rounded-full bg-(--muted) text-white dark:text-gray-800 font-semibold",
     ]),
     fallbackIcon: cva([
         "UI-Avatar__fallback-icon",

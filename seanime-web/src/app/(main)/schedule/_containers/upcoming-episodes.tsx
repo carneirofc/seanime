@@ -32,7 +32,7 @@ export function UpcomingEpisodes() {
                 <>
                     <div>
                         <h2>Upcoming episodes</h2>
-                        <p className="text-[--muted]">Based on your anime list</p>
+                        <p className="text-(--muted)">Based on your anime list</p>
                     </div>
 
                     <Carousel
@@ -49,7 +49,7 @@ export function UpcomingEpisodes() {
                                 return (
                                     <CarouselItem
                                         key={item.mediaId}
-                                        className="md:basis-1/2 lg:basis-1/3 2xl:basis-1/4 min-[2000px]:basis-1/5"
+                                        className="md:basis-1/2 lg:basis-1/3 2xl:basis-1/4 5xl:basis-1/5"
                                     >
                                         <EpisodeCard
                                             key={item.mediaId}

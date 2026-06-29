@@ -119,7 +119,7 @@ export function ContinueWatching({ episodes, isLoading, linkTemplate, withTitle 
                 priority: 100,
                 render: () => (
                     <>
-                        <div className="w-12 aspect-[6/5] flex-none rounded-[--radius-md] relative overflow-hidden">
+                        <div className="w-12 aspect-6/5 flex-none rounded-md relative overflow-hidden">
                             <SeaImage
                                 src={episode.episodeMetadata?.image || ""}
                                 alt="episode image"
@@ -130,9 +130,9 @@ export function ContinueWatching({ episodes, isLoading, linkTemplate, withTitle 
                         <div className="flex gap-1 items-center w-full">
                             <p className="max-w-[70%] truncate">{episode.baseAnime?.title?.userPreferred || ""}</p>&nbsp;-&nbsp;
                             {!anilist_animeIsMovie(episode.baseAnime) ? <>
-                                <p className="text-[--muted]">Ep</p><span>{episode.episodeNumber}</span>
+                                <p className="text-(--muted)">Ep</p><span>{episode.episodeNumber}</span>
                             </> : <>
-                                <p className="text-[--muted]">Movie</p>
+                                <p className="text-(--muted)">Movie</p>
                             </>}
 
                         </div>
@@ -154,12 +154,12 @@ export function ContinueWatching({ episodes, isLoading, linkTemplate, withTitle 
     }, [episodes, inject, remove, router, setPlayNext])
 
     if (episodes.length > 0) return (
-        <PageWrapper className="space-y-3 lg:space-y-6 p-4 relative z-[4]" data-continue-watching-container>
+        <PageWrapper className="space-y-3 lg:space-y-6 p-4 relative z-4" data-continue-watching-container>
             <h2 data-continue-watching-title>Continue watching</h2>
             {(ts.libraryScreenBannerType === ThemeLibraryScreenBannerType.Dynamic && headerEpisode?.baseAnime && withTitle) && <TextGenerateEffect
                 data-continue-watching-media-title
                 words={headerEpisode?.baseAnime?.title?.userPreferred || ""}
-                className="w-full text-xl lg:text-[2.8rem] lg:max-w-[50%] h-[3.3rem] !mt-1 line-clamp-1 truncate leading-[3rem] text-ellipsis hidden lg:block pb-1"
+                className="w-full text-xl lg:text-[2.8rem] lg:max-w-[50%] h-[3.3rem] mt-1! line-clamp-1 truncate leading-12 text-ellipsis hidden lg:block pb-1"
             />}
             <Carousel
                 className="w-full max-w-full"

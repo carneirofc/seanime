@@ -222,7 +222,7 @@ function LazyCarouselItemSkeleton({ width }: LazyCarouselItemSkeletonProps) {
             style={{ width }}
         >
             <Skeleton
-                className="w-full aspect-[2/3]"
+                className="w-full aspect-2/3"
             />
         </div>
     )
