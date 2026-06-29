@@ -16,14 +16,19 @@
     "build:install": "npm run build && npm run install:windows",
     "install:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\install-windows.ps1",
     "build:installer": "iscc installer\\seanime.iss",
-    "dist:windows": "npm run build && npm run build:installer",
+    "build:all": "npm run build && npm run build:installer",
+    "dist:windows": "npm run build:all",
     "build:web": "npm run build --workspace seanime-web",
     "build:denshi": "npm run build --workspace seanime-denshi",
     "test:go": "go test ./..."
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "esbuild": "^0.27.4",
+    "esbuild": "^0.28.1",
     "nodemon": "^3.1.10"
+  },
+  "overrides": {
+    "protobufjs": "^7.6.4",
+    "semver": "^7.7.2"
   }
 }
