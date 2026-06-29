@@ -1,0 +1,133 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  schedule:
+    # Weekly, Monday 06:00 UTC — catches newly disclosed CVEs even without commits.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---- Go: official vulnerability database scan ----
+  govulncheck:
+    name: Go vuln scan (govulncheck)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.2'
+          cache: true
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+  # ---- Web: dependency audit ----
+  npm-audit:
+    name: Web dep audit (npm)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seanime-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: seanime-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: npm audit (production deps, high+)
+        run: npm audit --omit=dev --audit-level=high
+
+  # ---- Cross-ecosystem SCA: lightweight, lockfile-based ----
+  osv-scanner:
+    name: SCA (OSV-Scanner)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.2'
+          cache: true
+
+      - name: Install OSV-Scanner
+        run: go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+
+      - name: Run OSV-Scanner
+        # Scans go.mod and seanime-web/package-lock.json against the OSV database.
+        run: osv-scanner scan --recursive .
+
+  # ---- Trivy: vuln + secret + IaC/config scanning ----
+  trivy:
+    name: Trivy (vuln + secret + config)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload SARIF to the Security tab (no-op without GHAS)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan (SARIF)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-results.sarif
+
+      - name: Upload Trivy SARIF
+        if: always()
+        continue-on-error: true # tolerated on repos without code scanning enabled
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Trivy filesystem scan (fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: table
+          exit-code: '1'
+        env:
+          # Reuse the DB downloaded by the previous step.
+          TRIVY_SKIP_DB_UPDATE: true
+          TRIVY_SKIP_JAVA_DB_UPDATE: true
