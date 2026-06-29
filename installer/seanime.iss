@@ -10,12 +10,12 @@
 ; Build:
 ;   npm run build:installer            (compiles this script)
 ;   npm run dist:windows               (build the app, then the installer)
-;   iscc /DAppVersion=3.8.3 installer\seanime.iss
+;   iscc /DAppVersion=3.8.7 installer\seanime.iss
 ;
 ; The output is written to dist\seanime-setup-<version>.exe.
 
 #ifndef AppVersion
-  #define AppVersion "3.8.3"
+  #define AppVersion "3.8.7"
 #endif
 
 #define AppName "Seanime"
