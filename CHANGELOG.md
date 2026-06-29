@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## v3.8.3
+## v3.8.7
 
 - ⚡️ Plugins: ctx.appSettings now includes debrid, torrent streaming and transcode settings
 - ⚡️ Torrent streaming: Option to preload next stream (Unstable)

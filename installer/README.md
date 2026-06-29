@@ -31,7 +31,7 @@ npm run build:installer
 Or invoke the compiler directly (lets you pass the real version):
 
 ```bash
-iscc /DAppVersion=3.8.3 installer\seanime.iss
+iscc /DAppVersion=3.8.7 installer\seanime.iss
 ```
 
 The result is written to `dist\seanime-setup-<version>.exe`.
@@ -52,6 +52,6 @@ The result is written to `dist\seanime-setup-<version>.exe`.
 ## Silent install / uninstall
 
 ```bash
-seanime-setup-3.8.3.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+seanime-setup-3.8.7.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 "%LOCALAPPDATA%\Programs\Seanime\unins000.exe" /VERYSILENT
 ```
