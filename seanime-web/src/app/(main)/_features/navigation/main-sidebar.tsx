@@ -37,7 +37,7 @@ import { BiChevronRight, BiExtension, BiLogIn, BiLogOut } from "react-icons/bi"
 import { FiLogIn, FiSearch } from "react-icons/fi"
 import { HiOutlineServerStack } from "react-icons/hi2"
 import { IoCloudOfflineOutline, IoHomeOutline } from "react-icons/io5"
-import { LuBookOpen, LuCalendar, LuCompass, LuExternalLink, LuRefreshCw, LuRss, LuSettings } from "react-icons/lu"
+import { LuBookmark, LuBookOpen, LuCalendar, LuCompass, LuExternalLink, LuRefreshCw, LuRss, LuSettings } from "react-icons/lu"
 import { MdOutlineConnectWithoutContact } from "react-icons/md"
 import { PiArrowCircleLeftDuotone, PiArrowCircleRightDuotone } from "react-icons/pi"
 import { RiListCheck3 } from "react-icons/ri"
@@ -225,6 +225,13 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
             name: "My lists",
             href: "/lists",
             isCurrent: pathname === "/lists",
+        },
+        {
+            id: "watchlists",
+            iconType: LuBookmark,
+            name: "Watchlists",
+            href: "/watchlists",
+            isCurrent: pathname === "/watchlists",
         },
         {
             id: "discover",

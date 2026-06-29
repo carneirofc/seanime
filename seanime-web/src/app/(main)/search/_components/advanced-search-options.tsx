@@ -12,6 +12,7 @@ import {
     ADVANCED_SEARCH_TYPE,
 } from "@/app/(main)/search/_lib/advanced-search-constants"
 import { __advancedSearch_paramsAtom } from "@/app/(main)/search/_lib/advanced-search.atoms"
+import { TagsPanelModal } from "@/app/(main)/search/_components/tags-panel-modal"
 import { AppLayoutStack } from "@/components/ui/app-layout"
 import { IconButton } from "@/components/ui/button"
 import { Combobox } from "@/components/ui/combobox"
@@ -29,7 +30,7 @@ import { FiSearch } from "react-icons/fi"
 import { LuCalendar, LuLeaf } from "react-icons/lu"
 import { MdOutlineBook, MdPersonalVideo } from "react-icons/md"
 import { RiSignalTowerLine } from "react-icons/ri"
-import { TbSwords, TbTagsFilled } from "react-icons/tb"
+import { TbSwords } from "react-icons/tb"
 import { useMount } from "react-use"
 import { useUpdateEffect } from "react-use"
 
@@ -91,26 +92,19 @@ export function AdvancedSearchOptions() {
                     })}
                     fieldLabelClass="hidden"
                 />
-                <Combobox
-                    multiple
-                    leftAddon={<TbTagsFilled className={cn((params.tags !== null && !!params.tags.length) && "text-indigo-300 font-bold text-xl")} />}
-                    emptyMessage="No options found"
-                    label="Tags" placeholder="All tags" className="w-full"
-                    options={ADVANCED_SEARCH_MEDIA_TAGS
+                <TagsPanelModal
+                    tags={ADVANCED_SEARCH_MEDIA_TAGS
                         .filter(tag => {
                             if (params.isAdult && serverStatus?.settings?.anilist?.enableAdultContent) {
                                 return true
                             }
                             return tag.isAdult === false
-                        })
-                        .map(tag => ({ value: tag.name, label: tag.name, textValue: tag.name }))}
+                        })}
                     value={params.tags ? params.tags : []}
                     onValueChange={v => setParams(draft => {
                         draft.tags = v
                         return
                     })}
-                    fieldLabelClass="hidden"
-                    data-advanced-search-options-tags
                 />
                 {params.type === "anime" && <Select
                     leftAddon={<MdPersonalVideo className={cn((params.format !== null && !!params.format) && "text-indigo-300 font-bold text-xl")} />}

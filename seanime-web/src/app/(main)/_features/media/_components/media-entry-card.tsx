@@ -33,6 +33,7 @@ import { MediaEntryScoreBadge } from "@/app/(main)/_features/media/_components/m
 import { AnilistMediaEntryModal } from "@/app/(main)/_features/media/_containers/anilist-media-entry-modal"
 import { useMediaPreviewModal } from "@/app/(main)/_features/media/_containers/media-preview-modal"
 import { usePlaylistEditorManager } from "@/app/(main)/_features/playlists/lib/playlist-editor-manager"
+import { useAddToWatchlistManager } from "@/app/(main)/_features/watchlists/watchlists.atoms"
 import { useAnilistUserAnimeListData } from "@/app/(main)/_hooks/anilist-collection-loader"
 import { useHasMissingEpisodes } from "@/app/(main)/_hooks/missing-episodes-loader"
 import { useHasTorrentOrDebridInclusion, useIsSimulatedUser, useServerStatus } from "@/app/(main)/_hooks/use-server-status"
@@ -49,7 +50,7 @@ import capitalize from "lodash/capitalize"
 import React, { useState } from "react"
 import { BiAddToQueue, BiPlay } from "react-icons/bi"
 import { LuBookOpen } from "react-icons/lu"
-import { LuEye, LuFolderTree } from "react-icons/lu"
+import { LuBookmark, LuEye, LuFolderTree } from "react-icons/lu"
 import { RiCalendarLine } from "react-icons/ri"
 import { PluginMediaCardContextMenuItems } from "../../plugin/actions/plugin-actions"
 
@@ -110,6 +111,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
     const setActionPopupHover = useSetAtom(__mediaEntryCard_hoveredPopupId)
 
     const { selectMediaAndOpenEditor } = usePlaylistEditorManager()
+    const { openForMedia: openAddToWatchlist } = useAddToWatchlistManager()
 
     const mediaId = media.id
     const mediaEpisodes = (media as AL_BaseAnime)?.episodes
@@ -234,6 +236,17 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
         selectMediaAndOpenEditor(mediaId)
     }, [mediaId, selectMediaAndOpenEditor])
 
+    const handleAddToWatchlistClick = React.useCallback(() => {
+        openAddToWatchlist({
+            mediaId,
+            type,
+            title: media.title?.userPreferred || media.title?.romaji || "Untitled",
+            image: media.coverImage?.large || media.coverImage?.extraLarge || undefined,
+            format: media.format,
+            year: (media as AL_BaseAnime).seasonYear ?? media.startDate?.year ?? null,
+        })
+    }, [mediaId, type, media, openAddToWatchlist])
+
     const handleOpenInExplorerClick = React.useCallback(() => {
         if (libraryData?.sharedPath) {
             openDirInLibraryExplorer(libraryData.sharedPath)
@@ -272,6 +285,12 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                     >
                         <BiAddToQueue /> Add to Playlist
                     </ContextMenuItem>}
+                    <ContextMenuItem
+                        onClick={handleAddToWatchlistClick}
+                    >
+                        <LuBookmark /> Add to Watchlist
+                    </ContextMenuItem>
+
                     {(!!libraryData) && <ContextMenuItem
                         onClick={handleOpenInExplorerClick}
                     >
