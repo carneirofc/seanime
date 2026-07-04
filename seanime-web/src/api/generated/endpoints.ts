@@ -2395,5 +2395,11 @@ export const API_ENDPOINTS = {
             methods: ["GET"],
             endpoint: "/api/v1/videocore/insight/character/{malId}",
         },
+        VideoCoreSaveScreenshot: {
+            key: "VIDEOCORE-video-core-save-screenshot",
+            methods: ["POST"],
+            endpoint: "/api/v1/videocore/screenshot",
+        },
     },
 } satisfies ApiEndpoints
+

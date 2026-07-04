@@ -187,15 +187,20 @@ func (m *Repository) PullStatus() (*PlaybackStatus, bool) {
 		return nil, false
 	}
 
-	var ok bool
 	if m.currentPlaybackStatus == nil {
 		return nil, false
 	}
 
+	// Preserve the playback type currently being tracked; only "file" maps to file
+	// tracking, everything else (including the zero value) is treated as a stream.
+	playbackType := PlaybackTypeStream
 	if m.currentPlaybackStatus.PlaybackType == PlaybackTypeFile {
-		ok = m.processStatus(m.Default, status)
-	} else {
-		ok = m.processStreamStatus(m.Default, status)
+		playbackType = PlaybackTypeFile
+	}
+
+	ps, ok := normalizeStatus(m.Default, status, playbackType)
+	if ok {
+		m.currentPlaybackStatus = ps
 	}
 	return m.currentPlaybackStatus, ok
 }
@@ -504,7 +509,7 @@ func (m *Repository) Cancel() {
 	if m.cancel != nil {
 		m.Logger.Debug().Msg("media player: Cancel request received")
 		m.cancel()
-		m.trackingStopped("Something went wrong, tracking cancelled")
+		m.emitTrackingStopped(PlaybackTypeFile, "Something went wrong, tracking cancelled")
 	}
 	// Close MPV if it's the default player
 	switch m.Default {
@@ -523,7 +528,7 @@ func (m *Repository) Stop() {
 		m.Logger.Debug().Msg("media player: Stop request received")
 		m.cancel()
 		m.cancel = nil
-		m.trackingStopped("Tracking stopped")
+		m.emitTrackingStopped(PlaybackTypeFile, "Tracking stopped")
 	}
 	switch m.Default {
 	case "mpv":
@@ -632,21 +637,21 @@ func (m *Repository) StartTrackingTorrentStream() {
 						waitInSeconds += refreshDelay
 						continue
 					} else {
-						m.streamingTrackingRetry("Failed to get player status")
+						m.emitTrackingRetry(PlaybackTypeStream, "Failed to get player status")
 						m.Logger.Error().Msgf("media player: Failed to get player status, retrying (%d/%d)", retries+1, maxTries)
 
 						// Video is completed, and we are unable to get the status
 						// We can safely assume that the player has been closed
 						if retries == 1 && (completed || m.continuityManager.GetSettings().WatchContinuityEnabled) {
 							m.Logger.Debug().Msg("media player: Sending player closed event")
-							m.streamingTrackingStopped(PlayerClosedEvent)
+							m.emitTrackingStopped(PlaybackTypeStream, PlayerClosedEvent)
 							close(done)
 							break
 						}
 
 						if retries >= maxTries-1 {
 							m.Logger.Debug().Msg("media player: Sending failed status query event")
-							m.streamingTrackingStopped("Failed to get player status")
+							m.emitTrackingStopped(PlaybackTypeStream, "Failed to get player status")
 							close(done)
 							break
 						}
@@ -657,14 +662,14 @@ func (m *Repository) StartTrackingTorrentStream() {
 
 				trackingStarted = true
 				retries = 0
-				ok := m.processStreamStatus(m.Default, status)
+				ps, ok := normalizeStatus(m.Default, status, PlaybackTypeStream)
 
 				if !ok {
-					m.streamingTrackingRetry("Failed to get player status")
+					m.emitTrackingRetry(PlaybackTypeStream, "Failed to get player status")
 					m.Logger.Error().Interface("status", status).Msgf("media player: Failed to process status, retrying (%d/%d)", retries+1, maxRetriesAfterStart)
 					if retries >= maxRetriesAfterStart-1 {
 						m.Logger.Debug().Msg("media player: Sending failed status query event")
-						m.streamingTrackingStopped("Failed to process status")
+						m.emitTrackingStopped(PlaybackTypeStream, "Failed to process status")
 						close(done)
 						break
 					}
@@ -672,26 +677,11 @@ func (m *Repository) StartTrackingTorrentStream() {
 					continue
 				}
 
-				// New stream has started playing \/
-				if filename == "" || filename != m.currentPlaybackStatus.Filename {
-					m.Logger.Debug().Str("previousFilename", filename).Str("newFilename", m.currentPlaybackStatus.Filename).Msg("media player: Stream loaded")
-					m.streamingTrackingStarted(m.currentPlaybackStatus)
-					filename = m.currentPlaybackStatus.Filename
-					completed = false
-					// Skip completion check on this iteration to avoid stale CompletionPercentage
-					// from the previous stream triggering a false "completed" event
-					m.streamingPlaybackStatus(m.currentPlaybackStatus)
+				m.currentPlaybackStatus = ps
+
+				if m.handleTrackedStatus(PlaybackTypeStream, &filename, &completed) {
 					continue
 				}
-
-				// Stream completed \/
-				if m.currentPlaybackStatus.CompletionPercentage > m.completionThreshold && !completed {
-					m.Logger.Debug().Msg("media player: Video completed")
-					m.streamingVideoCompleted(m.currentPlaybackStatus)
-					completed = true
-				}
-
-				m.streamingPlaybackStatus(m.currentPlaybackStatus)
 			}
 		}
 	}(trackingCtx)
@@ -783,19 +773,19 @@ func (m *Repository) StartTracking() {
 				}
 				status, err := m.getStatus()
 				if err != nil {
-					m.trackingRetry("Failed to get player status")
+					m.emitTrackingRetry(PlaybackTypeFile, "Failed to get player status")
 					m.Logger.Error().Msgf("media player: Failed to get player status, retrying (%d/%d)", retries+1, maxTries)
 
 					// Video is completed, and we are unable to get the status
 					// We can safely assume that the player has been closed
 					if retries == 1 && (completed || m.continuityManager.GetSettings().WatchContinuityEnabled) {
-						m.trackingStopped(PlayerClosedEvent)
+						m.emitTrackingStopped(PlaybackTypeFile, PlayerClosedEvent)
 						close(done)
 						break
 					}
 
 					if retries >= maxTries-1 {
-						m.trackingStopped("Failed to get player status")
+						m.emitTrackingStopped(PlaybackTypeFile, "Failed to get player status")
 						close(done)
 						break
 					}
@@ -806,13 +796,13 @@ func (m *Repository) StartTracking() {
 				gotFirstStatus = true
 				retries = 0
 
-				ok := m.processStatus(m.Default, status)
+				ps, ok := normalizeStatus(m.Default, status, PlaybackTypeFile)
 
 				if !ok {
-					m.trackingRetry("Failed to get player status")
+					m.emitTrackingRetry(PlaybackTypeFile, "Failed to get player status")
 					m.Logger.Error().Interface("status", status).Msgf("media player: Failed to process status, retrying (%d/%d)", retries+1, maxTries)
 					if retries >= maxTries-1 {
-						m.trackingStopped("Failed to process status")
+						m.emitTrackingStopped(PlaybackTypeFile, "Failed to process status")
 						close(done)
 						break
 					}
@@ -820,28 +810,11 @@ func (m *Repository) StartTracking() {
 					continue
 				}
 
-				// New video has started playing \/
-				if filename == "" || filename != m.currentPlaybackStatus.Filename {
-					m.Logger.Debug().Str("previousFilename", filename).Str("newFilename", m.currentPlaybackStatus.Filename).Msg("media player: Video started playing")
-					m.Logger.Debug().Interface("currentPlaybackStatus", m.currentPlaybackStatus).Msg("media player: Playback status")
-					m.trackingStarted(m.currentPlaybackStatus)
-					filename = m.currentPlaybackStatus.Filename
-					completed = false
-					// Skip completion check on this iteration to avoid stale CompletionPercentage
-					// from the previous file triggering a false "completed" event
-					m.playbackStatus(m.currentPlaybackStatus)
+				m.currentPlaybackStatus = ps
+
+				if m.handleTrackedStatus(PlaybackTypeFile, &filename, &completed) {
 					continue
 				}
-
-				// Video completed \/
-				if m.currentPlaybackStatus.CompletionPercentage > m.completionThreshold && !completed {
-					m.Logger.Debug().Msg("media player: Video completed")
-					m.Logger.Debug().Interface("currentPlaybackStatus", m.currentPlaybackStatus).Msg("media player: Playback status")
-					m.videoCompleted(m.currentPlaybackStatus)
-					completed = true
-				}
-
-				m.playbackStatus(m.currentPlaybackStatus)
 			}
 		}
 	}(trackingCtx)
@@ -849,77 +822,87 @@ func (m *Repository) StartTracking() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (m *Repository) trackingStopped(reason string) {
+// publish fans a single event out to every subscriber.
+func (m *Repository) publish(event MediaPlayerEvent) {
 	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- TrackingStoppedEvent{Reason: reason}
+		value.EventCh <- event
 		return true
 	})
 }
 
-func (m *Repository) trackingStarted(status *PlaybackStatus) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- TrackingStartedEvent{Status: status}
-		return true
-	})
+// The emit* helpers select the file or stream flavour of each event based on the
+// playback type. File and stream tracking emit distinct event types because subscribers
+// (e.g. torrentstream) type-switch on the streaming variants; the choice lives here so
+// each tracking loop no longer duplicates its own set of dispatch methods.
+
+func (m *Repository) emitTrackingStopped(pt PlaybackType, reason string) {
+	if pt == PlaybackTypeStream {
+		m.publish(StreamingTrackingStoppedEvent{Reason: reason})
+		return
+	}
+	m.publish(TrackingStoppedEvent{Reason: reason})
 }
 
-func (m *Repository) trackingRetry(reason string) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- TrackingRetryEvent{Reason: reason}
-		return true
-	})
+func (m *Repository) emitTrackingStarted(pt PlaybackType, status *PlaybackStatus) {
+	if pt == PlaybackTypeStream {
+		m.publish(StreamingTrackingStartedEvent{Status: status})
+		return
+	}
+	m.publish(TrackingStartedEvent{Status: status})
 }
 
-func (m *Repository) videoCompleted(status *PlaybackStatus) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- VideoCompletedEvent{Status: status}
-		return true
-	})
+func (m *Repository) emitTrackingRetry(pt PlaybackType, reason string) {
+	if pt == PlaybackTypeStream {
+		m.publish(StreamingTrackingRetryEvent{Reason: reason})
+		return
+	}
+	m.publish(TrackingRetryEvent{Reason: reason})
 }
 
-func (m *Repository) playbackStatus(status *PlaybackStatus) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- PlaybackStatusEvent{Status: status}
-		return true
-	})
+func (m *Repository) emitVideoCompleted(pt PlaybackType, status *PlaybackStatus) {
+	if pt == PlaybackTypeStream {
+		m.publish(StreamingVideoCompletedEvent{Status: status})
+		return
+	}
+	m.publish(VideoCompletedEvent{Status: status})
 }
 
-func (m *Repository) streamingTrackingStopped(reason string) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- StreamingTrackingStoppedEvent{Reason: reason}
-		return true
-	})
+func (m *Repository) emitPlaybackStatus(pt PlaybackType, status *PlaybackStatus) {
+	if pt == PlaybackTypeStream {
+		m.publish(StreamingPlaybackStatusEvent{Status: status})
+		return
+	}
+	m.publish(PlaybackStatusEvent{Status: status})
 }
 
-func (m *Repository) streamingTrackingStarted(status *PlaybackStatus) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- StreamingTrackingStartedEvent{Status: status}
+// handleTrackedStatus emits the started / completed / status events for the current
+// playback status and owns the completion-threshold decision for both file and stream
+// tracking. It returns true when a new file/stream has just started, in which case the
+// caller should skip the rest of the tick (the completion check is intentionally deferred
+// to the next reading to avoid a stale CompletionPercentage triggering a false completion).
+func (m *Repository) handleTrackedStatus(pt PlaybackType, lastFilename *string, completed *bool) (newMedia bool) {
+	status := m.currentPlaybackStatus
+
+	if *lastFilename == "" || *lastFilename != status.Filename {
+		m.Logger.Debug().Str("previousFilename", *lastFilename).Str("newFilename", status.Filename).Msg("media player: New media started playing")
+		m.emitTrackingStarted(pt, status)
+		*lastFilename = status.Filename
+		*completed = false
+		m.emitPlaybackStatus(pt, status)
 		return true
-	})
+	}
+
+	if status.CompletionPercentage > m.completionThreshold && !*completed {
+		m.Logger.Debug().Interface("status", status).Msg("media player: Video completed")
+		m.emitVideoCompleted(pt, status)
+		*completed = true
+	}
+
+	m.emitPlaybackStatus(pt, status)
+	return false
 }
 
-func (m *Repository) streamingTrackingRetry(reason string) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- StreamingTrackingRetryEvent{Reason: reason}
-		return true
-	})
-}
-
-func (m *Repository) streamingVideoCompleted(status *PlaybackStatus) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- StreamingVideoCompletedEvent{Status: status}
-		return true
-	})
-}
-
-func (m *Repository) streamingPlaybackStatus(status *PlaybackStatus) {
-	m.subscribers.Range(func(key string, value *RepositorySubscriber) bool {
-		value.EventCh <- StreamingPlaybackStatusEvent{Status: status}
-		return true
-	})
-}
-
-func (m *Repository) getStatus() (interface{}, error) {
+func (m *Repository) getStatus() (any, error) {
 	switch m.Default {
 	case "vlc":
 		return m.VLC.GetStatus()
@@ -944,153 +927,71 @@ func clampPercentage(v float64) float64 {
 	return v
 }
 
-func (m *Repository) processStatus(player string, status interface{}) bool {
-	m.currentPlaybackStatus.PlaybackType = PlaybackTypeFile
+// normalizeStatus converts a player-specific status value into the common PlaybackStatus.
+// Each player reports position and duration in its own units and shape (VLC over HTTP,
+// MPC-HC scraped from HTML, MPV/IINA over IPC); normalization lives here so every caller
+// consumes one shape. It returns (nil, false) when the status is not yet usable, in which
+// case the caller should retry rather than act on a partial reading.
+//
+// This is the single seam that used to be duplicated across processStatus and
+// processStreamStatus — the only difference between file and stream tracking is the
+// PlaybackType stamped on the result.
+func normalizeStatus(player string, status any, playbackType PlaybackType) (*PlaybackStatus, bool) {
+	ps := &PlaybackStatus{PlaybackType: playbackType}
 	switch player {
 	case "vlc":
-		// Process VLC status
 		st, ok := status.(*vlc2.Status)
 		if !ok || st == nil {
-			return false
+			return nil, false
 		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position)
-		m.currentPlaybackStatus.Playing = st.State == "playing"
-		m.currentPlaybackStatus.Filename = st.Information.Category["meta"].Filename
-		m.currentPlaybackStatus.Duration = int(st.Length * 1000)
-		m.currentPlaybackStatus.Filepath = st.Information.Category["meta"].Filename
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = float64(st.Time)
-		m.currentPlaybackStatus.DurationInSeconds = float64(st.Length)
-		return true
+		ps.CompletionPercentage = clampPercentage(st.Position)
+		ps.Playing = st.State == "playing"
+		ps.Filename = st.Information.Category["meta"].Filename
+		ps.Duration = int(st.Length * 1000)
+		ps.Filepath = st.Information.Category["meta"].Filename // VLC does not provide the filepath, use filename
+		ps.CurrentTimeInSeconds = float64(st.Time)
+		ps.DurationInSeconds = float64(st.Length)
+		return ps, true
 	case "mpc-hc":
-		// Process MPC-HC status
 		st, ok := status.(*mpchc2.Variables)
 		if !ok || st == nil || st.Duration == 0 {
-			return false
+			return nil, false
 		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position / st.Duration)
-		m.currentPlaybackStatus.Playing = st.State == 2
-		m.currentPlaybackStatus.Filename = st.File
-		m.currentPlaybackStatus.Duration = int(st.Duration)
-		m.currentPlaybackStatus.Filepath = st.FilePath
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = st.Position / 1000
-		m.currentPlaybackStatus.DurationInSeconds = st.Duration / 1000
-
-		return true
+		ps.CompletionPercentage = clampPercentage(st.Position / st.Duration)
+		ps.Playing = st.State == 2
+		ps.Filename = st.File
+		ps.Duration = int(st.Duration)
+		ps.Filepath = st.FilePath
+		ps.CurrentTimeInSeconds = st.Position / 1000
+		ps.DurationInSeconds = st.Duration / 1000
+		return ps, true
 	case "mpv":
-		// Process MPV status
 		st, ok := status.(*mpv.Playback)
 		if !ok || st == nil || st.Duration == 0 || st.IsRunning == false {
-			return false
+			return nil, false
 		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position / st.Duration)
-		m.currentPlaybackStatus.Playing = !st.Paused
-		m.currentPlaybackStatus.Filename = st.Filename
-		m.currentPlaybackStatus.Duration = int(st.Duration)
-		m.currentPlaybackStatus.Filepath = st.Filepath
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = st.Position
-		m.currentPlaybackStatus.DurationInSeconds = st.Duration
-
-		return true
+		ps.CompletionPercentage = clampPercentage(st.Position / st.Duration)
+		ps.Playing = !st.Paused
+		ps.Filename = st.Filename
+		ps.Duration = int(st.Duration)
+		ps.Filepath = st.Filepath
+		ps.CurrentTimeInSeconds = st.Position
+		ps.DurationInSeconds = st.Duration
+		return ps, true
 	case "iina":
-		// Process IINA status
 		st, ok := status.(*iina.Playback)
 		if !ok || st == nil || st.Duration == 0 || st.IsRunning == false {
-			return false
+			return nil, false
 		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position / st.Duration)
-		m.currentPlaybackStatus.Playing = !st.Paused
-		m.currentPlaybackStatus.Filename = st.Filename
-		m.currentPlaybackStatus.Duration = int(st.Duration)
-		m.currentPlaybackStatus.Filepath = st.Filepath
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = st.Position
-		m.currentPlaybackStatus.DurationInSeconds = st.Duration
-
-		return true
+		ps.CompletionPercentage = clampPercentage(st.Position / st.Duration)
+		ps.Playing = !st.Paused
+		ps.Filename = st.Filename
+		ps.Duration = int(st.Duration)
+		ps.Filepath = st.Filepath
+		ps.CurrentTimeInSeconds = st.Position
+		ps.DurationInSeconds = st.Duration
+		return ps, true
 	default:
-		return false
-	}
-}
-
-func (m *Repository) processStreamStatus(player string, status interface{}) bool {
-	m.currentPlaybackStatus.PlaybackType = PlaybackTypeStream
-	switch player {
-	case "vlc":
-		// Process VLC status
-		st, ok := status.(*vlc2.Status)
-		if !ok || st == nil {
-			return false
-		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position)
-		m.currentPlaybackStatus.Playing = st.State == "playing"
-		m.currentPlaybackStatus.Filename = st.Information.Category["meta"].Filename
-		m.currentPlaybackStatus.Duration = int(st.Length * 1000)
-		m.currentPlaybackStatus.Filepath = st.Information.Category["meta"].Filename // VLC does not provide the filepath, use filename
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = float64(st.Time)
-		m.currentPlaybackStatus.DurationInSeconds = float64(st.Length)
-
-		return true
-	case "mpc-hc":
-		// Process MPC-HC status
-		st, ok := status.(*mpchc2.Variables)
-		if !ok || st == nil {
-			return false
-		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position / st.Duration)
-		m.currentPlaybackStatus.Playing = st.State == 2
-		m.currentPlaybackStatus.Filename = st.File
-		m.currentPlaybackStatus.Duration = int(st.Duration)
-		m.currentPlaybackStatus.Filepath = st.FilePath
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = st.Position / 1000
-		m.currentPlaybackStatus.DurationInSeconds = st.Duration / 1000
-
-		return true
-	case "mpv":
-		// Process MPV status
-		st, ok := status.(*mpv.Playback)
-		if !ok || st == nil || st.Duration == 0 || st.IsRunning == false {
-			return false
-		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position / st.Duration)
-		m.currentPlaybackStatus.Playing = !st.Paused
-		m.currentPlaybackStatus.Filename = st.Filename
-		m.currentPlaybackStatus.Duration = int(st.Duration)
-		m.currentPlaybackStatus.Filepath = st.Filepath
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = st.Position
-		m.currentPlaybackStatus.DurationInSeconds = st.Duration
-
-		return true
-	case "iina":
-		// Process IINA status
-		st, ok := status.(*iina.Playback)
-		if !ok || st == nil || st.Duration == 0 || st.IsRunning == false {
-			return false
-		}
-
-		m.currentPlaybackStatus.CompletionPercentage = clampPercentage(st.Position / st.Duration)
-		m.currentPlaybackStatus.Playing = !st.Paused
-		m.currentPlaybackStatus.Filename = st.Filename
-		m.currentPlaybackStatus.Duration = int(st.Duration)
-		m.currentPlaybackStatus.Filepath = st.Filepath
-
-		m.currentPlaybackStatus.CurrentTimeInSeconds = st.Position
-		m.currentPlaybackStatus.DurationInSeconds = st.Duration
-
-		return true
-	default:
-		return false
+		return nil, false
 	}
 }

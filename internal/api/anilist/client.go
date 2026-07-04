@@ -556,6 +556,7 @@ func notifyAniListRateLimit(logger *zerolog.Logger, waitSeconds int) {
 // customDoFunc is a custom request interceptor function that handles rate limiting and retries.
 func (ac *AnilistClientImpl) customDoFunc(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}) (err error) {
 	var rlRemainingStr string
+	var statusCode int
 
 	reqTime := time.Now()
 	defer func() {
@@ -563,7 +564,10 @@ func (ac *AnilistClientImpl) customDoFunc(ctx context.Context, req *http.Request
 		formattedDur := timeSince.Truncate(time.Millisecond).String()
 		if err != nil {
 			if !noErrLogs.Load() {
-				ac.logger.Error().Str("duration", formattedDur).Str("rlr", rlRemainingStr).Err(err).Str("document", gqlInfo.Request.OperationName).Msg("anilist: Failed Request")
+				// statusCode is 0 when the request never reached AniList (e.g. DNS/connection error). The error
+				// already embeds the response body for non-2xx replies (see parseResponse), so logging the status
+				// code makes it possible to tell 401 (bad/expired token) from 429 (rate limit) from 5xx (AniList down).
+				ac.logger.Error().Str("duration", formattedDur).Int("httpStatus", statusCode).Str("rlr", rlRemainingStr).Err(err).Str("document", gqlInfo.Request.OperationName).Msg("anilist: Failed Request")
 			}
 		} else {
 			if timeSince > 900*time.Millisecond {
@@ -587,6 +591,8 @@ func (ac *AnilistClientImpl) customDoFunc(ctx context.Context, req *http.Request
 	if err != nil {
 		return err
 	}
+
+	statusCode = resp.StatusCode
 
 	defer resp.Body.Close()
 

@@ -54,6 +54,7 @@ func TestToolsListed(t *testing.T) {
 		"get_anime_details":    false,
 		"get_anime_collection": false,
 		"get_viewer_stats":     false,
+		"get_library_files":    false,
 	}
 	for _, tool := range res.Tools {
 		if _, ok := want[tool.Name]; ok {

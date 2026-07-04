@@ -352,6 +352,10 @@ func (c *CacheLayer) checkAndUpdateWorkingState(err error) {
 		errStr := strings.ToLower(err.Error())
 		// handle invalid token
 		if strings.Contains(errStr, "user not found") {
+			// devnote: this is a substring match, so a transient AniList error whose body happens to contain
+			// "user not found" will also trigger a logout. Log the raw error so a false logout can be told apart
+			// from a genuinely expired token when diagnosing "auth lost on startup" reports.
+			c.logger.Warn().Err(err).Msg("anilist cache: AniList reported \"user not found\", treating token as invalid and logging out")
 			events.GlobalWSEventManager.SendEvent(events.ServerLoggedOutAnilist, "Your AniList session has expired. Please log in again.")
 			if c.logoutFunc != nil {
 				go c.logoutFunc()

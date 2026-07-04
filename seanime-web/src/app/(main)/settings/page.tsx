@@ -66,13 +66,14 @@ import { LuRefreshCw } from "react-icons/lu"
 import { MdOutlineConnectWithoutContact, MdOutlineDownloading, MdOutlinePalette } from "react-icons/md"
 import { RiFolderDownloadFill } from "react-icons/ri"
 import { SiBittorrent, SiQbittorrent, SiTransmission } from "react-icons/si"
-import { TbDatabaseExclamation } from "react-icons/tb"
+import { TbDatabaseExclamation, TbRobot } from "react-icons/tb"
 import { VscDebugAlt } from "react-icons/vsc"
 import { toast } from "sonner"
 import { SettingsCard, SettingsNavCard, SettingsPageHeader } from "./_components/settings-card"
 import { DenshiSettings } from "./_containers/denshi-settings"
 import { DiscordRichPresenceSettings } from "./_containers/discord-rich-presence-settings"
 import { LocalSettings } from "./_containers/local-settings"
+import { McpSettings } from "./_containers/mcp-settings"
 import { NakamaSettings } from "./_containers/nakama-settings"
 
 const tabContentClass = cn(
@@ -164,10 +165,10 @@ export default function Page() {
                 <Tabs
                     value={tab}
                     onValueChange={setTab}
-                    className={cn("w-full grid grid-cols-1 lg:grid lg:grid-cols-[300px,1fr] gap-4")}
+                    className={cn("w-full grid grid-cols-1 lg:grid lg:grid-cols-[300px_1fr] gap-4")}
                     triggerClass={cn(
-                        "text-base px-6 rounded-[--radius-md] w-fit lg:w-full rounded-lg border-0 data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white",
-                        "h-9 lg:justify-start px-3 transition-all duration-200 hover:bg-[--subtle]/50 hover:transform",
+                        "text-base px-6 rounded-md w-fit lg:w-full rounded-lg border-0 data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white",
+                        "h-9 lg:justify-start px-3 transition-all duration-200 hover:bg-(--subtle)/50 hover:transform",
                     )}
                     listClass={cn(
                         "w-full flex flex-wrap lg:flex-nowrap h-fit",
@@ -180,16 +181,16 @@ export default function Page() {
                             <div className="flex flex-col gap-4 md:flex-row justify-between items-center">
 
                             </div>
-                            <div className="overflow-x-none overflow-y-hidden rounded-[--radius-md] space-y-1 lg:space-y-3 flex justify-center flex-wrap lg:block">
+                            <div className="overflow-x-none overflow-y-hidden rounded-md space-y-1 lg:space-y-3 flex justify-center flex-wrap lg:block">
 
                                 <Card className="lg:p-2 contents lg:block border-0 bg-transparent lg:border lg:bg-gray-950/80">
                                     <div className="space-y-2 p-4 w-full">
                                         <h4 className="text-center text-xl font-bold">Settings</h4>
                                         <div className="space-y-1">
-                                            <p className="text-[--muted] text-sm text-center w-full">
+                                            <p className="text-(--muted) text-sm text-center w-full">
                                                 {status?.version} {status?.versionName}
                                             </p>
-                                            <p className="text-[--muted] text-sm text-center w-full">
+                                            <p className="text-(--muted) text-sm text-center w-full">
                                                 {capitalize(status?.os)}{__isElectronDesktop__ &&
                                                 <span className="font-medium"> - Denshi</span>}
                                             </p>
@@ -215,7 +216,7 @@ export default function Page() {
                                     ><LuLibrary className="text-xl mr-3 transition-transform duration-200" /> Local Anime Library</TabsTrigger>
                                 </Card>
 
-                                {/*<div className="text-xs lg:text-[--muted] text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
+                                {/*<div className="text-xs lg:text-(--muted) text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
                                 {/*    Anime playback*/}
                                 {/*</div>*/}
 
@@ -241,7 +242,7 @@ export default function Page() {
                                                                                                                        Play</TabsTrigger>
                                 </Card>
 
-                                {/*<div className="text-xs lg:text-[--muted] text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
+                                {/*<div className="text-xs lg:text-(--muted) text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
                                 {/*    Torrenting*/}
                                 {/*</div>*/}
 
@@ -264,7 +265,7 @@ export default function Page() {
                                     ><HiOutlineServerStack className="text-xl mr-3 transition-transform duration-200" /> Debrid Service</TabsTrigger>
                                 </Card>
 
-                                {/*<div className="text-xs lg:text-[--muted] text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
+                                {/*<div className="text-xs lg:text-(--muted) text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
                                 {/*    Other features*/}
                                 {/*</div>*/}
 
@@ -286,9 +287,13 @@ export default function Page() {
                                         value="discord"
                                         className="group"
                                     ><FaDiscord className="text-xl mr-3 transition-transform duration-200" /> Discord</TabsTrigger>
+                                    <TabsTrigger
+                                        value="mcp"
+                                        className="group"
+                                    ><TbRobot className="text-xl mr-3 transition-transform duration-200" /> MCP Agent</TabsTrigger>
                                 </Card>
 
-                                {/*<div className="text-xs lg:text-[--muted] text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
+                                {/*<div className="text-xs lg:text-(--muted) text-center py-1.5 uppercase px-3 border-gray-800 tracking-wide font-medium">*/}
                                 {/*    Server & Interface*/}
                                 {/*</div>*/}
 
@@ -311,7 +316,7 @@ export default function Page() {
                             </div>
                         </SettingsNavCard>
 
-                        <div className="flex justify-center !mt-0 pb-4">
+                        <div className="flex justify-center mt-0! pb-4">
                             <SeaLink
                                 href="https://github.com/sponsors/5rahim"
                                 target="_blank"
@@ -814,9 +819,9 @@ export default function Page() {
                                         <Accordion
                                             type="single"
                                             className="group/settings-card relative bg-gray-950/70 rounded-xl border overflow-hidden"
-                                            triggerClass="px-4 py-3 text-[--muted] dark:data-[state=open]:text-white dark:hover:bg-transparent hover:bg-transparent dark:hover:text-white !font-medium transition-all duration-200 hover:translate-x-1"
-                                            itemClass="border-b border-[--border] rounded-none transition-all duration-200 hover:border-[--brand]/30"
-                                            contentClass="!p-4 animate-in duration-300"
+                                            triggerClass="px-4 py-3 text-(--muted) dark:data-[state=open]:text-white dark:hover:bg-transparent hover:bg-transparent dark:hover:text-white font-medium! transition-all duration-200 hover:translate-x-1"
+                                            itemClass="border-b border-(--border) rounded-none transition-all duration-200 hover:border-(--brand)/30"
+                                            contentClass="p-4! animate-in duration-300"
                                             collapsible
                                             defaultValue={status?.settings?.torrent?.defaultTorrentClient}
                                         >
@@ -870,7 +875,7 @@ export default function Page() {
                                                     <h4 className="flex gap-2 items-center">
                                                         <SiTransmission className="text-orange-200" /> Transmission</h4>
                                                 </AccordionTrigger>
-                                                <AccordionContent className="p-0 py-4 space-y-4 !border-b-0">
+                                                <AccordionContent className="p-0 py-4 space-y-4 border-b-0!">
                                                     <Field.Text
                                                         name="transmissionHost"
                                                         label="Host"
@@ -903,7 +908,7 @@ export default function Page() {
                                                 <AccordionItem value="seanime">
                                                     <AccordionTrigger>
                                                         <h4 className="flex gap-2 items-center">
-                                                            <SiBittorrent className="text-[--brand]" /> Built-in
+                                                            <SiBittorrent className="text-(--brand)" /> Built-in
                                                         </h4>
                                                     </AccordionTrigger>
                                                     <AccordionContent className="p-0 py-4 space-y-4">
@@ -981,6 +986,12 @@ export default function Page() {
                         <TabsContent value="mediastream" className={tabContentClass}>
 
                             <MediastreamSettings />
+
+                        </TabsContent>
+
+                        <TabsContent value="mcp" className={tabContentClass}>
+
+                            <McpSettings />
 
                         </TabsContent>
 

@@ -2953,3 +2953,14 @@
 //     })
 // }
 
+// export function useVideoCoreSaveScreenshot() {
+//     return useServerMutation<boolean, VideoCoreSaveScreenshot_Variables>({
+//         endpoint: API_ENDPOINTS.VIDEOCORE.VideoCoreSaveScreenshot.endpoint,
+//         method: API_ENDPOINTS.VIDEOCORE.VideoCoreSaveScreenshot.methods[0],
+//         mutationKey: [API_ENDPOINTS.VIDEOCORE.VideoCoreSaveScreenshot.key],
+//         onSuccess: async () => {
+// 
+//         },
+//     })
+// }
+

@@ -1916,6 +1916,49 @@ export type AutoDownloader_SimulationResult = {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Autoselect
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * - Filepath: internal/torrents/autoselect/autoselect.go
+ * - Filename: autoselect.go
+ * - Package: autoselect
+ */
+export type AutoSelectCandidate = {
+    name: string
+    provider: string
+    seeders: number
+    score: number
+    /**
+     * "waiting", "analyzing", "skipped", "selected"
+     */
+    status: string
+}
+
+/**
+ * - Filepath: internal/torrents/autoselect/autoselect.go
+ * - Filename: autoselect.go
+ * - Package: autoselect
+ */
+export type StreamAutoSelectStatusPayload = {
+    active: boolean
+    mediaTitle: string
+    episode: number
+    resolutions?: Array<string>
+    minSeeders: number
+    /**
+     * "searching", "ranking", "analyzing", "completed"
+     */
+    step: string
+    /**
+     * Description of the current action
+     */
+    stepDetail: string
+    candidates?: Array<AutoSelectCandidate>
+    selectedFile: string
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ChapterDownloader
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4004,6 +4047,9 @@ export type Models_MediaPlayerSettings = {
     vcTranslateApiKey: string
     vcTranslateBaseUrl: string
     vcTranslateModel: string
+    mpvPrismLogging: boolean
+    mpvPrismEnabled: boolean
+    screenshotDir: string
 }
 
 /**
@@ -4225,6 +4271,7 @@ export type Models_TorrentstreamSettings = {
     streamUrlAddress: string
     slowSeeding: boolean
     preloadNextStream: boolean
+    disableAcceleratedStartup: boolean
     id: number
     createdAt?: string
     updatedAt?: string
@@ -4583,6 +4630,202 @@ export type Onlinestream_VideoSource = {
     quality: string
     type?: HibikeOnlinestream_VideoSourceType
     subtitles?: Array<Onlinestream_Subtitle>
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Player
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_InitialState = {
+    currentTime?: number
+    paused?: boolean
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_LibassFont = {
+    name?: string
+    src: string
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_OnlinestreamParams = {
+    mediaId: number
+    episodeNumber: number
+    provider: string
+    server: string
+    quality: string
+    dubbed: boolean
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_PlaybackInfo = {
+    id: string
+    target: Player_Target
+    renderer: Player_Renderer
+    playbackType: Player_PlaybackType
+    playbackUri?: string
+    streamUrl: string
+    streamPath?: string
+    mimeType?: string
+    contentLength?: number
+    mkvMetadata?: MKVParser_Metadata
+    subtitleTracks?: Array<Player_SubtitleTrack>
+    videoSources?: Array<Player_VideoSource>
+    selectedVideoSource?: number
+    playlistExternalEpisodeNumbers?: Array<number>
+    disableRestoreFromContinuity?: boolean
+    initialState?: Player_InitialState
+    entryListData?: Anime_EntryListData
+    media?: AL_BaseAnime
+    episode?: Anime_Episode
+    localFile?: Anime_LocalFile
+    onlinestreamParams?: Player_OnlinestreamParams
+    isNakamaWatchParty?: boolean
+    streamType?: string
+    libassFonts?: Array<Player_LibassFont>
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_PlaybackState = {
+    clientId: string
+    playbackInfo?: Player_PlaybackInfo
+    playerType?: string
+    currentProgress?: number
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_PlaybackStatus = {
+    id: string
+    clientId: string
+    paused: boolean
+    currentTime: number
+    duration: number
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_PlaybackType = "localfile" |
+    "torrent" |
+    "debrid" |
+    "nakama" |
+    "onlinestream" |
+    "url"
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_PlaylistState = {
+    type: Player_PlaybackType
+    episodes?: Array<Anime_Episode>
+    previousEpisode?: Anime_Episode
+    nextEpisode?: Anime_Episode
+    currentEpisode?: Anime_Episode
+    animeEntry?: Anime_Entry
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_Renderer = "web" | "native" | "mpv"
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_SkipData = {
+    op?: Player_SkipDataEntry
+    ed?: Player_SkipDataEntry
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_SkipDataEntry = {
+    interval: Player_SkipInterval
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_SkipInterval = {
+    startTime: number
+    endTime: number
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_SubtitleTrack = {
+    index: number
+    uri?: string
+    sourceUrl?: string
+    content?: string
+    label: string
+    language: string
+    format?: string
+    default?: boolean
+    src?: string
+    type?: string
+    useLibassRenderer?: boolean
+}
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_Target = "videocore" | "mpvcore"
+
+/**
+ * - Filepath: internal/player/types.go
+ * - Filename: types.go
+ * - Package: player
+ */
+export type Player_VideoSource = {
+    index: number
+    resolution: string
+    url?: string
+    label?: string
+    moreInfo?: string
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

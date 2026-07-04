@@ -15,7 +15,7 @@
     "build:api": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\build-api.ps1 -Os windows",
     "build:install": "npm run build && npm run install:windows",
     "install:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\install-windows.ps1",
-    "build:installer": "iscc installer\\seanime.iss",
+    "build:installer": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\installer\\\\build.ps1",
     "build:all": "npm run build && npm run build:installer",
     "dist:windows": "npm run build:all",
     "build:web": "npm run build --workspace seanime-web",

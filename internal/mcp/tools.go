@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"seanime/internal/api/anilist"
+	"seanime/internal/database/db_bridge"
+	"seanime/internal/library/anime"
+	"sort"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -41,6 +44,13 @@ func (s *Server) registerTools(srv *mcp.Server) {
 		Name:        "get_viewer_stats",
 		Description: "Get the signed-in user's AniList viewer statistics.",
 	}, s.getViewerStats)
+
+	mcp.AddTool(srv, &mcp.Tool{
+		Name: "get_library_files",
+		Description: "Get the local library contents scanned from disk. Returns mapped files " +
+			"(matched to an AniList media, grouped by media id with title and episode) and unmapped " +
+			"files (not yet matched, mediaId == 0). Use the filter argument to return only one group.",
+	}, s.getLibraryFiles)
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,6 +70,10 @@ type searchMangaInput struct {
 
 type mediaIDInput struct {
 	MediaID int `json:"mediaId" jsonschema:"AniList media id"`
+}
+
+type libraryFilesInput struct {
+	Filter string `json:"filter,omitempty" jsonschema:"which files to return: \"all\" (default), \"mapped\", or \"unmapped\""`
 }
 
 type emptyInput struct{}
@@ -222,6 +236,136 @@ func (s *Server) getViewerStats(ctx context.Context, _ *mcp.CallToolRequest, _ e
 		return nil, nil, err
 	}
 	return jsonResult(stats)
+}
+
+type libraryFile struct {
+	Path    string `json:"path"`
+	Name    string `json:"name"`
+	Episode int    `json:"episode,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Locked  bool   `json:"locked,omitempty"`
+}
+
+type mappedLibraryEntry struct {
+	MediaID   int           `json:"mediaId"`
+	Title     string        `json:"title,omitempty"`
+	FileCount int           `json:"fileCount"`
+	Files     []libraryFile `json:"files"`
+}
+
+type libraryFilesResult struct {
+	TotalFiles    int                  `json:"totalFiles"`
+	MappedCount   int                  `json:"mappedCount"`
+	UnmappedCount int                  `json:"unmappedCount"`
+	Mapped        []mappedLibraryEntry `json:"mapped,omitempty"`
+	Unmapped      []libraryFile        `json:"unmapped,omitempty"`
+}
+
+func (s *Server) getLibraryFiles(ctx context.Context, _ *mcp.CallToolRequest, in libraryFilesInput) (*mcp.CallToolResult, any, error) {
+	if s.app.Database == nil {
+		return nil, nil, errors.New("database is not available")
+	}
+
+	filter := in.Filter
+	if filter == "" {
+		filter = "all"
+	}
+	if filter != "all" && filter != "mapped" && filter != "unmapped" {
+		return nil, nil, errors.New(`filter must be one of "all", "mapped", or "unmapped"`)
+	}
+
+	lfs, _, err := db_bridge.GetLocalFiles(s.app.Database)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	result := libraryFilesResult{TotalFiles: len(lfs)}
+
+	// Resolve mapped media titles from the user's anime collection (best effort).
+	titles := s.libraryTitleLookup(ctx)
+
+	grouped := make(map[int]*mappedLibraryEntry)
+	for _, lf := range lfs {
+		if lf == nil {
+			continue
+		}
+		if lf.MediaId == 0 {
+			result.UnmappedCount++
+			if filter == "mapped" {
+				continue
+			}
+			result.Unmapped = append(result.Unmapped, toLibraryFile(lf))
+			continue
+		}
+
+		result.MappedCount++
+		if filter == "unmapped" {
+			continue
+		}
+		entry, ok := grouped[lf.MediaId]
+		if !ok {
+			entry = &mappedLibraryEntry{MediaID: lf.MediaId, Title: titles[lf.MediaId]}
+			grouped[lf.MediaId] = entry
+		}
+		entry.Files = append(entry.Files, toLibraryFile(lf))
+	}
+
+	if filter != "unmapped" {
+		result.Mapped = make([]mappedLibraryEntry, 0, len(grouped))
+		for _, entry := range grouped {
+			entry.FileCount = len(entry.Files)
+			sort.Slice(entry.Files, func(i, j int) bool { return entry.Files[i].Path < entry.Files[j].Path })
+			result.Mapped = append(result.Mapped, *entry)
+		}
+		sort.Slice(result.Mapped, func(i, j int) bool {
+			if result.Mapped[i].Title != result.Mapped[j].Title {
+				return result.Mapped[i].Title < result.Mapped[j].Title
+			}
+			return result.Mapped[i].MediaID < result.Mapped[j].MediaID
+		})
+	}
+
+	if filter != "mapped" {
+		sort.Slice(result.Unmapped, func(i, j int) bool { return result.Unmapped[i].Path < result.Unmapped[j].Path })
+	}
+
+	return jsonResult(result)
+}
+
+// libraryTitleLookup builds a mediaId -> romaji title map from the user's anime
+// collection. It is best effort: on error it returns an empty map so library
+// files are still returned (without titles).
+func (s *Server) libraryTitleLookup(ctx context.Context) map[int]string {
+	titles := make(map[int]string)
+	collection, err := s.platform().GetAnimeCollection(ctx, false)
+	if err != nil || collection.GetMediaListCollection() == nil {
+		return titles
+	}
+	for _, l := range collection.GetMediaListCollection().GetLists() {
+		if l == nil {
+			continue
+		}
+		for _, e := range l.Entries {
+			if e == nil || e.Media == nil {
+				continue
+			}
+			titles[e.Media.GetID()] = e.Media.GetRomajiTitleSafe()
+		}
+	}
+	return titles
+}
+
+func toLibraryFile(lf *anime.LocalFile) libraryFile {
+	f := libraryFile{
+		Path:   lf.Path,
+		Name:   lf.Name,
+		Locked: lf.Locked,
+	}
+	if lf.Metadata != nil {
+		f.Episode = lf.Metadata.Episode
+		f.Type = string(lf.Metadata.Type)
+	}
+	return f
 }
 
 //////////////////////////////////////////////////////////////////////////////
