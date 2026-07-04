@@ -20,12 +20,14 @@
     "dist:windows": "npm run build:all",
     "build:web": "npm run build --workspace seanime-web",
     "build:denshi": "npm run build --workspace seanime-denshi",
-    "test:go": "go test ./..."
+    "test:go": "go test ./...",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "esbuild": "^0.28.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "patch-package": "^8.0.1"
   },
   "overrides": {
     "protobufjs": "^7.6.4",
