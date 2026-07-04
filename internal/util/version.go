@@ -26,6 +26,22 @@ func IsValidBasicSemver(version string) bool {
 	return true
 }
 
+// forkPrereleaseID is the pre-release identifier used by fork builds,
+// e.g. "3.8.7-fork.3". A fork build keeps its base version (major.minor.patch)
+// in sync with the upstream release it tracks and layers additional changes on
+// top, incrementing only the fork counter.
+const forkPrereleaseID = "fork"
+
+// isForkVersion reports whether v is a fork build, i.e. its pre-release begins
+// with the "fork" identifier (e.g. "3.8.7-fork.3").
+func isForkVersion(v *semver.Version) bool {
+	pr := v.Prerelease()
+	if pr == "" {
+		return false
+	}
+	return strings.Split(pr, ".")[0] == forkPrereleaseID
+}
+
 // CompareVersion compares two versions and returns the difference between them.
 //
 //	 3: Current version is newer by major version.
@@ -34,6 +50,15 @@ func IsValidBasicSemver(version string) bool {
 //		-3: Current version is older by major version.
 //		-2: Current version is older by minor version.
 //		-1: Current version is older by patch version.
+//
+// A local fork build (e.g. "3.8.7-fork.3") shares its base version with the
+// upstream release it tracks. Standard SemVer ranks a pre-release below its base,
+// which would make the app treat the plain upstream release as a newer "update"
+// (a downgrade onto upstream). To avoid that, when the current version is a fork
+// build with the same base numbers as a plain (non-pre-release) other version, the
+// fork is treated as ahead and no update is reported. A genuinely newer upstream
+// base (higher major/minor/patch) still wins, and fork-vs-fork comparisons fall
+// through to normal SemVer precedence on the fork counter.
 func CompareVersion(current string, b string) (comp int, shouldUpdate bool) {
 
 	currV, err := semver.NewVersion(current)
@@ -43,6 +68,11 @@ func CompareVersion(current string, b string) (comp int, shouldUpdate bool) {
 	otherV, err := semver.NewVersion(b)
 	if err != nil {
 		return 0, false
+	}
+
+	if isForkVersion(currV) && otherV.Prerelease() == "" &&
+		currV.Major() == otherV.Major() && currV.Minor() == otherV.Minor() && currV.Patch() == otherV.Patch() {
+		return 1, false
 	}
 
 	comp = currV.Compare(otherV)

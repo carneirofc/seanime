@@ -135,6 +135,55 @@ func TestCompareVersion(t *testing.T) {
 			expectedOutput: -1,
 			shouldUpdate:   true,
 		},
+		{
+			name:           "Fork is ahead of its same-numbered upstream base",
+			currVersion:    "3.8.7-fork.3",
+			otherVersion:   "3.8.7",
+			expectedOutput: 1,
+			shouldUpdate:   false,
+		},
+		{
+			name:           "Fork is behind a newer upstream patch",
+			currVersion:    "3.8.7-fork.3",
+			otherVersion:   "3.8.8",
+			expectedOutput: -1,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "Fork is behind a newer upstream minor",
+			currVersion:    "3.8.7-fork.3",
+			otherVersion:   "3.9.0",
+			expectedOutput: -2,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "Fork is behind a newer upstream major",
+			currVersion:    "3.8.7-fork.3",
+			otherVersion:   "4.0.0",
+			expectedOutput: -3,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "Fork is behind a newer fork build",
+			currVersion:    "3.8.7-fork.3",
+			otherVersion:   "3.8.7-fork.5",
+			expectedOutput: -1,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "Fork is ahead of an older fork build",
+			currVersion:    "3.8.7-fork.5",
+			otherVersion:   "3.8.7-fork.3",
+			expectedOutput: 1,
+			shouldUpdate:   false,
+		},
+		{
+			name:           "Fork is ahead of an older upstream base",
+			currVersion:    "3.8.7-fork.3",
+			otherVersion:   "3.8.6",
+			expectedOutput: 1,
+			shouldUpdate:   false,
+		},
 	}
 
 	for _, tc := range testCases {
