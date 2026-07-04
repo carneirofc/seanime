@@ -34,7 +34,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26.2'
+          go-version: '1.26.4'
           cache: true
 
       - name: Install govulncheck
@@ -78,15 +78,21 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26.2'
+          go-version: '1.26.4'
           cache: true
 
       - name: Install OSV-Scanner
         run: go install github.com/google/osv-scanner/cmd/osv-scanner@latest
 
       - name: Run OSV-Scanner
-        # Scans go.mod and seanime-web/package-lock.json against the OSV database.
+        # Scans go.mod and the workspace package-lock.json files against the OSV database.
+        # GODEBUG=gotypesalias=1 is required so OSV-Scanner's bundled govulncheck call
+        # analysis can type-check dependencies that use generic type aliases (e.g.
+        # github.com/anacrolix/btree); without it the scan aborts with
+        # "generic type alias requires GODEBUG=gotypesalias=1 or unset".
         run: osv-scanner scan --recursive .
+        env:
+          GODEBUG: gotypesalias=1
 
   # ---- Trivy: vuln + secret + IaC/config scanning ----
   trivy:
@@ -100,7 +106,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy filesystem scan (SARIF)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.29.0
         with:
           scan-type: fs
           scan-ref: .
@@ -118,7 +124,7 @@ jobs:
           sarif_file: trivy-results.sarif
 
       - name: Trivy filesystem scan (fail on HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.29.0
         with:
           scan-type: fs
           scan-ref: .
