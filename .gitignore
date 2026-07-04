@@ -54,6 +54,9 @@ seanime-server-windows-senshi.exe
 /node_modules/
 out/
 web/
+!web/
+web/*
+!web/.gitkeep
 !mobile/web/
 mobile/web/*
 !mobile/web/.gitkeep
