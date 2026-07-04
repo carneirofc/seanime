@@ -69,7 +69,7 @@ export const DrawerAnatomy = defineStyleAnatomy({
     ]),
     description: cva([
         "UI-Drawer__description",
-        "text-sm text-[--muted]",
+        "text-sm text-(--muted)",
     ]),
 })
 

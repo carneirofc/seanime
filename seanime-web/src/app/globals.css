@@ -147,6 +147,7 @@
         --muted-highlight: rgb(var(--color-gray-700));
 
         --paper: rgb(var(--color-gray-950));
+        --paper-lighter: rgb(var(--color-gray-900));
         --subtle: rgba(0, 0, 0, 0.04);
         --subtle-highlight: rgba(0, 0, 0, 0.06);
 
@@ -194,6 +195,7 @@
         --muted-highlight: rgba(255, 255, 255, 0.6);
 
         --paper: rgb(var(--color-gray-950));
+        --paper-lighter: rgb(var(--color-gray-900));
         --paper-highlighter: rgb(var(--color-gray-950));
         --subtle: rgba(255, 255, 255, 0.06);
         --subtle-highlight: rgba(255, 255, 255, 0.08);

@@ -31,7 +31,7 @@ export function ScreenshotDirModal({ open, onClose, onSave, portalContainer }: S
             contentClass="max-w-md space-y-4"
             portalContainer={portalContainer || undefined}
         >
-            <p className="text-sm text-[--muted]">
+            <p className="text-sm text-(--muted)">
                 Select the folder where you would like to save your video screenshots.
             </p>
 
@@ -39,7 +39,7 @@ export function ScreenshotDirModal({ open, onClose, onSave, portalContainer }: S
                 value={path}
                 onSelect={setPath}
                 label="Screenshot Folder"
-                leftIcon={<BiFolder className="text-[--indigo]" />}
+                leftIcon={<BiFolder className="text-(--indigo)" />}
             />
 
             <div className="flex justify-end gap-2 mt-4">

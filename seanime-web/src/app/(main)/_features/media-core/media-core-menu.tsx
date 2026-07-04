@@ -216,7 +216,7 @@ export function MediaCoreMenuOption(props: MediaCoreMenuOptionProps) {
                         {title}
                     </span>
                     {value && (
-                        <span className="text-sm font-medium tracking-wide text-[--muted] mr-2">
+                        <span className="text-sm font-medium tracking-wide text-(--muted) mr-2">
                             {value}
                         </span>
                     )}
@@ -298,7 +298,7 @@ export function MediaCoreMenuSubOption(props: MediaCoreMenuSubOptionProps) {
                         {title}
                     </span>
                     {value && (
-                        <span className="text-sm font-medium tracking-wide text-[--muted] mr-2">
+                        <span className="text-sm font-medium tracking-wide text-(--muted) mr-2">
                             {value}
                         </span>
                     )}
@@ -362,7 +362,7 @@ export function MediaCoreSettingSelect(props: MediaCoreSettingSelectProps) {
                         {(option.moreInfo || option.description) && (
                             <div className="w-fit flex-none ml-2 flex gap-2 items-center" data-vc-element="setting-select-option-description">
                                 {option.moreInfo && (
-                                    <span className="text-xs font-medium tracking-wide text-[--muted]">
+                                    <span className="text-xs font-medium tracking-wide text-(--muted)">
                                         {option.moreInfo}
                                     </span>
                                 )}

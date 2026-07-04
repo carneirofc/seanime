@@ -1046,7 +1046,7 @@ export default function TestPage() {
                                                 dolore magna aliqua.
                                             </CardContent>
                                             <CardFooter className="justify-between border-t border-white/5 pt-3">
-                                                <span className="text-xs text-[--muted]">Lorem ipsum</span>
+                                                <span className="text-xs text-(--muted)">Lorem ipsum</span>
                                                 <Button size="xs" intent="primary-subtle">Lorem</Button>
                                             </CardFooter>
                                         </Card>

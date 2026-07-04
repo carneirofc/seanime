@@ -16,7 +16,7 @@ export const ComboboxAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Combobox__root",
         "justify-between h-auto",
-        "focus-visible:outline-none focus-visible:ring-1 ring-offset-1 ring-offset-[--background] focus-visible:ring-white/40",
+        "focus-visible:outline-none focus-visible:ring-1 ring-offset-1 ring-offset-(--background) focus-visible:ring-white/40",
     ], {
         variants: {
             size: {

@@ -5,9 +5,9 @@ import * as React from "react"
 import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
 
 function getActiveBgClass(classes?: string): string {
-    if (!classes) return "bg-[--subtle]"
+    if (!classes) return "bg-(--subtle)"
     const matches = classes.match(/data-\[current=true\]:(bg-\S+)/g)
-    if (!matches) return "bg-[--subtle]"
+    if (!matches) return "bg-(--subtle)"
     return matches.map(m => m.replace("data-[current=true]:", "")).join(" ")
 }
 

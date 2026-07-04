@@ -667,20 +667,20 @@ function MetricCard({ icon, label, value, sub, accent }: {
     accent?: boolean
 }) {
     return (
-        <div className="rounded-lg border border-[--border] bg-[--paper] p-4 space-y-1 min-w-0">
-            <div className="flex items-center gap-2 text-[--muted] text-sm min-w-0">
+        <div className="rounded-lg border border-(--border) bg-(--paper) p-4 space-y-1 min-w-0">
+            <div className="flex items-center gap-2 text-(--muted) text-sm min-w-0">
                 <span className="text-base shrink-0">{icon}</span>
                 <span className="truncate">{label}</span>
             </div>
             <p
                 className={cn(
                     "text-2xl md:text-3xl font-bold tabular-nums leading-tight",
-                    accent && "text-[--brand]",
+                    accent && "text-(--brand)",
                 )}
             >
                 {value}
             </p>
-            {sub && <p className="text-xs text-[--muted] truncate">{sub}</p>}
+            {sub && <p className="text-xs text-(--muted) truncate">{sub}</p>}
         </div>
     )
 }
@@ -695,10 +695,10 @@ function HighlightsGrid({ highlights, className, ...rest }: {
             {...rest}
         >
             {highlights.map(highlight => (
-                <div key={highlight.label} className="rounded-lg border border-[--border] bg-[--paper] p-4 min-w-0">
-                    <p className="text-xs text-[--muted] uppercase">{highlight.label}</p>
+                <div key={highlight.label} className="rounded-lg border border-(--border) bg-(--paper) p-4 min-w-0">
+                    <p className="text-xs text-(--muted) uppercase">{highlight.label}</p>
                     <p className="text-lg font-semibold truncate mt-1">{highlight.value}</p>
-                    {highlight.detail && <p className="text-xs text-[--muted] truncate mt-1">{highlight.detail}</p>}
+                    {highlight.detail && <p className="text-xs text-(--muted) truncate mt-1">{highlight.detail}</p>}
                 </div>
             ))}
         </div>
@@ -736,12 +736,12 @@ function ChartSection({ title, description, children, className, ...rest }: {
 } & React.HTMLAttributes<HTMLDivElement>) {
     return (
         <div
-            className={cn("rounded-lg border border-[--border] bg-[--paper] p-4 space-y-4 min-w-0", className)}
+            className={cn("rounded-lg border border-(--border) bg-(--paper) p-4 space-y-4 min-w-0", className)}
             {...rest}
         >
             <div className="space-y-1">
-                <h4 className="text-sm font-medium text-[--muted] uppercase">{title}</h4>
-                {description && <p className="text-xs text-[--muted]">{description}</p>}
+                <h4 className="text-sm font-medium text-(--muted) uppercase">{title}</h4>
+                {description && <p className="text-xs text-(--muted)">{description}</p>}
             </div>
             {children}
         </div>
@@ -776,19 +776,19 @@ function RankedProgressRow({ rank, row }: {
 
     return (
         <div className="flex items-center gap-3 text-sm min-w-0">
-            <span className="text-[--muted] w-5 text-right font-medium tabular-nums shrink-0">{rank}</span>
+            <span className="text-(--muted) w-5 text-right font-medium tabular-nums shrink-0">{rank}</span>
             <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-3 mb-1">
                     <span className="truncate font-medium">{row.name}</span>
-                    <span className="text-[--muted] shrink-0 text-xs tabular-nums">{row.valueLabel}</span>
+                    <span className="text-(--muted) shrink-0 text-xs tabular-nums">{row.valueLabel}</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-[--subtle] overflow-hidden">
+                <div className="h-1.5 rounded-full bg-(--subtle) overflow-hidden">
                     <div
-                        className="h-full rounded-full bg-[--blue] transition-all duration-500"
+                        className="h-full rounded-full bg-(--blue) transition-all duration-500"
                         style={{ width: `${pct}%` }}
                     />
                 </div>
-                {row.meta && <p className="mt-1 text-xs text-[--muted] truncate">{row.meta}</p>}
+                {row.meta && <p className="mt-1 text-xs text-(--muted) truncate">{row.meta}</p>}
             </div>
         </div>
     )

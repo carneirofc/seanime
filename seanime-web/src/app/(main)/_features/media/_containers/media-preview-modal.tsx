@@ -78,7 +78,7 @@ export function MediaPreviewModal(props: AnimePreviewModalProps) {
             <Modal
                 open={!!info}
                 onOpenChange={v => setInfo(prev => v ? prev : undefined)}
-                contentClass="max-w-7xl relative bg-[--background]"
+                contentClass="max-w-7xl relative bg-(--background)"
                 overlayClass="bg-gray-800/80"
                 hideCloseButton
                 {...rest}

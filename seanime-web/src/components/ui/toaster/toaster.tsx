@@ -56,18 +56,18 @@ export const ToasterAnatomy = defineStyleAnatomy({
         "cursor-default",
     ]),
     actionButton: cva([
-        "group/toast:bg-[--subtle] group/toast:text-[--foreground]",
+        "group/toast:bg-(--subtle) group/toast:text-(--foreground)",
         "group/toast:rounded-lg group/toast:px-3 group/toast:py-1.5",
         "group/toast:text-xs group/toast:font-medium",
-        "group/toast:transition-colors group/toast:hover:bg-[--subtle-hover]",
-        "group/toast:ring-1 group/toast:ring-[--border]/20",
+        "group/toast:transition-colors group/toast:hover:bg-(--subtle-hover)",
+        "group/toast:ring-1 group/toast:ring-(--border)/20",
     ]),
     cancelButton: cva([
-        "group/toast:bg-transparent group/toast:text-[--muted]",
+        "group/toast:bg-transparent group/toast:text-(--muted)",
         "group/toast:rounded-lg group/toast:px-3 group/toast:py-1.5",
         "group/toast:text-xs group/toast:font-medium",
-        "group/toast:transition-colors group/toast:hover:bg-[--subtle]",
-        "group/toast:ring-1 group/toast:ring-transparent group/toast:hover:ring-[--border]/20",
+        "group/toast:transition-colors group/toast:hover:bg-(--subtle)",
+        "group/toast:ring-1 group/toast:ring-transparent group/toast:hover:ring-(--border)/20",
     ]),
 })
 
