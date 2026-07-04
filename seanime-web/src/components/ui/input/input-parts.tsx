@@ -22,11 +22,12 @@ export const InputAnatomy = defineStyleAnatomy({
         variants: {
             size: {
                 sm: "h-8 px-2 py-1 text-sm",
-                md: "h-10 px-3",
+                md: "h-10 px-2.5 text-sm",
                 lg: "h-12 px-4 py-3 text-md",
             },
             intent: {
-                basic: "hover:border-gray-300 dark:hover:border-gray-600",
+                // basic: "hover:border-gray-300 dark:hover:border-gray-600",
+                basic: "bg-gray-100 hover:bg-gray-200 dark:bg-[--paper-lighter] dark:hover:bg-gray-800 focus:bg-white dark:focus:bg-[--paper-lighter] shadow-none focus:ring-0",
                 filled: "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border-transparent focus:bg-white dark:focus:bg-gray-900 shadow-none",
                 unstyled: "bg-transparent hover:bg-transparent border-0 shadow-none focus:ring-0 rounded-none p-0 text-base",
             },

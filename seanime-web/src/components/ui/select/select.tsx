@@ -15,6 +15,7 @@ export const SelectAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Select__root",
         "inline-flex items-center justify-between relative whitespace-nowrap truncate",
+        "focus-visible:outline-none focus-visible:ring-1 ring-offset-1 ring-offset-[--background] focus-visible:ring-white/40",
     ]),
     chevronIcon: cva([
         "UI-Combobox__chevronIcon",

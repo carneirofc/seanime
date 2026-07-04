@@ -12,9 +12,9 @@ export const ToasterAnatomy = defineStyleAnatomy({
     toast: cva([
         "group/toast",
         "select-none cursor-default",
-        "group-[.toaster]:py-4 group-[.toaster]:px-6 group-[.toaster]:gap-3",
+        "group-[.toaster]:py-3 group-[.toaster]:px-4 group-[.toaster]:gap-3",
         "group-[.toaster]:text-sm group-[.toaster]:font-medium",
-        "group-[.toaster]:rounded-2xl group-[.toaster]:border group-[.toaster]:backdrop-blur-sm",
+        "group-[.toaster]:rounded-xl group-[.toaster]:border group-[.toaster]:backdrop-blur-sm",
         // "group-[.toaster]:ring-1 group-[.toaster]:ring-inset",
         "group-[.toaster]:transition-all group-[.toaster]:duration-200",
         // Default/Base style
@@ -25,7 +25,7 @@ export const ToasterAnatomy = defineStyleAnatomy({
         "group-[.toaster]:data-[type=success]:bg-linear-to-br",
         "group-[.toaster]:data-[type=success]:from-emerald-950/95 group-[.toaster]:data-[type=success]:to-emerald-900/60",
         "group-[.toaster]:data-[type=success]:text-emerald-100",
-        "group-[.toaster]:data-[type=success]:border-emerald-800/50",
+        "group-[.toaster]:data-[type=success]:border-green-700/50",
         "group-[.toaster]:data-[type=success]:ring-emerald-700/40",
         // Warning
         "group-[.toaster]:data-[type=warning]:bg-linear-to-br",
@@ -37,13 +37,13 @@ export const ToasterAnatomy = defineStyleAnatomy({
         "group-[.toaster]:data-[type=error]:bg-linear-to-br",
         "group-[.toaster]:data-[type=error]:from-red-950/95 group-[.toaster]:data-[type=error]:to-red-900/60",
         "group-[.toaster]:data-[type=error]:text-red-100",
-        "group-[.toaster]:data-[type=error]:border-red-800/50",
+        "group-[.toaster]:data-[type=error]:border-red-700/50",
         "group-[.toaster]:data-[type=error]:ring-red-700/40",
         // Info
         "group-[.toaster]:data-[type=info]:bg-linear-to-br",
         "group-[.toaster]:data-[type=info]:from-blue-950/95 group-[.toaster]:data-[type=info]:to-blue-900/60",
         "group-[.toaster]:data-[type=info]:text-blue-100",
-        "group-[.toaster]:data-[type=info]:border-blue-800/50",
+        "group-[.toaster]:data-[type=info]:border-blue-700/50",
         "group-[.toaster]:data-[type=info]:ring-blue-700/40",
     ]),
     description: cva([
@@ -77,7 +77,7 @@ export const ToasterAnatomy = defineStyleAnatomy({
 
 export type ToasterProps = React.ComponentProps<typeof Sonner>
 
-export const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
+export const Toaster = ({ position = "top-right", ...props }: ToasterProps) => {
 
     const allProps = React.useMemo(() => ({
         position,

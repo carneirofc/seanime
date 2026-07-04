@@ -71,11 +71,11 @@ export const ButtonAnatomy = defineStyleAnatomy({
                 false: null,
             },
             size: {
-                xs: "text-sm h-6 px-2",
-                sm: "text-sm h-8 px-3",
-                md: "text-sm h-10 px-4",
-                lg: "h-12 px-6 text-lg",
-                xl: "text-2xl h-14 px-8",
+                xs: "text-xs h-6 px-2",
+                sm: "text-xs h-8 px-2.5",
+                md: "text-sm h-9 px-3",
+                lg: "text-sm h-10 px-4",
+                xl: "text-base h-12 px-6",
             },
         },
         defaultVariants: {
@@ -123,6 +123,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
         ...rest
     } = props
 
+    const hasCustomAnimation = className?.includes("animate-")
+    const isIconButton = className?.includes("UI-IconButton_root")
+
     return (
         <button
             type="button"
@@ -133,6 +136,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
                     rounded,
                     contentWidth,
                 }),
+                !hasCustomAnimation && (
+                    isIconButton
+                        ? "transition-all duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] motion-safe:hover:scale-[1.04] motion-safe:active:scale-[0.96]"
+                        : "transition-all duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.98]"
+                ),
                 className,
             )}
             disabled={disabled || loading}

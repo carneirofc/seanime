@@ -9,7 +9,7 @@ import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
 export const BasicFieldAnatomy = defineStyleAnatomy({
     fieldLabel: cva([
         "UI-BasicField__fieldLabel",
-        "text-base w-fit font-semibold self-start",
+        "text-sm w-fit font-semibold self-start",
         "data-[error=true]:text-red-500",
     ]),
     fieldAsterisk: cva("UI-BasicField__fieldAsterisk ml-1 text-red-500 text-sm"),
@@ -175,7 +175,11 @@ export const BasicField = React.memo(React.forwardRef<HTMLDivElement, BasicField
             {(!!help || !!error) &&
                 <div className={cn(BasicFieldAnatomy.fieldDetails(), fieldDetailsClass)}>
                     {!!help &&
-                        <div className={cn(BasicFieldAnatomy.fieldHelpText(), fieldHelpTextClass)}>{help}</div>}
+                        <div
+                            className={cn(BasicFieldAnatomy.fieldHelpText(),
+                                fieldHelpTextClass,
+                                (typeof help === "string" && help.length > 40 && !help.includes(" ")) && "break-all")}
+                        >{help}</div>}
                     {!!error &&
                         <div className={cn(BasicFieldAnatomy.fieldErrorText(), fieldErrorTextClass)}>{error}</div>}
                 </div>

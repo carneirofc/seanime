@@ -28,7 +28,7 @@ export const ModalAnatomy = defineStyleAnatomy({
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         // __isDesktop__ && "mt-10",
         // __isDesktop__ && "select-none",
-        "sm:rounded-xl",
+        "sm:rounded-2xl",
     ]),
     close: cva([
         "UI-Modal__close",

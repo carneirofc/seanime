@@ -43,6 +43,23 @@ export function DiscordRichPresenceSettings(props: DiscordRichPresenceSettingsPr
                         label="Manga"
                         fieldClass="w-fit"
                     />
+                    <div
+                        className={cn(
+                            "flex gap-4 items-center flex-col md:flex-row !mt-3",
+                            enableRichPresence ? "opacity-100" : "opacity-50 pointer-events-none",
+                        )}
+                    >
+                        <Field.Checkbox
+                            name="enableAnimeRichPresence"
+                            label="Anime"
+                            fieldClass="w-fit"
+                        />
+                        <Field.Checkbox
+                            name="enableMangaRichPresence"
+                            label="Manga"
+                            fieldClass="w-fit"
+                        />
+                    </div>
                 </div>
 
                 <Field.Switch

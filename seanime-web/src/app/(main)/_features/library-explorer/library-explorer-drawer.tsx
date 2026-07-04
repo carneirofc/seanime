@@ -24,6 +24,7 @@ export function LibraryExplorerDrawer(props: {}) {
                 className={cn(
                     "bg-gray-950/95 h-[90%] lg:h-[80%] firefox:bg-gray-950/100 lg:mx-8 overflow-hidden",
                 )}
+                // overlayClass="bg-gray-900/80"
             >
                 <ScopeProvider atoms={[__unmatchedFileManagerIsOpen, __unknownMedia_drawerIsOpen]}>
                     <LibraryExplorer />

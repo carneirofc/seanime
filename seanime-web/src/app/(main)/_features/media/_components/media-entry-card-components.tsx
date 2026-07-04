@@ -456,6 +456,8 @@ export function MediaEntryCardBody(props: MediaEntryCardBodyProps) {
         ...rest
     } = props
 
+    const ts = useThemeSettings()
+
     return (
         <>
             <SeaLink

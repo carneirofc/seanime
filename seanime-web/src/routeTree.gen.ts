@@ -14,6 +14,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as SplashscreenIndexRouteImport } from './routes/splashscreen/index'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
+import { Route as MainTestRouteImport } from './routes/_main/test'
 import { Route as MainErrorTestRouteImport } from './routes/_main/error-test'
 import { Route as SplashscreenCrashIndexRouteImport } from './routes/splashscreen/crash/index'
 import { Route as PublicAuthIndexRouteImport } from './routes/public/auth/index'
@@ -95,6 +96,11 @@ const SplashscreenIndexRoute = SplashscreenIndexRouteImport.update({
 const MainIndexRoute = MainIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainTestRoute = MainTestRouteImport.update({
+  id: '/test',
+  path: '/test',
   getParentRoute: () => MainRoute,
 } as any)
 const MainErrorTestRoute = MainErrorTestRouteImport.update({
@@ -316,6 +322,7 @@ const MainOfflineEntryAnimeIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof MainIndexRoute
   '/error-test': typeof MainErrorTestRoute
+  '/test': typeof MainTestRoute
   '/splashscreen/': typeof SplashscreenIndexRoute
   '/docs/': typeof DocsIndexLazyRoute
   '/issue-report/': typeof IssueReportIndexLazyRoute
@@ -352,6 +359,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/error-test': typeof MainErrorTestRoute
+  '/test': typeof MainTestRoute
   '/': typeof MainIndexRoute
   '/splashscreen': typeof SplashscreenIndexRoute
   '/docs': typeof DocsIndexLazyRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
   '/_main/error-test': typeof MainErrorTestRoute
+  '/_main/test': typeof MainTestRoute
   '/_main/': typeof MainIndexRoute
   '/splashscreen/': typeof SplashscreenIndexRoute
   '/docs/': typeof DocsIndexLazyRoute
@@ -431,6 +440,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/error-test'
+    | '/test'
     | '/splashscreen/'
     | '/docs/'
     | '/issue-report/'
@@ -467,6 +477,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/error-test'
+    | '/test'
     | '/'
     | '/splashscreen'
     | '/docs'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_main'
     | '/_main/error-test'
+    | '/_main/test'
     | '/_main/'
     | '/splashscreen/'
     | '/docs/'
@@ -593,6 +605,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof MainIndexRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/test': {
+      id: '/_main/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof MainTestRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/error-test': {
@@ -810,6 +829,7 @@ declare module '@tanstack/react-router' {
 
 interface MainRouteChildren {
   MainErrorTestRoute: typeof MainErrorTestRoute
+  MainTestRoute: typeof MainTestRoute
   MainIndexRoute: typeof MainIndexRoute
   MainCustomSourcesIndexRoute: typeof MainCustomSourcesIndexRoute
   MainDiscoverIndexRoute: typeof MainDiscoverIndexRoute
@@ -842,6 +862,7 @@ interface MainRouteChildren {
 
 const MainRouteChildren: MainRouteChildren = {
   MainErrorTestRoute: MainErrorTestRoute,
+  MainTestRoute: MainTestRoute,
   MainIndexRoute: MainIndexRoute,
   MainCustomSourcesIndexRoute: MainCustomSourcesIndexRoute,
   MainDiscoverIndexRoute: MainDiscoverIndexRoute,

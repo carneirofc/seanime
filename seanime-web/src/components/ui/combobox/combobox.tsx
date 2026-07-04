@@ -16,6 +16,7 @@ export const ComboboxAnatomy = defineStyleAnatomy({
     root: cva([
         "UI-Combobox__root",
         "justify-between h-auto",
+        "focus-visible:outline-none focus-visible:ring-1 ring-offset-1 ring-offset-[--background] focus-visible:ring-white/40",
     ], {
         variants: {
             size: {
@@ -259,7 +260,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>((prop
                         </button>
                     }
                 >
-                    <Command inputContainerClass="py-1" {...commandProps}>
+                    <Command inputContainerClass="py-1" {...commandProps} className="bg-gray-900 rounded-xl">
                         <CommandInput
                             placeholder={placeholder}
                             onValueChange={onTextChange}

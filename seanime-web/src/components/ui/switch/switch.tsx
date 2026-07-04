@@ -24,8 +24,8 @@ export const SwitchAnatomy = defineStyleAnatomy({
     ], {
         variants: {
             size: {
-                sm: "h-5 w-9",
-                md: "h-6 w-11",
+                sm: "h-[1.02rem] w-8",
+                md: "h-[1.3rem] w-9",
                 lg: "h-7 w-14",
             },
         },
@@ -50,12 +50,12 @@ export const SwitchAnatomy = defineStyleAnatomy({
     thumb: cva([
         "UI-Switch__thumb",
         "pointer-events-none block rounded-full data-[state=checked]:bg-white shadow-lg ring-0 transition-transform",
-        "data-[state=unchecked]:translate-x-1 data-[state=unchecked]:bg-white/50",
+        "data-[state=unchecked]:translate-x-[0.15rem] data-[state=unchecked]:bg-white/50",
     ], {
         variants: {
             size: {
-                sm: "h-3 w-4 data-[state=checked]:translate-x-[0.95rem]",
-                md: "h-4 w-5 data-[state=checked]:translate-x-[1.2rem]",
+                sm: "h-3 w-3 data-[state=checked]:translate-x-[1.05rem]",
+                md: "h-4 w-4 data-[state=checked]:translate-x-[1.05rem]",
                 lg: "h-5 w-5 data-[state=checked]:translate-x-[1.9rem]",
             },
         },
@@ -65,7 +65,7 @@ export const SwitchAnatomy = defineStyleAnatomy({
     }),
     label: cva([
         "UI-Switch__label",
-        "relative font-normal",
+        "relative font-normal text-sm",
         "data-[disabled=true]:text-gray-300 cursor-pointer user-select-none select-none",
     ]),
 })

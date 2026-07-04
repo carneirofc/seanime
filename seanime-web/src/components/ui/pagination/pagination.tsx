@@ -1,6 +1,6 @@
-import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
-import * as React from "react"
 import { cva } from "class-variance-authority"
+import * as React from "react"
+import { cn, ComponentAnatomy, defineStyleAnatomy } from "../core/styling"
 
 /* -------------------------------------------------------------------------------------------------
  * Anatomy

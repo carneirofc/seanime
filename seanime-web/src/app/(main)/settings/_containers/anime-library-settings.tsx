@@ -25,7 +25,7 @@ export function AnimeLibrarySettings(props: LibrarySettingsProps) {
 
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-8">
 
             <DiskUsageCard />
 
@@ -47,7 +47,7 @@ export function AnimeLibrarySettings(props: LibrarySettingsProps) {
                 />
             </SettingsCard>
 
-            <SettingsCard>
+            <SettingsCard title="Scanning">
 
                 <Field.Switch
                     side="right"

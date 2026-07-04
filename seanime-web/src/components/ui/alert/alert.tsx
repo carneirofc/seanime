@@ -29,33 +29,34 @@ export const AlertAnatomy = defineStyleAnatomy({
     }),
     detailsContainer: cva([
         "UI-Alert__detailsContainer",
-        "flex",
+        "flex w-full items-start",
     ]),
     textContainer: cva([
         "UI-Alert__textContainer",
-        "flex flex-col self-center ml-3 gap-.5",
+        "flex flex-col self-start ml-3 gap-0.5",
     ]),
     title: cva([
         "UI-Alert__title",
-        "font-bold",
+        "font-semibold text-gray-900 dark:text-[--foreground]",
     ]),
     description: cva([
         "UI-Alert__description",
+        "text-xs md:text-sm text-[--muted] dark:text-gray-200 mt-0.5",
     ]),
     icon: cva([
         "UI-Alert__icon",
-        "text-2xl content-evenly",
+        "text-xl content-evenly flex-none self-start mt-0.5",
     ], {
         variants: {
             intent: {
-                "info-basic": "text-blue-500",
-                "success-basic": "text-green-500",
-                "warning-basic": "text-orange-500",
-                "alert-basic": "text-red-500",
-                "info": "text-blue-500",
-                "success": "text-green-500",
-                "warning": "text-orange-500",
-                "alert": "text-red-500",
+                "info-basic": "text-blue-500 dark:text-blue-400",
+                "success-basic": "text-green-500 dark:text-green-400",
+                "warning-basic": "text-orange-500 dark:text-orange-400",
+                "alert-basic": "text-red-500 dark:text-red-400",
+                "info": "text-blue-600 dark:text-blue-400",
+                "success": "text-green-600 dark:text-green-400",
+                "warning": "text-orange-600 dark:text-orange-400",
+                "alert": "text-red-600 dark:text-red-400",
             },
         },
         defaultVariants: {
@@ -64,7 +65,7 @@ export const AlertAnatomy = defineStyleAnatomy({
     }),
     closeButton: cva([
         "UI-Alert__closeButton",
-        "flex-none self-start text-2xl hover:opacity-50 transition ease-in cursor-pointer h-5 w-5",
+        "flex-none self-start text-lg hover:opacity-80 active:opacity-100 transition-opacity duration-150 cursor-pointer h-5 w-5 ml-4 opacity-50 dark:text-gray-400 dark:hover:text-gray-200",
     ]),
 })
 
@@ -124,8 +125,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) =
     if (intent === "info-basic" || intent === "info") {
         Icon = <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            className="h-5 w-5"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -140,8 +140,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) =
     } else if (intent === "alert-basic" || intent === "alert") {
         Icon = <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            className="h-5 w-5"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -156,8 +155,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) =
     } else if (intent === "warning-basic" || intent === "warning") {
         Icon = <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            className="h-5 w-5"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -172,8 +170,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) =
     } else if (intent === "success-basic" || intent === "success") {
         Icon = <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            className="h-5 w-5"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -200,9 +197,9 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) =
                     {Icon && Icon}
                 </div>}
                 <div className={cn(AlertAnatomy.textContainer(), textContainerClass)}>
-                    <span className={cn(AlertAnatomy.title(), titleClass)}>
+                    {!!title && <span className={cn(AlertAnatomy.title(), titleClass)}>
                         {title}
-                    </span>
+                    </span>}
                     {!!(description || children) && <div className={cn(AlertAnatomy.description(), descriptionClass)}>
                         {description || children}
                     </div>}
@@ -211,6 +208,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) =
             {onClose && <button className={cn(AlertAnatomy.closeButton(), closeButtonClass)} onClick={onClose}>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
