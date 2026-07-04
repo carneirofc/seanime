@@ -211,6 +211,9 @@ export const getDefaultSettings = (data: z.infer<typeof gettingStartedSchema>): 
         vcTranslateTargetLanguage: "",
         vcTranslateBaseUrl: "",
         vcTranslateModel: "",
+        mpvPrismLogging: false,
+        mpvPrismEnabled: false,
+        screenshotDir: "",
     },
     discord: {
         enableRichPresence: data.enableRichPresence,

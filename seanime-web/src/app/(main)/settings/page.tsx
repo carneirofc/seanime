@@ -409,6 +409,9 @@ export default function Page() {
                                         vcTranslateTargetLanguage: data.vcTranslateTargetLanguage || "",
                                         vcTranslateBaseUrl: data.vcTranslateBaseUrl || "",
                                         vcTranslateModel: data.vcTranslateModel || "",
+                                        mpvPrismLogging: false,
+                                        mpvPrismEnabled: false,
+                                        screenshotDir: "",
                                     },
                                     torrent: {
                                         defaultTorrentClient: data.defaultTorrentClient,
