@@ -27,10 +27,6 @@
     "electron-builder": "^26.15.6"
   },
   "build": {
-    "electronDownload": {
-      "mirror": "https://seanime.app/assets/electron/",
-      "customDir": "v42.4.0"
-    },
     "appId": "app.seanime.denshi",
     "productName": "Seanime Denshi",
     "asar": true,

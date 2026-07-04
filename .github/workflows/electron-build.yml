@@ -147,7 +147,7 @@ jobs:
           cd seanime-denshi
           npm ci
           npm run sync:mpv-prism -- ${{ matrix.mpv_prism_target }}
-          npx electron-builder build ${{ matrix.electron_args }}
+          npx electron-builder build ${{ matrix.electron_args }} --publish never
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
