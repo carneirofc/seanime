@@ -21,7 +21,7 @@
     "build:web": "npm run build --workspace seanime-web",
     "build:denshi": "npm run build --workspace seanime-denshi",
     "test:go": "go test ./...",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package || exit 0"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
