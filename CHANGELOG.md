@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- ✨ seanime-qt: Added a proof-of-concept Qt/QML desktop frontend (library browser + detail viewer) built with PySide6, using only Qt libraries so it can be ported to C++ Qt; connects to the existing Go REST API
+
 ## v3.8.7-fork.2
 
 - ✨ Search: Replaced the tags combobox with a grouped tags modal (browse by category, hover for descriptions)
