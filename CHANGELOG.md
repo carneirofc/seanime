@@ -17,6 +17,10 @@ All notable changes to this project will be documented in this file.
 - ✨ seanime-qt: Added a left sidebar navigation (mirroring the web frontend) — logo, Home/Discover/Search/Profile items with active highlighting, connection status, and a user/login chip; page switching replaces the content root while detail/login push on top
 - 🤖 seanime-qt: Added an agent-control harness so Claude Code can drive the app for development/debugging — an opt-in in-app control server (`SEANIME_QT_AGENT=1`) that screenshots, dumps the QML tree, injects clicks/typing/keys, reports keyboard focus and accessibility interfaces, invokes controller slots, and captures logs, plus an MCP server (`seanime-qt-mcp`, registered via repo `.mcp.json`) that manages the app lifecycle and exposes these as tools
 - ♿ seanime-qt: Made the custom controls accessible and keyboard-operable — sidebar nav items, the user/login chip, and poster cards now expose proper `Accessible` button roles/names, are reachable via Tab with a visible focus ring, and activate with Enter/Space; poster grids and Discover carousels support arrow-key navigation with Enter to open; clickable non-button elements show a pointing-hand cursor
+- ✨ seanime-qt: Added manga support — a manga library grid (`/api/v1/manga/collection`), a manga detail page (`/api/v1/manga/entry/:id`) with a per-provider chapter list (`/api/v1/extensions/list/manga-provider`, `/api/v1/manga/chapters`), and a page-by-page reader (`/api/v1/manga/pages`) with read-progress tracking (`/api/v1/manga/update-progress`)
+- ✨ seanime-qt: Added a Settings screen to edit the server's settings (`PATCH /api/v1/settings`), mirrored from `/api/v1/status`, and persist client connection preferences (host, port, token) to disk so they survive restarts
+- ✨ seanime-qt: Introduced a shared `Theme` QML singleton (registered via `qmldir`) so colors and spacing are defined once and reused across every view
+- 🦺 seanime-qt: Fixed an advanced-search crash — the filter object arriving from QML as a `QJSValue` is now unwrapped to a plain dict before use
 
 ## v3.8.7-fork.2
 

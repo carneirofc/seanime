@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 
 Item {
     id: card
@@ -15,6 +16,11 @@ Item {
     signal activated()
     function activate() { card.activated() }
 
+    // Lift the poster on hover; keep the raised card above its neighbours.
+    scale: hover.hovered ? Theme.cardLift : 1.0
+    z: hover.hovered ? 1 : 0
+    Behavior on scale { NumberAnimation { duration: Theme.durBase; easing.type: Theme.easeEmphasis } }
+
     // Accessibility: each poster is announced as a button named after the title.
     // Arrow-key focus and Enter activation are handled by the GridView (the focus
     // scope), so the card itself is not individually tab-focusable.
@@ -26,10 +32,25 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: 8
-        color: hover.hovered ? "#22222c" : "#1a1a22"
-        border.color: hover.hovered ? "#3a3a48" : "transparent"
+        radius: Theme.radius
+        color: hover.hovered ? Theme.surfaceHover : Theme.surface
+        border.color: hover.hovered ? Theme.borderStrong : "transparent"
         border.width: 1
+
+        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+        Behavior on border.color { ColorAnimation { duration: Theme.durFast } }
+
+        // Soft elevation shadow that deepens on hover (GPU MultiEffect, Qt 6.5+).
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Theme.shadow
+            shadowVerticalOffset: hover.hovered ? 8 : 3
+            shadowBlur: hover.hovered ? Theme.shadowBlurHi : Theme.shadowBlur
+            autoPaddingEnabled: true
+            Behavior on shadowBlur { NumberAnimation { duration: Theme.durBase } }
+            Behavior on shadowVerticalOffset { NumberAnimation { duration: Theme.durBase } }
+        }
 
         Column {
             anchors.fill: parent
@@ -41,7 +62,7 @@ Item {
                 height: 210
                 radius: 6
                 clip: true
-                color: "#0e0e12"
+                color: Theme.inset
 
                 Image {
                     anchors.fill: parent
@@ -58,14 +79,14 @@ Item {
                     anchors.margins: 4
                     height: 20
                     width: badge.implicitWidth + 12
-                    radius: 4
-                    color: "#cc000000"
+                    radius: Theme.radiusSm
+                    color: Theme.overlay
                     Label {
                         id: badge
                         anchors.centerIn: parent
                         text: progress + (episodeCount > 0 ? "/" + episodeCount : "")
-                        color: "#ffffff"
-                        font.pixelSize: 11
+                        color: Theme.textStrong
+                        font.pixelSize: Theme.fontXs
                     }
                 }
             }
@@ -73,8 +94,8 @@ Item {
             Label {
                 width: parent.width
                 text: title
-                color: "#e6e6ee"
-                font.pixelSize: 13
+                color: Theme.text
+                font.pixelSize: Theme.fontMd
                 elide: Text.ElideRight
                 maximumLineCount: 2
                 wrapMode: Text.WordWrap

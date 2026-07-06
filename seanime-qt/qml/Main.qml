@@ -9,7 +9,7 @@ ApplicationWindow {
     height: 760
     visible: true
     title: "Seanime-Qt"
-    color: "#0e0e12"
+    color: Theme.bg
 
     // Switch the main content to a top-level page (like the web sidebar does).
     function showPage(comp, id) {
@@ -24,23 +24,26 @@ ApplicationWindow {
         target: app
         // Push the detail page on top of whatever page is showing.
         function onAnimeOpened() { stack.push(detailComponent) }
+        // Manga: push the manga detail page, then the reader on top of it.
+        function onMangaOpened() { stack.push(mangaDetailComponent) }
+        function onChapterOpened() { stack.push(readerComponent) }
         // On successful login, dismiss the login page (back to the current root).
         function onLoginFinished() { if (stack.depth > 1) stack.pop(null) }
     }
 
     // Slim top bar: server connection only (navigation lives in the sidebar).
     header: ToolBar {
-        background: Rectangle { color: "#17171f" }
+        background: Rectangle { color: Theme.surfaceAlt }
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 12
-            anchors.rightMargin: 12
-            spacing: 8
+            anchors.leftMargin: Theme.spacing
+            anchors.rightMargin: Theme.spacing
+            spacing: Theme.spacingSm
 
             Label {
                 text: "Server"
-                color: "#8a8a96"
-                font.pixelSize: 13
+                color: Theme.textMuted
+                font.pixelSize: Theme.fontMd
             }
             TextField {
                 id: hostField
@@ -86,9 +89,11 @@ ApplicationWindow {
             Layout.fillHeight: true
             onNavigate: function(page) {
                 if (page === "home") showPage(libraryComponent, "home")
+                else if (page === "manga") showPage(mangaLibraryComponent, "manga")
                 else if (page === "discover") showPage(discoverComponent, "discover")
                 else if (page === "search") showPage(searchComponent, "search")
                 else if (page === "profile") showPage(profileComponent, "profile")
+                else if (page === "settings") showPage(settingsComponent, "settings")
             }
             onLoginRequested: stack.push(loginComponent)
         }
@@ -98,23 +103,31 @@ ApplicationWindow {
             Layout.fillHeight: true
             spacing: 0
 
-            // Error banner
+            // Error banner — slides/fades in when an error is present.
             Rectangle {
                 id: banner
                 objectName: "errorBanner"
+                readonly property bool showing: app.errorMessage.length > 0
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? 34 : 0
-                visible: app.errorMessage.length > 0
-                color: "#5a1f1f"
+                Layout.preferredHeight: showing ? 34 : 0
+                clip: true
+                opacity: showing ? 1 : 0
+                color: Theme.dangerFill
+
+                Behavior on Layout.preferredHeight {
+                    NumberAnimation { duration: Theme.durBase; easing.type: Theme.easeStandard }
+                }
+                Behavior on opacity { NumberAnimation { duration: Theme.durBase } }
+
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 8
+                    anchors.leftMargin: Theme.spacing
+                    anchors.rightMargin: Theme.spacingSm
                     Label {
                         objectName: "errorLabel"
                         Layout.fillWidth: true
                         text: app.errorMessage
-                        color: "#ffd9d9"
+                        color: Theme.dangerText
                         elide: Text.ElideRight
                     }
                     ToolButton {
@@ -135,6 +148,39 @@ ApplicationWindow {
                 // area and don't paint over the sidebar or error banner.
                 clip: true
                 initialItem: libraryComponent
+
+                // Push (e.g. opening a detail page): new page slides in from the
+                // right and fades up; the old one fades back.
+                pushEnter: Transition {
+                    ParallelAnimation {
+                        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
+                        NumberAnimation { property: "x"; from: 36; to: 0; duration: Theme.durSlow; easing.type: Theme.easeStandard }
+                    }
+                }
+                pushExit: Transition {
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durBase }
+                }
+                // Pop (Back): reverse of push.
+                popEnter: Transition {
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durBase }
+                }
+                popExit: Transition {
+                    ParallelAnimation {
+                        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durBase }
+                        NumberAnimation { property: "x"; from: 0; to: 36; duration: Theme.durBase; easing.type: Theme.easeStandard }
+                    }
+                }
+                // Replace (top-level page switches from the sidebar): cross-fade
+                // with a subtle scale so the change reads without directional bias.
+                replaceEnter: Transition {
+                    ParallelAnimation {
+                        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+                        NumberAnimation { property: "scale"; from: 0.98; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+                    }
+                }
+                replaceExit: Transition {
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durFast }
+                }
             }
         }
     }
@@ -149,6 +195,27 @@ ApplicationWindow {
     Component {
         id: detailComponent
         DetailView {
+            onBack: stack.pop()
+        }
+    }
+
+    Component {
+        id: mangaLibraryComponent
+        MangaLibraryView {
+            onLoginRequested: stack.push(loginComponent)
+        }
+    }
+
+    Component {
+        id: mangaDetailComponent
+        MangaDetailView {
+            onBack: stack.pop()
+        }
+    }
+
+    Component {
+        id: readerComponent
+        ReaderView {
             onBack: stack.pop()
         }
     }
@@ -173,5 +240,10 @@ ApplicationWindow {
     Component {
         id: profileComponent
         ProfileView {}
+    }
+
+    Component {
+        id: settingsComponent
+        SettingsView {}
     }
 }

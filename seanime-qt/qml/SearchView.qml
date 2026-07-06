@@ -123,7 +123,7 @@ Item {
             }
             RowLayout {
                 spacing: 4
-                Label { text: "Min score"; color: "#8a8a96"; font.pixelSize: 12 }
+                Label { text: "Min score"; color: Theme.textMuted; font.pixelSize: Theme.fontSm }
                 SpinBox {
                     id: minScoreSpin
                     objectName: "minScoreSpin"
@@ -146,8 +146,8 @@ Item {
             text: searchField.text.length === 0 && genrePopup.selected.length === 0
                   ? "Enter a title or pick filters, then press Search."
                   : "No results."
-            color: "#8a8a96"
-            font.pixelSize: 16
+            color: Theme.textMuted
+            font.pixelSize: Theme.fontLg
             horizontalAlignment: Text.AlignHCenter
         }
 
@@ -167,16 +167,27 @@ Item {
             keyNavigationEnabled: true
             highlightMoveDuration: 100
             highlight: Rectangle {
-                radius: 8
+                radius: Theme.radius
                 color: "transparent"
                 border.width: 2
-                border.color: "#3ea6ff"
+                border.color: Theme.accent
                 visible: grid.activeFocus
             }
             Keys.onReturnPressed: if (grid.currentItem) grid.currentItem.activate()
             Keys.onEnterPressed: if (grid.currentItem) grid.currentItem.activate()
 
             ScrollBar.vertical: ScrollBar {}
+
+            // Staggered fade-in as results populate; "Load more" items fade in too.
+            populate: Transition {
+                SequentialAnimation {
+                    PauseAnimation { duration: Math.min(ViewTransition.index, 12) * 22 }
+                    NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
+                }
+            }
+            add: Transition {
+                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+            }
 
             delegate: AnimeCard {
                 width: grid.cellWidth - 12

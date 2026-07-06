@@ -45,6 +45,14 @@ class ApiClient(QObject):
     missedSequelsReceived = Signal("QVariant")
     listEntryUpdated = Signal("QVariant")  # AniList list edit succeeded
     progressUpdated = Signal("QVariant")   # episode progress update succeeded
+    # Manga.
+    mangaCollectionReceived = Signal("QVariant")
+    mangaEntryReceived = Signal("QVariant")
+    mangaProvidersReceived = Signal("QVariant")
+    mangaChaptersReceived = Signal("QVariant")
+    mangaPagesReceived = Signal("QVariant")
+    mangaProgressUpdated = Signal("QVariant")  # manga chapter progress update succeeded
+    settingsSaved = Signal("QVariant")     # server settings PATCH succeeded (fresh Status)
     loginSucceeded = Signal("QVariant")
     loginFailed = Signal(str)  # login-specific failure, kept off errorOccurred
     anilistTokenObtained = Signal(str)  # access token from the code exchange
@@ -90,6 +98,60 @@ class ApiClient(QObject):
         """Sequels to anime in the user's library they haven't added yet."""
         self._get("/api/v1/anilist/list-missed-sequels", self.missedSequelsReceived)
 
+    # ---- manga -----------------------------------------------------------
+
+    @Slot()
+    def fetch_manga_collection(self) -> None:
+        self._get("/api/v1/manga/collection", self.mangaCollectionReceived)
+
+    @Slot(int)
+    def fetch_manga_entry(self, media_id: int) -> None:
+        self._get(f"/api/v1/manga/entry/{media_id}", self.mangaEntryReceived)
+
+    @Slot()
+    def list_manga_providers(self) -> None:
+        """Installed manga-provider extensions (for the chapter-source dropdown)."""
+        self._get(
+            "/api/v1/extensions/list/manga-provider", self.mangaProvidersReceived
+        )
+
+    def fetch_manga_chapters(self, media_id: int, provider: str) -> None:
+        """POST for the chapter list of a manga from a given provider."""
+        self._post_json(
+            "/api/v1/manga/chapters",
+            {"mediaId": media_id, "provider": provider},
+            self.mangaChaptersReceived,
+        )
+
+    def fetch_manga_pages(
+        self, media_id: int, provider: str, chapter_id: str
+    ) -> None:
+        """POST for the pages of a manga chapter from a given provider."""
+        self._post_json(
+            "/api/v1/manga/pages",
+            {
+                "mediaId": media_id,
+                "provider": provider,
+                "chapterId": chapter_id,
+                "doublePage": False,
+            },
+            self.mangaPagesReceived,
+        )
+
+    def update_manga_progress(
+        self, media_id: int, chapter_number: int, total_chapters: int
+    ) -> None:
+        """Mark read progress up to ``chapter_number`` for the given manga."""
+        self._post_json(
+            "/api/v1/manga/update-progress",
+            {
+                "mediaId": media_id,
+                "chapterNumber": chapter_number,
+                "totalChapters": total_chapters,
+            },
+            self.mangaProgressUpdated,
+        )
+
     def list_anime(self, body: dict, on_success: Signal) -> None:
         """POST the advanced-search / discover query and route the result to a signal."""
         request = self._build_request("/api/v1/anilist/list-anime")
@@ -130,13 +192,35 @@ class ApiClient(QObject):
             self.progressUpdated,
         )
 
+    def save_settings(self, body: dict) -> None:
+        """PATCH the full server settings (8 groups) and emit ``settingsSaved``.
+
+        The server binds each group wholesale, so callers must send every field of
+        every group they intend to keep — the ``AppController``/QML side overlays
+        edits onto the current settings before calling this.
+        """
+        self._send_json(b"PATCH", "/api/v1/settings", body, self.settingsSaved)
+
     def _post_json(self, path: str, body: dict, on_success: Signal) -> None:
+        self._send_json(b"POST", path, body, on_success)
+
+    def _send_json(
+        self, verb: bytes, path: str, body: dict, on_success: Signal
+    ) -> None:
+        """Issue a JSON-bodied request with an arbitrary HTTP verb.
+
+        ``POST`` goes through ``QNetworkAccessManager.post``; anything else (e.g.
+        ``PATCH``, which has no dedicated method) uses ``sendCustomRequest``.
+        """
         request = self._build_request(path)
         request.setHeader(
             QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json"
         )
         payload = QJsonDocument.fromVariant(body).toJson(QJsonDocument.JsonFormat.Compact)
-        reply = self._manager.post(request, payload)
+        if verb == b"POST":
+            reply = self._manager.post(request, payload)
+        else:
+            reply = self._manager.sendCustomRequest(request, verb, payload)
         reply.finished.connect(lambda: self._handle_reply(reply, on_success))
 
     @Slot(str)

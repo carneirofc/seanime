@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // icon+label menu, and a user/login chip pinned to the bottom.
 Rectangle {
     id: sidebar
-    color: "#141420"
+    color: Theme.surfaceAlt
 
     // Current top-level page id, driven by Main; used to highlight the active item.
     property string currentPage: "home"
@@ -25,8 +25,8 @@ Rectangle {
             Label {
                 anchors.centerIn: parent
                 text: "Seanime"
-                color: "#ffffff"
-                font.pixelSize: 20
+                color: Theme.textStrong
+                font.pixelSize: Theme.fontXxl
                 font.bold: true
             }
         }
@@ -35,9 +35,11 @@ Rectangle {
         Repeater {
             model: [
                 { pageId: "home",     label: "Home",     glyph: "🏠" },
+                { pageId: "manga",    label: "Manga",    glyph: "📚" },
                 { pageId: "discover", label: "Discover", glyph: "🧭" },
                 { pageId: "search",   label: "Search",   glyph: "🔍" },
                 { pageId: "profile",  label: "Profile",  glyph: "👤" },
+                { pageId: "settings", label: "Settings", glyph: "⚙️" },
             ]
             delegate: Rectangle {
                 id: navItem
@@ -45,11 +47,14 @@ Rectangle {
                 objectName: "nav_" + modelData.pageId
                 Layout.fillWidth: true
                 Layout.preferredHeight: 44
-                Layout.leftMargin: 8
-                Layout.rightMargin: 8
-                radius: 8
+                Layout.leftMargin: Theme.spacingSm
+                Layout.rightMargin: Theme.spacingSm
+                radius: Theme.radius
                 readonly property bool active: sidebar.currentPage === modelData.pageId
-                color: active ? "#2a2a3a" : (navHover.hovered ? "#20202c" : "transparent")
+                color: active ? Theme.elevated : (navHover.hovered ? Theme.surfaceHover : "transparent")
+
+                // Smooth hover / active colour changes.
+                Behavior on color { ColorAnimation { duration: Theme.durFast } }
 
                 function activate() { sidebar.navigate(modelData.pageId) }
 
@@ -67,32 +72,39 @@ Rectangle {
                 Accessible.focusable: true
                 Accessible.onPressAction: navItem.activate()
 
-                // Visible focus ring for keyboard users.
+                // Visible focus ring for keyboard users (fades in/out).
                 border.width: navItem.activeFocus ? 2 : 0
-                border.color: "#3ea6ff"
+                border.color: Theme.accent
+                Behavior on border.width { NumberAnimation { duration: Theme.durFast } }
 
                 Row {
                     anchors.left: parent.left
-                    anchors.leftMargin: 12
+                    anchors.leftMargin: Theme.spacing
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 12
+                    spacing: Theme.spacing
                     Label { text: modelData.glyph; font.pixelSize: 17 }
                     Label {
                         text: modelData.label
-                        color: active ? "#ffffff" : "#c8c8d0"
-                        font.pixelSize: 14
+                        color: active ? Theme.textStrong : Theme.textDim
+                        font.pixelSize: Theme.fontBase
                         font.bold: active
                         anchors.verticalCenter: parent.verticalCenter
+                        Behavior on color { ColorAnimation { duration: Theme.durFast } }
                     }
                 }
 
-                // Active accent bar on the left edge.
+                // Active accent bar on the left edge — grows in with a little
+                // overshoot when the item becomes active.
                 Rectangle {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 3; height: parent.height * 0.5; radius: 2
-                    color: "#3ea6ff"
-                    visible: parent.active
+                    width: 3
+                    height: navItem.active ? parent.height * 0.5 : 0
+                    radius: 2
+                    color: Theme.accent
+                    opacity: navItem.active ? 1 : 0
+                    Behavior on height { NumberAnimation { duration: Theme.durBase; easing.type: Theme.easeEmphasis } }
+                    Behavior on opacity { NumberAnimation { duration: Theme.durBase } }
                 }
 
                 HoverHandler { id: navHover; cursorShape: Qt.PointingHandCursor }
@@ -111,14 +123,15 @@ Rectangle {
             spacing: 8
             Rectangle {
                 width: 9; height: 9; radius: 5
-                color: app.connectionStatus === "connected" ? "#3ecf5b"
-                     : app.connectionStatus === "connecting" ? "#e0b341"
-                     : "#e05a5a"
+                color: app.connectionStatus === "connected" ? Theme.success
+                     : app.connectionStatus === "connecting" ? Theme.warning
+                     : Theme.danger
+                Behavior on color { ColorAnimation { duration: Theme.durBase } }
             }
             Label {
                 text: app.connectionStatus
-                color: "#8a8a96"
-                font.pixelSize: 12
+                color: Theme.textMuted
+                font.pixelSize: Theme.fontSm
             }
         }
 
@@ -128,11 +141,12 @@ Rectangle {
             objectName: "userChip"
             Layout.fillWidth: true
             Layout.preferredHeight: 56
-            Layout.margins: 8
-            radius: 8
+            Layout.margins: Theme.spacingSm
+            radius: Theme.radius
             readonly property bool loggedIn: app.username.length > 0
             readonly property bool hasAvatar: loggedIn && app.avatarUrl.length > 0
-            color: userHover.hovered ? "#20202c" : "#1a1a22"
+            color: userHover.hovered ? Theme.surfaceHover : Theme.surface
+            Behavior on color { ColorAnimation { duration: Theme.durFast } }
 
             function activate() {
                 if (loggedIn) sidebar.navigate("profile")
@@ -155,7 +169,8 @@ Rectangle {
             Accessible.onPressAction: userChip.activate()
 
             border.width: userChip.activeFocus ? 2 : 0
-            border.color: "#3ea6ff"
+            border.color: Theme.accent
+            Behavior on border.width { NumberAnimation { duration: Theme.durFast } }
 
             RowLayout {
                 anchors.fill: parent
@@ -166,7 +181,7 @@ Rectangle {
                 // Avatar (or a login glyph when signed out).
                 Rectangle {
                     width: 34; height: 34; radius: 17
-                    color: "#0e0e12"
+                    color: Theme.inset
                     clip: true
                     Image {
                         anchors.fill: parent
@@ -179,7 +194,7 @@ Rectangle {
                         anchors.centerIn: parent
                         visible: !userChip.hasAvatar
                         text: userChip.loggedIn ? app.username.charAt(0).toUpperCase() : "🔑"
-                        color: "#8a8a96"
+                        color: Theme.textMuted
                         font.pixelSize: userChip.loggedIn ? 16 : 14
                     }
                 }
@@ -187,8 +202,8 @@ Rectangle {
                 Label {
                     Layout.fillWidth: true
                     text: userChip.loggedIn ? app.username : "Log in with AniList"
-                    color: userChip.loggedIn ? "#e6e6ee" : "#9ad0ff"
-                    font.pixelSize: 13
+                    color: userChip.loggedIn ? Theme.text : Theme.accentSoft
+                    font.pixelSize: Theme.fontMd
                     elide: Text.ElideRight
                 }
             }

@@ -2,29 +2,39 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+// Manga library: a poster grid over the user's AniList manga collection. Mirrors
+// LibraryView; reuses the AnimeCard delegate (its count badge shows chapters).
 Item {
     id: root
     signal loginRequested()
 
-    // True when we're connected but the collection failed to load — almost always
-    // an expired/invalid AniList token rather than a genuinely empty library.
+    // True when connected but the collection failed to load — almost always an
+    // expired/invalid AniList token rather than a genuinely empty library.
     readonly property bool loadFailed: app.connectionStatus === "connected"
                                        && app.errorMessage.length > 0
+
+    // Load the collection when this page is shown.
+    Component.onCompleted: app.loadMangaLibrary()
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 16
         spacing: 12
 
-        // Live "find in library" filter (client-side over the loaded grid).
-        TextField {
-            id: filterField
-            objectName: "libraryFilterField"
+        RowLayout {
             Layout.fillWidth: true
-            placeholderText: "Find in library…"
-            enabled: grid.count > 0 || text.length > 0
-            onTextChanged: app.setLibraryFilter(text)
-            Component.onCompleted: app.setLibraryFilter("")  // start unfiltered
+            Label {
+                text: "Manga"
+                color: Theme.textStrong
+                font.pixelSize: Theme.fontXxl
+                font.bold: true
+            }
+            Item { Layout.fillWidth: true }
+            Button {
+                objectName: "mangaRefreshButton"
+                text: "Refresh"
+                onClicked: app.loadMangaLibrary()
+            }
         }
 
         // Empty / error state.
@@ -41,18 +51,15 @@ Item {
                 font.pixelSize: Theme.fontXl
                 text: app.connectionStatus !== "connected"
                         ? "Not connected. Set host/port and press Connect."
-                        : filterField.text.length > 0
-                            ? "No matches."
-                            : root.loadFailed
-                                ? "Couldn't load your library"
-                                : "Library is empty."
+                        : root.loadFailed
+                            ? "Couldn't load your manga collection"
+                            : "No manga in your collection."
             }
 
-            // Actionable auth hint when the load failed.
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 horizontalAlignment: Text.AlignHCenter
-                visible: root.loadFailed && filterField.text.length === 0
+                visible: root.loadFailed
                 color: Theme.textMuted
                 font.pixelSize: Theme.fontMd
                 text: "Your AniList session may have expired (" + app.errorMessage + ").\n"
@@ -61,33 +68,31 @@ Item {
 
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
-                visible: root.loadFailed && filterField.text.length === 0
+                visible: root.loadFailed
                 spacing: 8
                 Button {
-                    objectName: "libraryLoginButton"
+                    objectName: "mangaLoginButton"
                     text: "Log in with AniList"
                     onClicked: root.loginRequested()
                 }
                 Button {
-                    objectName: "libraryRetryButton"
+                    objectName: "mangaRetryButton"
                     text: "Retry"
-                    onClicked: app.refresh()
+                    onClicked: app.loadMangaLibrary()
                 }
             }
         }
 
         GridView {
             id: grid
-            objectName: "libraryGrid"
+            objectName: "mangaGrid"
             Layout.fillWidth: true
             Layout.fillHeight: true
             cellWidth: 180
             cellHeight: 290
             clip: true
-            model: app.libraryModel
+            model: app.mangaLibraryModel
 
-            // Keyboard: reachable via Tab, arrow keys move the selection, and
-            // Enter/Return opens the highlighted poster.
             activeFocusOnTab: true
             keyNavigationEnabled: true
             highlightMoveDuration: 100
@@ -117,7 +122,7 @@ Item {
             delegate: AnimeCard {
                 width: grid.cellWidth - 12
                 height: grid.cellHeight - 12
-                onActivated: app.openAnime(mediaId)
+                onActivated: app.openManga(mediaId)
             }
         }
     }

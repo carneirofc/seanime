@@ -5,13 +5,20 @@ import QtQuick.Layouts
 Rectangle {
     id: row
     height: 84
-    radius: 6
-    color: "#1a1a22"
+    radius: Theme.radius
+    color: hover.hovered ? Theme.surfaceHover : Theme.surface
+    border.width: 1
+    border.color: hover.hovered ? Theme.border : "transparent"
+
+    Behavior on color { ColorAnimation { duration: Theme.durFast } }
+    Behavior on border.color { ColorAnimation { duration: Theme.durFast } }
 
     // Accessibility: announce the row as a labelled group so screen readers read
     // the episode title alongside the watch/download controls it contains.
     Accessible.role: Accessible.ListItem
     Accessible.name: title + (isWatched ? ", watched" : "")
+
+    HoverHandler { id: hover }
 
     RowLayout {
         anchors.fill: parent
@@ -21,9 +28,9 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: 120
             Layout.preferredHeight: 68
-            radius: 4
+            radius: Theme.radiusSm
             clip: true
-            color: "#0e0e12"
+            color: Theme.inset
             Image {
                 anchors.fill: parent
                 source: thumbnailUrl
@@ -37,10 +44,10 @@ Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.margins: 3
                 width: 18; height: 18; radius: 9
-                color: "#1f7a3a"
+                color: Theme.success
                 Label {
                     anchors.centerIn: parent
-                    text: "✓"; color: "#ffffff"; font.pixelSize: 11
+                    text: "✓"; color: Theme.textStrong; font.pixelSize: Theme.fontXs
                 }
             }
         }
@@ -51,16 +58,16 @@ Rectangle {
             Label {
                 Layout.fillWidth: true
                 text: title
-                color: isWatched ? "#9a9aa6" : "#e6e6ee"
-                font.pixelSize: 14
+                color: isWatched ? Theme.textMuted : Theme.text
+                font.pixelSize: Theme.fontBase
                 font.bold: true
                 elide: Text.ElideRight
             }
             Label {
                 Layout.fillWidth: true
                 text: summary
-                color: "#9a9aa6"
-                font.pixelSize: 12
+                color: Theme.textMuted
+                font.pixelSize: Theme.fontSm
                 elide: Text.ElideRight
                 maximumLineCount: 2
                 wrapMode: Text.WordWrap
@@ -71,14 +78,14 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: downloadedLabel.implicitWidth + 16
             Layout.preferredHeight: 22
-            radius: 4
-            color: isDownloaded ? "#1f4a2a" : "#3a3a48"
+            radius: Theme.radiusSm
+            color: isDownloaded ? Theme.successFill : Theme.elevated
             Label {
                 id: downloadedLabel
                 anchors.centerIn: parent
                 text: isDownloaded ? "Downloaded" : "Not local"
-                color: isDownloaded ? "#8fe6a3" : "#c8c8d0"
-                font.pixelSize: 11
+                color: isDownloaded ? Theme.successText : Theme.textDim
+                font.pixelSize: Theme.fontXs
             }
         }
 
