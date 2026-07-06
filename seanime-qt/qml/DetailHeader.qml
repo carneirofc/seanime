@@ -95,7 +95,12 @@ ColumnLayout {
                 visible: app.detailGenres.length > 0
                 Repeater {
                     model: app.detailGenres
-                    delegate: Chip { text: modelData }
+                    delegate: Chip {
+                        required property string modelData
+                        text: modelData
+                        interactive: true
+                        onClicked: app.requestGenreSearch(modelData)
+                    }
                 }
             }
 

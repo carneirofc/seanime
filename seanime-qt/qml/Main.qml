@@ -29,6 +29,9 @@ ApplicationWindow {
         function onChapterOpened() { stack.push(readerComponent) }
         // On successful login, dismiss the login page (back to the current root).
         function onLoginFinished() { if (stack.depth > 1) stack.pop(null) }
+        // A genre chip was tapped: switch to the search page, which consumes the
+        // pending genre in its Component.onCompleted and runs the query.
+        function onGenreSearchRequested(genre) { window.showPage(searchComponent, "search") }
     }
 
     // Slim top bar: server connection only (navigation lives in the sidebar).
@@ -45,7 +48,7 @@ ApplicationWindow {
                 color: Theme.textMuted
                 font.pixelSize: Theme.fontMd
             }
-            TextField {
+            AppTextField {
                 id: hostField
                 objectName: "hostField"
                 text: app.serverHost
@@ -53,7 +56,7 @@ ApplicationWindow {
                 placeholderText: "host"
                 Accessible.name: "Server host"
             }
-            TextField {
+            AppTextField {
                 id: portField
                 objectName: "portField"
                 text: app.serverPort
@@ -61,7 +64,7 @@ ApplicationWindow {
                 placeholderText: "port"
                 Accessible.name: "Server port"
             }
-            TextField {
+            AppTextField {
                 id: tokenField
                 objectName: "tokenField"
                 text: app.serverToken

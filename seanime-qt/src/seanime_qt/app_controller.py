@@ -72,6 +72,10 @@ class AppController(QObject):
     readerChanged = Signal()
     mangaOpened = Signal()    # QML pushes the manga detail page on this
     chapterOpened = Signal()  # QML pushes the reader page on this
+    # Deep-link a genre into the advanced-search page (e.g. tapping a genre chip
+    # on the detail header). QML navigates to search, which consumes the pending
+    # genre and runs the query.
+    genreSearchRequested = Signal(str)
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -142,6 +146,8 @@ class AppController(QObject):
         # Advanced-search state: remember the active query to paginate it.
         self._search_filters: dict = {}
         self._search_page = 1
+        # A genre awaiting the search page (set by a detail-header chip tap).
+        self._pending_search_genre = ""
 
         # ---- manga state ----
         self._manga_title = ""
@@ -719,6 +725,23 @@ class AppController(QObject):
     def searchAnilist(self, term: str) -> None:
         """Simple title search (kept for the plain search box / back-compat)."""
         self.searchAdvanced({"search": term})
+
+    @Slot(str)
+    def requestGenreSearch(self, genre: str) -> None:
+        """Deep-link a genre into the search page (from a detail-header chip)."""
+        genre = (genre or "").strip()
+        if not genre:
+            return
+        self._pending_search_genre = genre
+        self.genreSearchRequested.emit(genre)
+
+    @Slot(result=str)
+    def consumePendingSearchGenre(self) -> str:
+        """Return and clear the genre queued by ``requestGenreSearch`` (the search
+        page calls this on load to seed and run the query)."""
+        genre = self._pending_search_genre
+        self._pending_search_genre = ""
+        return genre
 
     @Slot("QVariant")
     def searchAdvanced(self, filters) -> None:

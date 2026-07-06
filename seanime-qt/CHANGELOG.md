@@ -21,3 +21,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     "Library" and "Adult" sections (both still respect the find-in-library
     text filter).
 - Poster **score badge** (AniList mean score) on media cards.
+- **Genre deep-linking**: tapping a genre chip on the anime detail header opens
+  the advanced-search page pre-filtered to that genre and runs the query.

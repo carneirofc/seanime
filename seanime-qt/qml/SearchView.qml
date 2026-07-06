@@ -62,6 +62,16 @@ Item {
                                        || tagPopup.selected.length > 0
                                        || (app.enableAdultContent && adultSwitch.checked)
 
+    // Seed from a genre deep-link (a tapped genre chip on the detail header):
+    // select that genre and run the search immediately.
+    Component.onCompleted: {
+        var genre = app.consumePendingSearchGenre()
+        if (genre && genre.length > 0) {
+            genrePopup.selected = [genre]
+            root.runSearch()
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 16
