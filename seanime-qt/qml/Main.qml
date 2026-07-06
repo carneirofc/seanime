@@ -12,9 +12,13 @@ ApplicationWindow {
     color: Theme.bg
 
     // Switch the main content to a top-level page (like the web sidebar does).
+    // Replace immediately: an animated replace leaves the outgoing page
+    // un-destroyed (its own populate/hover animations keep it "busy", so the
+    // transition never finalizes and the old view lingers, visible, behind the
+    // new one — leaking a view per navigation). Immediate tears it down at once.
     function showPage(comp, id) {
         sidebar.currentPage = id
-        stack.replace(null, comp)
+        stack.replace(null, comp, StackView.Immediate)
     }
 
     // Auto-connect to the default local server on startup.
@@ -175,17 +179,16 @@ ApplicationWindow {
                         NumberAnimation { property: "x"; from: 0; to: 36; duration: Theme.durBase; easing.type: Theme.easeStandard }
                     }
                 }
-                // Replace (top-level page switches from the sidebar): cross-fade
-                // with a subtle scale so the change reads without directional bias.
+                // Replace (top-level page switches from the sidebar): fade the new
+                // page in, but remove the old one instantly. An animated replaceExit
+                // combined with replace(null, …) and the pages' own populate/hover
+                // animations leaves the outgoing view un-destroyed (it lingers,
+                // visible, behind the new page). Keeping the exit instant guarantees
+                // the old page is torn down on every navigation.
                 replaceEnter: Transition {
-                    ParallelAnimation {
-                        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
-                        NumberAnimation { property: "scale"; from: 0.98; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
-                    }
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
                 }
-                replaceExit: Transition {
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durFast }
-                }
+                replaceExit: Transition {}
             }
         }
     }
