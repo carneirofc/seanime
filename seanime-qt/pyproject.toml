@@ -8,8 +8,18 @@ dependencies = [
     "PySide6>=6.6",
 ]
 
+# Development-only harness that lets Claude Code drive the app (see docs in
+# src/seanime_qt/agent/). Not needed to run the app itself.
+[project.optional-dependencies]
+# The MCP SDK requires Python >= 3.10; the app itself still supports 3.9, so the
+# marker keeps the base project resolvable there (the harness just isn't available).
+agent = [
+    "mcp>=1.2; python_version >= '3.10'",
+]
+
 [project.scripts]
 seanime-qt = "seanime_qt.__main__:main"
+seanime-qt-mcp = "seanime_qt.agent.mcp_server:main"
 
 [build-system]
 requires = ["hatchling"]

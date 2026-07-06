@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "seanime-qt": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "seanime-qt",
+        "--extra",
+        "agent",
+        "seanime-qt-mcp"
+      ]
+    }
+  }
+}
