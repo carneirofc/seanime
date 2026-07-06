@@ -1,67 +1,47 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Seanime 1.0
 
-// A titled horizontal strip of AnimeCards bound to a SearchModel-shaped model.
-// Reused by DiscoverView (each feed) and DetailView (relations/recommendations).
+// A titled preview feed, reused by DiscoverView (each feed) and DetailView
+// (relations/recommendations). When the server's "split adult content" setting is
+// off it shows a single strip (adult titles mixed in, blurred per-card); when on
+// it shows a safe strip and, beneath it, a separate "· adult" strip, each fed by
+// an AdultFilterProxy over the same source model so nothing mixes.
 ColumnLayout {
     id: root
     property string title: ""
-    property alias model: row.model
-    property alias count: row.count
+    property var model: null
 
-    spacing: 6
-    visible: row.count > 0
+    readonly property bool split: app.splitAdultContent
+
+    // Total items across the feed regardless of split — only the active strips
+    // hold a model, so summing their (reactive) counts gives the source total.
+    // DiscoverView sums this across feeds for its empty-state label.
+    readonly property int count: mixed.count + safe.count + adult.count
+
+    spacing: 12
+    visible: count > 0
     Layout.fillWidth: true
 
-    Label {
-        Layout.leftMargin: 4
-        text: root.title
-        color: Theme.textStrong
-        font.pixelSize: Theme.fontLg
-        font.bold: true
+    // Paired halves of the source; only consulted while split is on.
+    AdultFilterProxy { id: safeProxy; sourceModel: root.model; wantAdult: false }
+    AdultFilterProxy { id: adultProxy; sourceModel: root.model; wantAdult: true }
+
+    // Only the strips in play get a model, so the others create no delegates.
+    CarouselStrip {
+        id: mixed
+        title: root.title
+        model: root.split ? null : root.model
     }
-
-    ListView {
-        id: row
-        Layout.fillWidth: true
-        Layout.preferredHeight: 284
-        orientation: ListView.Horizontal
-        spacing: 12
-        clip: true
-
-        // Keyboard: Tab reaches the row; Left/Right move the selection and
-        // Enter/Return opens the highlighted card.
-        activeFocusOnTab: true
-        keyNavigationEnabled: true
-        highlightMoveDuration: 100
-        highlight: Rectangle {
-            radius: Theme.radius
-            color: "transparent"
-            border.width: 2
-            border.color: Theme.accent
-            visible: row.activeFocus
-        }
-        Keys.onReturnPressed: if (row.currentItem) row.currentItem.activate()
-        Keys.onEnterPressed: if (row.currentItem) row.currentItem.activate()
-
-        // Staggered fade-in as the carousel populates.
-        populate: Transition {
-            SequentialAnimation {
-                PauseAnimation { duration: Math.max(0, Math.min(ViewTransition.index, 10)) * 25 }
-                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
-            }
-        }
-        add: Transition {
-            NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
-        }
-
-        ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
-
-        delegate: AnimeCard {
-            width: 168
-            height: 272
-            onActivated: app.openAnime(mediaId)
-        }
+    CarouselStrip {
+        id: safe
+        title: root.title
+        model: root.split ? safeProxy : null
+    }
+    CarouselStrip {
+        id: adult
+        title: root.title + " · adult"
+        model: root.split ? adultProxy : null
     }
 }

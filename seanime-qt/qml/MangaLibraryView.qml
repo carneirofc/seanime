@@ -83,9 +83,39 @@ Item {
             }
         }
 
+        // Split view: when the server splits adult content, the collection is
+        // shown as separate "Manga" and "Adult" sections. Mirrors LibraryView.
+        ScrollView {
+            id: splitScroll
+            visible: app.splitAdultContent && grid.count > 0
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+            ColumnLayout {
+                width: splitScroll.availableWidth
+                spacing: 16
+
+                MediaGrid {
+                    Layout.fillWidth: true
+                    title: "Manga"
+                    model: app.mangaLibrarySfwModel
+                    onOpenRequested: (mediaId) => app.openManga(mediaId)
+                }
+                MediaGrid {
+                    Layout.fillWidth: true
+                    title: "Adult"
+                    model: app.mangaLibraryAdultModel
+                    onOpenRequested: (mediaId) => app.openManga(mediaId)
+                }
+            }
+        }
+
         GridView {
             id: grid
             objectName: "mangaGrid"
+            visible: !app.splitAdultContent
             Layout.fillWidth: true
             Layout.fillHeight: true
             cellWidth: Theme.posterCellWidth

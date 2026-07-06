@@ -24,6 +24,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The **library** honours blur and, when split is enabled, shows separate
     "Library" and "Adult" sections (both still respect the find-in-library
     text filter).
+  - **Preview carousels** (the Discover feeds and the detail-page
+    relations/recommendations strips) no longer mix adult titles when split is
+    enabled: each `MediaCarousel` shows a safe strip and a separate "· adult"
+    strip fed by paired `AdultFilterProxy` models over the same source.
+  - The **manga library** now carries the `isAdult` flag, so it honours blur
+    and, when split is enabled, shows separate "Manga" and "Adult" sections.
+  - A client-local **split override** in Appearance settings ("Follow server
+    setting" / "Always split" / "Never split"), letting the app force the adult
+    split on or off regardless of the server's `splitAdultContent` preference.
+    Persisted on this computer via `QSettings`.
 - Poster **score badge** (AniList mean score) on media cards.
 - **Genre/tag deep-linking**: tapping a genre or tag chip on the anime detail
   header opens the advanced-search page pre-filtered to it and runs the query.

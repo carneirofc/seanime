@@ -26,6 +26,11 @@ Flickable {
         { label: "Dark", value: "dark" },
         { label: "Light", value: "light" }
     ]
+    readonly property var splitOverrideOptions: [
+        { label: "Follow server setting", value: "server" },
+        { label: "Always split", value: "on" },
+        { label: "Never split", value: "off" }
+    ]
     // Preset accent swatches (the first is the shipped default).
     readonly property var accentSwatches: [
         "#6152df", "#41b8e0", "#3ecf5b", "#e0b341",
@@ -123,6 +128,36 @@ Flickable {
                     color: Theme.textMuted
                     font.pixelSize: Theme.fontSm
                     Layout.preferredWidth: 44
+                }
+            }
+        }
+
+        // ---- adult content split ----
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingXs
+            Label { text: "Split adult content"; color: Theme.text; font.pixelSize: Theme.fontBase }
+            Label {
+                text: "Keep adult titles in their own sections across the library, "
+                      + "search, manga and Discover previews. \"Follow server setting\" "
+                      + "uses your Seanime server's preference."
+                color: Theme.textMuted; font.pixelSize: Theme.fontSm
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+            }
+            AppComboBox {
+                id: splitCombo
+                objectName: "splitAdultOverrideCombo"
+                Layout.preferredWidth: 220
+                model: pane.splitOverrideOptions
+                textRole: "label"; valueRole: "value"
+                Component.onCompleted: currentIndex = splitCombo.indexOfValue(app.splitAdultOverride)
+                onActivated: app.setSplitAdultOverride(currentValue)
+                Connections {
+                    target: app
+                    function onAdultSplitChanged() {
+                        splitCombo.currentIndex = splitCombo.indexOfValue(app.splitAdultOverride)
+                    }
                 }
             }
         }

@@ -9,24 +9,44 @@ work on the source model.
 
 from __future__ import annotations
 
-from PySide6.QtCore import QModelIndex, QSortFilterProxyModel
+from PySide6.QtCore import Property, QModelIndex, QSortFilterProxyModel, Signal
 
 from .library_model import LibraryModel
 
 
 class AdultFilterProxy(QSortFilterProxyModel):
-    """Accepts only rows whose ``isAdult`` equals ``want_adult``.
+    """Accepts only rows whose ``isAdult`` equals ``wantAdult``.
 
-    The ``isAdult`` role number is identical across LibraryModel and SearchModel
-    (both derive it from ``QAbstractListModel``'s role enum the same way), so a
-    single role constant works for either source.
+    The ``isAdult`` role number is identical across LibraryModel, SearchModel and
+    MangaLibraryModel (all derive it from ``QAbstractListModel``'s role enum the
+    same way), so a single role constant works for any of them.
+
+    Constructible both from Python (``AdultFilterProxy(True, parent)``, as the
+    library/search/manga splits do) and from QML: it is registered as a type so a
+    ``MediaCarousel`` can spin up its own safe/adult pair with ``sourceModel`` and
+    ``wantAdult`` bound declaratively.
     """
 
     _IS_ADULT_ROLE = LibraryModel.IsAdultRole
 
-    def __init__(self, want_adult: bool, parent=None) -> None:
+    wantAdultChanged = Signal()
+
+    def __init__(self, want_adult: bool = False, parent=None) -> None:
         super().__init__(parent)
         self._want_adult = bool(want_adult)
+
+    def _get_want_adult(self) -> bool:
+        return self._want_adult
+
+    def _set_want_adult(self, value: bool) -> None:
+        value = bool(value)
+        if value != self._want_adult:
+            self._want_adult = value
+            self.invalidateFilter()
+            self.wantAdultChanged.emit()
+
+    # Which half to keep. Changing it re-runs the filter so QML bindings react.
+    wantAdult = Property(bool, _get_want_adult, _set_want_adult, notify=wantAdultChanged)
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
         model = self.sourceModel()

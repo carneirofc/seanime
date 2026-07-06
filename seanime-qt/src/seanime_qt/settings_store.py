@@ -31,6 +31,8 @@ _UI_DENSITY = "ui/density"
 _UI_THEME = "ui/theme"
 _UI_ACCENT = "ui/accent"
 _UI_POSTER_SCALE = "ui/posterScale"
+# Client-local override for the server's "split adult content" setting.
+_UI_SPLIT_OVERRIDE = "ui/splitAdultOverride"
 
 
 class SettingsStore:
@@ -84,6 +86,9 @@ class SettingsStore:
     def ui_poster_scale(self, default: float = 1.0) -> float:
         return self._float(self._settings().value(_UI_POSTER_SCALE), default)
 
+    def split_adult_override(self, default: str = "server") -> str:
+        return self._str(self._settings().value(_UI_SPLIT_OVERRIDE), default)
+
     # ---- writes ----------------------------------------------------------
 
     def save_connection(self, host: str, port: str, token: str) -> None:
@@ -113,4 +118,9 @@ class SettingsStore:
         settings.setValue(_UI_THEME, theme)
         settings.setValue(_UI_ACCENT, accent)
         settings.setValue(_UI_POSTER_SCALE, float(poster_scale))
+        settings.sync()
+
+    def save_split_adult_override(self, value: str) -> None:
+        settings = self._settings()
+        settings.setValue(_UI_SPLIT_OVERRIDE, value)
         settings.sync()

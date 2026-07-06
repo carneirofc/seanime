@@ -21,9 +21,10 @@ os.environ.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
 
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PySide6.QtWebEngineQuick import QtWebEngineQuick
 
+from .adult_filter import AdultFilterProxy
 from .app_controller import AppController
 
 
@@ -79,6 +80,9 @@ def main() -> int:
     app.setOrganizationName("Seanime")
 
     controller = AppController()
+
+    # Let QML instantiate its own adult/safe split proxies (used by MediaCarousel).
+    qmlRegisterType(AdultFilterProxy, "Seanime", 1, 0, "AdultFilterProxy")
 
     engine = QQmlApplicationEngine()
     engine.rootContext().setContextProperty("app", controller)

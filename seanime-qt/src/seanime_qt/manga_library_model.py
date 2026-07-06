@@ -21,6 +21,9 @@ class MangaLibraryModel(QAbstractListModel):
     StatusRole = Qt.ItemDataRole.UserRole + 4
     ProgressRole = Qt.ItemDataRole.UserRole + 5
     EpisodeCountRole = Qt.ItemDataRole.UserRole + 6
+    # Same role number as LibraryModel/SearchModel so AdultFilterProxy and the
+    # AnimeCard blur work over manga rows unchanged.
+    IsAdultRole = Qt.ItemDataRole.UserRole + 8
 
     _ROLES = {
         MediaIdRole: b"mediaId",
@@ -29,6 +32,7 @@ class MangaLibraryModel(QAbstractListModel):
         StatusRole: b"status",
         ProgressRole: b"progress",
         EpisodeCountRole: b"episodeCount",  # chapter count for manga
+        IsAdultRole: b"isAdult",
     }
 
     def __init__(self, parent=None) -> None:
@@ -54,6 +58,7 @@ class MangaLibraryModel(QAbstractListModel):
                         "status": status,
                         "progress": list_data.get("progress") or 0,
                         "episodeCount": media.get("chapters") or 0,
+                        "isAdult": bool(media.get("isAdult")),
                     }
                 )
 

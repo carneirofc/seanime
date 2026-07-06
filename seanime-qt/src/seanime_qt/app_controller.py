@@ -65,6 +65,10 @@ _DEFAULT_UI_POSTER_SCALE = 1.0
 _UI_SCALE_RANGE = (0.8, 1.5)
 _UI_DENSITY_RANGE = (0.85, 1.2)
 _UI_POSTER_SCALE_RANGE = (0.7, 1.4)
+# Client-local override for the server's "split adult content" setting:
+# "server" follows it, "on"/"off" force the split on or off regardless.
+_SPLIT_OVERRIDE_VALUES = ("server", "on", "off")
+_DEFAULT_SPLIT_OVERRIDE = "server"
 _ACCENT_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
@@ -84,6 +88,10 @@ class AppController(QObject):
     settingsSaved = Signal()        # a server-settings PATCH succeeded (QML confirms)
     clientPrefsChanged = Signal()   # persisted client prefs (host/port/token) changed
     uiPrefsChanged = Signal()       # client-local UI appearance prefs changed (font/theme…)
+    # Fires when the effective "split adult content" changes — either the server
+    # setting refreshed or the client-local override was edited. splitAdultContent
+    # and splitAdultOverride both notify on it.
+    adultSplitChanged = Signal()
     # Manga.
     mangaDetailChanged = Signal()
     mangaProvidersChanged = Signal()
@@ -142,6 +150,12 @@ class AppController(QObject):
         self._search_sfw.setSourceModel(self._search_model)
         self._search_adult = AdultFilterProxy(True, self)
         self._search_adult.setSourceModel(self._search_model)
+        # The manga library has no find-in-library text filter, so its split
+        # proxies sit directly on the source collection model.
+        self._manga_sfw = AdultFilterProxy(False, self)
+        self._manga_sfw.setSourceModel(self._manga_library_model)
+        self._manga_adult = AdultFilterProxy(True, self)
+        self._manga_adult.setSourceModel(self._manga_library_model)
 
         self._connection_status = "disconnected"
         self._error_message = ""
@@ -222,6 +236,10 @@ class AppController(QObject):
             self._store.ui_poster_scale(_DEFAULT_UI_POSTER_SCALE),
             *_UI_POSTER_SCALE_RANGE,
         )
+        override = self._store.split_adult_override(_DEFAULT_SPLIT_OVERRIDE)
+        self._split_adult_override = (
+            override if override in _SPLIT_OVERRIDE_VALUES else _DEFAULT_SPLIT_OVERRIDE
+        )
         # The server's settings object, mirrored from the status/PATCH payloads.
         self._settings: dict = {}
         self._username = ""
@@ -255,6 +273,9 @@ class AppController(QObject):
         self._client.mangaPagesReceived.connect(self._on_manga_pages)
         self._client.mangaProgressUpdated.connect(self._on_manga_progress_updated)
         self._client.settingsSaved.connect(self._on_settings_saved)
+        # A server-settings refresh may flip splitAdultContent, so fan it out to
+        # the combined signal the split property notifies on.
+        self.settingsChanged.connect(self.adultSplitChanged)
         self._client.anilistTokenObtained.connect(self._on_anilist_token)
         self._client.loginSucceeded.connect(self._on_login)
         self._client.loginFailed.connect(self._on_login_failed)
@@ -298,6 +319,12 @@ class AppController(QObject):
     def _get_manga_library_model(self) -> MangaLibraryModel:
         return self._manga_library_model
 
+    def _get_manga_library_sfw_model(self) -> QObject:
+        return self._manga_sfw
+
+    def _get_manga_library_adult_model(self) -> QObject:
+        return self._manga_adult
+
     def _get_chapter_model(self) -> ChapterModel:
         return self._chapter_model
 
@@ -332,6 +359,12 @@ class AppController(QObject):
     recommendationsModel = Property(QObject, _get_recommendations_model, constant=True)
     characterModel = Property(QObject, _get_character_model, constant=True)
     mangaLibraryModel = Property(QObject, _get_manga_library_model, constant=True)
+    mangaLibrarySfwModel = Property(
+        QObject, _get_manga_library_sfw_model, constant=True
+    )
+    mangaLibraryAdultModel = Property(
+        QObject, _get_manga_library_adult_model, constant=True
+    )
     chapterModel = Property(QObject, _get_chapter_model, constant=True)
     pageModel = Property(QObject, _get_page_model, constant=True)
     seasonModel = Property(QObject, _get_season_model, constant=True)
@@ -574,11 +607,35 @@ class AppController(QObject):
         return self._anilist_flag("blurAdultContent")
 
     def _get_split_adult(self) -> bool:
+        # Client-local override wins over the server setting when set.
+        if self._split_adult_override == "on":
+            return True
+        if self._split_adult_override == "off":
+            return False
         return self._anilist_flag("splitAdultContent")
+
+    def _get_split_adult_override(self) -> str:
+        return self._split_adult_override
 
     enableAdultContent = Property(bool, _get_enable_adult, notify=settingsChanged)
     blurAdultContent = Property(bool, _get_blur_adult, notify=settingsChanged)
-    splitAdultContent = Property(bool, _get_split_adult, notify=settingsChanged)
+    # Notifies on adultSplitChanged (fanned out from settingsChanged) so both a
+    # server refresh and a client override edit update bindings.
+    splitAdultContent = Property(bool, _get_split_adult, notify=adultSplitChanged)
+    # "server" | "on" | "off" — the client-local override.
+    splitAdultOverride = Property(
+        str, _get_split_adult_override, notify=adultSplitChanged
+    )
+
+    @Slot(str)
+    def setSplitAdultOverride(self, value: str) -> None:
+        """Set the client-local split override and persist it (no-op if unchanged)."""
+        value = value if value in _SPLIT_OVERRIDE_VALUES else _DEFAULT_SPLIT_OVERRIDE
+        if value == self._split_adult_override:
+            return
+        self._split_adult_override = value
+        self._store.save_split_adult_override(value)
+        self.adultSplitChanged.emit()
 
     # AniList media-tag catalog for the advanced-search tag picker. Each entry is
     # ``{name, category, isAdult}``; QML groups by category and hides adult tags
