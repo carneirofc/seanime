@@ -41,7 +41,18 @@ Item {
         return out
     }
 
+    // Save-time validation: the first invalid registered field, or "" if all OK.
+    property string saveError: ""
+    function firstInvalid() {
+        for (var fk in _fields)
+            if (_fields[fk].valid === false) return _fields[fk].label
+        return ""
+    }
+
     function saveServer() {
+        var bad = firstInvalid()
+        if (bad) { root.saveError = "Fix “" + bad + "” before saving."; return }
+        root.saveError = ""
         var groups = ["library", "mediaPlayer", "torrent", "anilist",
                       "discord", "manga", "notifications", "nakama"]
         var body = {}
@@ -50,17 +61,53 @@ Item {
     }
 
     function saveClient() {
+        if (!clientHost.valid || !clientPort.valid) {
+            root.saveError = "Fix the highlighted connection fields before saving."
+            return
+        }
+        root.saveError = ""
         app.saveClientPrefs(clientHost.value, clientPort.value, clientToken.value,
                             clientId.value, clientSecret.value)
     }
 
     readonly property bool connected: app.connectionStatus === "connected"
 
+    // Reusable option sets for enum dropdowns.
+    readonly property var torrentProviderOptions: [
+        { label: "None", value: "none" },
+        { label: "AnimeTosho", value: "animetosho" },
+        { label: "Nyaa", value: "nyaa" },
+        { label: "SeaDex", value: "seadex" }
+    ]
+    readonly property var playbackSourceOptions: [
+        { label: "Ask each time", value: "" },
+        { label: "Local library", value: "library" },
+        { label: "Torrent stream", value: "torrentstream" },
+        { label: "Debrid stream", value: "debridstream" },
+        { label: "Online stream", value: "onlinestream" }
+    ]
+    readonly property var updateChannelOptions: [
+        { label: "Stable (GitHub)", value: "github" },
+        { label: "Stable (Seanime)", value: "seanime" },
+        { label: "Nightly", value: "seanime_nightly" }
+    ]
+    readonly property var playerOptions: [
+        { label: "mpv", value: "mpv" },
+        { label: "VLC", value: "vlc" },
+        { label: "MPC-HC", value: "mpc-hc" },
+        { label: "IINA", value: "iina" }
+    ]
+    readonly property var torrentClientOptions: [
+        { label: "qBittorrent", value: "qbittorrent" },
+        { label: "Transmission", value: "transmission" },
+        { label: "None", value: "none" }
+    ]
+
     // Server settings schema: one entry per group, driving the panes below.
     readonly property var serverSections: [
         {
             name: "Library", group: "library", fields: [
-                { key: "libraryPath", label: "Library path", type: "text",
+                { key: "libraryPath", label: "Library path", type: "dir",
                   placeholder: "/path/to/anime" },
                 { key: "autoScan", label: "Auto scan", type: "switch",
                   desc: "Rescan the library automatically when files change." },
@@ -78,61 +125,66 @@ Item {
                 { key: "enableExtensionSecureMode", label: "Extension secure mode", type: "switch" },
                 { key: "openTorrentClientOnStart", label: "Open torrent client on start", type: "switch" },
                 { key: "openWebURLOnStart", label: "Open web UI on start", type: "switch" },
-                { key: "torrentProvider", label: "Torrent provider", type: "text",
-                  desc: "e.g. animetosho, nyaa, seadex, none." },
-                { key: "defaultPlaybackSource", label: "Default playback source", type: "text",
-                  desc: "library, torrentstream, debridstream, onlinestream." },
+                { key: "torrentProvider", label: "Torrent provider", type: "combo",
+                  editable: true, options: torrentProviderOptions,
+                  desc: "Built-in or extension provider id." },
+                { key: "defaultPlaybackSource", label: "Default playback source", type: "combo",
+                  editable: true, options: playbackSourceOptions },
                 { key: "dohProvider", label: "DoH provider", type: "text",
                   desc: "DNS-over-HTTPS provider (optional)." },
-                { key: "updateChannel", label: "Update channel", type: "text",
-                  desc: "github, seanime, or seanime_nightly." }
+                { key: "updateChannel", label: "Update channel", type: "combo",
+                  options: updateChannelOptions }
             ]
         },
         {
             name: "Media Player", group: "mediaPlayer", fields: [
-                { key: "defaultPlayer", label: "Default player", type: "text",
-                  desc: "mpv, vlc, mpc-hc, or iina." },
-                { key: "host", label: "Player host", type: "text", placeholder: "127.0.0.1" },
-                { key: "mpvPath", label: "mpv path", type: "text" },
+                { key: "defaultPlayer", label: "Default player", type: "combo",
+                  options: playerOptions },
+                { key: "host", label: "Player host", type: "text",
+                  placeholder: "127.0.0.1", validation: "host" },
+                { key: "mpvPath", label: "mpv path", type: "file" },
                 { key: "mpvSocket", label: "mpv socket", type: "text" },
                 { key: "mpvArgs", label: "mpv args", type: "text" },
-                { key: "vlcPath", label: "VLC path", type: "text" },
-                { key: "vlcPort", label: "VLC port", type: "int", to: 65535 },
+                { key: "vlcPath", label: "VLC path", type: "file" },
+                { key: "vlcPort", label: "VLC port", type: "int", from: 1, to: 65535 },
                 { key: "vlcUsername", label: "VLC username", type: "text" },
                 { key: "vlcPassword", label: "VLC password", type: "password" },
-                { key: "mpcPath", label: "MPC-HC path", type: "text" },
-                { key: "mpcPort", label: "MPC-HC port", type: "int", to: 65535 },
-                { key: "iinaPath", label: "IINA path", type: "text" },
+                { key: "mpcPath", label: "MPC-HC path", type: "file" },
+                { key: "mpcPort", label: "MPC-HC port", type: "int", from: 1, to: 65535 },
+                { key: "iinaPath", label: "IINA path", type: "file" },
                 { key: "iinaSocket", label: "IINA socket", type: "text" },
                 { key: "iinaArgs", label: "IINA args", type: "text" },
-                { key: "screenshotDir", label: "Screenshot directory", type: "text" },
+                { key: "screenshotDir", label: "Screenshot directory", type: "dir" },
                 { key: "mpvPrismEnabled", label: "mpv Prism enabled", type: "switch" },
                 { key: "mpvPrismLogging", label: "mpv Prism logging", type: "switch" },
                 { key: "vcTranslate", label: "Voice/subtitle translate", type: "switch" },
                 { key: "vcTranslateProvider", label: "Translate provider", type: "text" },
                 { key: "vcTranslateTargetLanguage", label: "Translate target language", type: "text" },
                 { key: "vcTranslateModel", label: "Translate model", type: "text" },
-                { key: "vcTranslateBaseUrl", label: "Translate base URL", type: "text" },
+                { key: "vcTranslateBaseUrl", label: "Translate base URL", type: "text",
+                  validation: "url" },
                 { key: "vcTranslateApiKey", label: "Translate API key", type: "password" }
             ]
         },
         {
             name: "Torrent", group: "torrent", fields: [
-                { key: "defaultTorrentClient", label: "Default client", type: "text",
-                  desc: "qbittorrent, transmission, or none." },
-                { key: "qbittorrentHost", label: "qBittorrent host", type: "text" },
-                { key: "qbittorrentPort", label: "qBittorrent port", type: "int", to: 65535 },
+                { key: "defaultTorrentClient", label: "Default client", type: "combo",
+                  options: torrentClientOptions },
+                { key: "qbittorrentHost", label: "qBittorrent host", type: "text",
+                  validation: "host" },
+                { key: "qbittorrentPort", label: "qBittorrent port", type: "int", from: 1, to: 65535 },
                 { key: "qbittorrentUsername", label: "qBittorrent username", type: "text" },
                 { key: "qbittorrentPassword", label: "qBittorrent password", type: "password" },
-                { key: "qbittorrentPath", label: "qBittorrent path", type: "text" },
+                { key: "qbittorrentPath", label: "qBittorrent path", type: "file" },
                 { key: "qbittorrentTags", label: "qBittorrent tags", type: "text" },
                 { key: "qbittorrentCategory", label: "qBittorrent category", type: "text" },
-                { key: "transmissionHost", label: "Transmission host", type: "text" },
-                { key: "transmissionPort", label: "Transmission port", type: "int", to: 65535 },
+                { key: "transmissionHost", label: "Transmission host", type: "text",
+                  validation: "host" },
+                { key: "transmissionPort", label: "Transmission port", type: "int", from: 1, to: 65535 },
                 { key: "transmissionUsername", label: "Transmission username", type: "text" },
                 { key: "transmissionPassword", label: "Transmission password", type: "password" },
-                { key: "transmissionPath", label: "Transmission path", type: "text" },
-                { key: "seanimePort", label: "Seanime client port", type: "int", to: 65535 },
+                { key: "transmissionPath", label: "Transmission path", type: "file" },
+                { key: "seanimePort", label: "Seanime client port", type: "int", from: 1, to: 65535 },
                 { key: "seanimeMaxConnections", label: "Max connections", type: "int" },
                 { key: "seanimeDownloadLimit", label: "Download limit (KB/s)", type: "int" },
                 { key: "seanimeUploadLimit", label: "Upload limit (KB/s)", type: "int" },
@@ -164,7 +216,7 @@ Item {
         {
             name: "Manga", group: "manga", fields: [
                 { key: "defaultMangaProvider", label: "Default provider", type: "text" },
-                { key: "mangaLocalSourceDirectory", label: "Local source directory", type: "text" },
+                { key: "mangaLocalSourceDirectory", label: "Local source directory", type: "dir" },
                 { key: "mangaAutoUpdateProgress", label: "Auto-update progress", type: "switch" },
                 { key: "mangaCacheDurationHours", label: "Cache duration (hours)", type: "int",
                   desc: "0 = never expire." }
@@ -183,7 +235,8 @@ Item {
                 { key: "username", label: "Username", type: "text" },
                 { key: "isHost", label: "Act as host", type: "switch" },
                 { key: "hostPassword", label: "Host password", type: "password" },
-                { key: "remoteServerURL", label: "Remote server URL", type: "text" },
+                { key: "remoteServerURL", label: "Remote server URL", type: "text",
+                  validation: "url" },
                 { key: "remoteServerPassword", label: "Remote server password", type: "password" },
                 { key: "includeNakamaAnimeLibrary", label: "Include host anime library", type: "switch" },
                 { key: "hostShareLocalAnimeLibrary", label: "Share local anime library", type: "switch" },
@@ -292,11 +345,13 @@ Item {
 
                         SettingField {
                             id: clientHost; label: "Server host"; type: "text"
-                            placeholder: "127.0.0.1"; value: app.serverHost
+                            placeholder: "127.0.0.1"; validation: "host"
+                            value: app.serverHost
                         }
                         SettingField {
                             id: clientPort; label: "Server port"; type: "text"
-                            placeholder: "43211"; value: app.serverPort
+                            placeholder: "43211"; validation: "port"
+                            value: app.serverPort
                         }
                         SettingField {
                             id: clientToken; label: "Server token"; type: "password"
@@ -351,6 +406,9 @@ Item {
                                     from: modelData.from || 0
                                     to: modelData.to || 999999
                                     placeholder: modelData.placeholder || ""
+                                    options: modelData.options || []
+                                    editable: modelData.editable || false
+                                    validation: modelData.validation || ""
                                     value: root.sv(pane.modelData.group, modelData.key,
                                                    modelData.type === "switch" ? false
                                                  : modelData.type === "int" ? 0 : "")
@@ -385,7 +443,20 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: Theme.durBase } }
                     }
 
-                    Item { Layout.fillWidth: true }
+                    Label {
+                        objectName: "settingsSaveError"
+                        Layout.fillWidth: true
+                        visible: root.saveError.length > 0
+                        text: root.saveError
+                        color: Theme.danger
+                        font.pixelSize: Theme.fontMd
+                        elide: Text.ElideRight
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        visible: root.saveError.length === 0
+                    }
 
                     AppButton {
                         objectName: "saveSettingsButton"
@@ -402,6 +473,6 @@ Item {
     Timer { id: toastTimer; interval: 2000; onTriggered: savedToast.opacity = 0 }
     Connections {
         target: app
-        function onSettingsSaved() { savedToast.opacity = 1; toastTimer.restart() }
+        function onSettingsSaved() { root.saveError = ""; savedToast.opacity = 1; toastTimer.restart() }
     }
 }
