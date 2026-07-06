@@ -63,12 +63,12 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 visible: root.loadFailed && filterField.text.length === 0
                 spacing: 8
-                Button {
+                AppButton {
                     objectName: "libraryLoginButton"
                     text: "Log in with AniList"
                     onClicked: root.loginRequested()
                 }
-                Button {
+                AppButton {
                     objectName: "libraryRetryButton"
                     text: "Retry"
                     onClicked: app.refresh()
@@ -106,7 +106,7 @@ Item {
             // Staggered fade-in as the grid first populates; new items fade too.
             populate: Transition {
                 SequentialAnimation {
-                    PauseAnimation { duration: Math.min(ViewTransition.index, 12) * 22 }
+                    PauseAnimation { duration: Math.max(0, Math.min(ViewTransition.index, 12)) * 22 }
                     NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
                 }
             }

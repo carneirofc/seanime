@@ -18,7 +18,7 @@ Item {
             Layout.fillWidth: true
             Layout.margins: 12
             spacing: 10
-            Button {
+            AppButton {
                 objectName: "readerBackButton"
                 text: "← Back"
                 onClicked: root.back()
@@ -27,8 +27,8 @@ Item {
                 objectName: "readerTitleLabel"
                 Layout.fillWidth: true
                 text: app.readerChapterTitle
-                color: "#ffffff"
-                font.pixelSize: 17
+                color: Theme.textStrong
+                font.pixelSize: Theme.fontXl
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -38,7 +38,7 @@ Item {
                 implicitWidth: 22
                 implicitHeight: 22
             }
-            Button {
+            AppButton {
                 objectName: "markReadButton"
                 text: "Mark read"
                 onClicked: app.markCurrentChapterRead()
@@ -85,13 +85,13 @@ Item {
                         anchors.centerIn: parent
                         width: parent.width * 0.6
                         height: 40
-                        radius: 6
-                        color: "#1a1a22"
+                        radius: Theme.radius
+                        color: Theme.surface
                         visible: pageImage.status !== Image.Ready
                         Label {
                             anchors.centerIn: parent
-                            color: "#8a8a96"
-                            font.pixelSize: 12
+                            color: Theme.textMuted
+                            font.pixelSize: Theme.fontSm
                             text: pageImage.status === Image.Error
                                     ? "Failed to load page " + (pageIndex + 1)
                                     : "Loading page " + (pageIndex + 1) + "…"
@@ -104,8 +104,8 @@ Item {
             Label {
                 anchors.centerIn: parent
                 visible: pageList.count === 0 && !app.readerLoading
-                color: "#8a8a96"
-                font.pixelSize: 14
+                color: Theme.textMuted
+                font.pixelSize: Theme.fontBase
                 text: "No pages to display."
             }
         }

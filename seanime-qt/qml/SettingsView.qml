@@ -387,7 +387,7 @@ Item {
 
                     Item { Layout.fillWidth: true }
 
-                    Button {
+                    AppButton {
                         objectName: "saveSettingsButton"
                         text: root.currentIndex === 0 ? "Save & reconnect" : "Save settings"
                         enabled: root.currentIndex === 0 || root.connected

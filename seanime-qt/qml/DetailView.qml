@@ -20,7 +20,7 @@ Item {
             Layout.fillWidth: true
             Layout.margins: 12
             spacing: 10
-            Button {
+            AppButton {
                 objectName: "detailBackButton"
                 text: "← Back"
                 onClicked: root.back()
@@ -29,8 +29,8 @@ Item {
                 objectName: "detailTitleLabel"
                 Layout.fillWidth: true
                 text: app.detailTitle
-                color: "#ffffff"
-                font.pixelSize: 20
+                color: Theme.textStrong
+                font.pixelSize: Theme.fontXxl
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -52,14 +52,14 @@ Item {
                     onEditListRequested: listEditor.openFor()
                 }
 
-                Rectangle { Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12; Layout.preferredHeight: 1; color: "#26262f" }
+                Rectangle { Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12; Layout.preferredHeight: 1; color: Theme.border }
 
                 // Episodes.
                 Label {
                     Layout.leftMargin: 12
                     text: "Episodes (" + episodeRepeater.count + ")"
-                    color: "#e6e6ee"
-                    font.pixelSize: 15
+                    color: Theme.text
+                    font.pixelSize: Theme.fontLg
                     font.bold: true
                     visible: episodeRepeater.count > 0
                 }

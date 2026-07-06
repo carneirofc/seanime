@@ -17,8 +17,8 @@ ColumnLayout {
     Label {
         Layout.leftMargin: 4
         text: root.title
-        color: "#ffffff"
-        font.pixelSize: 16
+        color: Theme.textStrong
+        font.pixelSize: Theme.fontLg
         font.bold: true
     }
 
@@ -36,14 +36,25 @@ ColumnLayout {
         keyNavigationEnabled: true
         highlightMoveDuration: 100
         highlight: Rectangle {
-            radius: 8
+            radius: Theme.radius
             color: "transparent"
             border.width: 2
-            border.color: "#3ea6ff"
+            border.color: Theme.accent
             visible: row.activeFocus
         }
         Keys.onReturnPressed: if (row.currentItem) row.currentItem.activate()
         Keys.onEnterPressed: if (row.currentItem) row.currentItem.activate()
+
+        // Staggered fade-in as the carousel populates.
+        populate: Transition {
+            SequentialAnimation {
+                PauseAnimation { duration: Math.max(0, Math.min(ViewTransition.index, 10)) * 25 }
+                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
+            }
+        }
+        add: Transition {
+            NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+        }
 
         ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
 

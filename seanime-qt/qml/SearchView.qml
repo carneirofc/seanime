@@ -69,7 +69,7 @@ Item {
                 onAccepted: root.runSearch()
                 focus: true
             }
-            Button {
+            AppButton {
                 objectName: "searchButton"
                 text: "Search"
                 onClicked: root.runSearch()
@@ -81,7 +81,7 @@ Item {
             Layout.fillWidth: true
             spacing: 8
 
-            ComboBox {
+            AppComboBox {
                 id: sortCombo
                 objectName: "sortCombo"
                 width: 150
@@ -89,7 +89,7 @@ Item {
                 valueRole: "value"
                 model: root.sortOptions
             }
-            ComboBox {
+            AppComboBox {
                 id: formatCombo
                 objectName: "formatCombo"
                 width: 130
@@ -97,7 +97,7 @@ Item {
                 valueRole: "value"
                 model: root.formatOptions
             }
-            ComboBox {
+            AppComboBox {
                 id: seasonCombo
                 objectName: "seasonCombo"
                 width: 130
@@ -105,7 +105,7 @@ Item {
                 valueRole: "value"
                 model: root.seasonOptions
             }
-            ComboBox {
+            AppComboBox {
                 id: statusCombo
                 objectName: "statusCombo"
                 width: 140
@@ -131,7 +131,7 @@ Item {
                     Layout.preferredWidth: 110
                 }
             }
-            Button {
+            AppButton {
                 objectName: "genresButton"
                 text: genrePopup.selected.length > 0
                       ? "Genres (" + genrePopup.selected.length + ")"
@@ -181,7 +181,7 @@ Item {
             // Staggered fade-in as results populate; "Load more" items fade in too.
             populate: Transition {
                 SequentialAnimation {
-                    PauseAnimation { duration: Math.min(ViewTransition.index, 12) * 22 }
+                    PauseAnimation { duration: Math.max(0, Math.min(ViewTransition.index, 12)) * 22 }
                     NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
                 }
             }
@@ -198,7 +198,7 @@ Item {
             footer: Item {
                 width: grid.width
                 height: grid.count > 0 ? 56 : 0
-                Button {
+                AppButton {
                     objectName: "loadMoreButton"
                     anchors.centerIn: parent
                     text: "Load more"

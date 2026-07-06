@@ -15,7 +15,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: 160
         clip: true
-        color: "#14141c"
+        color: Theme.surfaceAlt
         visible: app.detailBanner.length > 0
         Image {
             anchors.fill: parent
@@ -28,7 +28,7 @@ ColumnLayout {
             anchors.fill: parent
             gradient: Gradient {
                 GradientStop { position: 0.4; color: "transparent" }
-                GradientStop { position: 1.0; color: "#0e0e12" }
+                GradientStop { position: 1.0; color: Theme.bg }
             }
         }
     }
@@ -43,9 +43,9 @@ ColumnLayout {
         Rectangle {
             Layout.preferredWidth: 180
             Layout.preferredHeight: 260
-            radius: 8
+            radius: Theme.radius
             clip: true
-            color: "#1a1a22"
+            color: Theme.surface
             Image {
                 anchors.fill: parent
                 source: app.detailPoster
@@ -66,8 +66,8 @@ ColumnLayout {
                 Chip {
                     visible: app.detailScore > 0
                     text: "★ " + app.detailScore
-                    textColor: "#ffd98f"
-                    fillColor: "#3a3320"
+                    textColor: Theme.warnText
+                    fillColor: Theme.warnFill
                 }
                 Chip { visible: app.detailFormat.length > 0; text: app.detailFormat }
                 Chip {
@@ -83,8 +83,8 @@ ColumnLayout {
                 Chip {
                     visible: app.detailNextAiring.length > 0
                     text: app.detailNextAiring
-                    textColor: "#8fd7ff"
-                    fillColor: "#1f2f3a"
+                    textColor: Theme.accentSoft
+                    fillColor: Theme.accentFill
                 }
             }
 
@@ -109,11 +109,11 @@ ColumnLayout {
                             + " · " + app.detailListProgress
                             + (app.detailEpisodeCount > 0 ? "/" + app.detailEpisodeCount : "")
                           : "Not in your list"
-                    color: "#c0c0cc"
-                    font.pixelSize: 13
+                    color: Theme.textDim
+                    font.pixelSize: Theme.fontMd
                 }
                 Item { Layout.fillWidth: true }
-                Button {
+                AppButton {
                     objectName: "editListButton"
                     text: "Edit list"
                     onClicked: header.editListRequested()
@@ -123,8 +123,8 @@ ColumnLayout {
             Label {
                 Layout.fillWidth: true
                 text: app.detailSynopsis || "No synopsis."
-                color: "#c0c0cc"
-                font.pixelSize: 14
+                color: Theme.textDim
+                font.pixelSize: Theme.fontBase
                 wrapMode: Text.WordWrap
             }
         }

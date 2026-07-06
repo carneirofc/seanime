@@ -5,12 +5,12 @@ import QtQuick.Controls
 Rectangle {
     id: chip
     property string text: ""
-    property color textColor: "#c8c8d4"
-    property color fillColor: "#22222c"
+    property color textColor: Theme.textDim
+    property color fillColor: Theme.elevated
 
     implicitWidth: label.implicitWidth + 16
     implicitHeight: 22
-    radius: 11
+    radius: Theme.radiusPill
     color: fillColor
 
     Label {
@@ -18,6 +18,6 @@ Rectangle {
         anchors.centerIn: parent
         text: chip.text
         color: chip.textColor
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontXs
     }
 }

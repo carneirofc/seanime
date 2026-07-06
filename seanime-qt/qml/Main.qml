@@ -48,7 +48,7 @@ ApplicationWindow {
             TextField {
                 id: hostField
                 objectName: "hostField"
-                text: "127.0.0.1"
+                text: app.serverHost
                 Layout.preferredWidth: 130
                 placeholderText: "host"
                 Accessible.name: "Server host"
@@ -56,7 +56,7 @@ ApplicationWindow {
             TextField {
                 id: portField
                 objectName: "portField"
-                text: "43211"
+                text: app.serverPort
                 Layout.preferredWidth: 70
                 placeholderText: "port"
                 Accessible.name: "Server port"
@@ -64,12 +64,13 @@ ApplicationWindow {
             TextField {
                 id: tokenField
                 objectName: "tokenField"
+                text: app.serverToken
                 Layout.preferredWidth: 150
                 placeholderText: "token (optional)"
                 echoMode: TextInput.Password
                 Accessible.name: "Server token, optional"
             }
-            Button {
+            AppButton {
                 objectName: "connectButton"
                 text: "Connect"
                 onClicked: app.connectToServer(hostField.text, portField.text, tokenField.text)
@@ -130,7 +131,7 @@ ApplicationWindow {
                         color: Theme.dangerText
                         elide: Text.ElideRight
                     }
-                    ToolButton {
+                    AppToolButton {
                         text: "✕"
                         onClicked: app.refresh()  // retry the library fetch
                         Accessible.name: "Dismiss error and retry"

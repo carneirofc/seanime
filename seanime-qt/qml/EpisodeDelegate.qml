@@ -90,7 +90,7 @@ Rectangle {
         }
 
         // Mark watched up to this episode / unwatch (set progress to the one before).
-        Button {
+        AppButton {
             objectName: "episodeWatchButton_" + progressNumber
             text: isWatched ? "Unwatch" : "Mark watched"
             onClicked: app.setEpisodeProgress(isWatched ? progressNumber - 1 : progressNumber)

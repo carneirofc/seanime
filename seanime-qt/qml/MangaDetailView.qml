@@ -17,7 +17,7 @@ Item {
             Layout.fillWidth: true
             Layout.margins: 12
             spacing: 10
-            Button {
+            AppButton {
                 objectName: "mangaBackButton"
                 text: "← Back"
                 onClicked: root.back()
@@ -26,8 +26,8 @@ Item {
                 objectName: "mangaTitleLabel"
                 Layout.fillWidth: true
                 text: app.mangaTitle
-                color: "#ffffff"
-                font.pixelSize: 20
+                color: Theme.textStrong
+                font.pixelSize: Theme.fontXxl
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -49,7 +49,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 160
                     clip: true
-                    color: "#14141c"
+                    color: Theme.surfaceAlt
                     visible: app.mangaBanner.length > 0
                     Image {
                         anchors.fill: parent
@@ -61,7 +61,7 @@ Item {
                         anchors.fill: parent
                         gradient: Gradient {
                             GradientStop { position: 0.4; color: "transparent" }
-                            GradientStop { position: 1.0; color: "#0e0e12" }
+                            GradientStop { position: 1.0; color: Theme.bg }
                         }
                     }
                 }
@@ -75,9 +75,9 @@ Item {
                     Rectangle {
                         Layout.preferredWidth: 180
                         Layout.preferredHeight: 260
-                        radius: 8
+                        radius: Theme.radius
                         clip: true
-                        color: "#1a1a22"
+                        color: Theme.surface
                         Image {
                             anchors.fill: parent
                             source: app.mangaPoster
@@ -98,8 +98,8 @@ Item {
                             Chip {
                                 visible: app.mangaScore > 0
                                 text: "★ " + app.mangaScore
-                                textColor: "#ffd98f"
-                                fillColor: "#3a3320"
+                                textColor: Theme.warnText
+                                fillColor: Theme.warnFill
                             }
                             Chip { visible: app.mangaFormat.length > 0; text: app.mangaFormat }
                             Chip {
@@ -127,21 +127,21 @@ Item {
                                     + " · " + app.mangaListProgress
                                     + (app.mangaChapterCount > 0 ? "/" + app.mangaChapterCount : "")
                                   : "Not in your list"
-                            color: "#c0c0cc"
-                            font.pixelSize: 13
+                            color: Theme.textDim
+                            font.pixelSize: Theme.fontMd
                         }
 
                         Label {
                             Layout.fillWidth: true
                             text: app.mangaSynopsis || "No synopsis."
-                            color: "#c0c0cc"
-                            font.pixelSize: 14
+                            color: Theme.textDim
+                            font.pixelSize: Theme.fontBase
                             wrapMode: Text.WordWrap
                         }
                     }
                 }
 
-                Rectangle { Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12; Layout.preferredHeight: 1; color: "#26262f" }
+                Rectangle { Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12; Layout.preferredHeight: 1; color: Theme.border }
 
                 // ---- chapter source selector ----
                 RowLayout {
@@ -151,10 +151,10 @@ Item {
                     spacing: 10
                     Label {
                         text: "Source"
-                        color: "#8a8a96"
-                        font.pixelSize: 13
+                        color: Theme.textMuted
+                        font.pixelSize: Theme.fontMd
                     }
-                    ComboBox {
+                    AppComboBox {
                         id: providerCombo
                         objectName: "providerCombo"
                         Layout.preferredWidth: 220
@@ -169,8 +169,8 @@ Item {
                     Item { Layout.fillWidth: true }
                     Label {
                         text: "Chapters (" + chapterList.count + ")"
-                        color: "#e6e6ee"
-                        font.pixelSize: 15
+                        color: Theme.text
+                        font.pixelSize: Theme.fontLg
                         font.bold: true
                     }
                 }
@@ -180,8 +180,8 @@ Item {
                     Layout.leftMargin: 12
                     Layout.rightMargin: 12
                     visible: chapterList.count === 0
-                    color: "#8a8a96"
-                    font.pixelSize: 13
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontMd
                     text: app.mangaProviders.length === 0
                             ? "No manga provider installed. Install one in the Seanime web UI."
                             : "No chapters found for this source. Try another source above."

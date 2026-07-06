@@ -41,15 +41,26 @@ Dialog {
         scoreSpin.value,
         progressSpin.value)
 
-    background: Rectangle { color: "#1a1a22"; radius: 8; border.color: "#2c2c38" }
+    background: Rectangle { color: Theme.surface; radius: Theme.radius; border.color: Theme.border }
+
+    // Fade + subtle scale on open/close.
+    enter: Transition {
+        ParallelAnimation {
+            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+            NumberAnimation { property: "scale"; from: 0.96; to: 1; duration: Theme.durBase; easing.type: Theme.easeEmphasis }
+        }
+    }
+    exit: Transition {
+        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durFast }
+    }
 
     contentItem: ColumnLayout {
         spacing: 12
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Status"; color: "#c0c0cc"; Layout.preferredWidth: 90 }
-            ComboBox {
+            Label { text: "Status"; color: Theme.textDim; Layout.preferredWidth: 90 }
+            AppComboBox {
                 id: statusCombo
                 objectName: "listStatusCombo"
                 Layout.fillWidth: true
@@ -60,7 +71,7 @@ Dialog {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Score (0–10)"; color: "#c0c0cc"; Layout.preferredWidth: 90 }
+            Label { text: "Score (0–10)"; color: Theme.textDim; Layout.preferredWidth: 90 }
             SpinBox {
                 id: scoreSpin
                 objectName: "listScoreSpin"
@@ -71,7 +82,7 @@ Dialog {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Progress"; color: "#c0c0cc"; Layout.preferredWidth: 90 }
+            Label { text: "Progress"; color: Theme.textDim; Layout.preferredWidth: 90 }
             SpinBox {
                 id: progressSpin
                 objectName: "listProgressSpin"

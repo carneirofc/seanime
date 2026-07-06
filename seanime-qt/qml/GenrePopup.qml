@@ -11,7 +11,18 @@ Popup {
     anchors.centerIn: Overlay.overlay
     width: 420
     padding: 16
-    background: Rectangle { color: "#1a1a22"; radius: 8; border.color: "#2c2c38" }
+    background: Rectangle { color: Theme.surface; radius: Theme.radius; border.color: Theme.border }
+
+    // Fade + subtle scale on open/close.
+    enter: Transition {
+        ParallelAnimation {
+            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+            NumberAnimation { property: "scale"; from: 0.96; to: 1; duration: Theme.durBase; easing.type: Theme.easeEmphasis }
+        }
+    }
+    exit: Transition {
+        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durFast }
+    }
 
     // Currently-selected genres.
     property var selected: []
@@ -33,13 +44,13 @@ Popup {
     ColumnLayout {
         anchors.fill: parent
         spacing: 12
-        Label { text: "Genres"; color: "#ffffff"; font.pixelSize: 15; font.bold: true }
+        Label { text: "Genres"; color: Theme.textStrong; font.pixelSize: Theme.fontLg; font.bold: true }
         Flow {
             Layout.preferredWidth: 388
             spacing: 6
             Repeater {
                 model: genrePopup.genreList
-                delegate: Button {
+                delegate: AppButton {
                     required property string modelData
                     text: modelData
                     checkable: true
@@ -50,9 +61,9 @@ Popup {
         }
         RowLayout {
             Layout.fillWidth: true
-            Button { text: "Clear"; onClicked: genrePopup.selected = [] }
+            AppButton { text: "Clear"; onClicked: genrePopup.selected = [] }
             Item { Layout.fillWidth: true }
-            Button { text: "Done"; onClicked: genrePopup.close() }
+            AppButton { text: "Done"; onClicked: genrePopup.close() }
         }
     }
 }

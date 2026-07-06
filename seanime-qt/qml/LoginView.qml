@@ -17,7 +17,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 44
-            color: "#17171f"
+            color: Theme.surfaceAlt
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
@@ -25,12 +25,12 @@ Item {
                 spacing: 8
                 Label {
                     text: "Log in to AniList"
-                    color: "#ffffff"
-                    font.pixelSize: 15
+                    color: Theme.textStrong
+                    font.pixelSize: Theme.fontLg
                     font.bold: true
                 }
                 Item { Layout.fillWidth: true }
-                Button {
+                AppButton {
                     objectName: "loginCancelButton"
                     text: "Cancel"
                     onClicked: root.close()

@@ -87,7 +87,9 @@ ColumnLayout {
         editable: true
         from: field.from
         to: field.to
-        value: field.value === undefined || field.value === null ? 0 : field.value
+        // Only ints reach here; other types share ``value`` as string/bool, so
+        // coerce anything non-numeric to 0 to avoid a binding type error.
+        value: (typeof field.value === "number") ? field.value : 0
         onValueModified: field.value = value
     }
 }

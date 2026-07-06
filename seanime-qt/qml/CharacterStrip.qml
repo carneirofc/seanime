@@ -14,8 +14,8 @@ ColumnLayout {
 
     Label {
         text: "Characters"
-        color: "#ffffff"
-        font.pixelSize: 16
+        color: Theme.textStrong
+        font.pixelSize: Theme.fontLg
         font.bold: true
     }
     ListView {
@@ -26,6 +26,18 @@ ColumnLayout {
         spacing: 12
         clip: true
         ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+
+        // Staggered fade-in as portraits populate.
+        populate: Transition {
+            SequentialAnimation {
+                PauseAnimation { duration: Math.min(ViewTransition.index, 10) * 25 }
+                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
+            }
+        }
+        add: Transition {
+            NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durBase; easing.type: Theme.easeStandard }
+        }
+
         delegate: CharacterCard { width: 96; height: 180 }
     }
 }

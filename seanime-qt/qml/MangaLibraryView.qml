@@ -30,7 +30,7 @@ Item {
                 font.bold: true
             }
             Item { Layout.fillWidth: true }
-            Button {
+            AppButton {
                 objectName: "mangaRefreshButton"
                 text: "Refresh"
                 onClicked: app.loadMangaLibrary()
@@ -70,12 +70,12 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 visible: root.loadFailed
                 spacing: 8
-                Button {
+                AppButton {
                     objectName: "mangaLoginButton"
                     text: "Log in with AniList"
                     onClicked: root.loginRequested()
                 }
-                Button {
+                AppButton {
                     objectName: "mangaRetryButton"
                     text: "Retry"
                     onClicked: app.loadMangaLibrary()
@@ -111,7 +111,7 @@ Item {
             // Staggered fade-in as the grid first populates; new items fade too.
             populate: Transition {
                 SequentialAnimation {
-                    PauseAnimation { duration: Math.min(ViewTransition.index, 12) * 22 }
+                    PauseAnimation { duration: Math.max(0, Math.min(ViewTransition.index, 12)) * 22 }
                     NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
                 }
             }

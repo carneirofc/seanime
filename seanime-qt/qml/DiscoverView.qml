@@ -19,12 +19,12 @@ Item {
             spacing: 8
             Label {
                 text: "Discover"
-                color: "#ffffff"
-                font.pixelSize: 18
+                color: Theme.textStrong
+                font.pixelSize: Theme.fontXl
                 font.bold: true
             }
             Item { Layout.fillWidth: true }
-            Button {
+            AppButton {
                 objectName: "discoverRefreshButton"
                 text: "Refresh"
                 onClicked: app.loadDiscover()
@@ -37,8 +37,8 @@ Item {
             text: app.connectionStatus === "connected"
                   ? "Loading… (requires a working AniList login)"
                   : "Not connected."
-            color: "#8a8a96"
-            font.pixelSize: 16
+            color: Theme.textMuted
+            font.pixelSize: Theme.fontLg
             horizontalAlignment: Text.AlignHCenter
         }
 

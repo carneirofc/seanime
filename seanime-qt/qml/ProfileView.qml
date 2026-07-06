@@ -26,8 +26,8 @@ Item {
         anchors.fill: banner
         visible: banner.visible
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#000e0e12" }
-            GradientStop { position: 1.0; color: "#e60e0e12" }
+            GradientStop { position: 0.0; color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.0) }
+            GradientStop { position: 1.0; color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.9) }
         }
     }
 
@@ -42,8 +42,8 @@ Item {
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
             width: 120; height: 120; radius: 60
-            color: "#1a1a22"
-            border.color: "#0e0e12"; border.width: 4
+            color: Theme.surface
+            border.color: Theme.bg; border.width: 4
             clip: true
             Image {
                 anchors.fill: parent
@@ -56,7 +56,7 @@ Item {
                 anchors.centerIn: parent
                 visible: app.avatarUrl.length === 0
                 text: root.loggedIn ? app.username.charAt(0).toUpperCase() : "?"
-                color: "#8a8a96"
+                color: Theme.textMuted
                 font.pixelSize: 42
             }
         }
@@ -65,8 +65,8 @@ Item {
             objectName: "profileNameLabel"
             Layout.alignment: Qt.AlignHCenter
             text: root.loggedIn ? app.username : "Not logged in"
-            color: "#ffffff"
-            font.pixelSize: 24
+            color: Theme.textStrong
+            font.pixelSize: Theme.fontHero
             font.bold: true
         }
 
@@ -75,8 +75,8 @@ Item {
             text: root.loggedIn
                   ? "Signed in to AniList"
                   : "Use “Log in with AniList” in the header to sign in."
-            color: "#9ad0ff"
-            font.pixelSize: 13
+            color: Theme.accentSoft
+            font.pixelSize: Theme.fontMd
         }
 
         // Simple stat card.
@@ -84,23 +84,23 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 8
             implicitWidth: 200; implicitHeight: 72
-            radius: 8
-            color: "#1a1a22"
+            radius: Theme.radius
+            color: Theme.surface
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: 2
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     text: app.libraryCount
-                    color: "#ffffff"
+                    color: Theme.textStrong
                     font.pixelSize: 26
                     font.bold: true
                 }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     text: "titles in library"
-                    color: "#8a8a96"
-                    font.pixelSize: 12
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontSm
                 }
             }
         }
