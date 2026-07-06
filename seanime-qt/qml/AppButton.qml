@@ -1,13 +1,54 @@
 import QtQuick
 import QtQuick.Controls
 
-// A standard Button that shows a pointing-hand cursor on hover, like the web
-// frontend. Drop-in replacement for Button — inherits its full API. Using a
-// wrapper keeps the cursor behaviour in one place (see also AppToolButton,
-// AppComboBox) instead of repeating a HoverHandler on every button.
+// A themed Button: brand-consistent surface, hover/press/focus states, and a
+// pointing-hand cursor — a drop-in replacement for Button (inherits its full
+// API, including `checkable`/`checked`, used by the genre picker).
+//
+// Styling is applied per-control (custom background/contentItem) so the app
+// keeps the lightweight Basic Qt Quick Controls style rather than pulling in a
+// whole theme engine.
 Button {
+    id: control
+
+    horizontalPadding: 14
+    verticalPadding: 7
+
+    // Subtle tactile press.
+    scale: down ? 0.97 : 1.0
+    Behavior on scale { NumberAnimation { duration: Theme.durFast } }
+
     HoverHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         cursorShape: Qt.PointingHandCursor
+    }
+
+    contentItem: Text {
+        text: control.text
+        font: control.font
+        color: !control.enabled ? Theme.textMuted
+             : control.checked  ? Theme.accentText
+             : Theme.text
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        elide: Text.ElideRight
+        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+    }
+
+    background: Rectangle {
+        implicitWidth: 72
+        implicitHeight: 34
+        radius: Theme.radius
+        color: !control.enabled ? Theme.surface
+             : control.checked  ? (control.down ? Theme.accentHover : Theme.accent)
+             : control.down      ? Theme.surface
+             : control.hovered   ? Qt.lighter(Theme.elevated, 1.3)
+             : Theme.elevated
+        border.width: control.activeFocus ? 2 : 1
+        border.color: control.activeFocus ? Theme.accent
+                    : control.checked      ? Theme.accentHover
+                    : Theme.border
+        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+        Behavior on border.color { ColorAnimation { duration: Theme.durFast } }
     }
 }
