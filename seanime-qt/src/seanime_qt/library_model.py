@@ -33,6 +33,8 @@ class LibraryModel(QAbstractListModel):
     StatusRole = Qt.ItemDataRole.UserRole + 4
     ProgressRole = Qt.ItemDataRole.UserRole + 5
     EpisodeCountRole = Qt.ItemDataRole.UserRole + 6
+    ScoreRole = Qt.ItemDataRole.UserRole + 7
+    IsAdultRole = Qt.ItemDataRole.UserRole + 8
 
     _ROLES = {
         MediaIdRole: b"mediaId",
@@ -41,6 +43,8 @@ class LibraryModel(QAbstractListModel):
         StatusRole: b"status",
         ProgressRole: b"progress",
         EpisodeCountRole: b"episodeCount",
+        ScoreRole: b"score",
+        IsAdultRole: b"isAdult",
     }
 
     def __init__(self, parent=None) -> None:
@@ -66,6 +70,8 @@ class LibraryModel(QAbstractListModel):
                         "status": status,
                         "progress": list_data.get("progress") or 0,
                         "episodeCount": media.get("episodes") or 0,
+                        "score": media.get("meanScore") or media.get("averageScore") or 0,
+                        "isAdult": bool(media.get("isAdult")),
                     }
                 )
 

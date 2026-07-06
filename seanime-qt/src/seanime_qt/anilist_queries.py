@@ -34,8 +34,13 @@ def prev_season_year() -> tuple[str, int]:
 def search_body(filters: dict, page: int) -> dict:
     """Build a ``list-anime`` body from an advanced-search filter object.
 
-    ``filters`` keys: search, sort, genres[], format, season, year, status,
-    minScore. Empty fields are omitted so they don't constrain the query.
+    ``filters`` keys: search, sort, genres[], tags[], format, season, year,
+    status, minScore, isAdult. Empty fields are omitted so they don't constrain
+    the query.
+
+    ``isAdult`` is always sent as a bool so the server can honour it: ``False``
+    (the default) restricts results to non-adult media, ``True`` returns only
+    adult media (and only when the server has adult content enabled).
     """
     body: dict = {"page": page, "perPage": PER_PAGE}
     search = (filters.get("search") or "").strip()
@@ -45,6 +50,9 @@ def search_body(filters: dict, page: int) -> dict:
     genres = [g for g in (filters.get("genres") or []) if g]
     if genres:
         body["genres"] = genres
+    tags = [t for t in (filters.get("tags") or []) if t]
+    if tags:
+        body["tags"] = tags
     if filters.get("format"):
         body["format"] = filters["format"]
     if filters.get("season"):
@@ -57,6 +65,7 @@ def search_body(filters: dict, page: int) -> dict:
     min_score = int(filters.get("minScore") or 0)
     if min_score:
         body["averageScore_greater"] = min_score
+    body["isAdult"] = bool(filters.get("isAdult"))
     return body
 
 

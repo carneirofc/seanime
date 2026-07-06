@@ -45,13 +45,22 @@ Item {
             "search": searchField.text,
             "sort": sortCombo.currentValue,
             "genres": genrePopup.selected,
+            "tags": tagPopup.selected,
             "format": formatCombo.currentValue,
             "season": seasonCombo.currentValue,
             "year": parseInt(yearField.text) || 0,
             "status": statusCombo.currentValue,
-            "minScore": minScoreSpin.value
+            "minScore": minScoreSpin.value,
+            // Only ask for adult media when the server allows it and the user opts in.
+            "isAdult": app.enableAdultContent && adultSwitch.checked
         })
     }
+
+    // True once any filter is set, so the empty-state copy can adapt.
+    readonly property bool hasFilters: searchField.text.length > 0
+                                       || genrePopup.selected.length > 0
+                                       || tagPopup.selected.length > 0
+                                       || (app.enableAdultContent && adultSwitch.checked)
 
     ColumnLayout {
         anchors.fill: parent
@@ -61,7 +70,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
-            TextField {
+            AppTextField {
                 id: searchField
                 objectName: "searchField"
                 Layout.fillWidth: true
@@ -113,7 +122,7 @@ Item {
                 valueRole: "value"
                 model: root.statusOptions
             }
-            TextField {
+            AppTextField {
                 id: yearField
                 objectName: "yearField"
                 width: 90
@@ -124,7 +133,7 @@ Item {
             RowLayout {
                 spacing: 4
                 Label { text: "Min score"; color: Theme.textMuted; font.pixelSize: Theme.fontSm }
-                SpinBox {
+                AppSpinBox {
                     id: minScoreSpin
                     objectName: "minScoreSpin"
                     from: 0; to: 100; stepSize: 5
@@ -138,12 +147,30 @@ Item {
                       : "Genres"
                 onClicked: genrePopup.open()
             }
+            AppButton {
+                objectName: "tagsButton"
+                text: tagPopup.selected.length > 0
+                      ? "Tags (" + tagPopup.selected.length + ")"
+                      : "Tags"
+                onClicked: tagPopup.open()
+            }
+            // Adult toggle — only offered when the server enables adult content.
+            RowLayout {
+                visible: app.enableAdultContent
+                spacing: 4
+                AppSwitch {
+                    id: adultSwitch
+                    objectName: "adultSwitch"
+                    text: "Adult only"
+                    onToggled: root.runSearch()
+                }
+            }
         }
 
         Label {
             Layout.fillWidth: true
-            visible: grid.count === 0
-            text: searchField.text.length === 0 && genrePopup.selected.length === 0
+            visible: app.searchModel.count === 0
+            text: !root.hasFilters
                   ? "Enter a title or pick filters, then press Search."
                   : "No results."
             color: Theme.textMuted
@@ -151,9 +178,45 @@ Item {
             horizontalAlignment: Text.AlignHCenter
         }
 
+        // Split view: when the server splits adult content, results are shown in
+        // two labeled sections (safe + adult) that scroll together.
+        ScrollView {
+            id: splitScroll
+            visible: app.splitAdultContent && app.searchModel.count > 0
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+            ColumnLayout {
+                width: splitScroll.availableWidth
+                spacing: 16
+
+                MediaGrid {
+                    Layout.fillWidth: true
+                    title: "Results"
+                    model: app.searchSfwModel
+                    onOpenRequested: (mediaId) => app.openAnime(mediaId)
+                }
+                MediaGrid {
+                    Layout.fillWidth: true
+                    title: "Adult"
+                    model: app.searchAdultModel
+                    onOpenRequested: (mediaId) => app.openAnime(mediaId)
+                }
+                AppButton {
+                    objectName: "loadMoreButtonSplit"
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "Load more"
+                    onClicked: app.searchLoadMore()
+                }
+            }
+        }
+
         GridView {
             id: grid
             objectName: "searchGrid"
+            visible: !app.splitAdultContent
             Layout.fillWidth: true
             Layout.fillHeight: true
             cellWidth: 180
@@ -210,4 +273,7 @@ Item {
 
     // Genre multi-select (owns its selection; read via genrePopup.selected).
     GenrePopup { id: genrePopup }
+
+    // Tag multi-select (owns its selection; read via tagPopup.selected).
+    TagPopup { id: tagPopup }
 }

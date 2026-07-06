@@ -29,12 +29,14 @@ from .anilist_queries import (
     search_body,
     strip_html,
 )
+from .adult_filter import AdultFilterProxy
 from .api_client import ApiClient
 from .chapter_model import ChapterModel
 from .character_model import CharacterModel
 from .episode_model import EpisodeModel
 from .library_model import LibraryModel
 from .manga_library_model import MangaLibraryModel
+from .media_tags import MEDIA_TAGS
 from .page_model import PageModel
 from .search_model import SearchModel
 from .settings_store import SettingsStore
@@ -102,6 +104,20 @@ class AppController(QObject):
         self._library_filter.setSourceModel(self._library_model)
         self._library_filter.setFilterRole(LibraryModel.TitleRole)
         self._library_filter.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+
+        # "Split adult content": paired proxies that partition a source model into
+        # its safe and adult halves. QML shows the split grids only when the server
+        # enables ``anilist.splitAdultContent``; otherwise it binds the raw model.
+        # The library proxies sit on top of the find-in-library filter so both the
+        # text filter and the split compose.
+        self._library_sfw = AdultFilterProxy(False, self)
+        self._library_sfw.setSourceModel(self._library_filter)
+        self._library_adult = AdultFilterProxy(True, self)
+        self._library_adult.setSourceModel(self._library_filter)
+        self._search_sfw = AdultFilterProxy(False, self)
+        self._search_sfw.setSourceModel(self._search_model)
+        self._search_adult = AdultFilterProxy(True, self)
+        self._search_adult.setSourceModel(self._search_model)
 
         self._connection_status = "disconnected"
         self._error_message = ""
@@ -209,6 +225,18 @@ class AppController(QObject):
     def _get_search_model(self) -> SearchModel:
         return self._search_model
 
+    def _get_search_sfw_model(self) -> QObject:
+        return self._search_sfw
+
+    def _get_search_adult_model(self) -> QObject:
+        return self._search_adult
+
+    def _get_library_sfw_model(self) -> QObject:
+        return self._library_sfw
+
+    def _get_library_adult_model(self) -> QObject:
+        return self._library_adult
+
     def _get_discover_model(self) -> SearchModel:
         return self._discover_model
 
@@ -249,6 +277,10 @@ class AppController(QObject):
     libraryModel = Property(QObject, _get_library_model, constant=True)
     episodeModel = Property(QObject, _get_episode_model, constant=True)
     searchModel = Property(QObject, _get_search_model, constant=True)
+    searchSfwModel = Property(QObject, _get_search_sfw_model, constant=True)
+    searchAdultModel = Property(QObject, _get_search_adult_model, constant=True)
+    librarySfwModel = Property(QObject, _get_library_sfw_model, constant=True)
+    libraryAdultModel = Property(QObject, _get_library_adult_model, constant=True)
     discoverModel = Property(QObject, _get_discover_model, constant=True)
     relationsModel = Property(QObject, _get_relations_model, constant=True)
     recommendationsModel = Property(QObject, _get_recommendations_model, constant=True)
@@ -457,7 +489,10 @@ class AppController(QObject):
         self._anilist_client_secret = (value or "").strip()
 
     anilistClientSecret = Property(
-        str, _get_anilist_client_secret, _set_anilist_client_secret
+        str,
+        _get_anilist_client_secret,
+        _set_anilist_client_secret,
+        notify=authStateChanged,
     )
 
     # ---- settings + client-pref properties ------------------------------
@@ -468,6 +503,39 @@ class AppController(QObject):
     # The whole server-settings object as a plain map; QML reads
     # ``app.settings.<group>.<field>`` and overlays edits before saving.
     settings = Property("QVariant", _get_settings, notify=settingsChanged)
+
+    # ---- adult-content flags (mirrored from settings.anilist) ------------
+    # Broken out as first-class bools so QML can bind blur/split/toggle logic
+    # without digging through the nested settings map (and so a null settings
+    # object during startup reads as False rather than undefined).
+
+    def _anilist_flag(self, key: str) -> bool:
+        anilist = (self._settings or {}).get("anilist") or {}
+        return bool(anilist.get(key))
+
+    def _get_enable_adult(self) -> bool:
+        return self._anilist_flag("enableAdultContent")
+
+    def _get_blur_adult(self) -> bool:
+        return self._anilist_flag("blurAdultContent")
+
+    def _get_split_adult(self) -> bool:
+        return self._anilist_flag("splitAdultContent")
+
+    enableAdultContent = Property(bool, _get_enable_adult, notify=settingsChanged)
+    blurAdultContent = Property(bool, _get_blur_adult, notify=settingsChanged)
+    splitAdultContent = Property(bool, _get_split_adult, notify=settingsChanged)
+
+    # AniList media-tag catalog for the advanced-search tag picker. Each entry is
+    # ``{name, category, isAdult}``; QML groups by category and hides adult tags
+    # unless the server enables adult content.
+    def _get_media_tags(self) -> list:
+        return [
+            {"name": name, "category": category, "isAdult": is_adult}
+            for (name, category, is_adult) in MEDIA_TAGS
+        ]
+
+    mediaTags = Property("QVariantList", _get_media_tags, constant=True)
 
     def _get_server_host(self) -> str:
         return self._server_host
@@ -518,6 +586,11 @@ class AppController(QObject):
         self.authStateChanged.emit()
         # connectToServer persists the connection half and re-fetches status.
         self.connectToServer(host, port, token)
+
+    @Slot(str, result=str)
+    def urlToLocalPath(self, url: str) -> str:
+        """Convert a file:// URL (from a QML file/folder dialog) to a native path."""
+        return QUrl(url).toLocalFile()
 
     @Slot("QVariant")
     def saveServerSettings(self, payload) -> None:
@@ -651,18 +724,23 @@ class AppController(QObject):
     def searchAdvanced(self, filters) -> None:
         """Run an advanced AniList search from a filter object.
 
-        ``filters`` is a JS/dict of: search, sort, genres[], format, season,
-        year, status, minScore. Empty fields are omitted from the query.
+        ``filters`` is a JS/dict of: search, sort, genres[], tags[], format,
+        season, year, status, minScore, isAdult. Empty fields are omitted from
+        the query.
         """
         # QML passes a JS object as a QJSValue; unwrap it to a plain dict.
         if isinstance(filters, QJSValue):
             filters = filters.toVariant()
         filters = dict(filters or {})
         search = (filters.get("search") or "").strip()
-        # An empty query with no other filters clears the grid.
+        # An empty query with no other filters clears the grid. ``isAdult`` counts
+        # as a filter on its own so an adult-only browse (no title) still runs.
         meaningful = search or any(
             filters.get(k)
-            for k in ("genres", "format", "season", "year", "status", "minScore")
+            for k in (
+                "genres", "tags", "format", "season", "year", "status",
+                "minScore", "isAdult",
+            )
         )
         if not meaningful:
             self._search_filters = {}

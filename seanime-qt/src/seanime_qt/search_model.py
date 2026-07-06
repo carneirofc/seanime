@@ -7,18 +7,31 @@ shape is ``{ "Page": { "media": [BaseAnime, ...] } }``.
 
 from __future__ import annotations
 
-from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Qt
+from PySide6.QtCore import (
+    Property,
+    QAbstractListModel,
+    QByteArray,
+    QModelIndex,
+    Qt,
+    Signal,
+)
 
 from .library_model import _poster_of, _title_of
 
 
 class SearchModel(QAbstractListModel):
+    # Emitted whenever the row count changes so QML can bind ``model.count``
+    # (empty-state copy, "split adult" section visibility, etc.).
+    countChanged = Signal()
+
     MediaIdRole = Qt.ItemDataRole.UserRole + 1
     TitleRole = Qt.ItemDataRole.UserRole + 2
     PosterRole = Qt.ItemDataRole.UserRole + 3
     StatusRole = Qt.ItemDataRole.UserRole + 4
     ProgressRole = Qt.ItemDataRole.UserRole + 5
     EpisodeCountRole = Qt.ItemDataRole.UserRole + 6
+    ScoreRole = Qt.ItemDataRole.UserRole + 7
+    IsAdultRole = Qt.ItemDataRole.UserRole + 8
 
     _ROLES = {
         MediaIdRole: b"mediaId",
@@ -27,6 +40,8 @@ class SearchModel(QAbstractListModel):
         StatusRole: b"status",
         ProgressRole: b"progress",
         EpisodeCountRole: b"episodeCount",
+        ScoreRole: b"score",
+        IsAdultRole: b"isAdult",
     }
 
     def __init__(self, parent=None) -> None:
@@ -45,6 +60,7 @@ class SearchModel(QAbstractListModel):
         self.beginResetModel()
         self._rows = [self._row_of(media) for media in (media_list or []) if media]
         self.endResetModel()
+        self.countChanged.emit()
 
     def append_media_list(self, media_list) -> None:
         """Append more media (pagination / 'load more')."""
@@ -55,6 +71,7 @@ class SearchModel(QAbstractListModel):
         self.beginInsertRows(QModelIndex(), start, start + len(new_rows) - 1)
         self._rows.extend(new_rows)
         self.endInsertRows()
+        self.countChanged.emit()
 
     @staticmethod
     def _row_of(media: dict) -> dict:
@@ -66,16 +83,21 @@ class SearchModel(QAbstractListModel):
             "status": media.get("format") or "",
             "progress": 0,
             "episodeCount": media.get("episodes") or 0,
+            "score": media.get("meanScore") or media.get("averageScore") or 0,
+            "isAdult": bool(media.get("isAdult")),
         }
 
     def clear(self) -> None:
         self.beginResetModel()
         self._rows = []
         self.endResetModel()
+        self.countChanged.emit()
 
-    @property
-    def count(self) -> int:
+    def _get_count(self) -> int:
         return len(self._rows)
+
+    # Exposed to QML as ``model.count`` (Python callers can read it too).
+    count = Property(int, _get_count, notify=countChanged)
 
     # ---- QAbstractListModel API -----------------------------------------
 
