@@ -17,4 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     content; adult tags are hidden from the tag picker otherwise.
   - Poster **blur** with click-to-reveal for adult media, plus an `18+` badge.
   - **Split** search results into separate "Results" and "Adult" sections.
+  - The **library** honours blur and, when split is enabled, shows separate
+    "Library" and "Adult" sections (both still respect the find-in-library
+    text filter).
 - Poster **score badge** (AniList mean score) on media cards.

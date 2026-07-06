@@ -17,7 +17,7 @@ Item {
         spacing: 12
 
         // Live "find in library" filter (client-side over the loaded grid).
-        TextField {
+        AppTextField {
             id: filterField
             objectName: "libraryFilterField"
             Layout.fillWidth: true
@@ -76,9 +76,40 @@ Item {
             }
         }
 
+        // Split view: when the server splits adult content, the collection is
+        // shown as separate "Library" and "Adult" sections (both still honour the
+        // find-in-library text filter, which the proxies sit on top of).
+        ScrollView {
+            id: splitScroll
+            visible: app.splitAdultContent && grid.count > 0
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+            ColumnLayout {
+                width: splitScroll.availableWidth
+                spacing: 16
+
+                MediaGrid {
+                    Layout.fillWidth: true
+                    title: "Library"
+                    model: app.librarySfwModel
+                    onOpenRequested: (mediaId) => app.openAnime(mediaId)
+                }
+                MediaGrid {
+                    Layout.fillWidth: true
+                    title: "Adult"
+                    model: app.libraryAdultModel
+                    onOpenRequested: (mediaId) => app.openAnime(mediaId)
+                }
+            }
+        }
+
         GridView {
             id: grid
             objectName: "libraryGrid"
+            visible: !app.splitAdultContent
             Layout.fillWidth: true
             Layout.fillHeight: true
             cellWidth: 180
