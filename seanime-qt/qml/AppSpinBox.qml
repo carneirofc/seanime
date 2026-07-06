@@ -6,6 +6,9 @@ import QtQuick.Controls
 SpinBox {
     id: control
 
+    implicitHeight: Theme.controlHeight
+    font.pixelSize: Theme.controlFont
+
     contentItem: TextInput {
         text: control.displayText
         font: control.font
@@ -21,8 +24,8 @@ SpinBox {
 
     background: Rectangle {
         implicitWidth: 120
-        implicitHeight: 34
-        radius: Theme.radius
+        implicitHeight: Theme.controlHeight
+        radius: Theme.controlRadius
         color: control.enabled ? Theme.inset : Theme.surface
         border.width: control.activeFocus ? 2 : 1
         border.color: control.activeFocus ? Theme.accent : Theme.border
@@ -32,8 +35,8 @@ SpinBox {
     up.indicator: Rectangle {
         x: control.mirrored ? 0 : control.width - width
         height: control.height
-        implicitWidth: 30
-        radius: Theme.radius
+        implicitWidth: Theme.controlHeight
+        radius: Theme.controlRadius
         color: control.up.pressed ? Theme.surfaceHover : "transparent"
         Behavior on color { ColorAnimation { duration: Theme.durFast } }
         Text {
@@ -47,8 +50,8 @@ SpinBox {
     down.indicator: Rectangle {
         x: control.mirrored ? control.width - width : 0
         height: control.height
-        implicitWidth: 30
-        radius: Theme.radius
+        implicitWidth: Theme.controlHeight
+        radius: Theme.controlRadius
         color: control.down.pressed ? Theme.surfaceHover : "transparent"
         Behavior on color { ColorAnimation { duration: Theme.durFast } }
         Text {

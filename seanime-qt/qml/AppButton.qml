@@ -11,11 +11,12 @@ import QtQuick.Controls
 Button {
     id: control
 
-    horizontalPadding: 14
-    verticalPadding: 7
+    horizontalPadding: Theme.controlPadding
+    verticalPadding: 0
+    font.pixelSize: Theme.controlFont
 
     // Subtle tactile press.
-    scale: down ? 0.97 : 1.0
+    scale: down ? 0.98 : 1.0
     Behavior on scale { NumberAnimation { duration: Theme.durFast } }
 
     HoverHandler {
@@ -36,9 +37,9 @@ Button {
     }
 
     background: Rectangle {
-        implicitWidth: 72
-        implicitHeight: 34
-        radius: Theme.radius
+        implicitWidth: 64
+        implicitHeight: Theme.controlHeight
+        radius: Theme.controlRadius
         color: !control.enabled ? Theme.surface
              : control.checked  ? (control.down ? Theme.accentHover : Theme.accent)
              : control.down      ? Theme.surface

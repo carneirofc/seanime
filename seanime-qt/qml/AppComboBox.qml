@@ -7,8 +7,9 @@ import QtQuick.Controls
 ComboBox {
     id: control
 
-    horizontalPadding: 12
-    verticalPadding: 6
+    horizontalPadding: Theme.controlPadding
+    verticalPadding: 0
+    font.pixelSize: Theme.controlFont
 
     HoverHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -57,8 +58,8 @@ ComboBox {
 
     background: Rectangle {
         implicitWidth: 120
-        implicitHeight: 34
-        radius: Theme.radius
+        implicitHeight: Theme.controlHeight
+        radius: Theme.controlRadius
         color: control.down    ? Theme.surface
              : control.hovered ? Qt.lighter(Theme.elevated, 1.2)
              : Theme.elevated
@@ -87,7 +88,7 @@ ComboBox {
 
         background: Rectangle {
             color: Theme.surface
-            radius: Theme.radius
+            radius: Theme.controlRadius
             border.color: Theme.border
         }
     }

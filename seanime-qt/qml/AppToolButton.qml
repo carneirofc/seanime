@@ -6,6 +6,8 @@ import QtQuick.Controls
 ToolButton {
     id: control
 
+    font.pixelSize: Theme.controlFont
+
     scale: down ? 0.94 : 1.0
     Behavior on scale { NumberAnimation { duration: Theme.durFast } }
 
@@ -24,9 +26,9 @@ ToolButton {
     }
 
     background: Rectangle {
-        implicitWidth: 34
-        implicitHeight: 34
-        radius: Theme.radius
+        implicitWidth: Theme.controlHeight
+        implicitHeight: Theme.controlHeight
+        radius: Theme.controlRadius
         color: control.down     ? Theme.elevated
              : control.hovered   ? Theme.surfaceHover
              : "transparent"
