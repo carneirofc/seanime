@@ -36,11 +36,13 @@ from typing import Any, Callable, Optional
 from PySide6.QtCore import (
     QBuffer,
     QByteArray,
+    QCoreApplication,
     QIODevice,
     QJsonDocument,
     QObject,
     QPoint,
     QPointF,
+    QRectF,
     Qt,
 )
 from PySide6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
@@ -290,10 +292,27 @@ class ControlServer(QObject):
         button = _MOUSE_BUTTONS.get((req.get("button") or "left").lower())
         if button is None:
             raise ValueError(f"unknown button: {req.get('button')!r}")
-        centre = item.mapToScene(QPointF(item.width() / 2, item.height() / 2)).toPoint()
         window = self._quick_window()
+
+        # A delegate scrolled outside the viewport would receive an out-of-window
+        # event (which QTest drops, so the click silently no-ops). Bring it into
+        # view first via its enclosing Flickable.
+        scrolled = _ensure_visible(window, item)
+
+        centre = item.mapToScene(QPointF(item.width() / 2, item.height() / 2)).toPoint()
+        win = QRectF(0, 0, window.width(), window.height())
+        if not win.contains(QPointF(centre)):
+            raise RuntimeError(
+                f"item {req['objectName']!r} is not on screen (centre {centre.x()},"
+                f"{centre.y()} outside {int(window.width())}x{int(window.height())}); "
+                "could not scroll it into view"
+            )
         QTest.mouseClick(window, button, Qt.KeyboardModifier.NoModifier, centre)
-        return {"clicked": req["objectName"], "pos": [centre.x(), centre.y()]}
+        return {
+            "clicked": req["objectName"],
+            "pos": [centre.x(), centre.y()],
+            "scrolled": scrolled,
+        }
 
     def _cmd_type(self, req: dict) -> dict:
         text = _require(req, "text")
@@ -389,6 +408,52 @@ class ControlServer(QObject):
 
 
 # ---- helpers ------------------------------------------------------------
+
+
+def _find_flickable(item: QQuickItem) -> Optional[QQuickItem]:
+    """Nearest ancestor that scrolls (exposes contentY/contentHeight) — a Flickable,
+    GridView, or ListView."""
+    parent = item.parentItem()
+    while parent is not None:
+        if parent.property("contentY") is not None and parent.property("contentHeight") is not None:
+            return parent
+        parent = parent.parentItem()
+    return None
+
+
+def _ensure_visible(window: QQuickWindow, item: QQuickItem) -> bool:
+    """Scroll the item's enclosing Flickable so the item is centred in view.
+
+    Returns True if a scroll was applied. No-op (returns False) when the item is
+    already on screen or has no scrollable ancestor.
+    """
+    win = QRectF(0, 0, window.width(), window.height())
+    centre = item.mapToScene(QPointF(item.width() / 2, item.height() / 2))
+    if win.contains(centre):
+        return False
+    flick = _find_flickable(item)
+    if flick is None:
+        return False
+
+    scrolled = False
+    for axis, content, extent in (("contentY", "contentHeight", flick.height()),
+                                  ("contentX", "contentWidth", flick.width())):
+        # Item centre expressed in the Flickable's viewport coordinates.
+        pos = item.mapToItem(flick, QPointF(item.width() / 2, item.height() / 2))
+        current = flick.property(axis)
+        content_size = flick.property(content)
+        if current is None or content_size is None or extent <= 0:
+            continue
+        offset = pos.y() if axis == "contentY" else pos.x()
+        target = current + (offset - extent / 2)
+        target = max(0.0, min(float(target), max(0.0, float(content_size) - float(extent))))
+        if abs(target - float(current)) > 0.5:
+            flick.setProperty(axis, target)
+            scrolled = True
+    if scrolled:
+        # Let the view relayout so the new geometry is reflected before we click.
+        QCoreApplication.processEvents()
+    return scrolled
 
 
 def _active_focus(window: QQuickWindow) -> dict:
