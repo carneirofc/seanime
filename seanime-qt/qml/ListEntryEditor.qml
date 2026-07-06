@@ -72,7 +72,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Score (0–10)"; color: Theme.textDim; Layout.preferredWidth: 90 }
-            SpinBox {
+            AppSpinBox {
                 id: scoreSpin
                 objectName: "listScoreSpin"
                 Layout.fillWidth: true
@@ -83,7 +83,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Progress"; color: Theme.textDim; Layout.preferredWidth: 90 }
-            SpinBox {
+            AppSpinBox {
                 id: progressSpin
                 objectName: "listProgressSpin"
                 Layout.fillWidth: true
