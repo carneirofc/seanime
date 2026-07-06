@@ -57,6 +57,13 @@ QtObject {
     readonly property int radiusLg:  12
     readonly property int radiusPill: 999
 
+    // ---- form controls (one source of truth for size/shape so buttons,
+    // combo boxes, text fields and spin boxes stay consistent) ----
+    readonly property int controlHeight:  30   // buttons, combos, fields, spinboxes
+    readonly property int controlRadius:  4    // subtle rounding, not pill-like
+    readonly property int controlPadding:  10   // horizontal text inset
+    readonly property int controlFont:    13   // == fontMd
+
     // ---- spacing ----
     readonly property int spacingXs: 4
     readonly property int spacingSm: 8
