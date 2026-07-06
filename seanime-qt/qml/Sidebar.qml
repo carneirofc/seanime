@@ -34,12 +34,12 @@ Rectangle {
         // ---- nav items ----
         Repeater {
             model: [
-                { pageId: "home",     label: "Home",     glyph: "🏠" },
-                { pageId: "manga",    label: "Manga",    glyph: "📚" },
-                { pageId: "discover", label: "Discover", glyph: "🧭" },
-                { pageId: "search",   label: "Search",   glyph: "🔍" },
-                { pageId: "profile",  label: "Profile",  glyph: "👤" },
-                { pageId: "settings", label: "Settings", glyph: "⚙️" },
+                { pageId: "home",     label: "Home",     icon: "home" },
+                { pageId: "manga",    label: "Manga",    icon: "books" },
+                { pageId: "discover", label: "Discover", icon: "compass" },
+                { pageId: "search",   label: "Search",   icon: "search" },
+                { pageId: "profile",  label: "Profile",  icon: "user" },
+                { pageId: "settings", label: "Settings", icon: "settings" },
             ]
             delegate: Rectangle {
                 id: navItem
@@ -82,7 +82,13 @@ Rectangle {
                     anchors.leftMargin: Theme.spacing
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Theme.spacing
-                    Label { text: modelData.glyph; font.pixelSize: 17 }
+                    Icon {
+                        name: modelData.icon
+                        size: 19
+                        color: active ? Theme.textStrong : Theme.textDim
+                        anchors.verticalCenter: parent.verticalCenter
+                        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+                    }
                     Label {
                         text: modelData.label
                         color: active ? Theme.textStrong : Theme.textDim
@@ -192,10 +198,17 @@ Rectangle {
                     }
                     Label {
                         anchors.centerIn: parent
-                        visible: !userChip.hasAvatar
-                        text: userChip.loggedIn ? app.username.charAt(0).toUpperCase() : "🔑"
+                        visible: !userChip.hasAvatar && userChip.loggedIn
+                        text: app.username.charAt(0).toUpperCase()
                         color: Theme.textMuted
-                        font.pixelSize: userChip.loggedIn ? 16 : 14
+                        font.pixelSize: 16
+                    }
+                    Icon {
+                        anchors.centerIn: parent
+                        visible: !userChip.hasAvatar && !userChip.loggedIn
+                        name: "key"
+                        size: 16
+                        color: Theme.textMuted
                     }
                 }
 

@@ -63,14 +63,20 @@ Item {
             Behavior on shadowVerticalOffset { NumberAnimation { duration: Theme.durBase } }
         }
 
-        Column {
+        // Title is pinned to the bottom (reserving its own font-scaled height) and
+        // the poster well fills the space above it, so posters grow and shrink
+        // proportionally with the grid cell (Theme.posterScale) rather than sitting
+        // at a fixed height that would leave dead space when the cell is enlarged.
+        Item {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 6
 
             Rectangle {
-                width: parent.width
-                height: 210
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: titleLabel.top
+                anchors.bottomMargin: 6
                 radius: 6
                 clip: true
                 color: Theme.inset
@@ -105,10 +111,11 @@ Item {
                     Column {
                         anchors.centerIn: parent
                         spacing: 4
-                        Label {
+                        Icon {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "🔞"
-                            font.pixelSize: 28
+                            name: "rating-18-plus"
+                            size: 28
+                            color: Theme.textStrong
                         }
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -129,12 +136,22 @@ Item {
                     width: scoreBadge.implicitWidth + 12
                     radius: Theme.radiusSm
                     color: Theme.overlay
-                    Label {
+                    Row {
                         id: scoreBadge
                         anchors.centerIn: parent
-                        text: "★ " + card.cardScore + "%"
-                        color: Theme.warnText
-                        font.pixelSize: Theme.fontXs
+                        spacing: 3
+                        Icon {
+                            name: "star"
+                            size: Theme.fontXs
+                            color: Theme.warnText
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Label {
+                            text: card.cardScore + "%"
+                            color: Theme.warnText
+                            font.pixelSize: Theme.fontXs
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                 }
 
@@ -179,7 +196,10 @@ Item {
             }
 
             Label {
-                width: parent.width
+                id: titleLabel
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
                 text: title
                 color: Theme.text
                 font.pixelSize: Theme.fontMd

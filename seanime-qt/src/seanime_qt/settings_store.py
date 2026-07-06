@@ -24,6 +24,14 @@ _TOKEN = "client/serverToken"
 _CLIENT_ID = "client/anilistClientId"
 _CLIENT_SECRET = "client/anilistClientSecret"
 
+# Client-local UI appearance prefs, under a ``ui/`` group. Applied live by the
+# QML Theme singleton (font scale, spacing density, colour mode, brand accent).
+_UI_SCALE = "ui/scale"
+_UI_DENSITY = "ui/density"
+_UI_THEME = "ui/theme"
+_UI_ACCENT = "ui/accent"
+_UI_POSTER_SCALE = "ui/posterScale"
+
 
 class SettingsStore:
     def _settings(self) -> QSettings:
@@ -34,6 +42,15 @@ class SettingsStore:
     @staticmethod
     def _str(value, default: str) -> str:
         return value if isinstance(value, str) and value != "" else default
+
+    @staticmethod
+    def _float(value, default: float) -> float:
+        # QSettings' INI backend returns values as strings; coerce and fall back
+        # to the default if the stored value is missing or malformed.
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
 
     # ---- reads (each falls back to the caller-supplied default) ----------
 
@@ -52,6 +69,21 @@ class SettingsStore:
     def anilist_client_secret(self, default: str = "") -> str:
         return self._str(self._settings().value(_CLIENT_SECRET), default)
 
+    def ui_scale(self, default: float = 1.0) -> float:
+        return self._float(self._settings().value(_UI_SCALE), default)
+
+    def ui_density(self, default: float = 1.0) -> float:
+        return self._float(self._settings().value(_UI_DENSITY), default)
+
+    def ui_theme(self, default: str = "dark") -> str:
+        return self._str(self._settings().value(_UI_THEME), default)
+
+    def ui_accent(self, default: str = "#6152df") -> str:
+        return self._str(self._settings().value(_UI_ACCENT), default)
+
+    def ui_poster_scale(self, default: float = 1.0) -> float:
+        return self._float(self._settings().value(_UI_POSTER_SCALE), default)
+
     # ---- writes ----------------------------------------------------------
 
     def save_connection(self, host: str, port: str, token: str) -> None:
@@ -65,4 +97,20 @@ class SettingsStore:
         settings = self._settings()
         settings.setValue(_CLIENT_ID, client_id)
         settings.setValue(_CLIENT_SECRET, client_secret)
+        settings.sync()
+
+    def save_ui_prefs(
+        self,
+        scale: float,
+        density: float,
+        theme: str,
+        accent: str,
+        poster_scale: float,
+    ) -> None:
+        settings = self._settings()
+        settings.setValue(_UI_SCALE, float(scale))
+        settings.setValue(_UI_DENSITY, float(density))
+        settings.setValue(_UI_THEME, theme)
+        settings.setValue(_UI_ACCENT, accent)
+        settings.setValue(_UI_POSTER_SCALE, float(poster_scale))
         settings.sync()

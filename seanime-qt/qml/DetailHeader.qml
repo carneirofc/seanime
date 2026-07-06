@@ -65,7 +65,8 @@ ColumnLayout {
                 spacing: 6
                 Chip {
                     visible: app.detailScore > 0
-                    text: "★ " + app.detailScore
+                    icon: "star"
+                    text: app.detailScore
                     textColor: Theme.warnText
                     fillColor: Theme.warnFill
                 }

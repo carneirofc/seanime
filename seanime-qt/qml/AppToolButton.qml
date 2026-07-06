@@ -6,6 +6,9 @@ import QtQuick.Controls
 ToolButton {
     id: control
 
+    // Optional Tabler icon name (see Icons.qml); when set, drawn instead of text.
+    property string iconName: ""
+
     font.pixelSize: Theme.controlFont
 
     scale: down ? 0.94 : 1.0
@@ -16,13 +19,28 @@ ToolButton {
         cursorShape: Qt.PointingHandCursor
     }
 
-    contentItem: Text {
-        text: control.text
-        font: control.font
-        color: control.enabled ? Theme.text : Theme.textMuted
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
+    contentItem: Item {
+        implicitWidth: control.iconName.length > 0 ? toolIcon.implicitWidth : toolText.implicitWidth
+        implicitHeight: control.iconName.length > 0 ? toolIcon.implicitHeight : toolText.implicitHeight
+        Icon {
+            id: toolIcon
+            visible: control.iconName.length > 0
+            anchors.centerIn: parent
+            name: control.iconName
+            size: Theme.controlFont
+            color: control.enabled ? Theme.text : Theme.textMuted
+        }
+        Text {
+            id: toolText
+            visible: control.iconName.length === 0
+            anchors.centerIn: parent
+            text: control.text
+            font: control.font
+            color: control.enabled ? Theme.text : Theme.textMuted
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+        }
     }
 
     background: Rectangle {

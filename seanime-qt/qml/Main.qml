@@ -21,11 +21,27 @@ ApplicationWindow {
         stack.replace(null, comp, StackView.Immediate)
     }
 
-    // Auto-connect to the default local server on startup.
-    Component.onCompleted: app.connectToServer(hostField.text, portField.text, tokenField.text)
+    // Push the client-local appearance prefs into the Theme singleton. Theme is a
+    // singleton and can't read the `app` context property itself, so the root
+    // window bridges it — here on startup and again whenever a pref changes.
+    function applyUiPrefs() {
+        Theme.uiScale = app.uiScale
+        Theme.density = app.uiDensity
+        Theme.mode = app.uiThemeMode
+        Theme.accentBase = app.uiAccent
+        Theme.posterScale = app.uiPosterScale
+    }
+
+    // Apply the persisted appearance prefs, then auto-connect to the local server.
+    Component.onCompleted: {
+        window.applyUiPrefs()
+        app.connectToServer(hostField.text, portField.text, tokenField.text)
+    }
 
     Connections {
         target: app
+        // Re-apply appearance prefs to the Theme when they change (live restyle).
+        function onUiPrefsChanged() { window.applyUiPrefs() }
         // Push the detail page on top of whatever page is showing.
         function onAnimeOpened() { stack.push(detailComponent) }
         // Manga: push the manga detail page, then the reader on top of it.
@@ -140,7 +156,7 @@ ApplicationWindow {
                         elide: Text.ElideRight
                     }
                     AppToolButton {
-                        text: "✕"
+                        iconName: "x"
                         onClicked: app.refresh()  // retry the library fetch
                         Accessible.name: "Dismiss error and retry"
                         Accessible.description: "Clears the error banner and refetches your library"

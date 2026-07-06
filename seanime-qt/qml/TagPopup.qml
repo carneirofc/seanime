@@ -131,12 +131,12 @@ Popup {
                         color: row.picked ? Theme.accent : "transparent"
                         border.color: row.picked ? Theme.accent : Theme.borderStrong
                         border.width: 1
-                        Label {
+                        Icon {
                             anchors.centerIn: parent
                             visible: row.picked
-                            text: "✓"
+                            name: "check"
                             color: Theme.accentText
-                            font.pixelSize: Theme.fontXs
+                            size: Theme.fontXs
                         }
                     }
                     Label {

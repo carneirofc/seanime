@@ -11,9 +11,16 @@ import QtQuick.Controls
 Button {
     id: control
 
+    // Optional leading Tabler icon name (see Icons.qml), e.g. "arrow-left".
+    property string iconName: ""
+
     horizontalPadding: Theme.controlPadding
     verticalPadding: 0
     font.pixelSize: Theme.controlFont
+
+    readonly property color contentColor: !control.enabled ? Theme.textMuted
+                                        : control.checked  ? Theme.accentText
+                                        : Theme.text
 
     // Subtle tactile press.
     scale: down ? 0.98 : 1.0
@@ -24,16 +31,32 @@ Button {
         cursorShape: Qt.PointingHandCursor
     }
 
-    contentItem: Text {
-        text: control.text
-        font: control.font
-        color: !control.enabled ? Theme.textMuted
-             : control.checked  ? Theme.accentText
-             : Theme.text
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
-        Behavior on color { ColorAnimation { duration: Theme.durFast } }
+    contentItem: Item {
+        implicitWidth: contentRow.implicitWidth
+        implicitHeight: contentRow.implicitHeight
+        Row {
+            id: contentRow
+            anchors.centerIn: parent
+            spacing: 6
+            Icon {
+                visible: control.iconName.length > 0
+                name: control.iconName
+                size: Theme.controlFont
+                color: control.contentColor
+                anchors.verticalCenter: parent.verticalCenter
+                Behavior on color { ColorAnimation { duration: Theme.durFast } }
+            }
+            Text {
+                visible: control.text.length > 0
+                text: control.text
+                font: control.font
+                color: control.contentColor
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+                anchors.verticalCenter: parent.verticalCenter
+                Behavior on color { ColorAnimation { duration: Theme.durFast } }
+            }
+        }
     }
 
     background: Rectangle {

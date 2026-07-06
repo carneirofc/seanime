@@ -54,8 +54,8 @@ ColumnLayout {
             return rows * cellHeight
         }
         interactive: false
-        cellWidth: 180
-        cellHeight: 290
+        cellWidth: Theme.posterCellWidth
+        cellHeight: Theme.posterCellHeight
 
         delegate: AnimeCard {
             width: grid.cellWidth - 12

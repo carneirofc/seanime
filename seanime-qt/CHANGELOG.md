@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Vector icon set**: bundled the Tabler Icons webfont (`qml/fonts/`) behind an
+  `Icons` singleton and a reusable `Icon` component, giving React-Icons-style
+  usage (`Icon { name: "search" }`). `AppButton`/`AppToolButton`/`Chip` gained
+  optional icon support.
 - Advanced-search **tag filter**: a searchable, category-grouped tag picker
   (`TagPopup`) backed by the full AniList tag catalog, wired into the
   `list-anime` query alongside the existing genre filter.
@@ -25,3 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   header opens the advanced-search page pre-filtered to it and runs the query.
 - **Ranked tag chips** on the anime detail header (from media-details), honouring
   the server's spoiler-hiding and adult-content settings.
+
+### Changed
+- Replaced the emoji and stray Unicode glyphs used as UI icons (nav symbols,
+  `★ ← ✕ ▾ ✓ − 🔞 🔑`) with tintable Tabler icon glyphs, so icons match the
+  accent/theme colours and render identically across platforms.

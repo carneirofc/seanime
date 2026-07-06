@@ -39,11 +39,11 @@ SpinBox {
         radius: Theme.controlRadius
         color: control.up.pressed ? Theme.surfaceHover : "transparent"
         Behavior on color { ColorAnimation { duration: Theme.durFast } }
-        Text {
-            text: "+"
+        Icon {
+            name: "plus"
             color: control.enabled ? Theme.text : Theme.textMuted
             anchors.centerIn: parent
-            font.pixelSize: Theme.fontLg
+            size: Theme.fontMd
         }
     }
 
@@ -54,11 +54,11 @@ SpinBox {
         radius: Theme.controlRadius
         color: control.down.pressed ? Theme.surfaceHover : "transparent"
         Behavior on color { ColorAnimation { duration: Theme.durFast } }
-        Text {
-            text: "−"
+        Icon {
+            name: "minus"
             color: control.enabled ? Theme.text : Theme.textMuted
             anchors.centerIn: parent
-            font.pixelSize: Theme.fontLg
+            size: Theme.fontMd
         }
     }
 }

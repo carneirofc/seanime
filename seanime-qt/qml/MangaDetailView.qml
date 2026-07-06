@@ -19,7 +19,8 @@ Item {
             spacing: 10
             AppButton {
                 objectName: "mangaBackButton"
-                text: "← Back"
+                iconName: "arrow-left"
+                text: "Back"
                 onClicked: root.back()
             }
             Label {
@@ -97,7 +98,8 @@ Item {
                             spacing: 6
                             Chip {
                                 visible: app.mangaScore > 0
-                                text: "★ " + app.mangaScore
+                                icon: "star"
+                                text: app.mangaScore
                                 textColor: Theme.warnText
                                 fillColor: Theme.warnFill
                             }

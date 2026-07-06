@@ -45,9 +45,9 @@ Rectangle {
                 anchors.margins: 3
                 width: 18; height: 18; radius: 9
                 color: Theme.success
-                Label {
+                Icon {
                     anchors.centerIn: parent
-                    text: "✓"; color: Theme.textStrong; font.pixelSize: Theme.fontXs
+                    name: "check"; color: Theme.textStrong; size: Theme.fontXs
                 }
             }
         }

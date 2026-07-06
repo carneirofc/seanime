@@ -88,8 +88,8 @@ Item {
             objectName: "mangaGrid"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            cellWidth: 180
-            cellHeight: 290
+            cellWidth: Theme.posterCellWidth
+            cellHeight: Theme.posterCellHeight
             clip: true
             model: app.mangaLibraryModel
 

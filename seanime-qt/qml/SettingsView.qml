@@ -245,9 +245,10 @@ Item {
         }
     ]
 
-    // Section names for the left nav: Client first, then the server groups.
+    // Section names for the left nav: Appearance + Client (both app-local) first,
+    // then the server groups.
     readonly property var navNames: {
-        var names = ["Client"]
+        var names = ["Appearance", "Client"]
         for (var i = 0; i < serverSections.length; i++) names.push(serverSections[i].name)
         return names
     }
@@ -323,7 +324,10 @@ Item {
                 Layout.fillHeight: true
                 currentIndex: root.currentIndex
 
-                // Index 0 — Client (app-local prefs).
+                // Index 0 — Appearance (app-local UI prefs; applies live, no save).
+                AppearanceSettings {}
+
+                // Index 1 — Client (app-local prefs).
                 Flickable {
                     contentHeight: clientCol.implicitHeight + 2 * Theme.spacingLg
                     clip: true
@@ -370,7 +374,7 @@ Item {
                     }
                 }
 
-                // Indices 1..N — server setting groups.
+                // Indices 2..N — server setting groups.
                 Repeater {
                     model: root.serverSections
                     delegate: Flickable {
@@ -443,10 +447,21 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: Theme.durBase } }
                     }
 
+                    // Appearance (index 0) applies live — no save; just a hint.
+                    Label {
+                        objectName: "appearanceHint"
+                        Layout.fillWidth: true
+                        visible: root.currentIndex === 0
+                        text: "Appearance changes apply instantly."
+                        color: Theme.textMuted
+                        font.pixelSize: Theme.fontMd
+                        elide: Text.ElideRight
+                    }
+
                     Label {
                         objectName: "settingsSaveError"
                         Layout.fillWidth: true
-                        visible: root.saveError.length > 0
+                        visible: root.currentIndex !== 0 && root.saveError.length > 0
                         text: root.saveError
                         color: Theme.danger
                         font.pixelSize: Theme.fontMd
@@ -455,14 +470,24 @@ Item {
 
                     Item {
                         Layout.fillWidth: true
-                        visible: root.saveError.length === 0
+                        visible: root.currentIndex !== 0 && root.saveError.length === 0
                     }
 
+                    // Appearance: reset to defaults instead of save.
+                    AppButton {
+                        objectName: "resetAppearanceButton"
+                        visible: root.currentIndex === 0
+                        text: "Reset to defaults"
+                        onClicked: app.resetUiPrefs()
+                    }
+
+                    // Client (index 1) reconnects on save; server groups (2+) PATCH.
                     AppButton {
                         objectName: "saveSettingsButton"
-                        text: root.currentIndex === 0 ? "Save & reconnect" : "Save settings"
-                        enabled: root.currentIndex === 0 || root.connected
-                        onClicked: root.currentIndex === 0 ? root.saveClient() : root.saveServer()
+                        visible: root.currentIndex !== 0
+                        text: root.currentIndex === 1 ? "Save & reconnect" : "Save settings"
+                        enabled: root.currentIndex === 1 || root.connected
+                        onClicked: root.currentIndex === 1 ? root.saveClient() : root.saveServer()
                     }
                 }
             }

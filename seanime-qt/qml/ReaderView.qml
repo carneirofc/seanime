@@ -20,7 +20,8 @@ Item {
             spacing: 10
             AppButton {
                 objectName: "readerBackButton"
-                text: "← Back"
+                iconName: "arrow-left"
+                text: "Back"
                 onClicked: root.back()
             }
             Label {

@@ -38,11 +38,11 @@ ComboBox {
         }
     }
 
-    indicator: Text {
+    indicator: Icon {
         x: control.width - width - control.rightPadding
         y: control.topPadding + (control.availableHeight - height) / 2
-        text: "▾"
-        font.pixelSize: Theme.fontSm
+        name: "chevron-down"
+        size: Theme.fontMd
         color: Theme.textMuted
     }
 

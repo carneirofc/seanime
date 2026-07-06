@@ -54,11 +54,21 @@ Rectangle {
             }
         }
 
-        Label {
+        Row {
             visible: read
-            text: "✓ Read"
-            color: Theme.success
-            font.pixelSize: Theme.fontXs
+            spacing: 3
+            Icon {
+                name: "check"
+                size: Theme.fontXs
+                color: Theme.success
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Label {
+                text: "Read"
+                color: Theme.success
+                font.pixelSize: Theme.fontXs
+                anchors.verticalCenter: parent.verticalCenter
+            }
         }
     }
 

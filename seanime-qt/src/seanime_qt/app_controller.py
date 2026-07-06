@@ -8,6 +8,7 @@ member here has a direct C++ Qt analog (Q_PROPERTY / Q_INVOKABLE / signals).
 from __future__ import annotations
 
 import os
+import re
 
 from PySide6.QtCore import (
     Property,
@@ -54,6 +55,22 @@ _DEFAULT_ANILIST_CLIENT_ID = os.environ.get("SEANIME_QT_ANILIST_CLIENT_ID", "451
 # baked into source; set SEANIME_QT_ANILIST_CLIENT_SECRET before launching.
 _DEFAULT_ANILIST_CLIENT_SECRET = os.environ.get("SEANIME_QT_ANILIST_CLIENT_SECRET", "")
 
+# UI appearance defaults + guards for the client-local prefs applied by the QML
+# Theme. Scale/density are clamped to sane ranges; accent must be a #rrggbb hex.
+_DEFAULT_UI_SCALE = 1.0
+_DEFAULT_UI_DENSITY = 1.0
+_DEFAULT_UI_THEME = "dark"
+_DEFAULT_UI_ACCENT = "#6152df"
+_DEFAULT_UI_POSTER_SCALE = 1.0
+_UI_SCALE_RANGE = (0.8, 1.5)
+_UI_DENSITY_RANGE = (0.85, 1.2)
+_UI_POSTER_SCALE_RANGE = (0.7, 1.4)
+_ACCENT_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
 
 class AppController(QObject):
     connectionStatusChanged = Signal()
@@ -66,6 +83,7 @@ class AppController(QObject):
     settingsChanged = Signal()      # server settings dict refreshed (from status/PATCH)
     settingsSaved = Signal()        # a server-settings PATCH succeeded (QML confirms)
     clientPrefsChanged = Signal()   # persisted client prefs (host/port/token) changed
+    uiPrefsChanged = Signal()       # client-local UI appearance prefs changed (font/theme…)
     # Manga.
     mangaDetailChanged = Signal()
     mangaProvidersChanged = Signal()
@@ -186,6 +204,23 @@ class AppController(QObject):
         )
         self._anilist_client_secret = self._store.anilist_client_secret(
             _DEFAULT_ANILIST_CLIENT_SECRET
+        )
+        # Client-local UI appearance prefs, restored from disk. The QML Theme reads
+        # these (via Main.qml) and reflows the whole UI when they change.
+        self._ui_scale = _clamp(
+            self._store.ui_scale(_DEFAULT_UI_SCALE), *_UI_SCALE_RANGE
+        )
+        self._ui_density = _clamp(
+            self._store.ui_density(_DEFAULT_UI_DENSITY), *_UI_DENSITY_RANGE
+        )
+        self._ui_theme_mode = (
+            "light" if self._store.ui_theme(_DEFAULT_UI_THEME) == "light" else "dark"
+        )
+        accent = self._store.ui_accent(_DEFAULT_UI_ACCENT)
+        self._ui_accent = accent if _ACCENT_HEX_RE.match(accent) else _DEFAULT_UI_ACCENT
+        self._ui_poster_scale = _clamp(
+            self._store.ui_poster_scale(_DEFAULT_UI_POSTER_SCALE),
+            *_UI_POSTER_SCALE_RANGE,
         )
         # The server's settings object, mirrored from the status/PATCH payloads.
         self._settings: dict = {}
@@ -569,7 +604,105 @@ class AppController(QObject):
     serverPort = Property(str, _get_server_port, notify=clientPrefsChanged)
     serverToken = Property(str, _get_server_token, notify=clientPrefsChanged)
 
+    # ---- UI appearance prefs (client-local; applied live by the QML Theme) ----
+
+    def _get_ui_scale(self) -> float:
+        return self._ui_scale
+
+    def _get_ui_density(self) -> float:
+        return self._ui_density
+
+    def _get_ui_theme_mode(self) -> str:
+        return self._ui_theme_mode
+
+    def _get_ui_accent(self) -> str:
+        return self._ui_accent
+
+    def _get_ui_poster_scale(self) -> float:
+        return self._ui_poster_scale
+
+    uiScale = Property(float, _get_ui_scale, notify=uiPrefsChanged)
+    uiDensity = Property(float, _get_ui_density, notify=uiPrefsChanged)
+    uiThemeMode = Property(str, _get_ui_theme_mode, notify=uiPrefsChanged)
+    uiAccent = Property(str, _get_ui_accent, notify=uiPrefsChanged)
+    uiPosterScale = Property(float, _get_ui_poster_scale, notify=uiPrefsChanged)
+
     # ---- slots invoked from QML -----------------------------------------
+
+    @Slot(float)
+    def setUiScale(self, value: float) -> None:
+        self._apply_ui_prefs(scale=_clamp(float(value), *_UI_SCALE_RANGE))
+
+    @Slot(float)
+    def setUiDensity(self, value: float) -> None:
+        self._apply_ui_prefs(density=_clamp(float(value), *_UI_DENSITY_RANGE))
+
+    @Slot(str)
+    def setUiThemeMode(self, value: str) -> None:
+        self._apply_ui_prefs(theme="light" if value == "light" else "dark")
+
+    @Slot(str)
+    def setUiAccent(self, value: str) -> None:
+        value = (value or "").strip()
+        if _ACCENT_HEX_RE.match(value):
+            self._apply_ui_prefs(accent=value.lower())
+
+    @Slot(float)
+    def setUiPosterScale(self, value: float) -> None:
+        self._apply_ui_prefs(
+            poster_scale=_clamp(float(value), *_UI_POSTER_SCALE_RANGE)
+        )
+
+    @Slot()
+    def resetUiPrefs(self) -> None:
+        """Restore the shipped defaults (dark, 100% scale, comfortable, indigo)."""
+        self._apply_ui_prefs(
+            scale=_DEFAULT_UI_SCALE,
+            density=_DEFAULT_UI_DENSITY,
+            theme=_DEFAULT_UI_THEME,
+            accent=_DEFAULT_UI_ACCENT,
+            poster_scale=_DEFAULT_UI_POSTER_SCALE,
+        )
+
+    def _apply_ui_prefs(
+        self,
+        scale: float | None = None,
+        density: float | None = None,
+        theme: str | None = None,
+        accent: str | None = None,
+        poster_scale: float | None = None,
+    ) -> None:
+        """Update whichever prefs were supplied, persist them all, and notify QML.
+
+        A no-op guard keeps the app quiet when nothing actually changed (e.g. a
+        combo re-selecting its current value), so the Theme doesn't reflow for
+        free."""
+        changed = False
+        if scale is not None and scale != self._ui_scale:
+            self._ui_scale = scale
+            changed = True
+        if density is not None and density != self._ui_density:
+            self._ui_density = density
+            changed = True
+        if theme is not None and theme != self._ui_theme_mode:
+            self._ui_theme_mode = theme
+            changed = True
+        if accent is not None and accent != self._ui_accent:
+            self._ui_accent = accent
+            changed = True
+        if poster_scale is not None and poster_scale != self._ui_poster_scale:
+            self._ui_poster_scale = poster_scale
+            changed = True
+        if not changed:
+            return
+        self._store.save_ui_prefs(
+            self._ui_scale,
+            self._ui_density,
+            self._ui_theme_mode,
+            self._ui_accent,
+            self._ui_poster_scale,
+        )
+        self.uiPrefsChanged.emit()
 
     @Slot(str, str, str)
     def connectToServer(self, host: str, port: str, token: str) -> None:
