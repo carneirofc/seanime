@@ -11,6 +11,14 @@ from pathlib import Path
 # login page). Must be set before QtWebEngine initializes. Overridable via env.
 os.environ.setdefault("QTWEBENGINE_CHROMIUM_FLAGS", "--log-level=3")
 
+# Use the Basic Qt Quick Controls style so the app's custom control styling
+# (see AppButton/AppToolButton/AppComboBox, which set contentItem/background from
+# the Theme tokens) is honoured. The native platform style ignores such
+# customization ("current style does not support customization") and draws light
+# controls that clash with the dark Theme. Overridable via env. Must be set
+# before the QML engine loads any Controls.
+os.environ.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
+
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
