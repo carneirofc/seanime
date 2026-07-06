@@ -30,7 +30,7 @@ ColumnLayout {
         // Staggered fade-in as portraits populate.
         populate: Transition {
             SequentialAnimation {
-                PauseAnimation { duration: Math.min(ViewTransition.index, 10) * 25 }
+                PauseAnimation { duration: Math.max(0, Math.min(ViewTransition.index, 10)) * 25 }
                 NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.durSlow; easing.type: Theme.easeStandard }
             }
         }
