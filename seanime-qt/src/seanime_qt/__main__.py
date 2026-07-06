@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import os
 import sys
 from pathlib import Path
@@ -91,9 +92,12 @@ def main() -> int:
 
     # Destroy the QML engine (and every `app`-bound binding) while the controller
     # is still alive, so shutdown doesn't dereference a torn-down context object
-    # and spew "Cannot read property ... of null" errors.
-    engine.deleteLater()
+    # and spew "Cannot read property ... of null" errors. The event loop has
+    # already exited, so deleteLater() would never fire — drop the only Python
+    # reference and force a synchronous collection instead, which tears down the
+    # engine's QML tree immediately, before `controller` goes away.
     del engine
+    gc.collect()
     return exit_code
 
 

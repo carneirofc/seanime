@@ -19,6 +19,7 @@ from PySide6.QtCore import (
     Signal,
     Slot,
 )
+from PySide6.QtQml import QJSValue
 
 from .anilist_queries import (
     discover_bodies,
