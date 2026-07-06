@@ -104,6 +104,26 @@ ColumnLayout {
                 }
             }
 
+            // Tags (ranked, from media-details). Tapping one searches by that tag.
+            Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: app.detailTags.length > 0
+                Repeater {
+                    model: app.detailTags
+                    delegate: Chip {
+                        required property var modelData
+                        text: modelData.rank > 0
+                              ? modelData.name + " · " + modelData.rank + "%"
+                              : modelData.name
+                        fillColor: Theme.surfaceHover
+                        textColor: modelData.spoiler ? Theme.warnText : Theme.textMuted
+                        interactive: true
+                        onClicked: app.requestTagSearch(modelData.name)
+                    }
+                }
+            }
+
             // List-entry status + edit action.
             RowLayout {
                 Layout.fillWidth: true

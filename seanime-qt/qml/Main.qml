@@ -32,6 +32,7 @@ ApplicationWindow {
         // A genre chip was tapped: switch to the search page, which consumes the
         // pending genre in its Component.onCompleted and runs the query.
         function onGenreSearchRequested(genre) { window.showPage(searchComponent, "search") }
+        function onTagSearchRequested(tag) { window.showPage(searchComponent, "search") }
     }
 
     // Slim top bar: server connection only (navigation lives in the sidebar).

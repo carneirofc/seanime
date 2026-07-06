@@ -72,10 +72,12 @@ class AppController(QObject):
     readerChanged = Signal()
     mangaOpened = Signal()    # QML pushes the manga detail page on this
     chapterOpened = Signal()  # QML pushes the reader page on this
-    # Deep-link a genre into the advanced-search page (e.g. tapping a genre chip
-    # on the detail header). QML navigates to search, which consumes the pending
-    # genre and runs the query.
+    # Deep-link a genre/tag into the advanced-search page (e.g. tapping a chip on
+    # the detail header). QML navigates to search, which consumes the pending
+    # genre/tag and runs the query.
     genreSearchRequested = Signal(str)
+    tagSearchRequested = Signal(str)
+    detailTagsChanged = Signal()  # rich tags from media-details arrived
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -146,8 +148,11 @@ class AppController(QObject):
         # Advanced-search state: remember the active query to paginate it.
         self._search_filters: dict = {}
         self._search_page = 1
-        # A genre awaiting the search page (set by a detail-header chip tap).
+        # A genre/tag awaiting the search page (set by a detail-header chip tap).
         self._pending_search_genre = ""
+        self._pending_search_tag = ""
+        # Rich AniList tags for the open anime (from media-details).
+        self._detail_tags: list = []
 
         # ---- manga state ----
         self._manga_title = ""
@@ -373,6 +378,14 @@ class AppController(QObject):
     detailEpisodeCount = Property(int, _get_detail_episode_count, notify=detailChanged)
     detailDuration = Property(int, _get_detail_duration, notify=detailChanged)
     detailGenres = Property("QVariantList", _get_detail_genres, notify=detailChanged)
+
+    def _get_detail_tags(self) -> list:
+        return self._detail_tags
+
+    # Rich tags: ``{name, rank, isAdult, spoiler}``, ranked high→low. Populated
+    # from media-details (a different request than the base entry), so it has its
+    # own change signal.
+    detailTags = Property("QVariantList", _get_detail_tags, notify=detailTagsChanged)
     detailNextAiring = Property(str, _get_detail_next_airing, notify=detailChanged)
     detailListStatus = Property(str, _get_detail_list_status, notify=detailChanged)
     detailListScore = Property(int, _get_detail_list_score, notify=detailChanged)
@@ -743,6 +756,22 @@ class AppController(QObject):
         self._pending_search_genre = ""
         return genre
 
+    @Slot(str)
+    def requestTagSearch(self, tag: str) -> None:
+        """Deep-link a tag into the search page (from a detail-header chip)."""
+        tag = (tag or "").strip()
+        if not tag:
+            return
+        self._pending_search_tag = tag
+        self.tagSearchRequested.emit(tag)
+
+    @Slot(result=str)
+    def consumePendingSearchTag(self) -> str:
+        """Return and clear the tag queued by ``requestTagSearch``."""
+        tag = self._pending_search_tag
+        self._pending_search_tag = ""
+        return tag
+
     @Slot("QVariant")
     def searchAdvanced(self, filters) -> None:
         """Run an advanced AniList search from a filter object.
@@ -1010,6 +1039,34 @@ class AppController(QObject):
             [((e or {}).get("node") or {}).get("mediaRecommendation") for e in recs]
         )
         self._character_model.load(data.get("characters"))
+        self._apply_detail_tags(data.get("tags"))
+
+    def _apply_detail_tags(self, raw_tags) -> None:
+        """Build the ranked tag chip list, honouring the spoiler / adult settings."""
+        hide_spoilers = self._anilist_flag("hideMediaTagsSpoilers")
+        allow_adult = self._anilist_flag("enableAdultContent")
+        tags: list[dict] = []
+        for tag in raw_tags or []:
+            if not tag or not tag.get("name"):
+                continue
+            is_adult = bool(tag.get("isAdult"))
+            if is_adult and not allow_adult:
+                continue
+            spoiler = bool(tag.get("isMediaSpoiler") or tag.get("isGeneralSpoiler"))
+            if spoiler and hide_spoilers:
+                continue
+            tags.append(
+                {
+                    "name": tag.get("name") or "",
+                    "rank": int(tag.get("rank") or 0),
+                    "isAdult": is_adult,
+                    "spoiler": spoiler,
+                }
+            )
+        # Highest-ranked first; cap so the header stays readable.
+        tags.sort(key=lambda t: t["rank"], reverse=True)
+        self._detail_tags = tags[:18]
+        self.detailTagsChanged.emit()
 
     def _on_list_updated(self, _data) -> None:
         # Re-fetch the entry so the header + episode watched marks reflect the change.
@@ -1123,6 +1180,8 @@ class AppController(QObject):
         self._detail_list_score = 0
         self._detail_list_progress = 0
         self.detailChanged.emit()
+        self._detail_tags = []
+        self.detailTagsChanged.emit()
 
     def _reset_manga_detail(self) -> None:
         """Clear all manga detail state (called when a new manga is opened)."""

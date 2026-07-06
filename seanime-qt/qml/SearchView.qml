@@ -66,10 +66,12 @@ Item {
     // select that genre and run the search immediately.
     Component.onCompleted: {
         var genre = app.consumePendingSearchGenre()
-        if (genre && genre.length > 0) {
-            genrePopup.selected = [genre]
+        var tag = app.consumePendingSearchTag()
+        var seeded = false
+        if (genre && genre.length > 0) { genrePopup.selected = [genre]; seeded = true }
+        if (tag && tag.length > 0) { tagPopup.selected = [tag]; seeded = true }
+        if (seeded)
             root.runSearch()
-        }
     }
 
     ColumnLayout {
