@@ -4,8 +4,25 @@ import QtQuick.Controls
 Item {
     id: card
 
+    // Addressable by the agent harness: each card carries its media id so a
+    // specific poster can be located and clicked (e.g. "card_21").
+    objectName: "card_" + mediaId
+
+    // Exposed so the enclosing GridView can activate the current card by keyboard.
+    property int cardMediaId: mediaId
+
     // Exposed so the delegate user can react to clicks.
     signal activated()
+    function activate() { card.activated() }
+
+    // Accessibility: each poster is announced as a button named after the title.
+    // Arrow-key focus and Enter activation are handled by the GridView (the focus
+    // scope), so the card itself is not individually tab-focusable.
+    Accessible.role: Accessible.Button
+    Accessible.name: title
+    Accessible.description: "Open details for " + title
+    Accessible.focusable: true
+    Accessible.onPressAction: card.activate()
 
     Rectangle {
         anchors.fill: parent
@@ -65,6 +82,6 @@ Item {
         }
     }
 
-    HoverHandler { id: hover }
-    TapHandler { onTapped: card.activated() }
+    HoverHandler { id: hover; cursorShape: Qt.PointingHandCursor }
+    TapHandler { onTapped: card.activate() }
 }

@@ -15,6 +15,8 @@ class EpisodeModel(QAbstractListModel):
     ThumbnailRole = Qt.ItemDataRole.UserRole + 3
     DownloadedRole = Qt.ItemDataRole.UserRole + 4
     SummaryRole = Qt.ItemDataRole.UserRole + 5
+    ProgressNumberRole = Qt.ItemDataRole.UserRole + 6
+    WatchedRole = Qt.ItemDataRole.UserRole + 7
 
     _ROLES = {
         NumberRole: b"number",
@@ -22,18 +24,23 @@ class EpisodeModel(QAbstractListModel):
         ThumbnailRole: b"thumbnailUrl",
         DownloadedRole: b"isDownloaded",
         SummaryRole: b"summary",
+        ProgressNumberRole: b"progressNumber",
+        WatchedRole: b"isWatched",
     }
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._rows: list[dict] = []
 
-    def load(self, episodes) -> None:
+    def load(self, episodes, watched_through: int = 0) -> None:
+        """Populate from the ``episodes`` array; ``watched_through`` is the
+        AniList list progress (the highest episode counted as watched)."""
         rows: list[dict] = []
         for ep in episodes or []:
             meta = ep.get("episodeMetadata") or {}
             display = ep.get("displayTitle") or f"Episode {ep.get('episodeNumber', '?')}"
             episode_title = ep.get("episodeTitle") or ""
+            progress_number = ep.get("progressNumber") or ep.get("episodeNumber") or 0
             rows.append(
                 {
                     "number": ep.get("episodeNumber") or 0,
@@ -41,6 +48,8 @@ class EpisodeModel(QAbstractListModel):
                     "thumbnailUrl": meta.get("image") or "",
                     "isDownloaded": bool(ep.get("isDownloaded")),
                     "summary": meta.get("summary") or meta.get("overview") or "",
+                    "progressNumber": progress_number,
+                    "isWatched": progress_number > 0 and progress_number <= watched_through,
                 }
             )
 

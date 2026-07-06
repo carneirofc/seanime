@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 - ✨ seanime-qt: Added a proof-of-concept Qt/QML desktop frontend (library browser + detail viewer) built with PySide6, using only Qt libraries so it can be ported to C++ Qt; connects to the existing Go REST API
+- ✨ seanime-qt: Added an in-app AniList login flow (embedded QtWebEngine view) using the OAuth authorization-code grant — captures the redirect `code`, exchanges it for an access token at AniList's token endpoint, and authenticates against `/api/v1/auth/login`
+- ✨ seanime-qt: Added a live "find in library" filter (client-side `QSortFilterProxyModel` over the library grid)
+- ✨ seanime-qt: Added an advanced AniList search (queries `/api/v1/anilist/list-anime`) with filters mirroring the web UI — sort, genres (multi-select), format, season, year, status, and minimum score — plus "Load more" pagination; results open in the detail view
+- ✨ seanime-qt: Expanded the Discover feed into multiple carousels like the web UI — Trending, Top of the Season, Best of Last Season, Coming Soon, Trending Movies, and Missed Sequels (`/api/v1/anilist/list-anime` and `/api/v1/anilist/list-missed-sequels`); the current/previous season is computed client-side
+- ✨ seanime-qt: Expanded the detail page toward web-UI parity — banner, metadata (score, status, format, season/year, episode count, duration, next-airing countdown), genre chips, relations, recommendations, and characters (via `/api/v1/anilist/media-details/:id`) — plus interactive AniList list editing (status/score/progress via `/api/v1/anilist/list-entry`) and per-episode mark-watched/unwatch (via `/api/v1/library/anime-entry/update-progress`)
+- ✨ seanime-qt: Added a Profile view (AniList avatar, banner, username, and local library count from `/api/v1/status`)
+- ✨ seanime-qt: Cache the AniList access token locally (QSettings, scoped per server) and silently re-authenticate on connect, so the browser login isn't required every launch; rejected/expired tokens are dropped from the cache automatically
+- 🦺 seanime-qt: Fixed a cascade of "Cannot read property … of null" QML errors on exit by tearing down the QML engine before the controller; also handle Ctrl+C cleanly and quiet the embedded browser's console/Chromium log noise
+- 🦺 seanime-qt: The library's empty state now distinguishes a failed load (e.g. an expired AniList token) from a genuinely empty library, showing the error plus "Log in with AniList" / "Retry" actions instead of a misleading "Library is empty."
+- ✨ seanime-qt: Added a left sidebar navigation (mirroring the web frontend) — logo, Home/Discover/Search/Profile items with active highlighting, connection status, and a user/login chip; page switching replaces the content root while detail/login push on top
+- 🤖 seanime-qt: Added an agent-control harness so Claude Code can drive the app for development/debugging — an opt-in in-app control server (`SEANIME_QT_AGENT=1`) that screenshots, dumps the QML tree, injects clicks/typing/keys, reports keyboard focus and accessibility interfaces, invokes controller slots, and captures logs, plus an MCP server (`seanime-qt-mcp`, registered via repo `.mcp.json`) that manages the app lifecycle and exposes these as tools
+- ♿ seanime-qt: Made the custom controls accessible and keyboard-operable — sidebar nav items, the user/login chip, and poster cards now expose proper `Accessible` button roles/names, are reachable via Tab with a visible focus ring, and activate with Enter/Space; poster grids and Discover carousels support arrow-key navigation with Enter to open; clickable non-button elements show a pointing-hand cursor
 
 ## v3.8.7-fork.2
 

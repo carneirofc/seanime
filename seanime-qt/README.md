@@ -58,4 +58,59 @@ seanime-qt/
     AnimeCard.qml     # grid delegate
     DetailView.qml    # poster + synopsis + episode ListView
     EpisodeDelegate.qml
+  src/seanime_qt/agent/  # dev-only: agent control harness (see below)
+    control_server.py    #   in-app JSON/TCP command socket (GUI thread)
+    log_capture.py       #   unified log ring buffer
+    mcp_server.py        #   MCP server: lifecycle + control tools
+```
+
+## Agentic control (Claude Code)
+
+The app ships an **opt-in harness** that lets Claude Code launch, inspect, and
+drive it — no human at the mouse — for agentic development and debugging.
+
+**How it fits together**
+
+```
+Claude Code ──stdio──▶ MCP server ──JSON/TCP──▶ Control server (inside the app)
+  (tool calls)        seanime-qt-mcp   127.0.0.1:43299    runs on the GUI thread
+```
+
+- The **control server** is embedded in the Qt process and enabled only when
+  `SEANIME_QT_AGENT=1`. Because it lives on the GUI thread it can safely walk the
+  QML tree, grab the window, and synthesise input events. It binds to localhost
+  only and speaks newline-delimited JSON.
+- The **MCP server** (`seanime-qt-mcp`) runs as a separate process, owns the app
+  subprocess (`app_start`/`app_stop`/`app_restart`), and forwards the rest of the
+  tools over the socket.
+
+**Setup.** The repo root has a `.mcp.json` registering the server, so in Claude
+Code you just approve the `seanime-qt` MCP server (install the extra once with
+`uv sync --extra agent`). Then, from a Claude Code session:
+
+1. `app_start` — launches the app with the control server on.
+2. `screenshot` / `dump_tree` — see what's on screen (pixels, or a JSON tree of
+   objectNames, geometry, and text).
+3. `click` / `type_text` — interact by `objectName` (e.g. `nav_discover`,
+   `searchField`, `connectButton`, or a poster `card_<mediaId>`).
+4. `press_key` / `active_focus` — drive and inspect keyboard behaviour: send
+   `tab`/`return`/arrow keys and read which item holds focus (Tab order,
+   Enter/Space activation, arrow-key grid navigation).
+5. `accessible` — read an element's accessibility interface (role/name/
+   description) as an assistive tool would see it.
+6. `invoke` — drive state deterministically via the controller's slots, e.g.
+   `invoke("app", "openAnime", [21])`, `invoke("app", "searchAnilist", ["naruto"])`.
+7. `get_logs` — QML warnings, Python logs, and uncaught exceptions from a shared
+   ring buffer (pass the returned `cursor` back as `since` to tail only new ones).
+8. `app_restart` — pick up QML/Python edits.
+
+Data-bearing screens (library, detail, search, discover) still need a running
+Seanime backend and a cached AniList token; `screenshot`/`dump_tree`/navigation
+work regardless.
+
+**Manual use.** You can also run the control server without MCP:
+
+```bash
+SEANIME_QT_AGENT=1 uv run seanime-qt
+printf '{"cmd":"health"}\n' | nc 127.0.0.1 43299
 ```

@@ -6,20 +6,27 @@ Item {
     id: root
     signal back()
 
+    ListEntryEditor {
+        id: listEditor
+        episodeCount: app.detailEpisodeCount
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        // Top bar with a back button.
+        // Fixed top bar with a back button.
         RowLayout {
             Layout.fillWidth: true
             Layout.margins: 12
             spacing: 10
             Button {
+                objectName: "detailBackButton"
                 text: "← Back"
                 onClicked: root.back()
             }
             Label {
+                objectName: "detailTitleLabel"
                 Layout.fillWidth: true
                 text: app.detailTitle
                 color: "#ffffff"
@@ -29,63 +36,71 @@ Item {
             }
         }
 
-        // Header: poster + synopsis.
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: 12
-            Layout.rightMargin: 12
-            Layout.bottomMargin: 12
-            spacing: 16
-
-            Rectangle {
-                Layout.preferredWidth: 180
-                Layout.preferredHeight: 260
-                radius: 8
-                clip: true
-                color: "#1a1a22"
-                Image {
-                    anchors.fill: parent
-                    source: app.detailPoster
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                }
-            }
-
-            ScrollView {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 260
-                clip: true
-                Label {
-                    width: root.width - 180 - 44
-                    text: app.detailSynopsis || "No synopsis."
-                    color: "#c0c0cc"
-                    font.pixelSize: 14
-                    wrapMode: Text.WordWrap
-                }
-            }
-        }
-
-        Rectangle { Layout.fillWidth: true; height: 1; color: "#26262f" }
-
-        Label {
-            Layout.leftMargin: 12
-            Layout.topMargin: 10
-            text: "Episodes (" + episodeList.count + ")"
-            color: "#e6e6ee"
-            font.pixelSize: 15
-            font.bold: true
-        }
-
-        ListView {
-            id: episodeList
+        ScrollView {
+            id: scroll
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: 12
+            contentWidth: availableWidth
             clip: true
-            spacing: 8
-            model: app.episodeModel
-            ScrollBar.vertical: ScrollBar {}
-            delegate: EpisodeDelegate { width: episodeList.width }
+
+            ColumnLayout {
+                width: scroll.availableWidth
+                spacing: 14
+
+                DetailHeader {
+                    Layout.fillWidth: true
+                    onEditListRequested: listEditor.openFor()
+                }
+
+                Rectangle { Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12; Layout.preferredHeight: 1; color: "#26262f" }
+
+                // Episodes.
+                Label {
+                    Layout.leftMargin: 12
+                    text: "Episodes (" + episodeRepeater.count + ")"
+                    color: "#e6e6ee"
+                    font.pixelSize: 15
+                    font.bold: true
+                    visible: episodeRepeater.count > 0
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 12
+                    Layout.rightMargin: 12
+                    spacing: 8
+                    Repeater {
+                        id: episodeRepeater
+                        model: app.episodeModel
+                        delegate: EpisodeDelegate {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 84
+                        }
+                    }
+                }
+
+                // Related media, recommendations, characters.
+                MediaCarousel {
+                    Layout.leftMargin: 12
+                    Layout.rightMargin: 12
+                    title: "Relations"
+                    model: app.relationsModel
+                }
+                MediaCarousel {
+                    Layout.leftMargin: 12
+                    Layout.rightMargin: 12
+                    title: "Recommendations"
+                    model: app.recommendationsModel
+                }
+
+                CharacterStrip {
+                    Layout.leftMargin: 12
+                    Layout.rightMargin: 12
+                    model: app.characterModel
+                }
+
+                Item { Layout.preferredHeight: 12 }
+            }
         }
     }
 }
