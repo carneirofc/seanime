@@ -45,6 +45,8 @@ class ApiClient(QObject):
     missedSequelsReceived = Signal("QVariant")
     listEntryUpdated = Signal("QVariant")  # AniList list edit succeeded
     progressUpdated = Signal("QVariant")   # episode progress update succeeded
+    torrentSearchReceived = Signal("QVariant")     # torrent search results
+    torrentDownloadSucceeded = Signal("QVariant")  # torrents handed to the client
     # Manga.
     mangaCollectionReceived = Signal("QVariant")
     mangaEntryReceived = Signal("QVariant")
@@ -190,6 +192,24 @@ class ApiClient(QObject):
             "/api/v1/library/anime-entry/update-progress",
             body,
             self.progressUpdated,
+        )
+
+    def search_torrent(self, body: dict) -> None:
+        """POST a torrent search; the result routes to ``torrentSearchReceived``.
+
+        ``body`` carries ``{type, provider, query, episodeNumber, batch,
+        resolution, media}``. An empty ``provider`` makes the server use the
+        user's default torrent provider.
+        """
+        self._post_json("/api/v1/torrent/search", body, self.torrentSearchReceived)
+
+    def torrent_client_download(self, body: dict) -> None:
+        """POST selected torrents to the configured torrent client.
+
+        ``body`` carries ``{torrents, destination, smartSelect, media}``.
+        """
+        self._post_json(
+            "/api/v1/torrent-client/download", body, self.torrentDownloadSucceeded
         )
 
     def save_settings(self, body: dict) -> None:
