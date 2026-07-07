@@ -89,6 +89,13 @@ Rectangle {
             }
         }
 
+        // Search torrents for just this episode.
+        AppButton {
+            objectName: "episodeDownloadButton_" + progressNumber
+            iconName: "download"
+            onClicked: app.openTorrentSearch(parseInt(number) || progressNumber, false)
+        }
+
         // Mark watched up to this episode / unwatch (set progress to the one before).
         AppButton {
             objectName: "episodeWatchButton_" + progressNumber

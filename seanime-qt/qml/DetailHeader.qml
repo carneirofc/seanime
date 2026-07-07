@@ -140,6 +140,12 @@ ColumnLayout {
                 }
                 Item { Layout.fillWidth: true }
                 AppButton {
+                    objectName: "downloadButton"
+                    text: "Download"
+                    iconName: "download"
+                    onClicked: app.openTorrentSearch(-1, false)
+                }
+                AppButton {
                     objectName: "editListButton"
                     text: "Edit list"
                     onClicked: header.editListRequested()

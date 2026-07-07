@@ -32,10 +32,15 @@ ApplicationWindow {
         Theme.posterScale = app.uiPosterScale
     }
 
+    // Section to preselect the next time the settings page opens (-1 = leave as
+    // is). Set by the sidebar's "Server settings" link so it can deep-link into
+    // the Client section, which holds the server connection fields.
+    property int pendingSettingsIndex: -1
+
     // Apply the persisted appearance prefs, then auto-connect to the local server.
     Component.onCompleted: {
         window.applyUiPrefs()
-        app.connectToServer(hostField.text, portField.text, tokenField.text)
+        app.connectToServer(app.serverHost, app.serverPort, app.serverToken)
     }
 
     Connections {
@@ -53,57 +58,15 @@ ApplicationWindow {
         // pending genre in its Component.onCompleted and runs the query.
         function onGenreSearchRequested(genre) { window.showPage(searchComponent, "search") }
         function onTagSearchRequested(tag) { window.showPage(searchComponent, "search") }
+        // Torrent download: push the browser, host the confirm dialog, and pop
+        // back to the detail page once a download has been handed to the client.
+        function onTorrentSearchOpened() { stack.push(torrentSearchComponent) }
+        function onTorrentDownloadReady() { downloadConfirmDialog.open() }
+        function onTorrentDownloadStarted() { downloadConfirmDialog.close(); stack.pop() }
     }
 
-    // Slim top bar: server connection only (navigation lives in the sidebar).
-    header: ToolBar {
-        background: Rectangle { color: Theme.surfaceAlt }
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: Theme.spacing
-            anchors.rightMargin: Theme.spacing
-            spacing: Theme.spacingSm
-
-            Label {
-                text: "Server"
-                color: Theme.textMuted
-                font.pixelSize: Theme.fontMd
-            }
-            AppTextField {
-                id: hostField
-                objectName: "hostField"
-                text: app.serverHost
-                Layout.preferredWidth: 130
-                placeholderText: "host"
-                Accessible.name: "Server host"
-            }
-            AppTextField {
-                id: portField
-                objectName: "portField"
-                text: app.serverPort
-                Layout.preferredWidth: 70
-                placeholderText: "port"
-                Accessible.name: "Server port"
-            }
-            AppTextField {
-                id: tokenField
-                objectName: "tokenField"
-                text: app.serverToken
-                Layout.preferredWidth: 150
-                placeholderText: "token (optional)"
-                echoMode: TextInput.Password
-                Accessible.name: "Server token, optional"
-            }
-            AppButton {
-                objectName: "connectButton"
-                text: "Connect"
-                onClicked: app.connectToServer(hostField.text, portField.text, tokenField.text)
-            }
-            Item { Layout.fillWidth: true }
-        }
-    }
-
-    // Body: sidebar + content.
+    // Body: sidebar + content. (Server connection now lives in Settings › Client;
+    // the sidebar's connection-status link deep-links there.)
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -121,6 +84,11 @@ ApplicationWindow {
                 else if (page === "settings") showPage(settingsComponent, "settings")
             }
             onLoginRequested: stack.push(loginComponent)
+            // Deep-link into Settings › Client (the server-connection section).
+            onServerSettingsRequested: {
+                window.pendingSettingsIndex = 1
+                showPage(settingsComponent, "settings")
+            }
         }
 
         ColumnLayout {
@@ -224,6 +192,13 @@ ApplicationWindow {
     }
 
     Component {
+        id: torrentSearchComponent
+        TorrentSearchView {
+            onBack: stack.pop()
+        }
+    }
+
+    Component {
         id: mangaLibraryComponent
         MangaLibraryView {
             onLoginRequested: stack.push(loginComponent)
@@ -268,6 +243,19 @@ ApplicationWindow {
 
     Component {
         id: settingsComponent
-        SettingsView {}
+        SettingsView {
+            Component.onCompleted: {
+                if (window.pendingSettingsIndex >= 0) {
+                    currentIndex = window.pendingSettingsIndex
+                    window.pendingSettingsIndex = -1
+                }
+            }
+        }
+    }
+
+    // Hosted once at the window level so it can overlay any page and coordinate
+    // with the stack (opened on torrentDownloadReady; closed on download start).
+    DownloadConfirmDialog {
+        id: downloadConfirmDialog
     }
 }
