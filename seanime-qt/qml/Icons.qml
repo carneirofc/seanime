@@ -69,6 +69,7 @@ QtObject {
         "eye-off":                 "\uecf0",
         "lock":                    "\ueae2",
         "photo":                   "\ueb0a",
+        "download":                "\uea96",
         "player-play":             "\ued46",
         // badges
         "rating-18-plus":          "\uf269"
