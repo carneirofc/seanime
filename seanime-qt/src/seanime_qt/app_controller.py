@@ -32,6 +32,7 @@ from .anilist_queries import (
 )
 from .adult_filter import AdultFilterProxy
 from .api_client import ApiClient
+from .destination import default_destination
 from .chapter_model import ChapterModel
 from .character_model import CharacterModel
 from .episode_model import EpisodeModel
@@ -42,6 +43,7 @@ from .page_model import PageModel
 from .search_model import SearchModel
 from .settings_store import SettingsStore
 from .token_cache import TokenCache
+from .torrent_model import TorrentModel
 
 # AniList's OAuth authorize endpoint. AniList has disabled the implicit grant, so we
 # use the authorization-code grant (response_type=code): the redirect delivers a
@@ -104,6 +106,11 @@ class AppController(QObject):
     genreSearchRequested = Signal(str)
     tagSearchRequested = Signal(str)
     detailTagsChanged = Signal()  # rich tags from media-details arrived
+    # Torrent download.
+    torrentSearchOpened = Signal()     # QML pushes the torrent search page
+    torrentStateChanged = Signal()     # torrent loading / results / selection changed
+    torrentDownloadReady = Signal()    # QML opens the download confirm dialog
+    torrentDownloadStarted = Signal()  # a download was accepted; QML closes + returns
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -118,6 +125,7 @@ class AppController(QObject):
         self._relations_model = SearchModel(self)
         self._recommendations_model = SearchModel(self)
         self._character_model = CharacterModel(self)
+        self._torrent_model = TorrentModel(self)
         # Manga models.
         self._manga_library_model = MangaLibraryModel(self)
         self._chapter_model = ChapterModel(self)
@@ -185,6 +193,18 @@ class AppController(QObject):
         self._pending_search_tag = ""
         # Rich AniList tags for the open anime (from media-details).
         self._detail_tags: list = []
+        # Torrent download state (for the open anime).
+        self._entry_media: dict = {}
+        self._entry_local_files: list = []
+        self._entry_download_info: dict = {}
+        self._torrent_search_loading = False
+        self._torrent_search_episode = -1
+        self._torrent_search_batch = False
+        self._torrent_selected: dict | None = None
+        self._torrent_selected_name = ""
+        self._torrent_can_smart_select = False
+        self._torrent_default_destination = ""
+        self._torrent_downloading = False
 
         # ---- manga state ----
         self._manga_title = ""
@@ -266,6 +286,8 @@ class AppController(QObject):
         self._client.missedSequelsReceived.connect(self._on_missed_sequels)
         self._client.listEntryUpdated.connect(self._on_list_updated)
         self._client.progressUpdated.connect(self._on_progress_updated)
+        self._client.torrentSearchReceived.connect(self._on_torrent_search)
+        self._client.torrentDownloadSucceeded.connect(self._on_torrent_download_ok)
         self._client.mangaCollectionReceived.connect(self._on_manga_collection)
         self._client.mangaEntryReceived.connect(self._on_manga_entry)
         self._client.mangaProvidersReceived.connect(self._on_manga_providers)
@@ -306,6 +328,9 @@ class AppController(QObject):
 
     def _get_discover_model(self) -> SearchModel:
         return self._discover_model
+
+    def _get_torrent_model(self) -> QObject:
+        return self._torrent_model
 
     def _get_relations_model(self) -> SearchModel:
         return self._relations_model
@@ -358,6 +383,7 @@ class AppController(QObject):
     relationsModel = Property(QObject, _get_relations_model, constant=True)
     recommendationsModel = Property(QObject, _get_recommendations_model, constant=True)
     characterModel = Property(QObject, _get_character_model, constant=True)
+    torrentModel = Property(QObject, _get_torrent_model, constant=True)
     mangaLibraryModel = Property(QObject, _get_manga_library_model, constant=True)
     mangaLibrarySfwModel = Property(
         QObject, _get_manga_library_sfw_model, constant=True
@@ -458,6 +484,35 @@ class AppController(QObject):
     detailListStatus = Property(str, _get_detail_list_status, notify=detailChanged)
     detailListScore = Property(int, _get_detail_list_score, notify=detailChanged)
     detailListProgress = Property(int, _get_detail_list_progress, notify=detailChanged)
+
+    def _get_torrent_search_loading(self) -> bool:
+        return self._torrent_search_loading
+
+    def _get_torrent_search_episode(self) -> int:
+        return self._torrent_search_episode
+
+    def _get_torrent_search_batch(self) -> bool:
+        return self._torrent_search_batch
+
+    def _get_torrent_selected_name(self) -> str:
+        return self._torrent_selected_name
+
+    def _get_torrent_can_smart_select(self) -> bool:
+        return self._torrent_can_smart_select
+
+    def _get_torrent_default_destination(self) -> str:
+        return self._torrent_default_destination
+
+    def _get_torrent_downloading(self) -> bool:
+        return self._torrent_downloading
+
+    torrentSearchLoading = Property(bool, _get_torrent_search_loading, notify=torrentStateChanged)
+    torrentSearchEpisode = Property(int, _get_torrent_search_episode, notify=torrentStateChanged)
+    torrentSearchBatch = Property(bool, _get_torrent_search_batch, notify=torrentStateChanged)
+    torrentSelectedName = Property(str, _get_torrent_selected_name, notify=torrentStateChanged)
+    torrentCanSmartSelect = Property(bool, _get_torrent_can_smart_select, notify=torrentStateChanged)
+    torrentDefaultDestination = Property(str, _get_torrent_default_destination, notify=torrentStateChanged)
+    torrentDownloading = Property(bool, _get_torrent_downloading, notify=torrentStateChanged)
 
     # ---- manga detail properties ----------------------------------------
 
@@ -1051,6 +1106,113 @@ class AppController(QObject):
             self._detail_media_id, int(episode_number), self._detail_episode_count
         )
 
+    # ---- torrent download slots -----------------------------------------
+
+    @Slot(int, bool)
+    def openTorrentSearch(self, episode_number: int, batch: bool) -> None:
+        """Open the torrent browser for the open anime and run an initial search.
+
+        ``episode_number`` is the episode to pre-fill (<= 0 for none); ``batch``
+        pre-checks the batch toggle.
+        """
+        if not self._detail_media_id or not self._entry_media:
+            return
+        self._torrent_model.clear()
+        self._torrent_selected = None
+        self._torrent_selected_name = ""
+        self._torrent_can_smart_select = False
+        self._torrent_search_episode = int(episode_number)
+        self._torrent_search_batch = bool(batch)
+        self._set_error("")
+        self.torrentStateChanged.emit()
+        self.torrentSearchOpened.emit()
+        self.runTorrentSearch("", int(episode_number), bool(batch), "")
+
+    @Slot(str, int, bool, str)
+    def runTorrentSearch(self, query: str, episode_number: int, batch: bool, resolution: str) -> None:
+        """Smart-search the server for torrents matching the open anime."""
+        if not self._detail_media_id or not self._entry_media:
+            return
+        self._torrent_search_episode = int(episode_number)
+        self._torrent_search_batch = bool(batch)
+        self._torrent_search_loading = True
+        self._set_error("")
+        self.torrentStateChanged.emit()
+        body = {
+            "type": "smart",
+            "provider": "",  # empty -> server uses the default torrent provider
+            "query": query or "",
+            "episodeNumber": int(episode_number) if episode_number and episode_number > 0 else 0,
+            "batch": bool(batch),
+            "resolution": resolution or "",
+            "media": self._entry_media,
+        }
+        self._client.search_torrent(body)
+
+    @Slot(int)
+    def selectTorrent(self, index: int) -> None:
+        """Pick a result and prepare the download confirm dialog."""
+        torrent = self._torrent_model.torrentAt(index)
+        if not torrent:
+            return
+        self._torrent_selected = torrent
+        self._torrent_selected_name = torrent.get("name") or ""
+        library = self._settings.get("library") if isinstance(self._settings, dict) else None
+        library_path = (library or {}).get("libraryPath") or ""
+        romaji = (self._entry_media.get("title") or {}).get("romaji") or self._detail_title or ""
+        self._torrent_default_destination = default_destination(
+            self._entry_local_files, library_path, romaji
+        )
+        self._torrent_can_smart_select = self._compute_can_smart_select(torrent)
+        self.torrentStateChanged.emit()
+        self.torrentDownloadReady.emit()
+
+    @Slot(str, bool)
+    def startTorrentDownload(self, destination: str, smart_select: bool) -> None:
+        """Send the selected torrent to the configured client at ``destination``."""
+        if not self._torrent_selected:
+            return
+        dest = (destination or "").strip()
+        if not dest or not os.path.isabs(dest):
+            self._set_error("Enter an absolute destination path.")
+            return
+        missing: list[int] = []
+        if smart_select:
+            to_download = (self._entry_download_info or {}).get("episodesToDownload") or []
+            missing = [
+                int(e.get("episodeNumber"))
+                for e in to_download
+                if e and e.get("episodeNumber") is not None
+            ]
+        body = {
+            "torrents": [self._torrent_selected],
+            "destination": dest,
+            "smartSelect": {"enabled": bool(smart_select), "missingEpisodeNumbers": missing},
+            "media": self._entry_media,
+        }
+        self._torrent_downloading = True
+        self._set_error("")
+        self.torrentStateChanged.emit()
+        self._client.torrent_client_download(body)
+
+    def _compute_can_smart_select(self, torrent: dict) -> bool:
+        """Mirror the web client's ``canSmartSelect``: a batch of a finished
+        multi-episode series that still has some (but not all) episodes missing."""
+        if not torrent.get("isBatch"):
+            return False
+        media = self._entry_media or {}
+        if (media.get("format") or "") == "MOVIE":
+            return False
+        if (media.get("status") or "") != "FINISHED":
+            return False
+        episodes = int(media.get("episodes") or 0)
+        if episodes <= 1:
+            return False
+        to_download = (self._entry_download_info or {}).get("episodesToDownload") or []
+        if not to_download:
+            return False
+        return len(to_download) != episodes
+
     # ---- manga slots -----------------------------------------------------
 
     @Slot()
@@ -1184,6 +1346,9 @@ class AppController(QObject):
     def _on_anime_entry(self, data) -> None:
         data = data or {}
         media = data.get("media") or {}
+        self._entry_media = media
+        self._entry_local_files = data.get("localFiles") or []
+        self._entry_download_info = data.get("downloadInfo") or {}
         title = media.get("title") or {}
         cover = media.get("coverImage") or {}
         list_data = data.get("listData") or {}
@@ -1269,6 +1434,16 @@ class AppController(QObject):
             self._client.fetch_anime_entry(self._detail_media_id)
         self._client.fetch_library()
 
+    def _on_torrent_search(self, data) -> None:
+        self._torrent_model.load(data)
+        self._torrent_search_loading = False
+        self.torrentStateChanged.emit()
+
+    def _on_torrent_download_ok(self, _data) -> None:
+        self._torrent_downloading = False
+        self.torrentStateChanged.emit()
+        self.torrentDownloadStarted.emit()
+
     # ---- manga signal handlers ------------------------------------------
 
     def _on_manga_collection(self, data) -> None:
@@ -1337,6 +1512,12 @@ class AppController(QObject):
     def _on_error(self, message: str) -> None:
         if self._connection_status == "connecting":
             self._set_connection_status("disconnected")
+        # A failed torrent search/download should release the busy flags so the
+        # UI doesn't stay stuck in a loading state.
+        if self._torrent_search_loading or self._torrent_downloading:
+            self._torrent_search_loading = False
+            self._torrent_downloading = False
+            self.torrentStateChanged.emit()
         self._set_error(message)
 
     # ---- setters that emit change notifications -------------------------
@@ -1372,6 +1553,17 @@ class AppController(QObject):
         self.detailChanged.emit()
         self._detail_tags = []
         self.detailTagsChanged.emit()
+        self._entry_media = {}
+        self._entry_local_files = []
+        self._entry_download_info = {}
+        self._torrent_selected = None
+        self._torrent_selected_name = ""
+        self._torrent_can_smart_select = False
+        self._torrent_default_destination = ""
+        self._torrent_search_loading = False
+        self._torrent_downloading = False
+        self._torrent_model.clear()
+        self.torrentStateChanged.emit()
 
     def _reset_manga_detail(self) -> None:
         """Clear all manga detail state (called when a new manga is opened)."""
