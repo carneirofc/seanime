@@ -13,6 +13,8 @@ Rectangle {
 
     signal navigate(string page)
     signal loginRequested()
+    // Emitted by the connection-status link to jump to the server-connection settings.
+    signal serverSettingsRequested()
 
     ColumnLayout {
         anchors.fill: parent
@@ -38,6 +40,7 @@ Rectangle {
                 { pageId: "manga",    label: "Manga",    icon: "books" },
                 { pageId: "discover", label: "Discover", icon: "compass" },
                 { pageId: "search",   label: "Search",   icon: "search" },
+                { pageId: "extensions", label: "Extensions", icon: "puzzle" },
                 { pageId: "profile",  label: "Profile",  icon: "user" },
                 { pageId: "settings", label: "Settings", icon: "settings" },
             ]
@@ -120,25 +123,64 @@ Rectangle {
 
         Item { Layout.fillHeight: true }  // push the rest to the bottom
 
-        // ---- connection status ----
-        RowLayout {
+        // ---- connection status (also a link into the server-connection settings) ----
+        Rectangle {
+            id: connStatus
+            objectName: "connectionStatus"
             Layout.fillWidth: true
-            Layout.leftMargin: 20
-            Layout.rightMargin: 12
-            Layout.bottomMargin: 8
-            spacing: 8
-            Rectangle {
-                width: 9; height: 9; radius: 5
-                color: app.connectionStatus === "connected" ? Theme.success
-                     : app.connectionStatus === "connecting" ? Theme.warning
-                     : Theme.danger
-                Behavior on color { ColorAnimation { duration: Theme.durBase } }
+            Layout.leftMargin: Theme.spacingSm
+            Layout.rightMargin: Theme.spacingSm
+            Layout.bottomMargin: 4
+            Layout.preferredHeight: 30
+            radius: Theme.radius
+            color: connHover.hovered ? Theme.surfaceHover : "transparent"
+            Behavior on color { ColorAnimation { duration: Theme.durFast } }
+
+            function activate() { sidebar.serverSettingsRequested() }
+
+            // Keyboard reachable + activatable.
+            activeFocusOnTab: true
+            Keys.onReturnPressed: connStatus.activate()
+            Keys.onEnterPressed: connStatus.activate()
+            Keys.onSpacePressed: connStatus.activate()
+
+            // Accessibility: a button describing the state and its action.
+            Accessible.role: Accessible.Button
+            Accessible.name: "Server: " + app.connectionStatus
+            Accessible.description: "Open the server connection settings"
+            Accessible.focusable: true
+            Accessible.onPressAction: connStatus.activate()
+
+            border.width: connStatus.activeFocus ? 2 : 0
+            border.color: Theme.accent
+            Behavior on border.width { NumberAnimation { duration: Theme.durFast } }
+
+            Row {
+                anchors.left: parent.left
+                anchors.leftMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 8
+                Rectangle {
+                    width: 9; height: 9; radius: 5
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: app.connectionStatus === "connected" ? Theme.success
+                         : app.connectionStatus === "connecting" ? Theme.warning
+                         : Theme.danger
+                    Behavior on color { ColorAnimation { duration: Theme.durBase } }
+                }
+                Label {
+                    text: app.connectionStatus
+                    anchors.verticalCenter: parent.verticalCenter
+                    // Accent on hover to read as a link; muted otherwise.
+                    color: connHover.hovered ? Theme.accent : Theme.textMuted
+                    font.pixelSize: Theme.fontSm
+                    font.underline: connHover.hovered
+                    Behavior on color { ColorAnimation { duration: Theme.durFast } }
+                }
             }
-            Label {
-                text: app.connectionStatus
-                color: Theme.textMuted
-                font.pixelSize: Theme.fontSm
-            }
+
+            HoverHandler { id: connHover; cursorShape: Qt.PointingHandCursor }
+            TapHandler { onTapped: connStatus.activate() }
         }
 
         // ---- user / login chip ----

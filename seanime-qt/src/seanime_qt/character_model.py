@@ -14,11 +14,13 @@ class CharacterModel(QAbstractListModel):
     NameRole = Qt.ItemDataRole.UserRole + 1
     ImageRole = Qt.ItemDataRole.UserRole + 2
     RoleRole = Qt.ItemDataRole.UserRole + 3
+    SiteUrlRole = Qt.ItemDataRole.UserRole + 4
 
     _ROLES = {
         NameRole: b"name",
         ImageRole: b"imageUrl",
         RoleRole: b"role",
+        SiteUrlRole: b"siteUrl",
     }
 
     def __init__(self, parent=None) -> None:
@@ -40,11 +42,16 @@ class CharacterModel(QAbstractListModel):
                 or ""
             )
             image = node.get("image") or {}
+            node_id = node.get("id")
+            site_url = node.get("siteUrl") or (
+                f"https://anilist.co/character/{node_id}" if node_id else ""
+            )
             rows.append(
                 {
                     "name": name_str,
                     "imageUrl": image.get("large") or image.get("medium") or "",
                     "role": (edge.get("role") or "").title(),
+                    "siteUrl": site_url,
                 }
             )
 

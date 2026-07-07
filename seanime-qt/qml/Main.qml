@@ -80,6 +80,7 @@ ApplicationWindow {
                 else if (page === "manga") showPage(mangaLibraryComponent, "manga")
                 else if (page === "discover") showPage(discoverComponent, "discover")
                 else if (page === "search") showPage(searchComponent, "search")
+                else if (page === "extensions") showPage(extensionsComponent, "extensions")
                 else if (page === "profile") showPage(profileComponent, "profile")
                 else if (page === "settings") showPage(settingsComponent, "settings")
             }
@@ -234,6 +235,11 @@ ApplicationWindow {
     Component {
         id: discoverComponent
         DiscoverView {}
+    }
+
+    Component {
+        id: extensionsComponent
+        ExtensionsView {}
     }
 
     Component {

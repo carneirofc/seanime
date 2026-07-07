@@ -300,6 +300,82 @@ Flickable {
                     AppButton { text: "Primary"; checked: true }
                     AppButton { text: "Secondary" }
                 }
+
+                // ---- poster preview ----
+                // A stand-in poster card sized from the same Theme.posterCell*
+                // values the real grids use, so dragging the "Poster size" slider
+                // above grows and shrinks it live. Built inline rather than reusing
+                // AnimeCard (which needs model roles) to keep the preview standalone.
+                Label {
+                    text: "Poster (" + Math.round(posterSlider.value * 100) + "%)"
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontSm
+                    Layout.topMargin: Theme.spacingSm
+                }
+                Rectangle {
+                    objectName: "posterPreviewCard"
+                    Layout.preferredWidth: Theme.posterCellWidth
+                    Layout.preferredHeight: Theme.posterCellHeight
+                    radius: Theme.radius
+                    color: Theme.surfaceHover
+                    border.width: 1
+                    border.color: Theme.border
+                    Behavior on Layout.preferredWidth { NumberAnimation { duration: Theme.durFast } }
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Theme.durFast } }
+
+                    Item {
+                        anchors.fill: parent
+                        anchors.margins: 8
+
+                        // Poster well fills the space above the title, mirroring
+                        // AnimeCard's layout so the proportions match the real card.
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: posterTitle.top
+                            anchors.bottomMargin: 6
+                            radius: 6
+                            color: Theme.inset
+
+                            Icon {
+                                anchors.centerIn: parent
+                                name: "photo"
+                                size: 28
+                                color: Theme.textMuted
+                            }
+                            // Accent-tinted progress badge, echoing the real card.
+                            Rectangle {
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.margins: 4
+                                height: 20
+                                width: previewBadge.implicitWidth + 12
+                                radius: Theme.radiusSm
+                                color: Theme.overlay
+                                Label {
+                                    id: previewBadge
+                                    anchors.centerIn: parent
+                                    text: "3/12"
+                                    color: Theme.textStrong
+                                    font.pixelSize: Theme.fontXs
+                                }
+                            }
+                        }
+                        Label {
+                            id: posterTitle
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            text: "Sample Title"
+                            color: Theme.text
+                            font.pixelSize: Theme.fontMd
+                            elide: Text.ElideRight
+                            maximumLineCount: 2
+                            wrapMode: Text.WordWrap
+                        }
+                    }
+                }
             }
         }
     }

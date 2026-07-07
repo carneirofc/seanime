@@ -23,6 +23,13 @@ from PySide6.QtCore import QJsonDocument
 # Header used by password-protected Seanime servers.
 _TOKEN_HEADER = b"X-Seanime-Token"
 
+# Origin the Seanime server recognises as a trusted local desktop app (the same
+# value its official desktop wrapper sends). On a passwordless server, privileged
+# actions — notably extension install/uninstall/enable/disable — are denied
+# unless the request comes from a trusted local origin; sending this marks the
+# Qt client as one. The server special-cases ``app://-`` for exactly this.
+_DESKTOP_ORIGIN = b"app://-"
+
 # AniList's OAuth token endpoint (authorization-code exchange).
 _ANILIST_TOKEN_URL = "https://anilist.co/api/v2/oauth/token"
 
@@ -47,6 +54,14 @@ class ApiClient(QObject):
     progressUpdated = Signal("QVariant")   # episode progress update succeeded
     torrentSearchReceived = Signal("QVariant")     # torrent search results
     torrentDownloadSucceeded = Signal("QVariant")  # torrents handed to the client
+    # Extensions / providers.
+    allExtensionsReceived = Signal("QVariant")     # installed + disabled + invalid
+    marketplaceReceived = Signal("QVariant")       # marketplace [] Extension
+    extensionFetched = Signal("QVariant")          # preview data for a manifest URI
+    extensionInstalled = Signal("QVariant")        # install/update succeeded
+    extensionUninstalled = Signal("QVariant")      # uninstall succeeded
+    extensionDisabledSet = Signal("QVariant")      # enable/disable toggled
+    extensionsReloaded = Signal("QVariant")        # external extensions reloaded
     # Manga.
     mangaCollectionReceived = Signal("QVariant")
     mangaEntryReceived = Signal("QVariant")
@@ -212,6 +227,58 @@ class ApiClient(QObject):
             "/api/v1/torrent-client/download", body, self.torrentDownloadSucceeded
         )
 
+    # ---- extensions / providers -----------------------------------------
+
+    @Slot()
+    def fetch_all_extensions(self) -> None:
+        """POST for all installed extensions (enabled, disabled and invalid)."""
+        self._post_json(
+            "/api/v1/extensions/all", {"withUpdates": False}, self.allExtensionsReceived
+        )
+
+    @Slot()
+    def fetch_marketplace(self) -> None:
+        """GET the marketplace extension catalogue (the default repository)."""
+        self._get("/api/v1/extensions/marketplace", self.marketplaceReceived)
+
+    def fetch_external_extension(self, manifest_uri: str) -> None:
+        """POST a manifest URI to preview the extension it describes (no install)."""
+        self._post_json(
+            "/api/v1/extensions/external/fetch",
+            {"manifestUri": manifest_uri},
+            self.extensionFetched,
+        )
+
+    def install_external_extension(self, manifest_uri: str) -> None:
+        """POST a manifest URI to install (or update) that extension."""
+        self._post_json(
+            "/api/v1/extensions/external/install",
+            {"manifestUri": manifest_uri},
+            self.extensionInstalled,
+        )
+
+    def uninstall_external_extension(self, extension_id: str) -> None:
+        """POST an extension ID to uninstall it."""
+        self._post_json(
+            "/api/v1/extensions/external/uninstall",
+            {"id": extension_id},
+            self.extensionUninstalled,
+        )
+
+    def set_extension_disabled(self, extension_id: str, disabled: bool) -> None:
+        """POST to enable or disable an installed extension."""
+        self._post_json(
+            "/api/v1/extensions/external/disabled",
+            {"id": extension_id, "disabled": bool(disabled)},
+            self.extensionDisabledSet,
+        )
+
+    def reload_external_extensions(self) -> None:
+        """POST to reload all external extensions from disk."""
+        self._post_json(
+            "/api/v1/extensions/external/reload", {}, self.extensionsReloaded
+        )
+
     def save_settings(self, body: dict) -> None:
         """PATCH the full server settings (8 groups) and emit ``settingsSaved``.
 
@@ -315,6 +382,9 @@ class ApiClient(QObject):
     def _build_request(self, path: str) -> QNetworkRequest:
         request = QNetworkRequest(QUrl(self._base_url + path))
         request.setRawHeader(b"Accept", b"application/json")
+        # Identify as a trusted local desktop app so passwordless servers permit
+        # privileged actions (e.g. extension management). See _DESKTOP_ORIGIN.
+        request.setRawHeader(b"Origin", _DESKTOP_ORIGIN)
         if self._token:
             request.setRawHeader(_TOKEN_HEADER, self._token.encode("utf-8"))
         return request

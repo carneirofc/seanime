@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Extensions / providers**: a new "Extensions" sidebar page mirroring the web
+  frontend. An **Installed** tab lists the extensions on the server (torrent /
+  manga / streaming providers, plugins and custom sources) with enable/disable
+  and uninstall actions (built-ins are protected), surfacing disabled and
+  invalid entries with their failure reason. A **Marketplace** tab browses the
+  default repository catalogue with search and type filters and one-click
+  install, marking already-installed entries. An **Add extension** dialog
+  installs from an arbitrary manifest URL: "Find" previews the extension, then
+  "Install" adds it. Backed by `ExtensionModel`/`ExtensionFilterProxy` and the
+  `/api/v1/extensions/*` endpoints (`all`, `marketplace`, `external/fetch`,
+  `external/install`, `external/uninstall`, `external/disabled`,
+  `external/reload`).
 - **Torrent download**: a "Download" button on the anime detail page and a
   per-episode download button open a torrent browser for the entry. It
   smart-searches the Seanime server (using the default torrent provider),
@@ -64,3 +76,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connection status in the sidebar is now a link that opens the server-connection
   fields in Settings › Client; startup auto-connect reads the persisted client
   prefs directly.
+
+### Fixed
+- **ComboBox dropdown labels**: options in every `AppComboBox` dropdown rendered
+  blank when a `textRole` was set on a JS-array model (theme, density, adult
+  split, marketplace type filter, …). The delegate resolved the label from a
+  nested `contentItem` where the model roles are out of scope, and its
+  `Array.isArray(control.model)` guard is false for the `QVariantList` a `var`
+  array becomes — so it read an undefined role. The label is now resolved on the
+  delegate root, keyed off `modelData`, so dropdown text is visible again.

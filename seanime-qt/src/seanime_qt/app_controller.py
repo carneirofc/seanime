@@ -36,6 +36,7 @@ from .destination import default_destination
 from .chapter_model import ChapterModel
 from .character_model import CharacterModel
 from .episode_model import EpisodeModel
+from .extension_model import ExtensionFilterProxy, ExtensionModel
 from .library_model import LibraryModel
 from .manga_library_model import MangaLibraryModel
 from .media_tags import MEDIA_TAGS
@@ -111,6 +112,11 @@ class AppController(QObject):
     torrentStateChanged = Signal()     # torrent loading / results / selection changed
     torrentDownloadReady = Signal()    # QML opens the download confirm dialog
     torrentDownloadStarted = Signal()  # a download was accepted; QML closes + returns
+    # Extensions / providers.
+    extensionsChanged = Signal()        # installed list / loading state changed
+    marketplaceChanged = Signal()       # marketplace list / loading state changed
+    extensionPreviewChanged = Signal()  # add-dialog fetch preview / busy flags changed
+    extensionInstalled = Signal()       # an install succeeded; QML closes the dialog
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -206,6 +212,21 @@ class AppController(QObject):
         self._torrent_default_destination = ""
         self._torrent_downloading = False
 
+        # ---- extensions / providers state ----
+        # Two ExtensionModels: the installed list and the marketplace catalogue.
+        # The marketplace is exposed through a filter proxy (search + type).
+        self._installed_ext_model = ExtensionModel(self)
+        self._marketplace_model = ExtensionModel(self)
+        self._marketplace_filter = ExtensionFilterProxy(self)
+        self._marketplace_filter.setSourceModel(self._marketplace_model)
+        self._marketplace_raw: list = []          # last raw marketplace payload
+        self._installed_ext_ids: set = set()      # ids of installed extensions
+        self._extensions_loading = False
+        self._marketplace_loading = False
+        self._extension_preview: dict = {}        # add-dialog fetch preview
+        self._extension_fetching = False
+        self._extension_installing = False
+
         # ---- manga state ----
         self._manga_title = ""
         self._manga_synopsis = ""
@@ -288,6 +309,13 @@ class AppController(QObject):
         self._client.progressUpdated.connect(self._on_progress_updated)
         self._client.torrentSearchReceived.connect(self._on_torrent_search)
         self._client.torrentDownloadSucceeded.connect(self._on_torrent_download_ok)
+        self._client.allExtensionsReceived.connect(self._on_all_extensions)
+        self._client.marketplaceReceived.connect(self._on_marketplace)
+        self._client.extensionFetched.connect(self._on_extension_fetched)
+        self._client.extensionInstalled.connect(self._on_extension_installed)
+        self._client.extensionUninstalled.connect(self._on_extension_uninstalled)
+        self._client.extensionDisabledSet.connect(self._on_extension_disabled_set)
+        self._client.extensionsReloaded.connect(self._on_extensions_reloaded)
         self._client.mangaCollectionReceived.connect(self._on_manga_collection)
         self._client.mangaEntryReceived.connect(self._on_manga_entry)
         self._client.mangaProvidersReceived.connect(self._on_manga_providers)
@@ -513,6 +541,53 @@ class AppController(QObject):
     torrentCanSmartSelect = Property(bool, _get_torrent_can_smart_select, notify=torrentStateChanged)
     torrentDefaultDestination = Property(str, _get_torrent_default_destination, notify=torrentStateChanged)
     torrentDownloading = Property(bool, _get_torrent_downloading, notify=torrentStateChanged)
+
+    # ---- extensions / providers properties ------------------------------
+
+    def _get_installed_extension_model(self) -> QObject:
+        return self._installed_ext_model
+
+    def _get_marketplace_extension_model(self) -> QObject:
+        return self._marketplace_filter
+
+    def _get_extensions_loading(self) -> bool:
+        return self._extensions_loading
+
+    def _get_marketplace_loading(self) -> bool:
+        return self._marketplace_loading
+
+    def _get_extension_preview(self) -> dict:
+        return self._extension_preview
+
+    def _get_extension_fetching(self) -> bool:
+        return self._extension_fetching
+
+    def _get_extension_installing(self) -> bool:
+        return self._extension_installing
+
+    installedExtensionModel = Property(
+        QObject, _get_installed_extension_model, constant=True
+    )
+    marketplaceExtensionModel = Property(
+        QObject, _get_marketplace_extension_model, constant=True
+    )
+    extensionsLoading = Property(
+        bool, _get_extensions_loading, notify=extensionsChanged
+    )
+    marketplaceLoading = Property(
+        bool, _get_marketplace_loading, notify=marketplaceChanged
+    )
+    # The previewed extension ``{id,name,version,author,description,...}`` fetched
+    # by the add-dialog's "Find" action, or ``{}`` when there is none.
+    extensionPreview = Property(
+        "QVariant", _get_extension_preview, notify=extensionPreviewChanged
+    )
+    extensionFetching = Property(
+        bool, _get_extension_fetching, notify=extensionPreviewChanged
+    )
+    extensionInstalling = Property(
+        bool, _get_extension_installing, notify=extensionPreviewChanged
+    )
 
     # ---- manga detail properties ----------------------------------------
 
@@ -1213,6 +1288,84 @@ class AppController(QObject):
             return False
         return len(to_download) != episodes
 
+    # ---- extensions / providers slots -----------------------------------
+
+    @Slot()
+    def loadExtensions(self) -> None:
+        """Fetch the installed extensions (enabled + disabled + invalid)."""
+        self._extensions_loading = True
+        self._set_error("")
+        self.extensionsChanged.emit()
+        self._client.fetch_all_extensions()
+
+    @Slot()
+    def loadMarketplace(self) -> None:
+        """Fetch the marketplace extension catalogue."""
+        self._marketplace_loading = True
+        self._set_error("")
+        self.marketplaceChanged.emit()
+        self._client.fetch_marketplace()
+
+    @Slot(str)
+    def setMarketplaceSearch(self, text: str) -> None:
+        self._marketplace_filter.setSearchText(text)
+
+    @Slot(str)
+    def setMarketplaceType(self, ext_type: str) -> None:
+        self._marketplace_filter.setTypeFilter(ext_type)
+
+    @Slot(str)
+    def fetchExtensionPreview(self, manifest_uri: str) -> None:
+        """Preview the extension a manifest URI describes (add-dialog "Find")."""
+        uri = (manifest_uri or "").strip()
+        if not uri:
+            return
+        self._extension_preview = {}
+        self._extension_fetching = True
+        self._set_error("")
+        self.extensionPreviewChanged.emit()
+        self._client.fetch_external_extension(uri)
+
+    @Slot(str)
+    def installExtension(self, manifest_uri: str) -> None:
+        """Install (or update) the extension at ``manifest_uri``."""
+        uri = (manifest_uri or "").strip()
+        if not uri:
+            return
+        self._extension_installing = True
+        self._set_error("")
+        self.extensionPreviewChanged.emit()
+        self._client.install_external_extension(uri)
+
+    @Slot(str)
+    def uninstallExtension(self, extension_id: str) -> None:
+        extension_id = (extension_id or "").strip()
+        if not extension_id:
+            return
+        self._set_error("")
+        self._client.uninstall_external_extension(extension_id)
+
+    @Slot(str, bool)
+    def setExtensionDisabled(self, extension_id: str, disabled: bool) -> None:
+        extension_id = (extension_id or "").strip()
+        if not extension_id:
+            return
+        self._set_error("")
+        self._client.set_extension_disabled(extension_id, bool(disabled))
+
+    @Slot()
+    def reloadExtensions(self) -> None:
+        self._set_error("")
+        self._client.reload_external_extensions()
+
+    @Slot()
+    def clearExtensionPreview(self) -> None:
+        """Reset the add-dialog preview (called when the dialog closes)."""
+        self._extension_preview = {}
+        self._extension_fetching = False
+        self._extension_installing = False
+        self.extensionPreviewChanged.emit()
+
     # ---- manga slots -----------------------------------------------------
 
     @Slot()
@@ -1444,6 +1597,59 @@ class AppController(QObject):
         self.torrentStateChanged.emit()
         self.torrentDownloadStarted.emit()
 
+    # ---- extensions / providers handlers --------------------------------
+
+    def _on_all_extensions(self, data) -> None:
+        self._installed_ext_model.load_installed(data)
+        d = data if isinstance(data, dict) else {}
+        ids: set = set()
+        for key in ("extensions", "disabledExtensions"):
+            for ext in d.get(key) or []:
+                if ext and ext.get("id"):
+                    ids.add(ext.get("id"))
+        for inv in d.get("invalidExtensions") or []:
+            ext = (inv or {}).get("extension") or {}
+            if ext.get("id"):
+                ids.add(ext.get("id"))
+        self._installed_ext_ids = ids
+        self._extensions_loading = False
+        self.extensionsChanged.emit()
+        # Re-mark the marketplace now that we know what's installed.
+        self._refresh_marketplace_installed()
+
+    def _on_marketplace(self, data) -> None:
+        self._marketplace_raw = list(data or [])
+        self._marketplace_loading = False
+        self._refresh_marketplace_installed()
+        self.marketplaceChanged.emit()
+
+    def _refresh_marketplace_installed(self) -> None:
+        self._marketplace_model.load_marketplace(
+            self._marketplace_raw, self._installed_ext_ids
+        )
+
+    def _on_extension_fetched(self, data) -> None:
+        self._extension_preview = data if isinstance(data, dict) else {}
+        self._extension_fetching = False
+        self.extensionPreviewChanged.emit()
+
+    def _on_extension_installed(self, _data) -> None:
+        self._extension_installing = False
+        self._extension_preview = {}
+        self.extensionPreviewChanged.emit()
+        self.extensionInstalled.emit()
+        # Refresh the installed list (which also re-marks the marketplace).
+        self._client.fetch_all_extensions()
+
+    def _on_extension_uninstalled(self, _data) -> None:
+        self._client.fetch_all_extensions()
+
+    def _on_extension_disabled_set(self, _data) -> None:
+        self._client.fetch_all_extensions()
+
+    def _on_extensions_reloaded(self, _data) -> None:
+        self._client.fetch_all_extensions()
+
     # ---- manga signal handlers ------------------------------------------
 
     def _on_manga_collection(self, data) -> None:
@@ -1518,6 +1724,16 @@ class AppController(QObject):
             self._torrent_search_loading = False
             self._torrent_downloading = False
             self.torrentStateChanged.emit()
+        # Likewise release any extension busy flags so the UI doesn't stay stuck.
+        if self._extension_fetching or self._extension_installing:
+            self._extension_fetching = False
+            self._extension_installing = False
+            self.extensionPreviewChanged.emit()
+        if self._extensions_loading or self._marketplace_loading:
+            self._extensions_loading = False
+            self._marketplace_loading = False
+            self.extensionsChanged.emit()
+            self.marketplaceChanged.emit()
         self._set_error(message)
 
     # ---- setters that emit change notifications -------------------------

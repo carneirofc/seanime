@@ -71,6 +71,13 @@ QtObject {
         "photo":                   "\ueb0a",
         "download":                "\uea96",
         "player-play":             "\ued46",
+        "trash":                   "\ueb41",
+        "power":                   "\ueb0d",
+        "puzzle":                  "\ueb10",
+        "building-store":          "\uea4e",
+        "external-link":           "\uea99",
+        "alert-triangle":          "\uea06",
+        "plug-connected":          "\uf00a",
         // badges
         "rating-18-plus":          "\uf269"
     })

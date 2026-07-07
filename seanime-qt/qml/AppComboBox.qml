@@ -18,13 +18,22 @@ ComboBox {
 
     // One row in the dropdown.
     delegate: ItemDelegate {
+        id: itemDelegate
         width: ListView.view ? ListView.view.width : 200
         highlighted: control.highlightedIndex === index
+        // Resolve the label on the delegate root, where the model roles
+        // (`model`/`modelData`) are reliably in scope — reading them from a
+        // nested contentItem yields `undefined`. A JS-array model exposes each
+        // element as `modelData` (so `modelData[textRole]`); a ListModel leaves
+        // `modelData` undefined and exposes roles on `model`. Keying off
+        // `modelData` covers both — `Array.isArray(control.model)` is false for
+        // the QVariantList a `var` array becomes, so it can't be relied on.
+        text: control.textRole
+              ? (modelData !== undefined ? modelData[control.textRole] : model[control.textRole])
+              : modelData
         contentItem: Text {
-            text: control.textRole
-                  ? (Array.isArray(control.model) ? modelData[control.textRole] : model[control.textRole])
-                  : modelData
-            color: highlighted ? Theme.accentText : Theme.text
+            text: itemDelegate.text
+            color: itemDelegate.highlighted ? Theme.accentText : Theme.text
             font: control.font
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter

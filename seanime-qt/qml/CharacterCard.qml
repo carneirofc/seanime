@@ -3,13 +3,27 @@ import QtQuick.Controls
 import QtQuick.Effects
 
 // A small character portrait + name + role, used in the DetailView strip.
+// Clicking opens the character's AniList page in the system default browser.
 Item {
     id: card
+
+    objectName: "characterCard_" + index
+    readonly property bool linkable: typeof siteUrl === "string" && siteUrl.length > 0
+
+    function openLink() {
+        if (linkable)
+            Qt.openUrlExternally(siteUrl)
+    }
 
     // Gentle lift on hover for a bit of life in the strip.
     scale: hover.hovered ? 1.04 : 1.0
     z: hover.hovered ? 1 : 0
     Behavior on scale { NumberAnimation { duration: Theme.durBase; easing.type: Theme.easeEmphasis } }
+
+    Accessible.role: Accessible.Button
+    Accessible.name: name
+    Accessible.description: linkable ? "Open " + name + " on AniList in your browser" : ""
+    Accessible.onPressAction: openLink()
 
     Column {
         anchors.fill: parent
@@ -63,5 +77,12 @@ Item {
         }
     }
 
-    HoverHandler { id: hover }
+    HoverHandler {
+        id: hover
+        cursorShape: card.linkable ? Qt.PointingHandCursor : Qt.ArrowCursor
+    }
+    TapHandler {
+        enabled: card.linkable
+        onTapped: card.openLink()
+    }
 }
