@@ -7,6 +7,7 @@ member here has a direct C++ Qt analog (Q_PROPERTY / Q_INVOKABLE / signals).
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 
@@ -36,7 +37,7 @@ from .destination import default_destination
 from .chapter_model import ChapterModel
 from .character_model import CharacterModel
 from .episode_model import EpisodeModel
-from .extension_model import ExtensionFilterProxy, ExtensionModel
+from .extension_model import ExtensionFilterProxy, ExtensionModel, count_by_type
 from .library_model import LibraryModel
 from .manga_library_model import MangaLibraryModel
 from .media_tags import MEDIA_TAGS
@@ -77,6 +78,9 @@ _ACCENT_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
+
+
+_log = logging.getLogger("seanime_qt.controller")
 
 
 class AppController(QObject):
@@ -1293,6 +1297,7 @@ class AppController(QObject):
     @Slot()
     def loadExtensions(self) -> None:
         """Fetch the installed extensions (enabled + disabled + invalid)."""
+        _log.info("Loading installed extensions...")
         self._extensions_loading = True
         self._set_error("")
         self.extensionsChanged.emit()
@@ -1301,6 +1306,7 @@ class AppController(QObject):
     @Slot()
     def loadMarketplace(self) -> None:
         """Fetch the marketplace extension catalogue."""
+        _log.info("Loading marketplace catalogue...")
         self._marketplace_loading = True
         self._set_error("")
         self.marketplaceChanged.emit()
@@ -1332,6 +1338,7 @@ class AppController(QObject):
         uri = (manifest_uri or "").strip()
         if not uri:
             return
+        _log.info("Installing extension from %s", uri)
         self._extension_installing = True
         self._set_error("")
         self.extensionPreviewChanged.emit()
@@ -1602,6 +1609,24 @@ class AppController(QObject):
     def _on_all_extensions(self, data) -> None:
         self._installed_ext_model.load_installed(data)
         d = data if isinstance(data, dict) else {}
+        enabled = d.get("extensions") or []
+        disabled = d.get("disabledExtensions") or []
+        invalid = d.get("invalidExtensions") or []
+        by_type = count_by_type(enabled)
+        _log.info(
+            "Installed extensions: %d enabled %s, %d disabled, %d invalid",
+            len(enabled),
+            dict(by_type),
+            len(disabled),
+            len(invalid),
+        )
+        if not by_type.get("manga-provider") and not by_type.get("anime-torrent-provider"):
+            _log.warning(
+                "No manga/torrent PROVIDER extensions installed "
+                "(only %s). Install providers from the Marketplace tab or via a "
+                "manifest URL.",
+                ", ".join(sorted(by_type)) or "none",
+            )
         ids: set = set()
         for key in ("extensions", "disabledExtensions"):
             for ext in d.get(key) or []:
@@ -1619,6 +1644,19 @@ class AppController(QObject):
 
     def _on_marketplace(self, data) -> None:
         self._marketplace_raw = list(data or [])
+        by_type = count_by_type(self._marketplace_raw)
+        _log.info(
+            "Marketplace catalogue: %d extensions %s",
+            len(self._marketplace_raw),
+            dict(by_type),
+        )
+        providers = by_type.get("manga-provider", 0) + by_type.get("anime-torrent-provider", 0)
+        if providers == 0:
+            _log.warning(
+                "Marketplace has 0 manga/torrent providers - the default "
+                "repository does not distribute them. Add a provider extension "
+                "by its manifest URL via 'Add extension'."
+            )
         self._marketplace_loading = False
         self._refresh_marketplace_installed()
         self.marketplaceChanged.emit()
@@ -1634,6 +1672,7 @@ class AppController(QObject):
         self.extensionPreviewChanged.emit()
 
     def _on_extension_installed(self, _data) -> None:
+        _log.info("Extension installed; refreshing installed list")
         self._extension_installing = False
         self._extension_preview = {}
         self.extensionPreviewChanged.emit()

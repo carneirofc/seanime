@@ -34,6 +34,10 @@ Rectangle {
     // Set by the hosting view: true in the marketplace tab, false when installed.
     property bool marketplace: false
 
+    // The manifest URI is a real, openable source URL (external extensions) vs the
+    // "builtin" sentinel — gates the "Source" link below.
+    readonly property bool sourceIsUrl: row.manifestUri.indexOf("http") === 0
+
     height: content.implicitHeight + 20
     radius: Theme.radius
     color: hover.hovered ? Theme.surfaceHover : Theme.surface
@@ -47,6 +51,17 @@ Rectangle {
     Accessible.name: row.name
 
     HoverHandler { id: hover }
+
+    // A themed, clickable text link that opens a URL externally. Declared at the
+    // delegate root (inline components can't be nested inside layout items).
+    component LinkLabel: Label {
+        property string url: ""
+        color: linkHover.hovered ? Theme.accent : Theme.accentSoft
+        font.pixelSize: Theme.fontXs
+        font.underline: linkHover.hovered
+        HoverHandler { id: linkHover; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: if (url !== "") Qt.openUrlExternally(url) }
+    }
 
     RowLayout {
         id: content
@@ -159,26 +174,44 @@ Rectangle {
                 maximumLineCount: 2
                 elide: Text.ElideRight
             }
+
+            // ---- id + external links (source / website / docs) ----
+            Flow {
+                Layout.fillWidth: true
+                spacing: 12
+                visible: row.extId.length > 0 || row.website.length > 0
+                         || row.readme.length > 0 || row.sourceIsUrl
+
+                // Extension id — the stable identifier used by the server/API.
+                Label {
+                    visible: row.extId.length > 0
+                    text: "ID: " + row.extId
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontXs
+                }
+
+                LinkLabel {
+                    visible: row.website.length > 0
+                    text: "Website"
+                    url: row.website
+                }
+                LinkLabel {
+                    visible: row.readme.length > 0
+                    text: "Docs"
+                    url: row.readme
+                }
+                LinkLabel {
+                    visible: row.sourceIsUrl
+                    text: "Source"
+                    url: row.manifestUri
+                }
+            }
         }
 
         // ---- actions ----
         RowLayout {
             Layout.alignment: Qt.AlignVCenter
             spacing: 6
-
-            // External links (website / readme) — shown when present.
-            AppToolButton {
-                visible: row.website.length > 0
-                iconName: "external-link"
-                onClicked: Qt.openUrlExternally(row.website)
-                Accessible.name: "Open website"
-            }
-            AppToolButton {
-                visible: row.readme.length > 0
-                iconName: "book"
-                onClicked: Qt.openUrlExternally(row.readme)
-                Accessible.name: "Open documentation"
-            }
 
             // Marketplace: install (or nothing, if already installed).
             AppButton {

@@ -11,7 +11,31 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from seanime_qt.extension_model import _row_of, type_label
+from seanime_qt.extension_model import _row_of, count_by_type, type_label
+
+
+class CountByTypeTests(unittest.TestCase):
+    def test_counts_each_type(self):
+        exts = [
+            {"id": "a", "type": "plugin"},
+            {"id": "b", "type": "plugin"},
+            {"id": "c", "type": "custom-source"},
+            {"id": "d", "type": "manga-provider"},
+        ]
+        self.assertEqual(
+            count_by_type(exts),
+            {"plugin": 2, "custom-source": 1, "manga-provider": 1},
+        )
+
+    def test_missing_or_empty_type_bucketed_as_unknown(self):
+        self.assertEqual(count_by_type([{"id": "a"}, {"id": "b", "type": ""}]), {"unknown": 2})
+
+    def test_empty_and_non_list_inputs(self):
+        self.assertEqual(count_by_type([]), {})
+        self.assertEqual(count_by_type(None), {})
+
+    def test_tolerates_non_dict_entries(self):
+        self.assertEqual(count_by_type([None, {"id": "a", "type": "plugin"}]), {"plugin": 1})
 
 
 class TypeLabelTests(unittest.TestCase):

@@ -11,6 +11,8 @@ response in ``{"data": ...}``). Failures funnel through ``errorOccurred``.
 
 from __future__ import annotations
 
+import logging
+
 from PySide6.QtCore import QObject, QUrl, QUrlQuery, Signal, Slot
 from PySide6.QtNetwork import (
     QNetworkAccessManager,
@@ -19,6 +21,8 @@ from PySide6.QtNetwork import (
 )
 from PySide6.QtCore import QJsonDocument
 
+
+_log = logging.getLogger("seanime_qt.api")
 
 # Header used by password-protected Seanime servers.
 _TOKEN_HEADER = b"X-Seanime-Token"
@@ -303,6 +307,7 @@ class ApiClient(QObject):
         request.setHeader(
             QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json"
         )
+        _log.debug("%s %s", verb.decode(errors="replace"), path)
         payload = QJsonDocument.fromVariant(body).toJson(QJsonDocument.JsonFormat.Compact)
         if verb == b"POST":
             reply = self._manager.post(request, payload)
@@ -390,6 +395,7 @@ class ApiClient(QObject):
         return request
 
     def _get(self, path: str, on_success: Signal) -> None:
+        _log.debug("GET %s", path)
         reply = self._manager.get(self._build_request(path))
         # Keep the reply referenced until finished; the lambda captures it.
         reply.finished.connect(lambda: self._handle_reply(reply, on_success))
@@ -398,6 +404,7 @@ class ApiClient(QObject):
         self, reply: QNetworkReply, on_success: Signal, on_error: Signal | None = None
     ) -> None:
         error_signal = on_error or self.errorOccurred
+        path = reply.request().url().path()
         try:
             raw = bytes(reply.readAll().data())
             # Even on an HTTP error status the server sends a JSON body like
@@ -411,10 +418,13 @@ class ApiClient(QObject):
             )
 
             if reply.error() != QNetworkReply.NetworkError.NoError:
-                error_signal.emit(body_error or reply.errorString())
+                msg = body_error or reply.errorString()
+                _log.warning("%s -> request failed: %s", path, msg)
+                error_signal.emit(msg)
                 return
 
             if body_error:
+                _log.warning("%s -> server error: %s", path, body_error)
                 error_signal.emit(body_error)
                 return
 

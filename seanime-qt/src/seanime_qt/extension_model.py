@@ -37,6 +37,22 @@ def type_label(t: str) -> str:
     return _TYPE_LABELS.get(t) or (t.replace("-", " ").title() if t else "Extension")
 
 
+def count_by_type(extensions) -> dict:
+    """Count extensions by their ``type`` (empty/missing -> ``"unknown"``).
+
+    Used for diagnostic logging so the terminal shows, at a glance, how many
+    torrent/manga providers vs plugins the server actually returned. Insertion
+    order is preserved so the log reads in first-seen order.
+    """
+    counts: dict = {}
+    for ext in extensions or []:
+        if not isinstance(ext, dict):
+            continue
+        key = ext.get("type") or "unknown"
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
 def _row_of(
     ext: dict,
     *,

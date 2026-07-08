@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Terminal logging**: the app now emits Python logs to stderr
+  (`logging.basicConfig`), level via `SEANIME_QT_LOG_LEVEL` (default `INFO`;
+  set `DEBUG` to see every HTTP request). Extension loads log a type breakdown
+  — e.g. `Marketplace catalogue: 68 extensions {'plugin': 57, 'custom-source': 11}`
+  — and warn when no manga/torrent **providers** are present, making it obvious
+  that the default marketplace ships none (they must be added by manifest URL).
+- **Extension entry details**: each extension row now shows its `ID` and
+  clickable `Website` / `Docs` / `Source` (manifest URL) links inline.
 - **Extensions / providers**: a new "Extensions" sidebar page mirroring the web
   frontend. An **Installed** tab lists the extensions on the server (torrent /
   manga / streaming providers, plugins and custom sources) with enable/disable

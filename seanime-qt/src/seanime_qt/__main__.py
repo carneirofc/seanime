@@ -3,9 +3,27 @@
 from __future__ import annotations
 
 import gc
+import logging
 import os
 import sys
 from pathlib import Path
+
+
+def _configure_logging() -> None:
+    """Send the app's Python logs to the terminal (stderr).
+
+    Level is controlled by ``SEANIME_QT_LOG_LEVEL`` (default ``INFO``); set it to
+    ``DEBUG`` to also see every HTTP request the client makes. This is separate
+    from the Qt/QML message capture used by the agent harness.
+    """
+    level_name = os.environ.get("SEANIME_QT_LOG_LEVEL", "INFO").upper()
+    level = getattr(logging, level_name, logging.INFO)
+    logging.basicConfig(
+        level=level,
+        stream=sys.stderr,
+        format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
 # Quiet Chromium's own native logging (WebGPU/STUN/etc. noise from the AniList
 # login page). Must be set before QtWebEngine initializes. Overridable via env.
@@ -63,6 +81,11 @@ def _start_control_server(
 
 
 def main() -> int:
+    # Terminal logging first, so extension/HTTP diagnostics are visible from the
+    # very start of the run.
+    _configure_logging()
+    logging.getLogger("seanime_qt").info("Seanime-Qt starting")
+
     # When driven by the agent harness, install log capture before anything else so
     # early QML warnings and import-time errors land in the queryable ring buffer.
     if _agent_enabled():
