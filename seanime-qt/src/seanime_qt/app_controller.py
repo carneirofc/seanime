@@ -111,6 +111,7 @@ class AppController(QObject):
     genreSearchRequested = Signal(str)
     tagSearchRequested = Signal(str)
     detailTagsChanged = Signal()  # rich tags from media-details arrived
+    searchStateChanged = Signal()  # advanced-search in-flight flag toggled
     # Torrent download.
     torrentSearchOpened = Signal()     # QML pushes the torrent search page
     torrentStateChanged = Signal()     # torrent loading / results / selection changed
@@ -131,6 +132,7 @@ class AppController(QObject):
         self._library_model = LibraryModel(self)
         self._episode_model = EpisodeModel(self)
         self._search_model = SearchModel(self)
+        self._search_busy = False  # True while an advanced search/page is in flight
         # Detail-page related media (from anilist/media-details).
         self._relations_model = SearchModel(self)
         self._recommendations_model = SearchModel(self)
@@ -346,6 +348,9 @@ class AppController(QObject):
     def _get_search_model(self) -> SearchModel:
         return self._search_model
 
+    def _get_search_busy(self) -> bool:
+        return self._search_busy
+
     def _get_search_sfw_model(self) -> QObject:
         return self._search_sfw
 
@@ -407,6 +412,7 @@ class AppController(QObject):
     libraryModel = Property(QObject, _get_library_model, constant=True)
     episodeModel = Property(QObject, _get_episode_model, constant=True)
     searchModel = Property(QObject, _get_search_model, constant=True)
+    searchBusy = Property(bool, _get_search_busy, notify=searchStateChanged)
     searchSfwModel = Property(QObject, _get_search_sfw_model, constant=True)
     searchAdultModel = Property(QObject, _get_search_adult_model, constant=True)
     librarySfwModel = Property(QObject, _get_library_sfw_model, constant=True)
@@ -1121,10 +1127,12 @@ class AppController(QObject):
         if not meaningful:
             self._search_filters = {}
             self._search_model.clear()
+            self._set_search_busy(False)
             return
         self._search_filters = filters
         self._search_page = 1
         self._set_error("")
+        self._set_search_busy(True)
         self._client.list_anime(search_body(filters, 1), self._client.searchReceived)
 
     @Slot()
@@ -1133,6 +1141,7 @@ class AppController(QObject):
         if not self._search_filters:
             return
         self._search_page += 1
+        self._set_search_busy(True)
         self._client.list_anime(
             search_body(self._search_filters, self._search_page),
             self._client.searchMoreReceived,
@@ -1496,9 +1505,11 @@ class AppController(QObject):
 
     def _on_search(self, data) -> None:
         self._search_model.load(data)
+        self._set_search_busy(False)
 
     def _on_search_more(self, data) -> None:
         self._search_model.append_media_list(media_list_of(data))
+        self._set_search_busy(False)
 
     def _on_missed_sequels(self, data) -> None:
         self._missed_sequels_model.load_media_list(media_list_of(data))
@@ -1763,6 +1774,8 @@ class AppController(QObject):
             self._torrent_search_loading = False
             self._torrent_downloading = False
             self.torrentStateChanged.emit()
+        # A failed advanced search should release its busy flag too.
+        self._set_search_busy(False)
         # Likewise release any extension busy flags so the UI doesn't stay stuck.
         if self._extension_fetching or self._extension_installing:
             self._extension_fetching = False
@@ -1786,6 +1799,11 @@ class AppController(QObject):
         if value != self._error_message:
             self._error_message = value
             self.errorMessageChanged.emit()
+
+    def _set_search_busy(self, value: bool) -> None:
+        if value != self._search_busy:
+            self._search_busy = value
+            self.searchStateChanged.emit()
 
     def _reset_detail(self) -> None:
         """Clear all detail state (called when a new anime is opened)."""
