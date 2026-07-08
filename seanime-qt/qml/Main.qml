@@ -63,6 +63,10 @@ ApplicationWindow {
         function onTorrentSearchOpened() { stack.push(torrentSearchComponent) }
         function onTorrentDownloadReady() { downloadConfirmDialog.open() }
         function onTorrentDownloadStarted() { downloadConfirmDialog.close(); stack.pop() }
+        // Manga manual source-match: open the mapping dialog and close it once a
+        // mapping has been saved (a removal keeps it open, like the web client).
+        function onMangaMappingOpened() { mangaMappingDialog.open() }
+        function onMangaMappingSaved() { mangaMappingDialog.close() }
     }
 
     // Body: sidebar + content. (Server connection now lives in Settings › Client;
@@ -73,7 +77,9 @@ ApplicationWindow {
 
         Sidebar {
             id: sidebar
-            Layout.preferredWidth: 210
+            // Track the sidebar's own (animated) width so the content area reflows
+            // as it collapses to / expands from the icon-only rail.
+            Layout.preferredWidth: sidebar.implicitWidth
             Layout.fillHeight: true
             onNavigate: function(page) {
                 if (page === "home") showPage(libraryComponent, "home")
@@ -263,5 +269,11 @@ ApplicationWindow {
     // with the stack (opened on torrentDownloadReady; closed on download start).
     DownloadConfirmDialog {
         id: downloadConfirmDialog
+    }
+
+    // Manga manual source-match dialog — hosted at the window level so it overlays
+    // the manga detail page (opened on mangaMappingOpened, closed on save).
+    MangaMappingDialog {
+        id: mangaMappingDialog
     }
 }

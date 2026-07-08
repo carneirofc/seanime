@@ -4,12 +4,29 @@ import QtQuick.Layouts
 
 // Left navigation, mirroring the web frontend: logo on top, a vertical
 // icon+label menu, and a user/login chip pinned to the bottom.
+//
+// Collapsible: the header toggle shrinks the sidebar to a narrow icon-only
+// rail (labels hide, icons/avatar/status-dot centre, hovering an item shows
+// its label as a tooltip) and expands it back. The width animates, and the
+// layout in Main.qml tracks `implicitWidth`, so the content area reflows with it.
 Rectangle {
     id: sidebar
     color: Theme.surfaceAlt
+    // Clip so labels don't spill outside the rail while the width animates.
+    clip: true
 
     // Current top-level page id, driven by Main; used to highlight the active item.
     property string currentPage: "home"
+
+    // Collapsed = icon-only rail. Session-only (not persisted).
+    property bool collapsed: false
+    readonly property int expandedWidth: 210
+    readonly property int collapsedWidth: 64
+
+    // Drive the layout width off this (Main binds Layout.preferredWidth to it) so
+    // the whole content area animates along with the sidebar collapse/expand.
+    implicitWidth: collapsed ? collapsedWidth : expandedWidth
+    Behavior on implicitWidth { NumberAnimation { duration: Theme.durBase; easing.type: Theme.easeStandard } }
 
     signal navigate(string page)
     signal loginRequested()
@@ -20,16 +37,41 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // ---- logo ----
+        // ---- logo + collapse toggle ----
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 64
+
             Label {
-                anchors.centerIn: parent
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.spacing
+                anchors.verticalCenter: parent.verticalCenter
                 text: "Seanime"
                 color: Theme.textStrong
                 font.pixelSize: Theme.fontXxl
                 font.bold: true
+                // Fade out (and drop from hit-testing) as the rail collapses.
+                visible: !sidebar.collapsed
+                opacity: sidebar.collapsed ? 0 : 1
+                Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
+            }
+
+            AppToolButton {
+                id: collapseBtn
+                objectName: "collapseToggle"
+                anchors.verticalCenter: parent.verticalCenter
+                // Pinned right when expanded; centred when it's the only thing showing.
+                anchors.right: sidebar.collapsed ? undefined : parent.right
+                anchors.rightMargin: Theme.spacingSm
+                anchors.horizontalCenter: sidebar.collapsed ? parent.horizontalCenter : undefined
+                iconName: sidebar.collapsed ? "chevron-right" : "chevron-left"
+                onClicked: sidebar.collapsed = !sidebar.collapsed
+
+                Accessible.name: sidebar.collapsed ? "Expand sidebar" : "Collapse sidebar"
+                Accessible.description: "Toggle the navigation sidebar between full and icon-only"
+                ToolTip.visible: hovered
+                ToolTip.delay: 400
+                ToolTip.text: sidebar.collapsed ? "Expand sidebar" : "Collapse sidebar"
             }
         }
 
@@ -75,15 +117,22 @@ Rectangle {
                 Accessible.focusable: true
                 Accessible.onPressAction: navItem.activate()
 
+                // In the collapsed rail the label is hidden, so surface it as a tooltip.
+                ToolTip.visible: sidebar.collapsed && navHover.hovered
+                ToolTip.delay: 400
+                ToolTip.text: modelData.label
+
                 // Visible focus ring for keyboard users (fades in/out).
                 border.width: navItem.activeFocus ? 2 : 0
                 border.color: Theme.accent
                 Behavior on border.width { NumberAnimation { duration: Theme.durFast } }
 
                 Row {
-                    anchors.left: parent.left
-                    anchors.leftMargin: Theme.spacing
+                    // Left-aligned when expanded; centred (icon only) when collapsed.
                     anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: sidebar.collapsed ? undefined : parent.left
+                    anchors.leftMargin: Theme.spacing
+                    anchors.horizontalCenter: sidebar.collapsed ? parent.horizontalCenter : undefined
                     spacing: Theme.spacing
                     Icon {
                         name: modelData.icon
@@ -94,6 +143,7 @@ Rectangle {
                     }
                     Label {
                         text: modelData.label
+                        visible: !sidebar.collapsed
                         color: active ? Theme.textStrong : Theme.textDim
                         font.pixelSize: Theme.fontBase
                         font.bold: active
@@ -151,14 +201,20 @@ Rectangle {
             Accessible.focusable: true
             Accessible.onPressAction: connStatus.activate()
 
+            // Collapsed rail hides the status text, so show it on hover.
+            ToolTip.visible: sidebar.collapsed && connHover.hovered
+            ToolTip.delay: 400
+            ToolTip.text: "Server: " + app.connectionStatus
+
             border.width: connStatus.activeFocus ? 2 : 0
             border.color: Theme.accent
             Behavior on border.width { NumberAnimation { duration: Theme.durFast } }
 
             Row {
-                anchors.left: parent.left
-                anchors.leftMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
+                anchors.left: sidebar.collapsed ? undefined : parent.left
+                anchors.leftMargin: 12
+                anchors.horizontalCenter: sidebar.collapsed ? parent.horizontalCenter : undefined
                 spacing: 8
                 Rectangle {
                     width: 9; height: 9; radius: 5
@@ -170,6 +226,7 @@ Rectangle {
                 }
                 Label {
                     text: app.connectionStatus
+                    visible: !sidebar.collapsed
                     anchors.verticalCenter: parent.verticalCenter
                     // Accent on hover to read as a link; muted otherwise.
                     color: connHover.hovered ? Theme.accent : Theme.textMuted
@@ -216,6 +273,11 @@ Rectangle {
             Accessible.focusable: true
             Accessible.onPressAction: userChip.activate()
 
+            // Collapsed rail shows only the avatar, so surface the name/action on hover.
+            ToolTip.visible: sidebar.collapsed && userHover.hovered
+            ToolTip.delay: 400
+            ToolTip.text: userChip.loggedIn ? app.username : "Log in with AniList"
+
             border.width: userChip.activeFocus ? 2 : 0
             border.color: Theme.accent
             Behavior on border.width { NumberAnimation { duration: Theme.durFast } }
@@ -225,6 +287,11 @@ Rectangle {
                 anchors.leftMargin: 10
                 anchors.rightMargin: 10
                 spacing: 10
+
+                // Leading/trailing spacers exist only in the collapsed rail; they
+                // centre the avatar. When expanded they're invisible (excluded from
+                // the layout), so the original left-aligned layout is unchanged.
+                Item { Layout.fillWidth: true; visible: sidebar.collapsed }
 
                 // Avatar (or a login glyph when signed out).
                 Rectangle {
@@ -256,11 +323,14 @@ Rectangle {
 
                 Label {
                     Layout.fillWidth: true
+                    visible: !sidebar.collapsed
                     text: userChip.loggedIn ? app.username : "Log in with AniList"
                     color: userChip.loggedIn ? Theme.text : Theme.accentSoft
                     font.pixelSize: Theme.fontMd
                     elide: Text.ElideRight
                 }
+
+                Item { Layout.fillWidth: true; visible: sidebar.collapsed }
             }
 
             HoverHandler { id: userHover; cursorShape: Qt.PointingHandCursor }

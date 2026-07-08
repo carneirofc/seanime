@@ -40,6 +40,7 @@ from .episode_model import EpisodeModel
 from .extension_model import ExtensionFilterProxy, ExtensionModel, count_by_type
 from .library_model import LibraryModel
 from .manga_library_model import MangaLibraryModel
+from .manga_search_model import MangaSearchModel
 from .media_tags import MEDIA_TAGS
 from .page_model import PageModel
 from .search_model import SearchModel
@@ -105,6 +106,10 @@ class AppController(QObject):
     readerChanged = Signal()
     mangaOpened = Signal()    # QML pushes the manga detail page on this
     chapterOpened = Signal()  # QML pushes the reader page on this
+    # Manual source-matching (mapping) dialog.
+    mangaMappingChanged = Signal()  # mapping search results / current / busy flags
+    mangaMappingOpened = Signal()   # QML opens the mapping dialog
+    mangaMappingSaved = Signal()    # a mapping was saved; QML closes the dialog
     # Deep-link a genre/tag into the advanced-search page (e.g. tapping a chip on
     # the detail header). QML navigates to search, which consumes the pending
     # genre/tag and runs the query.
@@ -142,6 +147,8 @@ class AppController(QObject):
         self._manga_library_model = MangaLibraryModel(self)
         self._chapter_model = ChapterModel(self)
         self._page_model = PageModel(self)
+        # Manual source-matching (mapping) search results.
+        self._manga_search_model = MangaSearchModel(self)
         # Discover feed: one model per carousel.
         self._discover_model = SearchModel(self)   # trending
         self._season_model = SearchModel(self)
@@ -250,6 +257,10 @@ class AppController(QObject):
         # Chapter source: the list of installed providers and the active one.
         self._manga_providers: list[dict] = []
         self._current_manga_provider = ""
+        # Manual source-matching (mapping) dialog state.
+        self._manga_mapping_current = ""      # current mapped provider manga ID
+        self._manga_mapping_searching = False  # a manual search is in flight
+        self._manga_mapping_busy = False       # a set/remove mapping is in flight
         # Reader state.
         self._reader_chapter_title = ""
         self._reader_chapter_number = 0
@@ -328,6 +339,10 @@ class AppController(QObject):
         self._client.mangaChaptersReceived.connect(self._on_manga_chapters)
         self._client.mangaPagesReceived.connect(self._on_manga_pages)
         self._client.mangaProgressUpdated.connect(self._on_manga_progress_updated)
+        self._client.mangaSearchReceived.connect(self._on_manga_search)
+        self._client.mangaMappingReceived.connect(self._on_manga_mapping)
+        self._client.mangaMappingSet.connect(self._on_manga_mapping_set)
+        self._client.mangaMappingRemoved.connect(self._on_manga_mapping_removed)
         self._client.settingsSaved.connect(self._on_settings_saved)
         # A server-settings refresh may flip splitAdultContent, so fan it out to
         # the combined signal the split property notifies on.
@@ -678,6 +693,32 @@ class AppController(QObject):
         str, _get_reader_chapter_title, notify=readerChanged
     )
     readerLoading = Property(bool, _get_reader_loading, notify=readerChanged)
+
+    # ---- manga mapping (manual source match) properties -----------------
+
+    def _get_manga_search_model(self) -> QObject:
+        return self._manga_search_model
+
+    def _get_manga_mapping_current(self) -> str:
+        return self._manga_mapping_current
+
+    def _get_manga_mapping_searching(self) -> bool:
+        return self._manga_mapping_searching
+
+    def _get_manga_mapping_busy(self) -> bool:
+        return self._manga_mapping_busy
+
+    mangaSearchModel = Property(QObject, _get_manga_search_model, constant=True)
+    # The current mapped provider manga ID, or "" when there's no manual match.
+    mangaMappingCurrent = Property(
+        str, _get_manga_mapping_current, notify=mangaMappingChanged
+    )
+    mangaMappingSearching = Property(
+        bool, _get_manga_mapping_searching, notify=mangaMappingChanged
+    )
+    mangaMappingBusy = Property(
+        bool, _get_manga_mapping_busy, notify=mangaMappingChanged
+    )
 
     def _get_username(self) -> str:
         return self._username
@@ -1416,6 +1457,61 @@ class AppController(QObject):
         self.mangaProvidersChanged.emit()
         self._fetch_chapters()
 
+    @Slot()
+    def openMangaMapping(self) -> None:
+        """Open the manual source-match dialog and fetch the current mapping.
+
+        Requires an open manga and an active provider (mapping is per-provider).
+        """
+        if not self._manga_media_id or not self._current_manga_provider:
+            return
+        self._manga_search_model.clear()
+        self._manga_mapping_current = ""
+        self._manga_mapping_searching = False
+        self._manga_mapping_busy = False
+        self._set_error("")
+        self.mangaMappingChanged.emit()
+        self._client.get_manga_mapping(
+            self._current_manga_provider, self._manga_media_id
+        )
+        self.mangaMappingOpened.emit()
+
+    @Slot(str)
+    def runMangaMappingSearch(self, query: str) -> None:
+        """Search the active provider for candidates to map this manga to."""
+        query = (query or "").strip()
+        if not query or not self._manga_media_id or not self._current_manga_provider:
+            return
+        self._manga_mapping_searching = True
+        self._set_error("")
+        self.mangaMappingChanged.emit()
+        self._client.manga_manual_search(self._current_manga_provider, query)
+
+    @Slot(str)
+    def confirmMangaMapping(self, manga_id: str) -> None:
+        """Map the open manga to the chosen provider manga ID."""
+        manga_id = (manga_id or "").strip()
+        if not manga_id or not self._manga_media_id or not self._current_manga_provider:
+            return
+        self._manga_mapping_busy = True
+        self._set_error("")
+        self.mangaMappingChanged.emit()
+        self._client.set_manga_mapping(
+            self._current_manga_provider, self._manga_media_id, manga_id
+        )
+
+    @Slot()
+    def removeMangaMapping(self) -> None:
+        """Remove the manual mapping for the open manga (revert to automatic)."""
+        if not self._manga_media_id or not self._current_manga_provider:
+            return
+        self._manga_mapping_busy = True
+        self._set_error("")
+        self.mangaMappingChanged.emit()
+        self._client.remove_manga_mapping(
+            self._current_manga_provider, self._manga_media_id
+        )
+
     @Slot(str, int, str)
     def openChapter(self, chapter_id: str, number: int, title: str) -> None:
         """Open the reader for a chapter: fetch its pages."""
@@ -1765,6 +1861,31 @@ class AppController(QObject):
             self._client.fetch_manga_entry(self._manga_media_id)
         self._client.fetch_manga_collection()
 
+    def _on_manga_search(self, data) -> None:
+        self._manga_search_model.load(data, self._base_url)
+        self._manga_mapping_searching = False
+        self.mangaMappingChanged.emit()
+
+    def _on_manga_mapping(self, data) -> None:
+        manga_id = data.get("mangaId") if isinstance(data, dict) else None
+        self._manga_mapping_current = manga_id or ""
+        self.mangaMappingChanged.emit()
+
+    def _on_manga_mapping_set(self, _data) -> None:
+        # The mapping changed, so the cached chapter container is stale — re-fetch
+        # chapters for the active provider, then dismiss the dialog.
+        self._manga_mapping_busy = False
+        self.mangaMappingChanged.emit()
+        self._fetch_chapters()
+        self.mangaMappingSaved.emit()
+
+    def _on_manga_mapping_removed(self, _data) -> None:
+        # Mapping cleared: reflect it and re-fetch chapters (automatic matching).
+        self._manga_mapping_busy = False
+        self._manga_mapping_current = ""
+        self.mangaMappingChanged.emit()
+        self._fetch_chapters()
+
     def _on_error(self, message: str) -> None:
         if self._connection_status == "connecting":
             self._set_connection_status("disconnected")
@@ -1786,6 +1907,11 @@ class AppController(QObject):
             self._marketplace_loading = False
             self.extensionsChanged.emit()
             self.marketplaceChanged.emit()
+        # Release any mapping busy flags so the dialog doesn't stay stuck loading.
+        if self._manga_mapping_searching or self._manga_mapping_busy:
+            self._manga_mapping_searching = False
+            self._manga_mapping_busy = False
+            self.mangaMappingChanged.emit()
         self._set_error(message)
 
     # ---- setters that emit change notifications -------------------------
@@ -1853,4 +1979,10 @@ class AppController(QObject):
         self._manga_list_status = ""
         self._manga_list_score = 0
         self._manga_list_progress = 0
+        # Clear any lingering mapping-dialog state from a previous manga.
+        self._manga_search_model.clear()
+        self._manga_mapping_current = ""
+        self._manga_mapping_searching = False
+        self._manga_mapping_busy = False
+        self.mangaMappingChanged.emit()
         self.mangaDetailChanged.emit()

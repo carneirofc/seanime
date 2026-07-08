@@ -168,6 +168,14 @@ Item {
                         currentIndex: indexOfValue(app.currentMangaProvider)
                         onActivated: app.setMangaProvider(currentValue)
                     }
+                    // Manual source match: open the mapping dialog for this provider.
+                    AppButton {
+                        objectName: "mangaManualMatchButton"
+                        text: "Manual match"
+                        iconName: "search"
+                        enabled: app.currentMangaProvider.length > 0
+                        onClicked: app.openMangaMapping()
+                    }
                     Item { Layout.fillWidth: true }
                     Label {
                         text: "Chapters (" + chapterList.count + ")"

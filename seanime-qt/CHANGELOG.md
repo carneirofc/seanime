@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Manga manual source-match (mapping)**: a "Manual match" button on the manga
+  detail page opens a dialog to bind an AniList manga entry to a specific manga
+  ID from the active provider. It shows the current mapping (with a "Remove
+  mapping" action), searches the provider by title, and lists candidates as
+  cover cards (proxied through `/api/v1/image-proxy`); picking one and confirming
+  saves the mapping and re-fetches the chapter list. Backed by a new
+  `MangaSearchModel` and the `/api/v1/manga/{search,get-mapping,manual-mapping,
+  remove-mapping}` endpoints.
+- **Collapsible sidebar**: a toggle in the sidebar header (chevron) collapses the
+  navigation to a narrow icon-only rail and expands it back, with the width
+  animating and the content area reflowing to match. When collapsed, item labels,
+  the "Seanime" title, the connection-status text and the username are hidden;
+  icons, the status dot and the avatar centre in the rail, and hovering an item
+  shows its label as a tooltip. Navigation, the active-item highlight and
+  keyboard/accessibility all keep working in both states. Session-only (the
+  collapsed state is not persisted across restarts).
 - **Terminal logging**: the app now emits Python logs to stderr
   (`logging.basicConfig`), level via `SEANIME_QT_LOG_LEVEL` (default `INFO`;
   set `DEBUG` to see every HTTP request). Extension loads log a type breakdown

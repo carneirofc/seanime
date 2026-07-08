@@ -73,6 +73,11 @@ class ApiClient(QObject):
     mangaChaptersReceived = Signal("QVariant")
     mangaPagesReceived = Signal("QVariant")
     mangaProgressUpdated = Signal("QVariant")  # manga chapter progress update succeeded
+    # Manual source-matching (mapping) an AniList manga to a provider's manga ID.
+    mangaSearchReceived = Signal("QVariant")   # manual-search results ([]SearchResult)
+    mangaMappingReceived = Signal("QVariant")  # current mapping ({mangaId} or {})
+    mangaMappingSet = Signal("QVariant")       # a manual mapping was saved
+    mangaMappingRemoved = Signal("QVariant")   # a manual mapping was removed
     settingsSaved = Signal("QVariant")     # server settings PATCH succeeded (fresh Status)
     loginSucceeded = Signal("QVariant")
     loginFailed = Signal(str)  # login-specific failure, kept off errorOccurred
@@ -171,6 +176,38 @@ class ApiClient(QObject):
                 "totalChapters": total_chapters,
             },
             self.mangaProgressUpdated,
+        )
+
+    def manga_manual_search(self, provider: str, query: str) -> None:
+        """Search a manga provider by title for the manual source-match dialog."""
+        self._post_json(
+            "/api/v1/manga/search",
+            {"provider": provider, "query": query},
+            self.mangaSearchReceived,
+        )
+
+    def get_manga_mapping(self, provider: str, media_id: int) -> None:
+        """Fetch the current manual mapping (provider manga ID) for an entry."""
+        self._post_json(
+            "/api/v1/manga/get-mapping",
+            {"provider": provider, "mediaId": media_id},
+            self.mangaMappingReceived,
+        )
+
+    def set_manga_mapping(self, provider: str, media_id: int, manga_id: str) -> None:
+        """Manually map an AniList manga entry to a provider's manga ID."""
+        self._post_json(
+            "/api/v1/manga/manual-mapping",
+            {"provider": provider, "mediaId": media_id, "mangaId": manga_id},
+            self.mangaMappingSet,
+        )
+
+    def remove_manga_mapping(self, provider: str, media_id: int) -> None:
+        """Remove the manual mapping for an entry (revert to automatic matching)."""
+        self._post_json(
+            "/api/v1/manga/remove-mapping",
+            {"provider": provider, "mediaId": media_id},
+            self.mangaMappingRemoved,
         )
 
     def list_anime(self, body: dict, on_success: Signal) -> None:
