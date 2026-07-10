@@ -139,6 +139,7 @@ func (m *FeatureManager) GetDisabledFeatureMap() map[FeatureKey]bool {
 type (
 	FeatureFlags struct {
 		BuiltinTorrentClient bool `json:"builtinTorrentClient"`
+		DummyDebrid          bool `json:"dummyDebrid"`
 	}
 
 	ExperimentalFeatureFlags struct {
@@ -149,6 +150,7 @@ type (
 func NewFeatureFlags(cfg *Config, logger *zerolog.Logger) FeatureFlags {
 	ff := FeatureFlags{
 		BuiltinTorrentClient: cfg.Experimental.BuiltinTorrentClient,
+		DummyDebrid:          cfg.Experimental.DummyDebrid,
 	}
 
 	checkExperimentalFeatureFlags(&ff, cfg, logger)
@@ -160,5 +162,8 @@ func checkExperimentalFeatureFlags(ff *FeatureFlags, cfg *Config, logger *zerolo
 
 	if ff.BuiltinTorrentClient {
 		logger.Warn().Msg("app: [Feature flag] 'Built-in Torrent Client' experimental feature is enabled")
+	}
+	if ff.DummyDebrid {
+		logger.Warn().Msg("app: [Feature flag] 'Dummy Debrid' experimental feature is enabled")
 	}
 }

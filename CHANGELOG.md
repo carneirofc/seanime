@@ -27,6 +27,61 @@ All notable changes to this project will be documented in this file.
 - 💄 seanime-qt: Redesigned the advanced search view for clarity — a titled header with a live result count, a search field with an inline magnifier and clear (×) button, and the filters grouped into a distinct panel with active genre/tag selections shown as removable chips and a "Clear" action; results now auto-run on any filter change (title debounced), a busy indicator shows while a query is in flight, and the empty state adapts between a welcome prompt and "No results"
 - 🦺 seanime-qt: Fixed the search view's broken initial layout — a stray "Load more" button that rendered over the empty-state text (the empty grid and its footer no longer compete for layout), and softened the results populate animation to a single fade so a full page appears smoothly; backed by a new `searchBusy` flag on the controller that is set when a search/page starts and cleared on results or error
 
+## v3.9.1
+
+- 🦺 VideoCore/MpvCore: Fixed preferred track selection
+- 🦺 VideoCore/MpvCore: Enforce absolute path for screenshot dir
+- 🦺 VideoCore: Fixed subtitles not appearing until after cycling
+- 🦺 Nakama: Fixed online streaming watch parties (regression)
+- 🦺 MpvCore: Fixed watch parties not working
+- 🦺 Library: Update library size stats after a scan
+- 🦺 Nakama: Send media to peers and host relay, fixes custom sources
+  - Progress tracking is still not supported
+- 🦺 Nakama: Fixed interference with connected peers not in watch party
+- 🦺 Plugins: Fixed missing fields in Discord RPC API event payload
+- 🦺 Plugins: Fixed tray icon badge state handling after remounts
+- 🦺 Torrent Download: Fixed filename detection when downloading file
+- 🦺 Manga: Workaround for AVIF file type when downloading
+- 🦺 MpvCore: Fixed logging on Windows
+- 🦺 MpvCore: Updated mpv-prism to 0.1.1
+  - Linux: Removed bundled graphics libraries
+  - Linux: Fixed EGL not working for certain configs
+  - Linux: Fixed flickering issues when using shaders
+  - Linux: Potential fix for GPU mismatches
+  - Windows: Fixed UNC path handling
+  - Windows: Potential fix for GPU mismatches
+- 🦺 UI: Fixed minor UI bugs
+
+## v3.9.0
+
+- 🎉 Denshi: New libmpv-based Built-in Player (Experimental)
+  - Enable in 'Settings > Video Playback'
+  - Hardware-accelerated rendering directly in the app viewport (no external window)
+  - Flawless codec and subtitle support on all platforms
+  - Supports many 'mpv.conf' options and shaders
+- ⚡️ UI: New splashcreen, updated components and colors
+- ⚡️ Torrent Streaming: Up to 20% faster startup depending on seeding
+- ⚡️ Debrid Streaming: Up to 5 seconds faster launch for cached streams
+- ⚡️ UI: Support for alt + mouse wheel horizontal scrolling on carousels
+- ⚡️ VideoCore: Support for screenshot directory
+- ⚡️ Plugins: Added new ChromeDP APIs
+- ⚡️ Discord: Seanime logo no longer displayed in Rich Presence
+- ⚡️ Debrid: Premiumize support #845
+- 🦺 Torrent Streaming: Fixed batch selection
+- 🦺 VideoCore: Ability to exit fullscreen when next stream is loading
+- 🦺 MPV/IINA: Fixed progress tracking dropping when media path is temporarily unavailable #836
+- 🦺 AllDebrid: Fixed batch torrent streaming #841
+- 🦺 Manga: Fixed unnecessary image proxy
+- 🦺 Torrent Streaming: More accurate download progress reporting
+- 🦺 Nakama: Refresh collection when turning off host library sharing
+- 🦺 Torrent Client: Fixed runtime error when display name is null
+- 🦺 Torrent Client: Use classic file-based downloading instead of memory-mapped files
+- 🦺 Mobile: Potential fixes for debrid downloading
+- ⬆️ Updated Electron to 42.4.0
+  - Fixes AC3/EAC3 audio support detection on Windows for HTML5 player
+  - Fixes security vulnerabilities
+- ⬆️ Upgraded to Rust-based React Compiler
+
 ## v3.8.7-fork.2
 
 - ✨ Search: Replaced the tags combobox with a grouped tags modal (browse by category, hover for descriptions)

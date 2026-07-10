@@ -71,6 +71,7 @@ type Config struct {
 		BuiltinTorrentClient bool
 		// MCP exposes a read-only Model Context Protocol server at /api/v1/mcp.
 		MCP bool
+		DummyDebrid bool
 	}
 }
 

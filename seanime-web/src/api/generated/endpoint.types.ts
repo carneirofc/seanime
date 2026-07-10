@@ -25,6 +25,7 @@ import type {
     Models_AnilistSettings,
     Models_DebridSettings,
     Models_DiscordSettings,
+    Models_DummyDebridSettings,
     Models_HomeItem,
     Models_LibrarySettings,
     Models_MangaSettings,
@@ -46,6 +47,10 @@ import type {
     RunPlaygroundCodeParams,
     Torrentstream_PlaybackType,
 } from "@/api/generated/types.ts"
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// abuse_limits
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // anilist
@@ -503,6 +508,17 @@ export type CustomSourceListManga_Variables = {
  */
 export type SaveDebridSettings_Variables = {
     settings: Models_DebridSettings
+}
+
+/**
+ * - Filepath: internal/handlers/debrid.go
+ * - Filename: debrid.go
+ * - Endpoint: /api/v1/debrid/dummy/settings
+ * @description
+ * Route save dummy debrid settings.
+ */
+export type SaveDummyDebridSettings_Variables = {
+    settings: Models_DummyDebridSettings
 }
 
 /**
