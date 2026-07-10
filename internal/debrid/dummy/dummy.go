@@ -531,7 +531,7 @@ func (d *Dummy) copyThrottled(ctx context.Context, w http.ResponseWriter, r io.R
 
 	chunkSize := settings.ChunkSize
 	if chunkSize <= 0 {
-		chunkSize = chunkSize
+		chunkSize = 64 * 1024
 	}
 	buf := make([]byte, chunkSize)
 	left := length

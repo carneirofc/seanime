@@ -594,6 +594,27 @@ type DummyDebridSettings struct {
 	JitterMs                int              `gorm:"column:jitter_ms" json:"jitterMs"`
 }
 
+// NewDefaultDummyDebridSettings returns an enabled DummyDebridSettings populated
+// with the default simulation profile, ready to serve requests. fallbackFilePath
+// is the local file served when a requested torrent has no explicit file mapping.
+// (The initial settings written at startup are created disabled; see core.modules.)
+func NewDefaultDummyDebridSettings(fallbackFilePath string) *DummyDebridSettings {
+	return &DummyDebridSettings{
+		BaseModel:               BaseModel{ID: 1},
+		Enabled:                 true,
+		ProfileName:             "Dummy Profile",
+		FallbackFilePath:        fallbackFilePath,
+		Files:                   DummyDebridFiles{},
+		Cached:                  true,
+		ReadyDelayMs:            1500,
+		ProgressIntervalMs:      250,
+		FirstByteDelayMs:        350,
+		BandwidthBytesPerSecond: 8 * 1024 * 1024,
+		ChunkSize:               64 * 1024,
+		JitterMs:                30,
+	}
+}
+
 type DummyDebridFile struct {
 	ID            string `json:"id"`
 	Path          string `json:"path"`
