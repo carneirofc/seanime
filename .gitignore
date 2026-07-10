@@ -50,6 +50,14 @@ seanime-server-windows-senshi.exe
 # Local dev logs (helper output)
 .dev-logs/
 
+# Python (seanime-qt)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # Node / web build output
 /node_modules/
 out/
