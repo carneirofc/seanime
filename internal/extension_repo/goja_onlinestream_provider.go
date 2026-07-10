@@ -32,6 +32,9 @@ func (g *GojaOnlinestreamProvider) GetEpisodeServers() (ret []string) {
 	ret = make([]string, 0)
 
 	method, err := g.callClassMethod(context.Background(), "getEpisodeServers")
+	if err != nil {
+		return
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {

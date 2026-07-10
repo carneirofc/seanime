@@ -16,3 +16,8 @@ COPY docs ./docs
 COPY --from=seanime-web:latest /app/web /usr/src/app/web
 
 RUN go build -v
+
+# Run as a non-root user to avoid a container running as root (best practice; DS-0002).
+RUN useradd --create-home --uid 10001 appuser \
+    && chown -R appuser /usr/src/app
+USER appuser

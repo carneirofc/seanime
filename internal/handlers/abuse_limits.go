@@ -114,6 +114,10 @@ func shouldRateLimitMutation(req *http.Request) bool {
 	}
 }
 
+// getBodyLimit and controlPlaneBodyLimitMiddleware are retained but not yet wired up;
+// their registration is intentionally commented out in routes.go pending re-enable.
+//
+//nolint:unused // wired via the commented-out e.Use in routes.go
 func getBodyLimit(path string) int64 {
 	switch {
 	case path == "/api/v1/report/issue/decompress":
@@ -129,6 +133,7 @@ func getBodyLimit(path string) int64 {
 	}
 }
 
+//nolint:unused // wired via the commented-out e.Use in routes.go
 func (h *Handler) controlPlaneBodyLimitMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		req := c.Request()

@@ -67,7 +67,7 @@ jobs:
       - name: npm audit (production deps, high+)
         run: npm audit --omit=dev --audit-level=high
 
-  # ---- Cross-ecosystem SCA: lightweight, lockfile-based ----
+  # ---- Go SCA: lockfile-based, complements govulncheck's reachability analysis ----
   osv-scanner:
     name: SCA (OSV-Scanner)
     runs-on: ubuntu-latest
@@ -82,15 +82,18 @@ jobs:
           cache: true
 
       - name: Install OSV-Scanner
-        run: go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+        # v2 module path; the v1 path is EOL.
+        run: go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
 
       - name: Run OSV-Scanner
-        # Scans go.mod and the workspace package-lock.json files against the OSV database.
-        # GODEBUG=gotypesalias=1 is required so OSV-Scanner's bundled govulncheck call
-        # analysis can type-check dependencies that use generic type aliases (e.g.
-        # github.com/anacrolix/btree); without it the scan aborts with
-        # "generic type alias requires GODEBUG=gotypesalias=1 or unset".
-        run: osv-scanner scan --recursive .
+        # Scan the Go module only. npm dependencies are gated by the npm-audit job
+        # (production, high+); scanning the frontend/desktop lockfiles here would only
+        # duplicate that with dev/transitive noise, and OSV-Scanner hard-errors on the
+        # non-strict-JSON seanime-web/package-lock.json.
+        # GODEBUG=gotypesalias=1 lets OSV-Scanner type-check dependencies that use
+        # generic type aliases (e.g. github.com/anacrolix/btree); without it it aborts
+        # with "generic type alias requires GODEBUG=gotypesalias=1 or unset".
+        run: osv-scanner scan source --lockfile go.mod
         env:
           GODEBUG: gotypesalias=1
 
@@ -113,6 +116,9 @@ jobs:
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          # npm dependency vulns are gated by the npm-audit job (production, high+);
+          # skip lockfiles here so Trivy focuses on Go, IaC (Dockerfiles) and secrets.
+          skip-files: '**/package-lock.json'
           format: sarif
           output: trivy-results.sarif
 
@@ -131,6 +137,9 @@ jobs:
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          # npm dependency vulns are gated by the npm-audit job (production, high+);
+          # skip lockfiles here so Trivy focuses on Go, IaC (Dockerfiles) and secrets.
+          skip-files: '**/package-lock.json'
           format: table
           exit-code: '1'
         env:

@@ -48,7 +48,7 @@ func startApp(embeddedLogo []byte) (*core.App, core.SeanimeFlags, *updater.SelfU
 
 	app.OnFlushLogs = func() {
 		util.WriteGlobalLogBufferToFile(logFile)
-		logFile.Sync()
+		_ = logFile.Sync()
 	}
 
 	if !flags.Update {

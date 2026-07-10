@@ -6,7 +6,18 @@ run:
   issues-exit-code: 1
   tests: true
 
+# This is a fork that tracks upstream (5rahim/seanime). The upstream tree carries a
+# large backlog of lint findings we don't own, so the standard linter set is enforced
+# incrementally: CI runs golangci-lint with --new-from-merge-base=upstream/main, which
+# reports findings only on lines this fork has added or changed. New fork work is held
+# to the full standard set; the inherited upstream backlog is not a merge blocker.
 linters:
-  default: none
-  enable:
-    - exhaustruct
+  default: standard
+  exclusions:
+    rules:
+      # Drop staticcheck's "quickfix" category (QFxxxx): purely stylistic refactor
+      # suggestions (tagged switches, expression lifting, embedded-field elision),
+      # not correctness issues.
+      - linters:
+          - staticcheck
+        text: "QF[0-9]+"

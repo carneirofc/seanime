@@ -466,7 +466,7 @@ func (ap *AnilistPlatform) refreshAnimeCollection(ctx context.Context) error {
 
 	listCount := 0
 	entryCount := 0
-	if collection != nil && collection.MediaListCollection != nil {
+	if collection.MediaListCollection != nil {
 		listCount = len(collection.MediaListCollection.Lists)
 		for _, list := range collection.MediaListCollection.Lists {
 			if list == nil || list.Entries == nil {
@@ -632,7 +632,7 @@ func (ap *AnilistPlatform) refreshMangaCollection(ctx context.Context) error {
 
 	listCount := 0
 	entryCount := 0
-	if collection != nil && collection.MediaListCollection != nil {
+	if collection.MediaListCollection != nil {
 		listCount = len(collection.MediaListCollection.Lists)
 		for _, list := range collection.MediaListCollection.Lists {
 			if list == nil || list.Entries == nil {

@@ -13,8 +13,7 @@ import (
 
 type (
 	MpvCore struct {
-		wsEventManager              events.WSEventManagerInterface
-		clientPlayerEventSubscriber *events.ClientEventSubscriber
+		wsEventManager events.WSEventManagerInterface
 
 		continuityManager          *continuity.Manager
 		metadataProviderRef        *util.Ref[metadata_provider.Provider]

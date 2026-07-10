@@ -434,100 +434,97 @@ func (m *Manager) listenToPlayerEvents() {
 			m.Logger.Trace().Msg("directstream: Stream loop goroutine exited")
 		}()
 
-		for {
-			select {
-			case event := <-m.videoCoreSubscriber.Events():
-				if !event.IsNativePlayer() {
-					continue
-				}
+		for event := range m.videoCoreSubscriber.Events() {
+			if !event.IsNativePlayer() {
+				continue
+			}
 
-				m.playbackMu.Lock()
-				terminatedEvent, isTerminated := event.(*videocore.VideoTerminatedEvent)
-				if isTerminated && m.shouldIgnoreReplacedTerminationLocked(terminatedEvent) {
-					m.playbackMu.Unlock()
-					continue
-				}
+			m.playbackMu.Lock()
+			terminatedEvent, isTerminated := event.(*videocore.VideoTerminatedEvent)
+			if isTerminated && m.shouldIgnoreReplacedTerminationLocked(terminatedEvent) {
+				m.playbackMu.Unlock()
+				continue
+			}
 
-				cs, ok := m.currentStream.Get()
-				if !ok {
-					var cancelFunc func()
-					shouldCancel := false
-					if isTerminated {
-						cancelFunc, shouldCancel = m.cancelPreparationLocked(event.GetClientId(), true)
-					}
-					m.playbackMu.Unlock()
-					if shouldCancel {
-						if cancelFunc != nil {
-							cancelFunc()
-						}
-					}
-					continue
-				}
+			cs, ok := m.currentStream.Get()
+			if !ok {
+				var cancelFunc func()
+				shouldCancel := false
 				if isTerminated {
-					if !m.shouldHandleTerminatedEventLocked(terminatedEvent, cs) {
-						m.playbackMu.Unlock()
-						continue
+					cancelFunc, shouldCancel = m.cancelPreparationLocked(event.GetClientId(), true)
+				}
+				m.playbackMu.Unlock()
+				if shouldCancel {
+					if cancelFunc != nil {
+						cancelFunc()
 					}
-					m.clearPreparationLocked()
+				}
+				continue
+			}
+			if isTerminated {
+				if !m.shouldHandleTerminatedEventLocked(terminatedEvent, cs) {
 					m.playbackMu.Unlock()
-
-					m.Logger.Debug().Msgf("directstream: Video terminated")
-					m.unloadStream(cs)
 					continue
 				}
-
+				m.clearPreparationLocked()
 				m.playbackMu.Unlock()
 
-				if event.GetClientId() != cs.ClientId() {
-					continue
-				}
+				m.Logger.Debug().Msgf("directstream: Video terminated")
+				m.unloadStream(cs)
+				continue
+			}
 
-				playbackInfo, err := cs.LoadPlaybackInfo()
-				if err != nil || playbackInfo == nil {
-					continue
-				}
-				if playbackInfo.ID != "" && event.GetPlaybackId() != "" && event.GetPlaybackId() != playbackInfo.ID {
-					continue
-				}
+			m.playbackMu.Unlock()
 
-				switch event := event.(type) {
-				case *videocore.VideoLoadedMetadataEvent:
-					m.Logger.Debug().Msgf("directstream: Video loaded metadata")
-					// Start subtitle extraction from the beginning
-					// cs.ServeSubtitlesFromTime(0.0)
-					if lfStream, ok := cs.(*LocalFileStream); ok {
-						subReader, err := lfStream.newReader()
-						if err != nil {
-							m.Logger.Error().Err(err).Msg("directstream: Failed to create subtitle reader")
-							cs.StreamError(fmt.Errorf("failed to create subtitle reader: %w", err))
-							return
-						}
-						lfStream.StartSubtitleStream(lfStream, m.playbackCtx, subReader, 0)
-					} else if ts, ok := cs.(*TorrentStream); ok {
-						subReader := ts.newSubtitleReader()
-						ts.StartSubtitleStream(ts, m.playbackCtx, subReader, 0)
+			if event.GetClientId() != cs.ClientId() {
+				continue
+			}
+
+			playbackInfo, err := cs.LoadPlaybackInfo()
+			if err != nil || playbackInfo == nil {
+				continue
+			}
+			if playbackInfo.ID != "" && event.GetPlaybackId() != "" && event.GetPlaybackId() != playbackInfo.ID {
+				continue
+			}
+
+			switch event := event.(type) {
+			case *videocore.VideoLoadedMetadataEvent:
+				m.Logger.Debug().Msgf("directstream: Video loaded metadata")
+				// Start subtitle extraction from the beginning
+				// cs.ServeSubtitlesFromTime(0.0)
+				if lfStream, ok := cs.(*LocalFileStream); ok {
+					subReader, err := lfStream.newReader()
+					if err != nil {
+						m.Logger.Error().Err(err).Msg("directstream: Failed to create subtitle reader")
+						cs.StreamError(fmt.Errorf("failed to create subtitle reader: %w", err))
+						return
 					}
-				case *videocore.VideoSeekedEvent:
-					m.Logger.Trace().Float64("currentTime", event.CurrentTime).Msg("directstream: Video seeked, refreshing subtitle stream")
-					go m.startSubtitleStreamForTime(cs, playbackInfo, event.CurrentTime, event.Duration)
-				case *videocore.VideoErrorEvent:
-					m.Logger.Debug().Msgf("directstream: Video error, Error: %s", event.Error)
-					cs.StreamError(fmt.Errorf("%s", event.Error))
-				case *videocore.SubtitleFileUploadedEvent:
-					m.Logger.Debug().Msgf("directstream: Subtitle file uploaded, Filename: %s", event.Filename)
-					cs.OnSubtitleFileUploaded(event.Filename, event.Content)
-				case *videocore.VideoCompletedEvent:
-					m.Logger.Debug().Msgf("directstream: Video completed")
+					lfStream.StartSubtitleStream(lfStream, m.playbackCtx, subReader, 0)
+				} else if ts, ok := cs.(*TorrentStream); ok {
+					subReader := ts.newSubtitleReader()
+					ts.StartSubtitleStream(ts, m.playbackCtx, subReader, 0)
+				}
+			case *videocore.VideoSeekedEvent:
+				m.Logger.Trace().Float64("currentTime", event.CurrentTime).Msg("directstream: Video seeked, refreshing subtitle stream")
+				go m.startSubtitleStreamForTime(cs, playbackInfo, event.CurrentTime, event.Duration)
+			case *videocore.VideoErrorEvent:
+				m.Logger.Debug().Msgf("directstream: Video error, Error: %s", event.Error)
+				cs.StreamError(fmt.Errorf("%s", event.Error))
+			case *videocore.SubtitleFileUploadedEvent:
+				m.Logger.Debug().Msgf("directstream: Subtitle file uploaded, Filename: %s", event.Filename)
+				cs.OnSubtitleFileUploaded(event.Filename, event.Content)
+			case *videocore.VideoCompletedEvent:
+				m.Logger.Debug().Msgf("directstream: Video completed")
 
-					if baseStream, ok := cs.(*BaseStream); ok {
-						baseStream.updateProgress.Do(func() {
-							mediaId := baseStream.media.GetID()
-							epNum := baseStream.episode.GetProgressNumber()
-							totalEpisodes := baseStream.media.GetTotalEpisodeCount() // total episode count or -1
+				if baseStream, ok := cs.(*BaseStream); ok {
+					baseStream.updateProgress.Do(func() {
+						mediaId := baseStream.media.GetID()
+						epNum := baseStream.episode.GetProgressNumber()
+						totalEpisodes := baseStream.media.GetTotalEpisodeCount() // total episode count or -1
 
-							_ = baseStream.manager.platformRef.Get().UpdateEntryProgress(context.Background(), mediaId, epNum, &totalEpisodes)
-						})
-					}
+						_ = baseStream.manager.platformRef.Get().UpdateEntryProgress(context.Background(), mediaId, epNum, &totalEpisodes)
+					})
 				}
 			}
 		}

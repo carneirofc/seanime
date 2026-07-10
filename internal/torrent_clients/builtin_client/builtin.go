@@ -188,7 +188,7 @@ func New(opts *NewClientOptions) (*Client, error) {
 
 	inner, err := anacrolix.NewClient(cfg)
 	if err != nil {
-		pc.Close()
+		_ = pc.Close()
 		return nil, fmt.Errorf("create torrent client: %w", err)
 	}
 
