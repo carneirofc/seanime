@@ -43,7 +43,7 @@ func (r *Repository) fetchExternalExtensionData(manifestURI string, noPayloadDow
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, manifestURI, nil)
+	req, err := newExtensionRequest(ctx, manifestURI)
 	if err != nil {
 		r.logger.Error().Err(err).Str("uri", manifestURI).Msg("extensions: Failed to create HTTP request")
 		return nil, fmt.Errorf("failed to create HTTP request, %w", err)
@@ -101,7 +101,7 @@ func (r *Repository) downloadPayload(uri string) (string, error) {
 
 	client := &http.Client{}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
+	req, err := newExtensionRequest(ctx, uri)
 	if err != nil {
 		return "", fmt.Errorf("failed to create HTTP request, %w", err)
 	}
@@ -226,7 +226,7 @@ func (r *Repository) InstallExternalExtensions(uriOrJson string, install bool) (
 
 	} else {
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, uriOrJson, nil)
+		req, err := newExtensionRequest(ctx, uriOrJson)
 		if err != nil {
 			r.logger.Error().Err(err).Str("uri", uriOrJson).Msg("extensions: Failed to create HTTP request")
 			return nil, fmt.Errorf("failed to create HTTP request, %w", err)

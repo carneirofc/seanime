@@ -1,8 +1,10 @@
 package extension_repo
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"seanime/internal/constants"
 	"seanime/internal/extension"
 	"seanime/internal/util"
@@ -23,12 +25,27 @@ func (r *Repository) GetMarketplaceExtensions(url string) (extensions []*extensi
 }
 
 func (r *Repository) getMarketplaceExtensions(url string) (extensions []*extension.Extension, err error) {
-	resp, err := r.client.Get(url)
+	req, err := newExtensionRequest(context.Background(), url)
+	if err != nil {
+		r.logger.Error().Err(err).Msgf("marketplace: Failed to create request for marketplace extension: %s", url)
+		return nil, fmt.Errorf("failed to get marketplace extension: %s", url)
+	}
+
+	resp, err := r.client.Do(req)
 	if err != nil {
 		r.logger.Error().Err(err).Msgf("marketplace: Failed to get marketplace extension: %s", url)
 		return nil, fmt.Errorf("failed to get marketplace extension: %s", url)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		r.logger.Error().Int("status", resp.StatusCode).Msgf("marketplace: Failed to get marketplace extension: %s", url)
+		hint := ""
+		if isGitHubHost(req.URL.Hostname()) && (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound) {
+			hint = ", private GitHub repositories require a token"
+		}
+		return nil, fmt.Errorf("failed to get marketplace extension (status %d)%s: %s", resp.StatusCode, hint, url)
+	}
 
 	bodyR, err := io.ReadAll(resp.Body)
 	if err != nil {

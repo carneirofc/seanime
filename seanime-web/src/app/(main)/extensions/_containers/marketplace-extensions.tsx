@@ -239,6 +239,12 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                         Enter the URL of the repository JSON file.
                     </p>
 
+                    <p className="text-sm text-(--muted)">
+                        For private GitHub repositories, embed a personal access token in the URL
+                        (e.g. https://&lt;token&gt;@raw.githubusercontent.com/...) or set the SEANIME_GITHUB_TOKEN
+                        environment variable on the server.
+                    </p>
+
                     <TextInput
                         label="Marketplace URL"
                         value={tempUrl}
