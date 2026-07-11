@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## v3.9.1-fork.2
+
 - ✨ seanime-qt: Added a proof-of-concept Qt/QML desktop frontend (library browser + detail viewer) built with PySide6, using only Qt libraries so it can be ported to C++ Qt; connects to the existing Go REST API
 - ✨ seanime-qt: Added an in-app AniList login flow (embedded QtWebEngine view) using the OAuth authorization-code grant — captures the redirect `code`, exchanges it for an access token at AniList's token endpoint, and authenticates against `/api/v1/auth/login`
 - ✨ seanime-qt: Added a live "find in library" filter (client-side `QSortFilterProxyModel` over the library grid)
