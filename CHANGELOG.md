@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## v3.9.1-fork.3
+
+- ✨ extensions: Install extensions from the local filesystem — `file://` URIs and absolute paths are now accepted anywhere an extension URL is (manifest, payload, repository, marketplace), reading from disk instead of over HTTP
+- ✨ extensions: Added "Reload from source" — re-fetches an installed extension's manifest and payload from its source and reinstalls regardless of version, so in-place edits to local extensions are picked up (version-based update checks miss them)
+- ✨ extensions: Added a local file browser for picking a manifest/repository file, backed by a new `/api/v1/file-selector` endpoint, wired into the web "Add extension" flow
+- ✨ seanime-qt: Added a native file picker to the "Add extension" dialog for installing from a local manifest, plus a "Reload from source" action on the Extensions page
+
 ## v3.9.1-fork.2
 
 - ✨ seanime-qt: Added a proof-of-concept Qt/QML desktop frontend (library browser + detail viewer) built with PySide6, using only Qt libraries so it can be ported to C++ Qt; connects to the existing Go REST API
