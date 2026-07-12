@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 
-// Adds an extension from a manifest URL, mirroring the web "Add extension" flow:
-// paste a manifest URL, "Find" previews the extension it describes, then
-// "Install" installs it. Closes itself once the install succeeds.
+// Adds an extension from a manifest URL or a local manifest file, mirroring the
+// web "Add extension" flow: paste a manifest URL (or browse for a local .json),
+// "Find" previews the extension it describes, then "Install" installs it.
+// Closes itself once the install succeeds.
 Dialog {
     id: dialog
     objectName: "addExtensionDialog"
@@ -49,7 +51,7 @@ Dialog {
 
         Label {
             Layout.fillWidth: true
-            text: "Paste a link to an extension manifest (.json). Find it first to review what it is, then install."
+            text: "Paste a link to an extension manifest (.json), or browse for a local file. Find it first to review what it is, then install."
             color: Theme.textDim
             font.pixelSize: Theme.fontSm
             wrapMode: Text.WordWrap
@@ -62,8 +64,14 @@ Dialog {
                 id: manifestField
                 objectName: "extensionManifestField"
                 Layout.fillWidth: true
-                placeholderText: "https://example.com/extension.json"
+                placeholderText: "https://example.com/extension.json or a local file"
                 onAccepted: if (text.trim().length > 0) app.fetchExtensionPreview(text)
+            }
+            AppButton {
+                objectName: "extensionBrowseButton"
+                text: "Browse"
+                iconName: "external-link"
+                onClicked: manifestFileDialog.open()
             }
             AppButton {
                 objectName: "extensionFindButton"
@@ -71,6 +79,21 @@ Dialog {
                 iconName: "search"
                 enabled: !app.extensionFetching && manifestField.text.trim().length > 0
                 onClicked: app.fetchExtensionPreview(manifestField.text)
+            }
+        }
+
+        // Local manifest file picker. FileDialog returns a file:// URL, which the
+        // server accepts directly as a manifest URI. Selecting a file immediately
+        // previews it (as if the user typed the path and clicked Find).
+        FileDialog {
+            id: manifestFileDialog
+            objectName: "extensionManifestFileDialog"
+            title: "Select an extension manifest"
+            nameFilters: ["JSON files (*.json)", "All files (*)"]
+            onAccepted: {
+                var uri = selectedFile.toString()
+                manifestField.text = uri
+                app.fetchExtensionPreview(uri)
             }
         }
 

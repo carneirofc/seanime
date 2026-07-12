@@ -1,256 +1,111 @@
+import { useFileSelector } from "@/api/hooks/file_selector.hooks"
 import { IconButton } from "@/components/ui/button"
-import { cn } from "@/components/ui/core/styling"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Modal } from "@/components/ui/modal"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { TextInput } from "@/components/ui/text-input"
-import { useDebounce } from "@/hooks/use-debounce"
+import { upath } from "@/lib/helpers/upath"
 import React from "react"
-import { BiChevronRight, BiFolderOpen } from "react-icons/bi"
 import { FaFolder } from "react-icons/fa"
-import { FiFile, FiFolder } from "react-icons/fi"
+import { FiChevronLeft, FiFile, FiFolder } from "react-icons/fi"
+import { useDebounce } from "use-debounce"
 
-type FileSelectorProps = {
-    kind: "file" | "directory" | "both"
-    onSelectPath: (path: string) => void
-    selectedPath: string
-    fileExtensions?: string[]
+export type FileSelectorModalProps = {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    // File extensions to show (e.g. [".json"]). Empty shows every file.
+    extensions?: string[]
+    // Called with the absolute path of the file the user picks.
+    onSelect: (path: string) => void
+    // Directory (or file path) to start browsing from. Empty starts at the home directory.
+    initialPath?: string
+    title?: string
 }
 
-export function FileSelector(props: FileSelectorProps) {
-
+// FileSelectorModal is a local filesystem browser: navigate directories and pick
+// a file. Directories are always shown; files are filtered by `extensions`.
+export function FileSelectorModal(props: FileSelectorModalProps) {
     const {
-        kind,
-        onSelectPath,
-        selectedPath,
-        fileExtensions,
+        open,
+        onOpenChange,
+        extensions,
+        onSelect,
+        initialPath,
+        title = "Select a file",
     } = props
 
-    const [path, setPath] = React.useState<string>("")
-    const debouncedPath = useDebounce(path, 500)
-    const [modalOpen, setModalOpen] = React.useState(false)
+    const sanitizePath = React.useCallback((path: string) => {
+        if (!path) return ""
+        return upath.normalizeSafe(path.replace(/[<>"]/g, ""))
+    }, [])
 
-    const firstRender = React.useRef(true)
-    React.useLayoutEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false
-            return
-        }
-        setPath(props.selectedPath)
-    }, [props.selectedPath])
+    const [input, setInput] = React.useState(initialPath ? sanitizePath(initialPath) : "")
+    const [debouncedInput] = useDebounce(input, 300)
 
+    // Reset to the initial path each time the modal opens.
     React.useEffect(() => {
-        if (path) {
-            props.onSelectPath(path)
+        if (open) {
+            setInput(initialPath ? sanitizePath(initialPath) : "")
         }
-    }, [path])
+    }, [open])
 
-    const handleManualPathSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const node = findNodeByPath(exampleData, path)
-        if (node) {
-            setPath(node.path)
-            console.log("Manually selected:", node.path)
-        } else {
-            console.log("Path not found:", path)
-            setPath("")
-        }
-    }
+    const exts = React.useMemo(() => extensions ?? [], [JSON.stringify(extensions ?? [])])
 
-    return (
-        <>
-            <div className="relative">
-                <TextInput
-                    leftIcon={<FaFolder />}
-                    value={path}
-                    onValueChange={setPath}
-                    // rightIcon={<div className="flex">
-                    //     {isLoading ? null : (data?.exists ?
-                    //         <BiCheck className="text-green-500" /> : shouldExist ?
-                    //             <BiX className="text-red-500" /> : <BiFolderPlus />)}
-                    // </div>}
-                    // onBlur={checkDirectoryExists}
-                />
-                <BiFolderOpen
-                    className="text-2xl cursor-pointer absolute z-1 top-0 right-0"
-                    onClick={() => setModalOpen(true)}
-                />
-            </div>
-
-            <FileSelectorModal
-                isOpen={modalOpen}
-                onOpenChange={() => setModalOpen(!modalOpen)}
-                kind={kind}
-                onSelectPath={setPath}
-                selectedPath={selectedPath}
-                fileExtensions={fileExtensions}
-            />
-        </>
-    )
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-const exampleData: TreeNode = {
-    name: "project",
-    type: "directory",
-    path: "/project",
-    children: [
-        {
-            name: "src",
-            type: "directory",
-            path: "/project/src",
-        },
-        {
-            name: "public",
-            type: "directory",
-            path: "/project/public",
-        },
-        { name: "package.json", type: "file", path: "/project/package.json" },
-        { name: "README.md", type: "file", path: "/project/README.md" },
-    ],
-}
-
-const findNodeByPath = (node: TreeNode, path: string): TreeNode | null => {
-    if (node.path === path) return node
-    if (node.children) {
-        for (const child of node.children) {
-            const found = findNodeByPath(child, path)
-            if (found) return found
-        }
-    }
-    return null
-}
-
-function FileSelectorModal(props: FileSelectorProps & { isOpen: boolean, onOpenChange: () => void }) {
-    const { isOpen, onOpenChange, kind, selectedPath, onSelectPath, fileExtensions } = props
+    const { data, isLoading } = useFileSelector(debouncedInput, exts, open)
 
     return (
         <Modal
-            title="Select a file or directory"
-            open={isOpen}
+            open={open}
             onOpenChange={onOpenChange}
-            contentClass="max-w-3xl"
+            title={title}
+            contentClass="mt-4 space-y-2 max-w-4xl"
         >
-            <div className="space-y-4">
-                <TextInput
-                    value={selectedPath}
-                    onValueChange={onSelectPath}
+            <div className="flex gap-2 items-center">
+                <IconButton
+                    onClick={() => data?.basePath && setInput(data.basePath)}
+                    intent="gray-basic"
+                    rounded
+                    size="sm"
+                    icon={<FiChevronLeft />}
+                    disabled={(!data?.basePath?.length || data?.basePath?.length === 1)}
                 />
+                <TextInput
+                    leftIcon={<FaFolder />}
+                    value={input}
+                    placeholder="Type a path or browse below…"
+                    onValueChange={setInput}
+                />
+            </div>
 
-                <ScrollArea
-                    className={cn(
-                        "h-60 rounded-md border",
-                    )}
-                >
-                    {exampleData.children?.map(node => (
-                        <TreeNode
-                            data={node}
-                            level={0}
-                            kind={kind}
-                            onSelect={node => onSelectPath(node.path)}
-                            selectedPath={selectedPath}
-                            fileExtensions={fileExtensions}
-                        />
+            {isLoading && <LoadingSpinner />}
+
+            {(data && !!data?.content?.length) &&
+                <ScrollArea className="h-72 rounded-md border mt-0!">
+                    {data.content.map(entry => (
+                        <div
+                            key={entry.fullPath}
+                            className="flex items-center gap-2 py-2 px-3 cursor-pointer hover:bg-gray-800"
+                            onClick={() => {
+                                if (entry.isDir) {
+                                    setInput(entry.fullPath)
+                                } else {
+                                    onSelect(entry.fullPath)
+                                    onOpenChange(false)
+                                }
+                            }}
+                        >
+                            {entry.isDir
+                                ? <FiFolder className="w-4 h-4 text-(--brand) shrink-0" />
+                                : <FiFile className="w-4 h-4 text-(--muted) shrink-0" />}
+                            <span className="break-all">{entry.name}</span>
+                        </div>
                     ))}
-                </ScrollArea>
-            </div>
+                </ScrollArea>}
+
+            {(data && !data?.content?.length && !isLoading) &&
+                <p className="text-center text-(--muted) py-8">
+                    No matching files in this folder.
+                </p>}
         </Modal>
-    )
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type TreeNode = {
-    name: string
-    type: "file" | "directory"
-    path: string
-    children?: TreeNode[]
-}
-
-type TreeProps = {
-    data: TreeNode
-    kind: "file" | "directory" | "both"
-    onSelect: (node: TreeNode) => void
-    selectedPath: string | null
-    fileExtensions?: string[]
-}
-
-
-const TreeNode: React.FC<TreeProps & { level: number }> = ({
-    data,
-    kind,
-    onSelect,
-    selectedPath,
-    level,
-    fileExtensions,
-}) => {
-
-    React.useEffect(() => {
-        if (selectedPath && selectedPath.startsWith(data.path)) {
-
-        }
-    }, [selectedPath, data.path])
-
-    const handleSelect = () => {
-        if (kind === "both" || kind === data.type) {
-            onSelect(data)
-        }
-    }
-
-    const isSelectable = kind === "both" || kind === data.type
-    const isSelected = selectedPath === data.path
-    const isVisible = data.type === "directory" || kind !== "directory"
-    const hasValidExtension = !fileExtensions ||
-        data.type === "directory" ||
-        fileExtensions.some(ext => data.name.endsWith(ext))
-
-    if (!isVisible || !hasValidExtension) {
-        return null
-    }
-
-    return (
-        <div>
-            <div
-                className={cn(
-                    "flex items-center",
-                    (isSelectable && !isSelected) && "hover:bg-gray-950",
-                    isSelected && "bg-gray-800",
-                )}
-            >
-                <div
-                    className={cn(
-                        "flex items-center gap-2 py-1 px-2 w-full",
-                        isSelectable && "cursor-pointer",
-                    )}
-                    onClick={handleSelect}
-                >
-                    <div className="flex items-center">
-                        {data.type === "directory" ? (
-                            <FiFolder className="w-4 h-4 text-(--brand)" />
-                        ) : (
-                            <FiFile className="w-4 h-4 text-(--muted)" />
-                        )}
-                    </div>
-                    <span
-                        className={cn(
-                            isSelectable ? "cursor-pointer" : "cursor-default",
-                        )}
-                    >{data.name}</span>
-                </div>
-
-                <div className="flex flex-1"></div>
-
-                {data.type === "directory" && <IconButton
-                    intent="white-basic"
-                    size="xs"
-                    className="mr-2"
-                    icon={<BiChevronRight />}
-                    onClick={e => {
-                        e.preventDefault()
-                    }}
-                />}
-
-            </div>
-        </div>
     )
 }

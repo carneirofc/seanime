@@ -3,6 +3,7 @@ import {
     useFetchExternalExtensionData,
     useInstallExternalExtension,
     useReloadExternalExtension,
+    useReloadExternalExtensionFromSource,
     useSetExternalExtensionDisabled,
     useUninstallExternalExtension,
 } from "@/api/hooks/extensions.hooks"
@@ -275,6 +276,8 @@ export function ExtensionSettings(props: ExtensionSettingsProps) {
 
     const { mutate: reloadExternalExtension, isPending: isReloadingExtension } = useReloadExternalExtension()
 
+    const { mutate: reloadFromSource, isPending: isReloadingFromSource } = useReloadExternalExtensionFromSource()
+
     const { mutate: setExternalExtensionDisabled, isPending: isTogglingDisabled } = useSetExternalExtensionDisabled()
 
 
@@ -346,6 +349,23 @@ export function ExtensionSettings(props: ExtensionSettingsProps) {
                                     loading={isFetchingData}
                                 >
                                     Check for updates
+                                </Button>}
+
+                                {!!extension.manifestURI && <Button
+                                    intent="gray-outline"
+                                    leftIcon={<LuRefreshCcw className="text-lg" />}
+                                    disabled={!extension.manifestURI}
+                                    loading={isReloadingFromSource}
+                                    onClick={() => {
+                                        if (!extension.id) return toast.error("Extension has no ID")
+                                        reloadFromSource({ id: extension.id }, {
+                                            onSuccess: (data) => {
+                                                toast.success(data?.message || "Reloaded from source")
+                                            },
+                                        })
+                                    }}
+                                >
+                                    Reload from source
                                 </Button>}
 
                                 <Button

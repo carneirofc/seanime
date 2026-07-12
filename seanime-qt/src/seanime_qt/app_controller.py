@@ -333,6 +333,9 @@ class AppController(QObject):
         self._client.extensionUninstalled.connect(self._on_extension_uninstalled)
         self._client.extensionDisabledSet.connect(self._on_extension_disabled_set)
         self._client.extensionsReloaded.connect(self._on_extensions_reloaded)
+        self._client.extensionsReloadedFromSource.connect(
+            self._on_extensions_reloaded_from_source
+        )
         self._client.mangaCollectionReceived.connect(self._on_manga_collection)
         self._client.mangaEntryReceived.connect(self._on_manga_entry)
         self._client.mangaProvidersReceived.connect(self._on_manga_providers)
@@ -1416,6 +1419,29 @@ class AppController(QObject):
         self._client.reload_external_extensions()
 
     @Slot()
+    def reloadExtensionsFromSource(self) -> None:
+        """Re-fetch every installed extension from its source and reinstall it.
+
+        Picks up in-place edits to local extensions that a version-based update
+        check would miss.
+        """
+        _log.info("Reloading all extensions from source...")
+        self._extensions_loading = True
+        self._set_error("")
+        self.extensionsChanged.emit()
+        self._client.reload_all_external_extensions_from_source()
+
+    @Slot(str)
+    def reloadExtensionFromSource(self, extension_id: str) -> None:
+        """Re-fetch a single extension from its source and reinstall it."""
+        extension_id = (extension_id or "").strip()
+        if not extension_id:
+            return
+        _log.info("Reloading extension %s from source", extension_id)
+        self._set_error("")
+        self._client.reload_external_extension_from_source(extension_id)
+
+    @Slot()
     def clearExtensionPreview(self) -> None:
         """Reset the add-dialog preview (called when the dialog closes)."""
         self._extension_preview = {}
@@ -1794,6 +1820,19 @@ class AppController(QObject):
         self._client.fetch_all_extensions()
 
     def _on_extensions_reloaded(self, _data) -> None:
+        self._client.fetch_all_extensions()
+
+    def _on_extensions_reloaded_from_source(self, data) -> None:
+        # data is a ReloadFromSourceResult ({reloaded, failed}) for the "all" call,
+        # or an ExtensionInstallResponse ({message}) for a single extension.
+        if isinstance(data, dict) and "reloaded" in data:
+            reloaded = data.get("reloaded") or []
+            failed = data.get("failed") or {}
+            _log.info(
+                "Reloaded %d extension(s) from source, %d failed",
+                len(reloaded),
+                len(failed),
+            )
         self._client.fetch_all_extensions()
 
     # ---- manga signal handlers ------------------------------------------

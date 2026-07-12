@@ -797,6 +797,26 @@ export const API_ENDPOINTS = {
             methods: ["POST"],
             endpoint: "/api/v1/extensions/external/reload",
         },
+        /**
+         *  @description
+         *  Route re-fetches the external extension with the given ID from its source and reinstalls it.
+         *  Unlike checking for updates, this reloads the manifest and payload from the source regardless of version.
+         */
+        ReloadExternalExtensionFromSource: {
+            key: "EXTENSIONS-reload-external-extension-from-source",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/external/reload-source",
+        },
+        /**
+         *  @description
+         *  Route re-fetches all installed external extensions from their sources and reinstalls them.
+         *  Unlike checking for updates, this reloads the manifest and payload from the source regardless of version.
+         */
+        ReloadAllExternalExtensionsFromSource: {
+            key: "EXTENSIONS-reload-all-external-extensions-from-source",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/external/reload-all-source",
+        },
         SetExternalExtensionDisabled: {
             key: "EXTENSIONS-set-external-extension-disabled",
             methods: ["POST"],
@@ -891,6 +911,20 @@ export const API_ENDPOINTS = {
             key: "EXTENSIONS-get-marketplace-extensions",
             methods: ["GET"],
             endpoint: "/api/v1/extensions/marketplace",
+        },
+    },
+    FILE_SELECTOR: {
+        /**
+         *  @description
+         *  Route returns directory content (subdirectories and files) based on the input path.
+         *  This is used by the file selector component to browse the local filesystem and pick a file.
+         *  Files can be filtered by extension (e.g. [".json"]); directories are always returned so the user can navigate.
+         *  It returns a 500 error if the directory cannot be accessed.
+         */
+        FileSelector: {
+            key: "FILE-SELECTOR-file-selector",
+            methods: ["POST"],
+            endpoint: "/api/v1/file-selector",
         },
     },
     FILECACHE: {

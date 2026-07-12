@@ -6,6 +6,7 @@ import {
     InstallExternalExtension_Variables,
     InstallExternalExtensionRepository_Variables,
     ReloadExternalExtension_Variables,
+    ReloadExternalExtensionFromSource_Variables,
     RunExtensionPlaygroundCode_Variables,
     SaveExtensionUserConfig_Variables,
     SetExternalExtensionDisabled_Variables,
@@ -24,6 +25,7 @@ import {
     ExtensionRepo_MangaProviderExtensionItem,
     ExtensionRepo_OnlinestreamProviderExtensionItem,
     ExtensionRepo_PluginEpisodeTabExtensionItem,
+    ExtensionRepo_ReloadFromSourceResult,
     ExtensionRepo_RepositoryInstallResponse,
     ExtensionRepo_StoredPluginSettingsData,
     ExtensionRepo_UpdateData,
@@ -136,6 +138,28 @@ export function useReloadExternalExtensions() {
         mutationKey: [API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensions.key],
         onSuccess: async () => {
 
+        },
+    })
+}
+
+export function useReloadExternalExtensionFromSource() {
+    return useServerMutation<ExtensionRepo_ExtensionInstallResponse, ReloadExternalExtensionFromSource_Variables>({
+        endpoint: API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensionFromSource.endpoint,
+        method: API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensionFromSource.methods[0],
+        mutationKey: [API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensionFromSource.key],
+        onSuccess: async () => {
+            // DEVNOTE: No need to refetch, the websocket listener will do it
+        },
+    })
+}
+
+export function useReloadAllExternalExtensionsFromSource() {
+    return useServerMutation<ExtensionRepo_ReloadFromSourceResult>({
+        endpoint: API_ENDPOINTS.EXTENSIONS.ReloadAllExternalExtensionsFromSource.endpoint,
+        method: API_ENDPOINTS.EXTENSIONS.ReloadAllExternalExtensionsFromSource.methods[0],
+        mutationKey: [API_ENDPOINTS.EXTENSIONS.ReloadAllExternalExtensionsFromSource.key],
+        onSuccess: async () => {
+            // DEVNOTE: No need to refetch, the websocket listener will do it
         },
     })
 }

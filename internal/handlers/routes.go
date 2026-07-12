@@ -197,6 +197,7 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1.POST("/test-dump", h.HandleTestDump)
 
 	v1.POST("/directory-selector", h.HandleDirectorySelector)
+	v1.POST("/file-selector", h.HandleFileSelector)
 
 	v1.POST("/open-in-explorer", h.HandleOpenInExplorer)
 
@@ -506,6 +507,8 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1Extensions.POST("/external/edit-payload", h.HandleUpdateExtensionCode)
 	v1Extensions.POST("/external/reload", h.HandleReloadExternalExtensions)
 	v1Extensions.POST("/external/reload", h.HandleReloadExternalExtension)
+	v1Extensions.POST("/external/reload-source", h.HandleReloadExternalExtensionFromSource)
+	v1Extensions.POST("/external/reload-all-source", h.HandleReloadAllExternalExtensionsFromSource)
 	v1Extensions.POST("/external/disabled", h.HandleSetExternalExtensionDisabled)
 	v1Extensions.POST("/all", h.HandleGetAllExtensions)
 	v1Extensions.GET("/updates", h.HandleGetExtensionUpdateData)

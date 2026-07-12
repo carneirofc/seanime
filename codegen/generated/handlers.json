@@ -3904,6 +3904,76 @@
     }
   },
   {
+    "name": "HandleReloadExternalExtensionFromSource",
+    "trimmedName": "ReloadExternalExtensionFromSource",
+    "comments": [
+      "HandleReloadExternalExtensionFromSource",
+      "",
+      "\t@summary re-fetches the external extension with the given ID from its source and reinstalls it.",
+      "\t@desc Unlike checking for updates, this reloads the manifest and payload from the source regardless of version.",
+      "\t@route /api/v1/extensions/external/reload-source [POST]",
+      "\t@returns extension_repo.ExtensionInstallResponse",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "re-fetches the external extension with the given ID from its source and reinstalls it.",
+      "descriptions": [
+        "Unlike checking for updates, this reloads the manifest and payload from the source regardless of version."
+      ],
+      "endpoint": "/api/v1/extensions/external/reload-source",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "ID",
+          "jsonName": "id",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "extension_repo.ExtensionInstallResponse",
+      "returnGoType": "extension_repo.ExtensionInstallResponse",
+      "returnTypescriptType": "ExtensionRepo_ExtensionInstallResponse"
+    }
+  },
+  {
+    "name": "HandleReloadAllExternalExtensionsFromSource",
+    "trimmedName": "ReloadAllExternalExtensionsFromSource",
+    "comments": [
+      "HandleReloadAllExternalExtensionsFromSource",
+      "",
+      "\t@summary re-fetches all installed external extensions from their sources and reinstalls them.",
+      "\t@desc Unlike checking for updates, this reloads the manifest and payload from the source regardless of version.",
+      "\t@route /api/v1/extensions/external/reload-all-source [POST]",
+      "\t@returns extension_repo.ReloadFromSourceResult",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "re-fetches all installed external extensions from their sources and reinstalls them.",
+      "descriptions": [
+        "Unlike checking for updates, this reloads the manifest and payload from the source regardless of version."
+      ],
+      "endpoint": "/api/v1/extensions/external/reload-all-source",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "extension_repo.ReloadFromSourceResult",
+      "returnGoType": "extension_repo.ReloadFromSourceResult",
+      "returnTypescriptType": "ExtensionRepo_ReloadFromSourceResult"
+    }
+  },
+  {
     "name": "HandleSetExternalExtensionDisabled",
     "trimmedName": "SetExternalExtensionDisabled",
     "comments": [
@@ -4486,6 +4556,83 @@
       "returns": "[]extension.Extension",
       "returnGoType": "extension.Extension",
       "returnTypescriptType": "Array\u003cExtension_Extension\u003e"
+    }
+  },
+  {
+    "name": "HandleFileSelector",
+    "trimmedName": "FileSelector",
+    "comments": [
+      "HandleFileSelector",
+      "",
+      "\t@summary returns directory content (subdirectories and files) based on the input path.",
+      "\t@desc This is used by the file selector component to browse the local filesystem and pick a file.",
+      "\t@desc Files can be filtered by extension (e.g. [\".json\"]); directories are always returned so the user can navigate.",
+      "\t@desc It returns a 500 error if the directory cannot be accessed.",
+      "\t@route /api/v1/file-selector [POST]",
+      "\t@returns handlers.FileSelectorResponse",
+      ""
+    ],
+    "filepath": "internal/handlers/file_selector.go",
+    "filename": "file_selector.go",
+    "api": {
+      "summary": "returns directory content (subdirectories and files) based on the input path.",
+      "descriptions": [
+        "This is used by the file selector component to browse the local filesystem and pick a file.",
+        "Files can be filtered by extension (e.g. [\".json\"]); directories are always returned so the user can navigate.",
+        "It returns a 500 error if the directory cannot be accessed."
+      ],
+      "endpoint": "/api/v1/file-selector",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Input",
+          "jsonName": "input",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Extensions",
+          "jsonName": "extensions",
+          "goType": "[]string",
+          "usedStructType": "",
+          "typescriptType": "Array\u003cstring\u003e",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "handlers.FileSelectorResponse",
+      "returnGoType": "handlers.FileSelectorResponse",
+      "returnTypescriptType": "FileSelectorResponse"
+    }
+  },
+  {
+    "name": "getFileSelectorContent",
+    "trimmedName": "getFileSelectorContent",
+    "comments": [
+      "getFileSelectorContent lists subdirectories and matching files in path.",
+      "Directories are always included; files are included when their extension",
+      "matches one of extensions (case-insensitive). An empty/nil extensions slice",
+      "includes every file.",
+      ""
+    ],
+    "filepath": "internal/handlers/file_selector.go",
+    "filename": "file_selector.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
     }
   },
   {

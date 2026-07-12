@@ -25091,7 +25091,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\api\\anilist\\tags.go",
+    "filepath": "../internal/api/anilist/tags.go",
     "filename": "tags.go",
     "name": "MediaTagMap",
     "formattedName": "AL_MediaTagMap",
@@ -28115,7 +28115,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\continuity\\history.go",
+    "filepath": "../internal/continuity/history.go",
     "filename": "history.go",
     "name": "WatchHistory",
     "formattedName": "Continuity_WatchHistory",
@@ -31136,7 +31136,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\database\\models\\models.go",
+    "filepath": "../internal/database/models/models.go",
     "filename": "models.go",
     "name": "LibraryPaths",
     "formattedName": "Models_LibraryPaths",
@@ -31252,7 +31252,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\database\\models\\models.go",
+    "filepath": "../internal/database/models/models.go",
     "filename": "models.go",
     "name": "IntSlice",
     "formattedName": "Models_IntSlice",
@@ -33640,7 +33640,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\database\\models\\models.go",
+    "filepath": "../internal/database/models/models.go",
     "filename": "models.go",
     "name": "DummyDebridFiles",
     "formattedName": "Models_DummyDebridFiles",
@@ -33896,7 +33896,7 @@
     ]
   },
   {
-    "filepath": "..\\internal\\database\\models\\models.go",
+    "filepath": "../internal/database/models/models.go",
     "filename": "models.go",
     "name": "StringSlice",
     "formattedName": "Models_StringSlice",
@@ -43795,6 +43795,34 @@
     "comments": []
   },
   {
+    "filepath": "../internal/extension_repo/external.go",
+    "filename": "external.go",
+    "name": "ReloadFromSourceResult",
+    "formattedName": "ExtensionRepo_ReloadFromSourceResult",
+    "package": "extension_repo",
+    "fields": [
+      {
+        "name": "Reloaded",
+        "jsonName": "reloaded",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Failed",
+        "jsonName": "failed",
+        "goType": "map[string]string",
+        "typescriptType": "Record\u003cstring, string\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
     "filepath": "../internal/extension_repo/external_plugin.go",
     "filename": "external_plugin.go",
     "name": "StoredPluginSettingsData",
@@ -46166,6 +46194,91 @@
         "jsonName": "error",
         "goType": "string",
         "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/handlers/file_selector.go",
+    "filename": "file_selector.go",
+    "name": "FileEntryInfo",
+    "formattedName": "FileEntryInfo",
+    "package": "handlers",
+    "fields": [
+      {
+        "name": "FullPath",
+        "jsonName": "fullPath",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsDir",
+        "jsonName": "isDir",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/handlers/file_selector.go",
+    "filename": "file_selector.go",
+    "name": "FileSelectorResponse",
+    "formattedName": "FileSelectorResponse",
+    "package": "handlers",
+    "fields": [
+      {
+        "name": "FullPath",
+        "jsonName": "fullPath",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Exists",
+        "jsonName": "exists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "BasePath",
+        "jsonName": "basePath",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Content",
+        "jsonName": "content",
+        "goType": "[]FileEntryInfo",
+        "typescriptType": "Array\u003cFileEntryInfo\u003e",
+        "usedTypescriptType": "FileEntryInfo",
+        "usedStructName": "handlers.FileEntryInfo",
         "required": false,
         "public": true,
         "comments": []
@@ -58866,7 +58979,7 @@
     ]
   },
   {
-    "filepath": "..\\internal\\local\\database_models.go",
+    "filepath": "../internal/local/database_models.go",
     "filename": "database_models.go",
     "name": "StringMap",
     "formattedName": "Local_StringMap",
@@ -58880,7 +58993,7 @@
     "comments": null
   },
   {
-    "filepath": "..\\internal\\local\\database_models.go",
+    "filepath": "../internal/local/database_models.go",
     "filename": "database_models.go",
     "name": "LocalMangaChapterContainers",
     "formattedName": "Local_LocalMangaChapterContainers",
@@ -60678,7 +60791,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\manga\\download.go",
+    "filepath": "../internal/manga/download.go",
     "filename": "download.go",
     "name": "MediaMap",
     "formattedName": "Manga_MediaMap",
@@ -60693,7 +60806,7 @@
     "comments": null
   },
   {
-    "filepath": "..\\internal\\manga\\download.go",
+    "filepath": "../internal/manga/download.go",
     "filename": "download.go",
     "name": "ProviderDownloadMap",
     "formattedName": "Manga_ProviderDownloadMap",
@@ -61123,7 +61236,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\manga\\downloader\\chapter_downloader.go",
+    "filepath": "../internal/manga/downloader/chapter_downloader.go",
     "filename": "chapter_downloader.go",
     "name": "Registry",
     "formattedName": "ChapterDownloader_Registry",
@@ -73510,7 +73623,7 @@
     "comments": []
   },
   {
-    "filepath": "..\\internal\\nakama\\share.go",
+    "filepath": "../internal/nakama/share.go",
     "filename": "share.go",
     "name": "NakamaCustomSourceMap",
     "formattedName": "Nakama_NakamaCustomSourceMap",

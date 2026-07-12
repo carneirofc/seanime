@@ -66,6 +66,7 @@ class ApiClient(QObject):
     extensionUninstalled = Signal("QVariant")      # uninstall succeeded
     extensionDisabledSet = Signal("QVariant")      # enable/disable toggled
     extensionsReloaded = Signal("QVariant")        # external extensions reloaded
+    extensionsReloadedFromSource = Signal("QVariant")  # re-fetched from source (local/remote)
     # Manga.
     mangaCollectionReceived = Signal("QVariant")
     mangaEntryReceived = Signal("QVariant")
@@ -318,6 +319,27 @@ class ApiClient(QObject):
         """POST to reload all external extensions from disk."""
         self._post_json(
             "/api/v1/extensions/external/reload", {}, self.extensionsReloaded
+        )
+
+    def reload_all_external_extensions_from_source(self) -> None:
+        """POST to re-fetch every installed extension from its source and reinstall it.
+
+        Unlike ``reload_external_extensions`` (which reloads from the on-disk copy),
+        this re-downloads the manifest and payload from each extension's source
+        (local file or remote URL) regardless of version.
+        """
+        self._post_json(
+            "/api/v1/extensions/external/reload-all-source",
+            {},
+            self.extensionsReloadedFromSource,
+        )
+
+    def reload_external_extension_from_source(self, extension_id: str) -> None:
+        """POST an extension ID to re-fetch it from its source and reinstall it."""
+        self._post_json(
+            "/api/v1/extensions/external/reload-source",
+            {"id": extension_id},
+            self.extensionsReloadedFromSource,
         )
 
     def save_settings(self, body: dict) -> None:

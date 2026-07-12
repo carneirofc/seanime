@@ -967,6 +967,28 @@
 //     })
 // }
 
+// export function useReloadExternalExtensionFromSource() {
+//     return useServerMutation<ExtensionRepo_ExtensionInstallResponse, ReloadExternalExtensionFromSource_Variables>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensionFromSource.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensionFromSource.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.ReloadExternalExtensionFromSource.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useReloadAllExternalExtensionsFromSource() {
+//     return useServerMutation<ExtensionRepo_ReloadFromSourceResult>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.ReloadAllExternalExtensionsFromSource.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.ReloadAllExternalExtensionsFromSource.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.ReloadAllExternalExtensionsFromSource.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
 // export function useSetExternalExtensionDisabled() {
 //     return useServerMutation<boolean, SetExternalExtensionDisabled_Variables>({
 //         endpoint: API_ENDPOINTS.EXTENSIONS.SetExternalExtensionDisabled.endpoint,
@@ -1138,6 +1160,21 @@
 //         method: API_ENDPOINTS.EXTENSIONS.GetMarketplaceExtensions.methods[0],
 //         queryKey: [API_ENDPOINTS.EXTENSIONS.GetMarketplaceExtensions.key],
 //         enabled: true,
+//     })
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// file_selector
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// export function useFileSelector() {
+//     return useServerMutation<FileSelectorResponse, FileSelector_Variables>({
+//         endpoint: API_ENDPOINTS.FILE_SELECTOR.FileSelector.endpoint,
+//         method: API_ENDPOINTS.FILE_SELECTOR.FileSelector.methods[0],
+//         mutationKey: [API_ENDPOINTS.FILE_SELECTOR.FileSelector.key],
+//         onSuccess: async () => {
+//
+//         },
 //     })
 // }
 

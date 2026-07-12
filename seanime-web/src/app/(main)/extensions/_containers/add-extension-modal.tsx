@@ -2,12 +2,13 @@ import { Extension_Extension } from "@/api/generated/types"
 import { useFetchExternalExtensionData, useInstallExternalExtension, useInstallExternalExtensionRepository } from "@/api/hooks/extensions.hooks"
 import { ExtensionDetails } from "@/app/(main)/extensions/_components/extension-details"
 import { MarketplaceExtensionCard } from "@/app/(main)/extensions/_containers/marketplace-extensions"
+import { FileSelectorModal } from "@/components/shared/file-selector"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import { Separator } from "@/components/ui/separator"
 import { TextInput } from "@/components/ui/text-input"
 import React from "react"
-import { FiDownload } from "react-icons/fi"
+import { FiDownload, FiFolder } from "react-icons/fi"
 import { LuSearch } from "react-icons/lu"
 import { toast } from "sonner"
 
@@ -27,6 +28,9 @@ export function AddExtensionModal(props: AddExtensionModalProps) {
     const [open, setOpen] = React.useState(false)
     const [manifestURL, setManifestURL] = React.useState<string>("")
     const [repositoryURL, setRepositoryURL] = React.useState<string>("")
+
+    // Local file browser: "manifest" fills the manifest field, "repository" the repository field.
+    const [browsing, setBrowsing] = React.useState<null | "manifest" | "repository">(null)
 
     const { mutate: fetchExtensionData, data: extensionData, isPending, reset } = useFetchExternalExtensionData(null)
     const {
@@ -95,21 +99,29 @@ export function AddExtensionModal(props: AddExtensionModalProps) {
                 <div className="flex gap-4 flex-col lg:flex-row">
                     <div className="lg:w-1/3">
                         <h3 className="text-2xl font-bold">Install from URL</h3>
-                        <p className="text-(--muted)">Install an extension by entering the manifest URL.</p>
+                        <p className="text-(--muted)">Install an extension by entering the manifest URL or a local file path.</p>
                     </div>
                     <div className="lg:w-2/3 gap-3 flex flex-col">
                         <TextInput
-                            placeholder="https://example.com/extension.json"
+                            placeholder="https://example.com/extension.json or file:///path/to/extension.json"
                             value={manifestURL}
                             onValueChange={setManifestURL}
                             // label="URL"
                         />
-                        <Button
-                            leftIcon={<LuSearch />}
-                            intent="white"
-                            onClick={handleFetchExtensionData}
-                            loading={isPending}
-                        >Find</Button>
+                        <div className="flex gap-2">
+                            <Button
+                                className="flex-1"
+                                leftIcon={<LuSearch />}
+                                intent="white"
+                                onClick={handleFetchExtensionData}
+                                loading={isPending}
+                            >Find</Button>
+                            <Button
+                                leftIcon={<FiFolder />}
+                                intent="gray-outline"
+                                onClick={() => setBrowsing("manifest")}
+                            >Browse local file</Button>
+                        </div>
                     </div>
                 </div>
 
@@ -148,21 +160,29 @@ export function AddExtensionModal(props: AddExtensionModalProps) {
                         <div className="flex gap-4 flex-col lg:flex-row-reverse">
                             <div className="lg:w-1/3">
                                 <h3 className="text-xl font-bold">Import from repository</h3>
-                                <p className="text-(--muted)">Import and automatically install extensions by entering a repository URL.</p>
+                                <p className="text-(--muted)">Import and automatically install extensions by entering a repository URL or local file path.</p>
                             </div>
                             <div className="lg:w-2/3 gap-3 flex flex-col">
                                 <TextInput
-                                    placeholder={"https://example.com/extensions.json or { \"urls\": [...] }"}
+                                    placeholder={"https://example.com/extensions.json, file:///path/to/extensions.json or { \"urls\": [...] }"}
                                     value={repositoryURL}
                                     onValueChange={setRepositoryURL}
                                     // label="URL"
                                 />
-                                <Button
-                                    leftIcon={<FiDownload />}
-                                    intent="gray-outline"
-                                    onClick={() => handleInstallFromRepository(false)}
-                                    loading={isInstallingFromRepo}
-                                >Import all</Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        className="flex-1"
+                                        leftIcon={<FiDownload />}
+                                        intent="gray-outline"
+                                        onClick={() => handleInstallFromRepository(false)}
+                                        loading={isInstallingFromRepo}
+                                    >Import all</Button>
+                                    <Button
+                                        leftIcon={<FiFolder />}
+                                        intent="gray-outline"
+                                        onClick={() => setBrowsing("repository")}
+                                    >Browse local file</Button>
+                                </div>
                             </div>
                         </div>
 
@@ -185,6 +205,22 @@ export function AddExtensionModal(props: AddExtensionModalProps) {
                 )}
 
             </Modal>
+
+            <FileSelectorModal
+                open={browsing !== null}
+                onOpenChange={(v) => !v && setBrowsing(null)}
+                extensions={[".json"]}
+                title={browsing === "repository" ? "Select a repository file" : "Select a manifest file"}
+                onSelect={(path) => {
+                    if (browsing === "repository") {
+                        setRepositoryURL(path)
+                    } else {
+                        setManifestURL(path)
+                        fetchExtensionData({ manifestUri: path })
+                    }
+                    setBrowsing(null)
+                }}
+            />
         </>
     )
 }

@@ -1,5 +1,5 @@
 import { Extension_Extension, Extension_InvalidExtension } from "@/api/generated/types"
-import { useGetAllExtensions, useInstallExternalExtension } from "@/api/hooks/extensions.hooks"
+import { useGetAllExtensions, useInstallExternalExtension, useReloadAllExternalExtensionsFromSource } from "@/api/hooks/extensions.hooks"
 import { AddExtensionModal } from "@/app/(main)/extensions/_containers/add-extension-modal"
 import { ExtensionCard } from "@/app/(main)/extensions/_containers/extension-card"
 import { InvalidExtensionCard, UnauthorizedExtensionPluginCard } from "@/app/(main)/extensions/_containers/invalid-extension-card"
@@ -23,7 +23,7 @@ import { LuBlocks, LuDownload } from "react-icons/lu"
 import { MdDataSaverOn } from "react-icons/md"
 import { PiBookFill } from "react-icons/pi"
 import { RiFolderDownloadFill } from "react-icons/ri"
-import { TbReload } from "react-icons/tb"
+import { TbRefresh, TbReload } from "react-icons/tb"
 import { toast } from "sonner"
 
 type ExtensionListProps = {
@@ -61,6 +61,11 @@ export function ExtensionList(props: ExtensionListProps) {
         data: installResponse,
         isPending: isInstalling,
     } = useInstallExternalExtension()
+
+    const {
+        mutate: reloadAllFromSource,
+        isPending: isReloadingFromSource,
+    } = useReloadAllExternalExtensionsFromSource()
 
     function orderExtensions(extensions: Extension_Extension[] | undefined) {
         return extensions ?
@@ -174,6 +179,30 @@ export function ExtensionList(props: ExtensionListProps) {
                         }}
                     >
                         Check for updates
+                    </Button>
+                    <Button
+                        className="rounded-full"
+                        intent="gray-basic"
+                        leftIcon={<TbRefresh className="text-lg" />}
+                        loading={isReloadingFromSource}
+                        disabled={isLoading}
+                        onClick={() => {
+                            toast.info("Reloading extensions from source...")
+                            reloadAllFromSource(undefined, {
+                                onSuccess: (data) => {
+                                    const reloaded = data?.reloaded?.length ?? 0
+                                    const failed = Object.keys(data?.failed ?? {}).length
+                                    if (failed > 0) {
+                                        toast.warning(`Reloaded ${reloaded} extension(s), ${failed} failed.`)
+                                    } else {
+                                        toast.success(`Reloaded ${reloaded} extension(s) from source.`)
+                                    }
+                                    refetch()
+                                },
+                            })
+                        }}
+                    >
+                        Reload from source
                     </Button>
                     <AddExtensionModal extensions={installedExtensions}>
                         <Button

@@ -1178,7 +1178,7 @@ export type AL_MediaSort = "ID" |
 export type AL_MediaStatus = "FINISHED" | "RELEASING" | "NOT_YET_RELEASED" | "CANCELLED" | "HIATUS"
 
 /**
- * - Filepath: ..\internal\api\anilist\tags.go
+ * - Filepath: internal/api/anilist/tags.go
  * - Filename: tags.go
  * - Package: anilist
  */
@@ -2000,7 +2000,7 @@ export type Continuity_UpdateWatchHistoryItemOptions = {
 }
 
 /**
- * - Filepath: ..\internal\continuity\history.go
+ * - Filepath: internal/continuity/history.go
  * - Filename: history.go
  * - Package: continuity
  */
@@ -2664,6 +2664,16 @@ export type ExtensionRepo_PluginEpisodeTabExtensionItem = {
  * - Filename: external.go
  * - Package: extension_repo
  */
+export type ExtensionRepo_ReloadFromSourceResult = {
+    reloaded?: Array<string>
+    failed?: Record<string, string>
+}
+
+/**
+ * - Filepath: internal/extension_repo/external.go
+ * - Filename: external.go
+ * - Package: extension_repo
+ */
 export type ExtensionRepo_RepositoryInstallResponse = {
     extensions?: Array<Extension_Extension>
     message: string
@@ -2756,6 +2766,29 @@ export type DiskUsageInfo = {
 export type DownloadReleaseResponse = {
     destination: string
     error?: string
+}
+
+/**
+ * - Filepath: internal/handlers/file_selector.go
+ * - Filename: file_selector.go
+ * - Package: handlers
+ */
+export type FileEntryInfo = {
+    fullPath: string
+    name: string
+    isDir: boolean
+}
+
+/**
+ * - Filepath: internal/handlers/file_selector.go
+ * - Filename: file_selector.go
+ * - Package: handlers
+ */
+export type FileSelectorResponse = {
+    fullPath: string
+    exists: boolean
+    basePath: string
+    content?: Array<FileEntryInfo>
 }
 
 /**
@@ -3468,7 +3501,7 @@ export type Manga_PageDimension = {
 }
 
 /**
- * - Filepath: ..\internal\manga\download.go
+ * - Filepath: internal/manga/download.go
  * - Filename: download.go
  * - Package: manga
  */
@@ -3924,7 +3957,7 @@ export type Models_DummyDebridFile = {
 }
 
 /**
- * - Filepath: ..\internal\database\models\models.go
+ * - Filepath: internal/database/models/models.go
  * - Filename: models.go
  * - Package: models
  */
@@ -3971,14 +4004,14 @@ export type Models_HomeItem = {
 }
 
 /**
- * - Filepath: ..\internal\database\models\models.go
+ * - Filepath: internal/database/models/models.go
  * - Filename: models.go
  * - Package: models
  */
 export type Models_IntSlice = Array<number>
 
 /**
- * - Filepath: ..\internal\database\models\models.go
+ * - Filepath: internal/database/models/models.go
  * - Filename: models.go
  * - Package: models
  */
@@ -4199,7 +4232,7 @@ export type Models_SilencedMediaEntry = {
 }
 
 /**
- * - Filepath: ..\internal\database\models\models.go
+ * - Filepath: internal/database/models/models.go
  * - Filename: models.go
  * - Package: models
  */
@@ -4372,7 +4405,7 @@ export type Nakama_NakamaAnimeLibrary = {
 }
 
 /**
- * - Filepath: ..\internal\nakama\share.go
+ * - Filepath: internal/nakama/share.go
  * - Filename: share.go
  * - Package: nakama
  */

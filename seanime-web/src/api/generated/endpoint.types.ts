@@ -873,6 +873,17 @@ export type ReloadExternalExtension_Variables = {
 /**
  * - Filepath: internal/handlers/extensions.go
  * - Filename: extensions.go
+ * - Endpoint: /api/v1/extensions/external/reload-source
+ * @description
+ * Route re-fetches the external extension with the given ID from its source and reinstalls it.
+ */
+export type ReloadExternalExtensionFromSource_Variables = {
+    id: string
+}
+
+/**
+ * - Filepath: internal/handlers/extensions.go
+ * - Filename: extensions.go
  * - Endpoint: /api/v1/extensions/external/disabled
  * @description
  * Route enables or disables an external extension.
@@ -938,6 +949,22 @@ export type SaveExtensionUserConfig_Variables = {
     id: string
     version: number
     values: Record<string, string>
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// file_selector
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * - Filepath: internal/handlers/file_selector.go
+ * - Filename: file_selector.go
+ * - Endpoint: /api/v1/file-selector
+ * @description
+ * Route returns directory content (subdirectories and files) based on the input path.
+ */
+export type FileSelector_Variables = {
+    input: string
+    extensions: Array<string>
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

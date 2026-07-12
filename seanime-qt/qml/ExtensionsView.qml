@@ -94,6 +94,12 @@ Item {
                     font.pixelSize: Theme.fontSm
                 }
                 AppButton {
+                    objectName: "extReloadSourceButton"
+                    text: "Reload from source"
+                    iconName: "download"
+                    onClicked: app.reloadExtensionsFromSource()
+                }
+                AppButton {
                     objectName: "extReloadButton"
                     text: "Reload"
                     iconName: "refresh"

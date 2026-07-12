@@ -7,6 +7,7 @@ import (
 	"seanime/internal/core"
 	"seanime/internal/extension"
 	"seanime/internal/extension_playground"
+	"seanime/internal/extension_repo"
 	"seanime/internal/security"
 	"seanime/internal/util"
 	"strings"
@@ -188,6 +189,49 @@ func (h *Handler) HandleReloadExternalExtension(c echo.Context) error {
 
 	h.App.ExtensionRepository.ReloadExternalExtension(b.ID)
 	return h.RespondWithData(c, true)
+}
+
+// HandleReloadExternalExtensionFromSource
+//
+//	@summary re-fetches the external extension with the given ID from its source and reinstalls it.
+//	@desc Unlike checking for updates, this reloads the manifest and payload from the source regardless of version.
+//	@route /api/v1/extensions/external/reload-source [POST]
+//	@returns extension_repo.ExtensionInstallResponse
+func (h *Handler) HandleReloadExternalExtensionFromSource(c echo.Context) error {
+	type body struct {
+		ID string `json:"id"`
+	}
+
+	var b body
+	if err := c.Bind(&b); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+		return err
+	}
+
+	res, err := h.App.ExtensionRepository.RefetchExternalExtension(b.ID)
+	if err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	return h.RespondWithData(c, res)
+}
+
+// HandleReloadAllExternalExtensionsFromSource
+//
+//	@summary re-fetches all installed external extensions from their sources and reinstalls them.
+//	@desc Unlike checking for updates, this reloads the manifest and payload from the source regardless of version.
+//	@route /api/v1/extensions/external/reload-all-source [POST]
+//	@returns extension_repo.ReloadFromSourceResult
+func (h *Handler) HandleReloadAllExternalExtensionsFromSource(c echo.Context) error {
+	if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+		return err
+	}
+
+	res := h.App.ExtensionRepository.RefetchAllExternalExtensions()
+	return h.RespondWithData(c, res)
 }
 
 // HandleSetExternalExtensionDisabled
@@ -563,8 +607,12 @@ func (h *Handler) HandleGetMarketplaceExtensions(c echo.Context) error {
 	if targetMarketplaceUrl == "" {
 		targetMarketplaceUrl = constants.DefaultExtensionMarketplaceURL
 	}
-	if err := security.ValidateOutboundUrl(targetMarketplaceUrl); err != nil {
-		return h.RespondWithStatusError(c, echo.ErrForbidden.Code, err)
+	// Local filesystem marketplaces are gated behind privileged extension management,
+	// not outbound network validation.
+	if !extension_repo.IsLocalFileURI(targetMarketplaceUrl) {
+		if err := security.ValidateOutboundUrl(targetMarketplaceUrl); err != nil {
+			return h.RespondWithStatusError(c, echo.ErrForbidden.Code, err)
+		}
 	}
 
 	extensions, err := h.App.ExtensionRepository.GetMarketplaceExtensions(marketplaceUrl)

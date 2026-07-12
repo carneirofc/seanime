@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -37,28 +35,19 @@ func (r *Repository) FetchExternalExtensionData(manifestURI string) (*extension.
 // noPayloadDownload is an optional argument to skip downloading the payload from the payload URI if it exists (e.g when checking for updates)
 func (r *Repository) fetchExternalExtensionData(manifestURI string, noPayloadDownload ...bool) (*extension.Extension, error) {
 
-	// Fetch the manifest file
-	client := &http.Client{}
-
+	// Fetch the manifest file (from a local file or over HTTP)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := newExtensionRequest(ctx, manifestURI)
-	if err != nil {
-		r.logger.Error().Err(err).Str("uri", manifestURI).Msg("extensions: Failed to create HTTP request")
-		return nil, fmt.Errorf("failed to create HTTP request, %w", err)
-	}
-
-	resp, err := client.Do(req)
+	body, err := r.fetchExtensionBytes(ctx, manifestURI)
 	if err != nil {
 		r.logger.Error().Err(err).Str("uri", manifestURI).Msg("extensions: Failed to fetch extension manifest")
 		return nil, fmt.Errorf("failed to fetch extension manifest, %w", err)
 	}
-	defer resp.Body.Close()
 
 	// Parse the response
 	var ext extension.Extension
-	err = json.NewDecoder(resp.Body).Decode(&ext)
+	err = json.Unmarshal(body, &ext)
 	if err != nil {
 		r.logger.Error().Err(err).Str("uri", manifestURI).Msg("extensions: Failed to parse extension manifest")
 		return nil, fmt.Errorf("failed to parse extension manifest, %w", err)
@@ -99,24 +88,9 @@ func (r *Repository) downloadPayload(uri string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client := &http.Client{}
-
-	req, err := newExtensionRequest(ctx, uri)
-	if err != nil {
-		return "", fmt.Errorf("failed to create HTTP request, %w", err)
-	}
-
-	// Download the payload
-	resp, err := client.Do(req)
+	payload, err := r.fetchExtensionBytes(ctx, uri)
 	if err != nil {
 		return "", fmt.Errorf("failed to download payload, %w", err)
-	}
-	defer resp.Body.Close()
-
-	// Read the payload
-	payload, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read payload, %w", err)
 	}
 
 	return string(payload), nil
@@ -207,9 +181,6 @@ func (r *Repository) InstallExternalExtensions(uriOrJson string, install bool) (
 		ManifestURIs []string `json:"urls"`
 	}
 
-	// Fetch the manifest file
-	client := &http.Client{}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -226,21 +197,15 @@ func (r *Repository) InstallExternalExtensions(uriOrJson string, install bool) (
 
 	} else {
 
-		req, err := newExtensionRequest(ctx, uriOrJson)
+		// Fetch the repository file (from a local file or over HTTP)
+		body, err := r.fetchExtensionBytes(ctx, uriOrJson)
 		if err != nil {
-			r.logger.Error().Err(err).Str("uri", uriOrJson).Msg("extensions: Failed to create HTTP request")
-			return nil, fmt.Errorf("failed to create HTTP request, %w", err)
+			r.logger.Error().Err(err).Str("uri", uriOrJson).Msg("extensions: Failed to fetch extension repository")
+			return nil, fmt.Errorf("failed to fetch extension repository, %w", err)
 		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			r.logger.Error().Err(err).Str("uri", uriOrJson).Msg("extensions: Failed to fetch extension manifest")
-			return nil, fmt.Errorf("failed to fetch extension manifest, %w", err)
-		}
-		defer resp.Body.Close()
 
 		// Parse the response
-		err = json.NewDecoder(resp.Body).Decode(&repo)
+		err = json.Unmarshal(body, &repo)
 		if err != nil {
 			r.logger.Error().Err(err).Str("uri", uriOrJson).Msg("extensions: Failed to parse extension manifest")
 			return nil, fmt.Errorf("failed to parse extension manifest, %w", err)
@@ -333,6 +298,92 @@ func (r *Repository) UninstallExternalExtension(id string) error {
 	r.reloadExtension(id)
 
 	return nil
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Reload from source
+// - Unlike checkForUpdates (which only acts on a version bump), these force a
+//   re-fetch of the manifest + payload from the extension's source and reinstall
+//   regardless of version. This picks up in-place edits to local extensions.
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type ReloadFromSourceResult struct {
+	// IDs of extensions that were successfully re-fetched and reinstalled.
+	Reloaded []string `json:"reloaded"`
+	// Map of extension ID to the reason it could not be reloaded.
+	Failed map[string]string `json:"failed"`
+}
+
+// getExtensionManifestURI resolves the source manifest URI for the extension with
+// the given ID, checking the loaded bank, disabled and invalid extensions, then
+// the on-disk extension file. Returns an empty string when no source is known.
+func (r *Repository) getExtensionManifestURI(id string) string {
+	if ext, found := r.GetLoadedExtension(id); found {
+		return ext.GetManifestURI()
+	}
+	if ext, found := r.disabledExtensions.Get(id); found {
+		return ext.ManifestURI
+	}
+	if ie, found := r.invalidExtensions.Get(id); found {
+		return ie.Extension.ManifestURI
+	}
+	if !isValidExtensionIDString(id) {
+		return ""
+	}
+	extFromFile, err := extractExtensionFromFile(filepath.Join(r.extensionDir, id+".json"))
+	if err != nil || extFromFile == nil {
+		return ""
+	}
+	return extFromFile.ManifestURI
+}
+
+// RefetchExternalExtension re-fetches the extension with the given ID from its
+// source manifest URI and reinstalls it, regardless of version.
+func (r *Repository) RefetchExternalExtension(id string) (*ExtensionInstallResponse, error) {
+	manifestURI := r.getExtensionManifestURI(id)
+	if manifestURI == "" || manifestURI == "builtin" {
+		return nil, fmt.Errorf("extension %q has no source to reload from", id)
+	}
+
+	return r.InstallExternalExtension(manifestURI)
+}
+
+// RefetchAllExternalExtensions re-fetches every installed external extension that
+// has a source manifest URI and reinstalls it, regardless of version.
+func (r *Repository) RefetchAllExternalExtensions() *ReloadFromSourceResult {
+	res := &ReloadFromSourceResult{
+		Reloaded: make([]string, 0),
+		Failed:   make(map[string]string),
+	}
+
+	// Collect IDs of installed extensions with a reloadable source.
+	sources := make(map[string]string) // id -> manifestURI
+	r.extensionBankRef.Get().Range(func(key string, ext extension.BaseExtension) bool {
+		uri := ext.GetManifestURI()
+		if uri != "" && uri != "builtin" && !ext.GetIsDevelopment() {
+			sources[ext.GetID()] = uri
+		}
+		return true
+	})
+	r.disabledExtensions.Range(func(key string, ext *extension.Extension) bool {
+		if ext.ManifestURI != "" && ext.ManifestURI != "builtin" && !ext.IsDevelopment {
+			sources[ext.ID] = ext.ManifestURI
+		}
+		return true
+	})
+
+	for id, uri := range sources {
+		if _, err := r.InstallExternalExtension(uri); err != nil {
+			r.logger.Error().Err(err).Str("id", id).Str("url", uri).Msg("extensions: Failed to reload extension from source")
+			res.Failed[id] = err.Error()
+			continue
+		}
+		res.Reloaded = append(res.Reloaded, id)
+	}
+
+	r.logger.Debug().Int("reloaded", len(res.Reloaded)).Int("failed", len(res.Failed)).Msg("extensions: Reloaded extensions from source")
+
+	return res
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
