@@ -81,12 +81,14 @@ func NewCollection(opts *NewCollectionOptions) (collection *Collection, err erro
 						Media:   entry.GetMedia(),
 						MediaId: entry.GetMedia().GetID(),
 						EntryListData: &EntryListData{
-							Progress:    *entry.Progress,
-							Score:       *entry.Score,
-							Status:      entry.Status,
-							Repeat:      entry.GetRepeatSafe(),
-							StartedAt:   anilist.FuzzyDateToString(entry.StartedAt),
-							CompletedAt: anilist.FuzzyDateToString(entry.CompletedAt),
+							Progress:              *entry.Progress,
+							Score:                 *entry.Score,
+							Status:                entry.Status,
+							Repeat:                entry.GetRepeatSafe(),
+							StartedAt:             anilist.FuzzyDateToString(entry.StartedAt),
+							CompletedAt:           anilist.FuzzyDateToString(entry.CompletedAt),
+							Private:               entry.GetPrivate() != nil && *entry.GetPrivate(),
+							HiddenFromStatusLists: entry.GetHiddenFromStatusLists() != nil && *entry.GetHiddenFromStatusLists(),
 						},
 					}
 				})

@@ -36,12 +36,14 @@ type (
 
 	// EntryListData holds the details of the AniList entry.
 	EntryListData struct {
-		Progress    int                      `json:"progress,omitempty"`
-		Score       float64                  `json:"score,omitempty"`
-		Status      *anilist.MediaListStatus `json:"status,omitempty"`
-		Repeat      int                      `json:"repeat,omitempty"`
-		StartedAt   string                   `json:"startedAt,omitempty"`
-		CompletedAt string                   `json:"completedAt,omitempty"`
+		Progress              int                      `json:"progress,omitempty"`
+		Score                 float64                  `json:"score,omitempty"`
+		Status                *anilist.MediaListStatus `json:"status,omitempty"`
+		Repeat                int                      `json:"repeat,omitempty"`
+		StartedAt             string                   `json:"startedAt,omitempty"`
+		CompletedAt           string                   `json:"completedAt,omitempty"`
+		Private               bool                     `json:"private,omitempty"`
+		HiddenFromStatusLists bool                     `json:"hiddenFromStatusLists,omitempty"`
 	}
 )
 
@@ -327,12 +329,14 @@ func (e *Entry) hydrateEntryEpisodeData(
 
 func NewEntryListData(anilistEntry *anilist.AnimeListEntry) *EntryListData {
 	return &EntryListData{
-		Progress:    anilistEntry.GetProgressSafe(),
-		Score:       anilistEntry.GetScoreSafe(),
-		Status:      anilistEntry.Status,
-		Repeat:      anilistEntry.GetRepeatSafe(),
-		StartedAt:   anilist.FuzzyDateToString(anilistEntry.StartedAt),
-		CompletedAt: anilist.FuzzyDateToString(anilistEntry.CompletedAt),
+		Progress:              anilistEntry.GetProgressSafe(),
+		Score:                 anilistEntry.GetScoreSafe(),
+		Status:                anilistEntry.Status,
+		Repeat:                anilistEntry.GetRepeatSafe(),
+		StartedAt:             anilist.FuzzyDateToString(anilistEntry.StartedAt),
+		CompletedAt:           anilist.FuzzyDateToString(anilistEntry.CompletedAt),
+		Private:               anilistEntry.GetPrivate() != nil && *anilistEntry.GetPrivate(),
+		HiddenFromStatusLists: anilistEntry.GetHiddenFromStatusLists() != nil && *anilistEntry.GetHiddenFromStatusLists(),
 	}
 }
 

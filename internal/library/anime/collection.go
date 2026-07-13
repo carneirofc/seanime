@@ -221,12 +221,14 @@ func (lc *LibraryCollection) hydrateCollectionLists(
 							Media:            entry.Media,
 							EntryLibraryData: libraryData,
 							EntryListData: &EntryListData{
-								Progress:    entry.GetProgressSafe(),
-								Score:       entry.GetScoreSafe(),
-								Status:      entry.Status,
-								Repeat:      entry.GetRepeatSafe(),
-								StartedAt:   anilist.ToEntryStartDate(entry.StartedAt),
-								CompletedAt: anilist.ToEntryCompletionDate(entry.CompletedAt),
+								Progress:              entry.GetProgressSafe(),
+								Score:                 entry.GetScoreSafe(),
+								Status:                entry.Status,
+								Repeat:                entry.GetRepeatSafe(),
+								StartedAt:             anilist.ToEntryStartDate(entry.StartedAt),
+								CompletedAt:           anilist.ToEntryCompletionDate(entry.CompletedAt),
+								Private:               entry.GetPrivate() != nil && *entry.GetPrivate(),
+								HiddenFromStatusLists: entry.GetHiddenFromStatusLists() != nil && *entry.GetHiddenFromStatusLists(),
 							},
 						}
 					} else {

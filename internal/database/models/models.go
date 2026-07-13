@@ -69,6 +69,10 @@ type AnilistSettings struct {
 	SplitAdultContent     bool `gorm:"column:split_adult_content" json:"splitAdultContent"`
 	HideMediaTagsSpoilers bool `gorm:"column:hide_media_tags_spoilers" json:"hideMediaTagsSpoilers"`
 	DisableCacheLayer     bool `gorm:"column:disable_cache_layer" json:"disableCacheLayer"`
+	// MakeAdultEntriesPrivate, when enabled, makes newly-added adult (isAdult) list entries
+	// default to private + hidden from status lists on AniList. Existing entries are never re-forced.
+	// Enabled by default (privacy-protective).
+	MakeAdultEntriesPrivate bool `gorm:"column:make_adult_entries_private;default:true" json:"makeAdultEntriesPrivate"`
 }
 
 type LibrarySettings struct {
