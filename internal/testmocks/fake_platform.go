@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"seanime/internal/api/anilist"
+	"seanime/internal/platforms/platform"
 )
 
 type FakePlatformBuilder struct {
@@ -151,7 +152,13 @@ func (f *FakePlatform) UpdateEntryCalls() []FakeUpdateEntryCall {
 	return ret
 }
 
-func (f *FakePlatform) UpdateEntry(_ context.Context, mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) error {
+func (f *FakePlatform) UpdateEntry(_ context.Context, params platform.UpdateEntryParams) error {
+	mediaID := params.MediaID
+	status := params.Status
+	scoreRaw := params.ScoreRaw
+	progress := params.Progress
+	startedAt := params.StartedAt
+	completedAt := params.CompletedAt
 	call := FakeUpdateEntryCall{MediaID: mediaID}
 	if status != nil {
 		statusCopy := *status

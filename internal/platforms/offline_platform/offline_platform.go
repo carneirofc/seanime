@@ -132,7 +132,13 @@ func rearrangeMangaCollectionLists(mangaCollection *anilist.MangaCollection) {
 
 // UpdateEntry updates the entry for the given media ID.
 // It doesn't add the entry if it doesn't exist.
-func (lp *OfflinePlatform) UpdateEntry(ctx context.Context, mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) error {
+func (lp *OfflinePlatform) UpdateEntry(ctx context.Context, params platform.UpdateEntryParams) error {
+	mediaID := params.MediaID
+	status := params.Status
+	scoreRaw := params.ScoreRaw
+	progress := params.Progress
+	startedAt := params.StartedAt
+	completedAt := params.CompletedAt
 	if lp.localManager.GetLocalAnimeCollection().IsPresent() {
 		animeCollection := lp.localManager.GetLocalAnimeCollection().MustGet()
 
@@ -163,6 +169,12 @@ func (lp *OfflinePlatform) UpdateEntry(ctx context.Context, mediaID int, status 
 							Month: completedAt.Month,
 							Day:   completedAt.Day,
 						}
+					}
+					if params.Private != nil {
+						entry.Private = params.Private
+					}
+					if params.HiddenFromStatusLists != nil {
+						entry.HiddenFromStatusLists = params.HiddenFromStatusLists
 					}
 
 					// Save the collection
@@ -205,6 +217,12 @@ func (lp *OfflinePlatform) UpdateEntry(ctx context.Context, mediaID int, status 
 							Month: completedAt.Month,
 							Day:   completedAt.Day,
 						}
+					}
+					if params.Private != nil {
+						entry.Private = params.Private
+					}
+					if params.HiddenFromStatusLists != nil {
+						entry.HiddenFromStatusLists = params.HiddenFromStatusLists
 					}
 
 					// Save the collection

@@ -386,15 +386,18 @@ func (h *PlatformHelper) HandleCustomSourceDeleteEntry(ctx context.Context, medi
 	return false, nil
 }
 
-func (h *PlatformHelper) TriggerUpdateEntryHooks(ctx context.Context, mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, updateFunc func(event *platform.PreUpdateEntryEvent) error) error {
+func (h *PlatformHelper) TriggerUpdateEntryHooks(ctx context.Context, params platform.UpdateEntryParams, updateFunc func(event *platform.PreUpdateEntryEvent) error) error {
 	// Trigger pre-update hook
+	mediaID := params.MediaID
 	event := new(platform.PreUpdateEntryEvent)
 	event.MediaID = &mediaID
-	event.Status = status
-	event.ScoreRaw = scoreRaw
-	event.Progress = progress
-	event.StartedAt = startedAt
-	event.CompletedAt = completedAt
+	event.Status = params.Status
+	event.ScoreRaw = params.ScoreRaw
+	event.Progress = params.Progress
+	event.StartedAt = params.StartedAt
+	event.CompletedAt = params.CompletedAt
+	event.Private = params.Private
+	event.HiddenFromStatusLists = params.HiddenFromStatusLists
 
 	err := hook.GlobalHookManager.OnPreUpdateEntry().Trigger(event)
 	if err != nil {

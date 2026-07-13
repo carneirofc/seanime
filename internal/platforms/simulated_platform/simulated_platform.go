@@ -77,10 +77,11 @@ func (sp *SimulatedPlatform) ClearCache() {
 
 // UpdateEntry updates the entry for the given media ID.
 // If the entry doesn't exist, it will be added automatically after determining the media type.
-func (sp *SimulatedPlatform) UpdateEntry(ctx context.Context, mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) error {
+func (sp *SimulatedPlatform) UpdateEntry(ctx context.Context, params platform.UpdateEntryParams) error {
+	mediaID := params.MediaID
 	sp.logger.Trace().Int("mediaID", mediaID).Msg("simulated platform: Updating entry")
 
-	return sp.helper.TriggerUpdateEntryHooks(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, func(event *platform.PreUpdateEntryEvent) error {
+	return sp.helper.TriggerUpdateEntryHooks(ctx, params, func(event *platform.PreUpdateEntryEvent) error {
 		// Check if this is a custom source entry (after hooks have been triggered)
 		if handled, err := sp.helper.HandleCustomSourceUpdateEntry(ctx, mediaID, event.Status, event.ScoreRaw, event.Progress, event.StartedAt, event.CompletedAt); handled {
 			return err

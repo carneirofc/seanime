@@ -5,10 +5,25 @@ import (
 	"seanime/internal/api/anilist"
 )
 
+// UpdateEntryParams carries the fields of a full list-entry edit.
+// All fields except MediaID are optional: a nil pointer means "leave this flag/value untouched".
+type UpdateEntryParams struct {
+	MediaID     int
+	Status      *anilist.MediaListStatus
+	ScoreRaw    *int
+	Progress    *int
+	StartedAt   *anilist.FuzzyDateInput
+	CompletedAt *anilist.FuzzyDateInput
+	// Private, when non-nil, sets AniList's `private` flag on the entry (hidden from other users).
+	Private *bool
+	// HiddenFromStatusLists, when non-nil, sets AniList's `hiddenFromStatusLists` flag on the entry.
+	HiddenFromStatusLists *bool
+}
+
 type Platform interface {
 	SetUsername(username string)
 	// UpdateEntry updates the entry for the given media ID
-	UpdateEntry(context context.Context, mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) error
+	UpdateEntry(context context.Context, params UpdateEntryParams) error
 	// UpdateEntryProgress updates the entry progress for the given media ID
 	UpdateEntryProgress(context context.Context, mediaID int, progress int, totalEpisodes *int) error
 	// UpdateEntryRepeat updates the entry repeat number for the given media ID

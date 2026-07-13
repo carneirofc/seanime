@@ -991,20 +991,20 @@ func (c *CacheLayer) ListRecentAnime(ctx context.Context, page *int, perPage *in
 	})
 }
 
-func (c *CacheLayer) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, interceptors ...clientv2.RequestInterceptor) (*anilist.UpdateMediaListEntry, error) {
+func (c *CacheLayer) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, private *bool, hiddenFromStatusLists *bool, interceptors ...clientv2.RequestInterceptor) (*anilist.UpdateMediaListEntry, error) {
 	// Mutations require the API to be working
 	if !IsWorking.Load() {
-		entryID, err := c.queueMediaListEntryUpdate(mediaID, status, scoreRaw, progress, startedAt, completedAt)
+		entryID, err := c.queueMediaListEntryUpdate(mediaID, status, scoreRaw, progress, startedAt, completedAt, private, hiddenFromStatusLists)
 		if err != nil {
 			return nil, err
 		}
 		return &anilist.UpdateMediaListEntry{SaveMediaListEntry: &anilist.UpdateMediaListEntry_SaveMediaListEntry{ID: entryID}}, nil
 	}
 
-	res, err := c.sendMediaListEntryUpdate(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, interceptors...)
+	res, err := c.sendMediaListEntryUpdate(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, private, hiddenFromStatusLists, interceptors...)
 	c.checkAndUpdateWorkingState(err)
 	if err != nil && shouldQueueMediaListUpdate(err) {
-		entryID, queueErr := c.queueMediaListEntryUpdate(mediaID, status, scoreRaw, progress, startedAt, completedAt)
+		entryID, queueErr := c.queueMediaListEntryUpdate(mediaID, status, scoreRaw, progress, startedAt, completedAt, private, hiddenFromStatusLists)
 		if queueErr != nil {
 			return nil, queueErr
 		}

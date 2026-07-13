@@ -91,17 +91,17 @@ func (ap *AnilistPlatform) getUsername() (*string, bool) {
 	return nil, false
 }
 
-func (ap *AnilistPlatform) UpdateEntry(ctx context.Context, mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) error {
+func (ap *AnilistPlatform) UpdateEntry(ctx context.Context, params platform.UpdateEntryParams) error {
 	ap.logger.Trace().Msg("anilist platform: Updating entry")
 
 	// Use shared hook handling
-	return ap.helper.TriggerUpdateEntryHooks(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, func(event *platform.PreUpdateEntryEvent) error {
+	return ap.helper.TriggerUpdateEntryHooks(ctx, params, func(event *platform.PreUpdateEntryEvent) error {
 		// Check if this is a custom source entry (after hooks have been triggered)
-		if handled, err := ap.helper.HandleCustomSourceUpdateEntry(ctx, mediaID, event.Status, event.ScoreRaw, event.Progress, event.StartedAt, event.CompletedAt); handled {
+		if handled, err := ap.helper.HandleCustomSourceUpdateEntry(ctx, params.MediaID, event.Status, event.ScoreRaw, event.Progress, event.StartedAt, event.CompletedAt); handled {
 			return err
 		}
 
-		_, err := ap.anilistClient.UpdateMediaListEntry(ctx, event.MediaID, event.Status, event.ScoreRaw, event.Progress, event.StartedAt, event.CompletedAt)
+		_, err := ap.anilistClient.UpdateMediaListEntry(ctx, event.MediaID, event.Status, event.ScoreRaw, event.Progress, event.StartedAt, event.CompletedAt, event.Private, event.HiddenFromStatusLists)
 		return err
 	})
 }
@@ -657,6 +657,9 @@ func (ap *AnilistPlatform) AddMediaToCollection(ctx context.Context, mIds []int)
 		return nil
 	}
 
+	// Adult-privacy default: when enabled, adult media added here default to private + hidden.
+	makeAdultPrivate := ap.makeAdultEntriesPrivateEnabled()
+
 	rateLimiter := limiter.NewLimiter(1*time.Second, 1) // 1 request per second
 
 	wg := sync.WaitGroup{}
@@ -681,6 +684,8 @@ func (ap *AnilistPlatform) AddMediaToCollection(ctx context.Context, mIds []int)
 				return
 			}
 
+			private, hidden := ap.adultPrivacyDefaultsForAnime(ctx, id, makeAdultPrivate)
+
 			_, err := ap.anilistClient.UpdateMediaListEntry(
 				ctx,
 				&id,
@@ -689,6 +694,8 @@ func (ap *AnilistPlatform) AddMediaToCollection(ctx context.Context, mIds []int)
 				new(0),
 				nil,
 				nil,
+				private,
+				hidden,
 			)
 			if err != nil {
 				ap.logger.Error().Msg("anilist: An error occurred while adding media to planning list: " + err.Error())
@@ -699,6 +706,32 @@ func (ap *AnilistPlatform) AddMediaToCollection(ctx context.Context, mIds []int)
 
 	ap.logger.Debug().Any("count", len(mIds)).Msg("anilist: Media added to planning list")
 	return nil
+}
+
+// makeAdultEntriesPrivateEnabled reports whether the "make adult entries private by default" setting is on.
+func (ap *AnilistPlatform) makeAdultEntriesPrivateEnabled() bool {
+	if ap.db == nil {
+		return false
+	}
+	settings, err := ap.db.GetSettings()
+	if err != nil || settings == nil || settings.Anilist == nil {
+		return false
+	}
+	return settings.Anilist.MakeAdultEntriesPrivate
+}
+
+// adultPrivacyDefaultsForAnime returns the (private, hiddenFromStatusLists) pointers to apply when
+// adding an anime to the collection. When the policy is enabled and the media is adult, both default
+// to true; otherwise both are nil (leave untouched).
+func (ap *AnilistPlatform) adultPrivacyDefaultsForAnime(ctx context.Context, mediaID int, enabled bool) (*bool, *bool) {
+	if !enabled {
+		return nil, nil
+	}
+	anime, err := ap.GetAnime(ctx, mediaID)
+	if err != nil || anime == nil || anime.GetIsAdult() == nil || !*anime.GetIsAdult() {
+		return nil, nil
+	}
+	return new(true), new(true)
 }
 
 func (ap *AnilistPlatform) GetStudioDetails(ctx context.Context, studioID int) (*anilist.StudioDetails, error) {

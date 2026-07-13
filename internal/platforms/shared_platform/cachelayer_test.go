@@ -59,7 +59,7 @@ func (c *cacheLayerTestClient) MangaCollection(_ context.Context, _ *string, _ .
 	return c.mangaCollection, nil
 }
 
-func (c *cacheLayerTestClient) UpdateMediaListEntry(_ context.Context, mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, _ ...clientv2.RequestInterceptor) (*anilist.UpdateMediaListEntry, error) {
+func (c *cacheLayerTestClient) UpdateMediaListEntry(_ context.Context, mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, _ *bool, _ *bool, _ ...clientv2.RequestInterceptor) (*anilist.UpdateMediaListEntry, error) {
 	c.updateEntryCalls = append(c.updateEntryCalls, cacheLayerUpdateEntryCall{
 		MediaID:     newCloned(mediaID),
 		Status:      newCloned(status),
@@ -127,7 +127,7 @@ func TestCacheLayerQueuesEntryUpdateAndSyncsWhenOnline(t *testing.T) {
 	IsWorking.Store(false)
 	startedAt := &anilist.FuzzyDateInput{Year: new(2025), Month: new(1), Day: new(2)}
 	completedAt := &anilist.FuzzyDateInput{Year: new(2025), Month: new(2), Day: new(3)}
-	res, err := cacheLayer.UpdateMediaListEntry(context.Background(), new(202), new(anilist.MediaListStatusCompleted), new(85), new(12), startedAt, completedAt)
+	res, err := cacheLayer.UpdateMediaListEntry(context.Background(), new(202), new(anilist.MediaListStatusCompleted), new(85), new(12), startedAt, completedAt, nil, nil)
 	require.NoError(t, err)
 	require.Equal(t, 654, res.GetSaveMediaListEntry().GetID())
 	require.Empty(t, client.updateEntryCalls)
@@ -194,14 +194,14 @@ func TestCacheLayerLiveEntryUpdateClearsQueuedUpdate(t *testing.T) {
 
 	// queue an older edit while AniList is unavailable
 	IsWorking.Store(false)
-	_, err = cacheLayer.UpdateMediaListEntry(context.Background(), new(202), new(anilist.MediaListStatusCompleted), new(80), new(12), nil, nil)
+	_, err = cacheLayer.UpdateMediaListEntry(context.Background(), new(202), new(anilist.MediaListStatusCompleted), new(80), new(12), nil, nil, nil, nil)
 	require.NoError(t, err)
 	queued := getQueuedUpdate(t, cacheLayer, 202)
 	require.Equal(t, 80, *queued.ScoreRaw)
 
 	// the successful online edit replaces it and should prevent stale replay
 	IsWorking.Store(true)
-	_, err = cacheLayer.UpdateMediaListEntry(context.Background(), new(202), new(anilist.MediaListStatusCurrent), new(90), new(13), nil, nil)
+	_, err = cacheLayer.UpdateMediaListEntry(context.Background(), new(202), new(anilist.MediaListStatusCurrent), new(90), new(13), nil, nil, nil, nil)
 	require.NoError(t, err)
 	requireNoQueuedUpdate(t, cacheLayer, 202)
 

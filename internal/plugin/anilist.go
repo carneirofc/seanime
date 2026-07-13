@@ -8,6 +8,7 @@ import (
 	"seanime/internal/extension_repo/prompt"
 	"seanime/internal/goja/goja_bindings"
 	"seanime/internal/library/anime"
+	"seanime/internal/platforms/platform"
 	gojautil "seanime/internal/util/goja"
 
 	"github.com/dop251/goja"
@@ -42,7 +43,14 @@ func (a *AppContextImpl) BindAnilist(vm *goja.Runtime, logger *zerolog.Logger, e
 	anilistPlatformRef, ok := a.anilistPlatformRef.Get()
 	if ok {
 		_ = anilistObj.Set("updateEntry", func(mediaID int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) error {
-			return anilistPlatformRef.Get().UpdateEntry(context.Background(), mediaID, status, scoreRaw, progress, startedAt, completedAt)
+			return anilistPlatformRef.Get().UpdateEntry(context.Background(), platform.UpdateEntryParams{
+				MediaID:     mediaID,
+				Status:      status,
+				ScoreRaw:    scoreRaw,
+				Progress:    progress,
+				StartedAt:   startedAt,
+				CompletedAt: completedAt,
+			})
 		})
 		_ = anilistObj.Set("updateEntryProgress", func(mediaID int, progress int, totalEpisodes *int) error {
 			return anilistPlatformRef.Get().UpdateEntryProgress(context.Background(), mediaID, progress, totalEpisodes)

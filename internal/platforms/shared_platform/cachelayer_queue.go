@@ -23,16 +23,18 @@ const (
 )
 
 type queuedMediaListUpdate struct {
-	MediaID       int                      `json:"mediaId"`
-	Status        *anilist.MediaListStatus `json:"status,omitempty"`
-	ScoreRaw      *int                     `json:"scoreRaw,omitempty"`
-	Progress      *int                     `json:"progress,omitempty"`
-	StartedAt     *anilist.FuzzyDateInput  `json:"startedAt,omitempty"`
-	CompletedAt   *anilist.FuzzyDateInput  `json:"completedAt,omitempty"`
-	FullUpdate    bool                     `json:"fullUpdate,omitempty"`
-	Attempts      int                      `json:"attempts,omitempty"`
-	UpdatedAt     time.Time                `json:"updatedAt"`
-	NextAttemptAt *time.Time               `json:"nextAttemptAt,omitempty"`
+	MediaID               int                      `json:"mediaId"`
+	Status                *anilist.MediaListStatus `json:"status,omitempty"`
+	ScoreRaw              *int                     `json:"scoreRaw,omitempty"`
+	Progress              *int                     `json:"progress,omitempty"`
+	StartedAt             *anilist.FuzzyDateInput  `json:"startedAt,omitempty"`
+	CompletedAt           *anilist.FuzzyDateInput  `json:"completedAt,omitempty"`
+	Private               *bool                    `json:"private,omitempty"`
+	HiddenFromStatusLists *bool                    `json:"hiddenFromStatusLists,omitempty"`
+	FullUpdate            bool                     `json:"fullUpdate,omitempty"`
+	Attempts              int                      `json:"attempts,omitempty"`
+	UpdatedAt             time.Time                `json:"updatedAt"`
+	NextAttemptAt         *time.Time               `json:"nextAttemptAt,omitempty"`
 }
 
 func (c *CacheLayer) startQueuedUpdateSync() {
@@ -89,19 +91,21 @@ func shouldQueueMediaListUpdate(err error) bool {
 	})
 }
 
-func (c *CacheLayer) queueMediaListEntryUpdate(mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput) (int, error) {
+func (c *CacheLayer) queueMediaListEntryUpdate(mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, private *bool, hiddenFromStatusLists *bool) (int, error) {
 	if mediaID == nil {
 		return 0, errors.New("anilist cache: media ID is required to queue list update")
 	}
 
 	update := queuedMediaListUpdate{
-		MediaID:     *mediaID,
-		Status:      newCloned(status),
-		ScoreRaw:    newCloned(scoreRaw),
-		Progress:    newCloned(progress),
-		StartedAt:   cloneFuzzyDateInput(startedAt),
-		CompletedAt: cloneFuzzyDateInput(completedAt),
-		FullUpdate:  true,
+		MediaID:               *mediaID,
+		Status:                newCloned(status),
+		ScoreRaw:              newCloned(scoreRaw),
+		Progress:              newCloned(progress),
+		StartedAt:             cloneFuzzyDateInput(startedAt),
+		CompletedAt:           cloneFuzzyDateInput(completedAt),
+		Private:               newCloned(private),
+		HiddenFromStatusLists: newCloned(hiddenFromStatusLists),
+		FullUpdate:            true,
 	}
 
 	return c.queueMediaListUpdate(update)
@@ -146,15 +150,15 @@ func (c *CacheLayer) queueMediaListUpdate(update queuedMediaListUpdate) (int, er
 	return entryID, nil
 }
 
-func (c *CacheLayer) sendMediaListEntryUpdate(ctx context.Context, mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, interceptors ...clientv2.RequestInterceptor) (*anilist.UpdateMediaListEntry, error) {
+func (c *CacheLayer) sendMediaListEntryUpdate(ctx context.Context, mediaID *int, status *anilist.MediaListStatus, scoreRaw *int, progress *int, startedAt *anilist.FuzzyDateInput, completedAt *anilist.FuzzyDateInput, private *bool, hiddenFromStatusLists *bool, interceptors ...clientv2.RequestInterceptor) (*anilist.UpdateMediaListEntry, error) {
 	if mediaID == nil {
-		return c.anilistClientRef.Get().UpdateMediaListEntry(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, interceptors...)
+		return c.anilistClientRef.Get().UpdateMediaListEntry(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, private, hiddenFromStatusLists, interceptors...)
 	}
 
 	c.pendingUpdateSyncMutex.Lock()
 	defer c.pendingUpdateSyncMutex.Unlock()
 
-	res, err := c.anilistClientRef.Get().UpdateMediaListEntry(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, interceptors...)
+	res, err := c.anilistClientRef.Get().UpdateMediaListEntry(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, private, hiddenFromStatusLists, interceptors...)
 	if err == nil {
 		c.deleteQueuedUpdate(*mediaID)
 	}
@@ -214,6 +218,12 @@ func (c *CacheLayer) saveQueuedMediaListUpdate(update queuedMediaListUpdate) (qu
 	}
 	if update.CompletedAt != nil {
 		current.CompletedAt = update.CompletedAt
+	}
+	if update.Private != nil {
+		current.Private = update.Private
+	}
+	if update.HiddenFromStatusLists != nil {
+		current.HiddenFromStatusLists = update.HiddenFromStatusLists
 	}
 	if update.FullUpdate {
 		current.FullUpdate = true
@@ -298,8 +308,8 @@ func (c *CacheLayer) syncQueuedUpdates(ctx context.Context) {
 
 func (c *CacheLayer) syncQueuedUpdate(ctx context.Context, update queuedMediaListUpdate) error {
 	mediaID := update.MediaID
-	if update.FullUpdate || update.ScoreRaw != nil || update.StartedAt != nil || update.CompletedAt != nil {
-		_, err := c.anilistClientRef.Get().UpdateMediaListEntry(ctx, &mediaID, update.Status, update.ScoreRaw, update.Progress, update.StartedAt, update.CompletedAt)
+	if update.FullUpdate || update.ScoreRaw != nil || update.StartedAt != nil || update.CompletedAt != nil || update.Private != nil || update.HiddenFromStatusLists != nil {
+		_, err := c.anilistClientRef.Get().UpdateMediaListEntry(ctx, &mediaID, update.Status, update.ScoreRaw, update.Progress, update.StartedAt, update.CompletedAt, update.Private, update.HiddenFromStatusLists)
 		return err
 	}
 

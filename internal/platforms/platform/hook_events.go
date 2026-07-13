@@ -78,12 +78,14 @@ type GetStudioDetailsEvent struct {
 // Prevent default to skip the default update and override the update.
 type PreUpdateEntryEvent struct {
 	hook_resolver.Event
-	MediaID     *int                     `json:"mediaId"`
-	Status      *anilist.MediaListStatus `json:"status"`
-	ScoreRaw    *int                     `json:"scoreRaw"`
-	Progress    *int                     `json:"progress"`
-	StartedAt   *anilist.FuzzyDateInput  `json:"startedAt"`
-	CompletedAt *anilist.FuzzyDateInput  `json:"completedAt"`
+	MediaID               *int                     `json:"mediaId"`
+	Status                *anilist.MediaListStatus `json:"status"`
+	ScoreRaw              *int                     `json:"scoreRaw"`
+	Progress              *int                     `json:"progress"`
+	StartedAt             *anilist.FuzzyDateInput  `json:"startedAt"`
+	CompletedAt           *anilist.FuzzyDateInput  `json:"completedAt"`
+	Private               *bool                    `json:"private"`
+	HiddenFromStatusLists *bool                    `json:"hiddenFromStatusLists"`
 }
 
 type PostUpdateEntryEvent struct {
