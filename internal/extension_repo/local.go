@@ -65,6 +65,42 @@ func localFileFromURI(uri string) (string, bool) {
 	return "", false
 }
 
+// resolveExtensionURI resolves ref against base. If ref is already absolute (has
+// a URL scheme like http/https/file, or is an absolute filesystem path) it is
+// returned unchanged. A relative ref is resolved against base's directory: for a
+// local base against the parent folder on disk, for a remote base via URL
+// reference resolution. This lets a local (or remote) repository/manifest
+// reference sibling files by relative path.
+func resolveExtensionURI(base, ref string) string {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return ref
+	}
+
+	// Already absolute: a URL with a scheme (http://, https://, file://) or an
+	// absolute filesystem path.
+	if u, err := url.Parse(ref); err == nil && u.Scheme != "" {
+		return ref
+	}
+	if filepath.IsAbs(ref) {
+		return ref
+	}
+
+	// Relative ref, resolved against a local base directory.
+	if basePath, ok := localFileFromURI(base); ok {
+		return filepath.ToSlash(filepath.Join(filepath.Dir(basePath), ref))
+	}
+
+	// Relative ref, resolved against a remote base URL.
+	if bu, err := url.Parse(base); err == nil && bu.Scheme != "" {
+		if ru, err := url.Parse(ref); err == nil {
+			return bu.ResolveReference(ru).String()
+		}
+	}
+
+	return ref
+}
+
 // fetchExtensionBytes reads an extension-related resource (marketplace listing,
 // manifest, payload, repository JSON) from either the local filesystem or over
 // HTTP, supporting private GitHub repositories via newExtensionRequest.

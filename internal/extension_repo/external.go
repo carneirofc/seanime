@@ -55,8 +55,11 @@ func (r *Repository) fetchExternalExtensionData(manifestURI string, noPayloadDow
 
 	// Before sanity check, fetch the payload if needed
 	if ext.PayloadURI != "" && !lo.Contains(noPayloadDownload, true) {
+		// Resolve a relative payload URI against the manifest's location, so a
+		// local (or remote) manifest can reference its payload by relative path.
+		payloadURI := resolveExtensionURI(manifestURI, ext.PayloadURI)
 		r.logger.Debug().Str("id", ext.ID).Msg("extensions: Downloading payload")
-		payloadFromURI, err := r.downloadPayload(ext.PayloadURI)
+		payloadFromURI, err := r.downloadPayload(payloadURI)
 		if err != nil {
 			r.logger.Error().Err(err).Str("id", ext.ID).Msg("extensions: Failed to download payload")
 			return nil, fmt.Errorf("failed to download payload, %w", err)
@@ -111,6 +114,16 @@ func (r *Repository) InstallExternalExtension(manifestURI string) (*ExtensionIns
 		r.logger.Error().Err(err).Str("uri", manifestURI).Msg("extensions: Failed to fetch extension data")
 		return nil, fmt.Errorf("failed to fetch extension data, %w", err)
 	}
+
+	return r.installExtensionData(ext)
+}
+
+// installExtensionData writes an already-fetched extension to disk and reloads it.
+// Callers that have the extension data in hand (e.g. repository install) use this
+// directly instead of re-fetching from the manifest URI, which matters when the
+// manifest's self-declared manifestURI differs from where it was fetched (local
+// repositories, mirrors, moved repos).
+func (r *Repository) installExtensionData(ext *extension.Extension) (*ExtensionInstallResponse, error) {
 
 	filename := filepath.Join(r.extensionDir, ext.ID+".json")
 
@@ -212,14 +225,27 @@ func (r *Repository) InstallExternalExtensions(uriOrJson string, install bool) (
 		}
 	}
 
+	// Determine the base URI to resolve relative manifest URLs against. For a JSON
+	// literal there is no base, so relative entries can't be resolved.
+	base := uriOrJson
+	if strings.HasPrefix(strings.TrimSpace(uriOrJson), "{") {
+		base = ""
+	}
+
 	var extensions []*extension.Extension
 	wg := sync.WaitGroup{}
 	mu := sync.Mutex{}
 
 	wg.Add(len(repo.ManifestURIs))
 	for _, manifestURI := range repo.ManifestURIs {
-		go func() {
+		go func(manifestURI string) {
 			defer wg.Done()
+
+			// Resolve relative entries against the repository file's location, so
+			// a local (or remote) repository can reference sibling manifests.
+			if base != "" {
+				manifestURI = resolveExtensionURI(base, manifestURI)
+			}
 
 			ext, err := r.fetchExternalExtensionData(manifestURI)
 			if err != nil {
@@ -234,23 +260,35 @@ func (r *Repository) InstallExternalExtensions(uriOrJson string, install bool) (
 			mu.Lock()
 			extensions = append(extensions, ext)
 			mu.Unlock()
-		}()
+		}(manifestURI)
 	}
 
 	wg.Wait()
 
+	installed := 0
 	if install {
 		for _, ext := range extensions {
-			_, err := r.InstallExternalExtension(ext.ManifestURI)
-			if err != nil {
+			// Install the data we already fetched instead of re-fetching from the
+			// manifest's self-declared manifestURI, which may differ from where it
+			// was actually fetched (e.g. a local repository).
+			if _, err := r.installExtensionData(ext); err != nil {
 				r.logger.Error().Err(err).Str("id", ext.ID).Msg("extensions: Failed to install extension from repository")
+				continue
 			}
+			installed++
 		}
 	}
 
-	msg := fmt.Sprintf("Successfully installed %d extensions from the repository", len(extensions))
-	if !install {
-		msg = fmt.Sprintf("Successfully fetched %d extensions from the repository", len(extensions))
+	failed := len(repo.ManifestURIs) - len(extensions)
+
+	var msg string
+	if install {
+		msg = fmt.Sprintf("Successfully installed %d of %d extensions from the repository", installed, len(repo.ManifestURIs))
+	} else {
+		msg = fmt.Sprintf("Fetched %d of %d extensions from the repository", len(extensions), len(repo.ManifestURIs))
+	}
+	if failed > 0 {
+		msg += fmt.Sprintf(" (%d could not be fetched)", failed)
 	}
 
 	return &RepositoryInstallResponse{

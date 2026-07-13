@@ -72,6 +72,24 @@ func writeLocalExtensionSource(t *testing.T, srcDir string, manifestURI string, 
 	return manifestPath
 }
 
+func TestResolveExtensionURI(t *testing.T) {
+	// Absolute references are returned unchanged.
+	require.Equal(t, "https://example.com/x.json", resolveExtensionURI("file:///repo/repo.json", "https://example.com/x.json"))
+	require.Equal(t, "file:///other/x.json", resolveExtensionURI("file:///repo/repo.json", "file:///other/x.json"))
+
+	if runtime.GOOS != "windows" {
+		require.Equal(t, "/abs/x.json", resolveExtensionURI("/repo/repo.json", "/abs/x.json"))
+		// Relative refs resolve against a local base's directory.
+		require.Equal(t, "/repo/sub/x.json", resolveExtensionURI("/repo/repo.json", "sub/x.json"))
+		require.Equal(t, "/repo/sub/x.json", resolveExtensionURI("file:///repo/repo.json", "sub/x.json"))
+	}
+
+	// Relative refs resolve against a remote base URL.
+	require.Equal(t, "https://host/a/x.json", resolveExtensionURI("https://host/a/repo.json", "x.json"))
+	// With no base (JSON-literal repository), a relative ref is left as-is.
+	require.Equal(t, "x.json", resolveExtensionURI("", "x.json"))
+}
+
 func TestInstallExternalExtensionFromLocalFile(t *testing.T) {
 	repo, extensionDir := newExternalExtensionTestRepository(t)
 
@@ -131,6 +149,62 @@ func TestRefetchExternalExtensionReloadsFromSourceWithoutVersionBump(t *testing.
 	all := repo.RefetchAllExternalExtensions()
 	require.Contains(t, all.Reloaded, "local-torrent-provider")
 	require.Empty(t, all.Failed)
+}
+
+// TestInstallExternalExtensionsFromLocalRepositoryRelative covers installing from
+// a local repository file whose entries are relative paths, whose manifests carry
+// relative payload URIs, and whose self-declared manifestURI points elsewhere
+// (a remote URL that is never fetched). All references must resolve locally and
+// every extension must actually install.
+func TestInstallExternalExtensionsFromLocalRepositoryRelative(t *testing.T) {
+	repo, _ := newExternalExtensionTestRepository(t)
+
+	repoDir := t.TempDir()
+
+	writeProvider := func(sub, id string) {
+		dir := filepath.Join(repoDir, sub)
+		require.NoError(t, os.MkdirAll(dir, 0o755))
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "payload.js"), []byte(asyncAnimeTorrentProviderPayload), 0o600))
+		ext := extension.Extension{
+			ID:   id,
+			Name: id,
+			// A self-declared manifestURI that would 404 if re-fetched; install
+			// must use the fetched data, not this URI.
+			ManifestURI: "https://example.com/does-not-exist/" + id + ".json",
+			PayloadURI:  "payload.js", // relative to this manifest's directory
+			Version:     "1.0.0",
+			Language:    extension.LanguageJavascript,
+			Type:        extension.TypeAnimeTorrentProvider,
+			Description: "local repo provider",
+			Author:      "Test",
+			Lang:        "en",
+		}
+		raw, err := json.Marshal(ext)
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "manifest.json"), raw, 0o600))
+	}
+
+	writeProvider("a", "prov-a")
+	writeProvider("b", "prov-b")
+
+	// Repository file at the repo root with relative entries.
+	repoFile := filepath.Join(repoDir, "repo.json")
+	raw, err := json.Marshal(map[string][]string{"urls": {"a/manifest.json", "b/manifest.json"}})
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(repoFile, raw, 0o600))
+
+	res, err := repo.InstallExternalExtensions("file://"+filepath.ToSlash(repoFile), true)
+	require.NoError(t, err)
+	require.Contains(t, res.Message, "installed 2 of 2")
+
+	all := repo.GetAllExtensions(false)
+	require.Empty(t, all.InvalidExtensions)
+	require.Len(t, all.Extensions, 2)
+
+	for _, id := range []string{"prov-a", "prov-b"} {
+		_, found := repo.GetAnimeTorrentProviderExtensionByID(id)
+		require.Truef(t, found, "expected %s to be installed and loaded", id)
+	}
 }
 
 // rewriteManifestURI rewrites the manifestURI field of an on-disk manifest file.
