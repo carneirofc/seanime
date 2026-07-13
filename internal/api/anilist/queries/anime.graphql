@@ -12,6 +12,7 @@ query AnimeCollection ($userName: String) {
         notes
         repeat
         private
+        hiddenFromStatusLists
         startedAt {
           year
           month
@@ -59,6 +60,7 @@ query AnimeCollectionWithRelations ($userName: String) {
         notes
         repeat
         private
+        hiddenFromStatusLists
         startedAt {
           year
           month

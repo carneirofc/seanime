@@ -5,6 +5,8 @@ mutation UpdateMediaListEntry (
     $progress: Int
     $startedAt: FuzzyDateInput
     $completedAt: FuzzyDateInput
+    $private: Boolean
+    $hiddenFromStatusLists: Boolean
 ) {
     SaveMediaListEntry(
         mediaId: $mediaId
@@ -13,6 +15,8 @@ mutation UpdateMediaListEntry (
         progress: $progress
         startedAt: $startedAt
         completedAt: $completedAt
+        private: $private
+        hiddenFromStatusLists: $hiddenFromStatusLists
     ) {
         id
     }

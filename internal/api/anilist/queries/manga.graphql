@@ -12,6 +12,7 @@ query MangaCollection ($userName: String) {
         notes
         repeat
         private
+        hiddenFromStatusLists
         startedAt {
           year
           month
