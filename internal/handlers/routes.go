@@ -222,6 +222,8 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 
 	v1Anilist.POST("/list-entry", h.HandleEditAnilistListEntry)
 
+	v1Anilist.POST("/privatize-adult-entries", h.HandlePrivatizeAdultEntries)
+
 	v1Anilist.DELETE("/list-entry", h.HandleDeleteAnilistListEntry)
 
 	v1Anilist.POST("/list-anime", h.HandleAnilistListAnime)

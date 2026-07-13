@@ -209,6 +209,14 @@ export function ServerSettings(props: ServerSettingsProps) {
 
                 <Field.Switch
                     side="right"
+                    name="makeAdultEntriesPrivate"
+                    label="Make adult titles private by default"
+                    help="When you add an adult title to your list, its AniList entry defaults to private and hidden from your status lists. You can still override this per-entry."
+                    icon={<TbRating18Plus className="" />}
+                />
+
+                <Field.Switch
+                    side="right"
                     name="disableAnimeCardTrailers"
                     label="Disable anime card trailers"
                     help=""
