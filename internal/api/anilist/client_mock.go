@@ -548,7 +548,7 @@ func (ac *FixtureAnilistClient) AnimeCollectionWithRelations(ctx context.Context
 // WILL NOT IMPLEMENT
 //
 
-func (ac *FixtureAnilistClient) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error) {
+func (ac *FixtureAnilistClient) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, private *bool, hiddenFromStatusLists *bool, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error) {
 	ac.logger.Debug().Int("mediaId", *mediaID).Msg("anilist: Updating media list entry")
 	return &UpdateMediaListEntry{}, nil
 }

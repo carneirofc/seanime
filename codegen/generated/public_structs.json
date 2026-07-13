@@ -3011,6 +3011,15 @@
         "comments": []
       },
       {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "Progress",
         "jsonName": "progress",
         "goType": "int",
@@ -3902,6 +3911,15 @@
       {
         "name": "Private",
         "jsonName": "private",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": false,
@@ -8948,6 +8966,15 @@
       {
         "name": "Private",
         "jsonName": "private",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": false,
@@ -30863,6 +30890,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "MakeAdultEntriesPrivate",
+        "jsonName": "makeAdultEntriesPrivate",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -49544,6 +49580,24 @@
         "required": false,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "Private",
+        "jsonName": "private",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -61982,6 +62036,24 @@
         "jsonName": "completedAt",
         "goType": "string",
         "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Private",
+        "jsonName": "private",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
         "required": false,
         "public": true,
         "comments": []
@@ -77047,6 +77119,24 @@
         "required": false,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "Private",
+        "jsonName": "private",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": [
@@ -77274,6 +77364,97 @@
     "comments": [],
     "embeddedStructNames": [
       "hook_resolver.Event"
+    ]
+  },
+  {
+    "filepath": "../internal/platforms/platform/platform.go",
+    "filename": "platform.go",
+    "name": "UpdateEntryParams",
+    "formattedName": "UpdateEntryParams",
+    "package": "platform",
+    "fields": [
+      {
+        "name": "MediaID",
+        "jsonName": "MediaID",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Status",
+        "jsonName": "Status",
+        "goType": "anilist.MediaListStatus",
+        "typescriptType": "AL_MediaListStatus",
+        "usedTypescriptType": "AL_MediaListStatus",
+        "usedStructName": "anilist.MediaListStatus",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ScoreRaw",
+        "jsonName": "ScoreRaw",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Progress",
+        "jsonName": "Progress",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "StartedAt",
+        "jsonName": "StartedAt",
+        "goType": "anilist.FuzzyDateInput",
+        "typescriptType": "AL_FuzzyDateInput",
+        "usedTypescriptType": "AL_FuzzyDateInput",
+        "usedStructName": "anilist.FuzzyDateInput",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "CompletedAt",
+        "jsonName": "CompletedAt",
+        "goType": "anilist.FuzzyDateInput",
+        "typescriptType": "AL_FuzzyDateInput",
+        "usedTypescriptType": "AL_FuzzyDateInput",
+        "usedStructName": "anilist.FuzzyDateInput",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Private",
+        "jsonName": "Private",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "HiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " UpdateEntryParams carries the fields of a full list-entry edit.",
+      " All fields except MediaID are optional: a nil pointer means \"leave this flag/value untouched\"."
     ]
   },
   {

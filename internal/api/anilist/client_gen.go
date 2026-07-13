@@ -22,7 +22,7 @@ type GithubGraphQLClient interface {
 	ListRecentAnime(ctx context.Context, page *int, perPage *int, airingAtGreater *int, airingAtLesser *int, notYetAired *bool, interceptors ...clientv2.RequestInterceptor) (*ListRecentAnime, error)
 	AnimeAiringSchedule(ctx context.Context, ids []*int, season *MediaSeason, seasonYear *int, previousSeason *MediaSeason, previousSeasonYear *int, nextSeason *MediaSeason, nextSeasonYear *int, interceptors ...clientv2.RequestInterceptor) (*AnimeAiringSchedule, error)
 	AnimeAiringScheduleRaw(ctx context.Context, ids []*int, interceptors ...clientv2.RequestInterceptor) (*AnimeAiringScheduleRaw, error)
-	UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error)
+	UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, private *bool, hiddenFromStatusLists *bool, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error)
 	UpdateMediaListEntryProgress(ctx context.Context, mediaID *int, progress *int, status *MediaListStatus, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntryProgress, error)
 	DeleteEntry(ctx context.Context, mediaListEntryID *int, interceptors ...clientv2.RequestInterceptor) (*DeleteEntry, error)
 	UpdateMediaListEntryRepeat(ctx context.Context, mediaID *int, repeat *int, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntryRepeat, error)
@@ -2025,12 +2025,13 @@ func (t *AnimeCollection_MediaListCollection_Lists_Entries_Media_BaseAnime_NextA
 }
 
 type AnimeCollection_MediaListCollection_Lists_Entries struct {
-	CompletedAt *AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
-	ID          int                                                            "json:\"id\" graphql:\"id\""
-	Media       *BaseAnime                                                     "json:\"media,omitempty\" graphql:\"media\""
-	Notes       *string                                                        "json:\"notes,omitempty\" graphql:\"notes\""
-	Private     *bool                                                          "json:\"private,omitempty\" graphql:\"private\""
-	Progress    *int                                                           "json:\"progress,omitempty\" graphql:\"progress\""
+	CompletedAt           *AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
+	ID                    int                                                            "json:\"id\" graphql:\"id\""
+	Media                 *BaseAnime                                                     "json:\"media,omitempty\" graphql:\"media\""
+	Notes                 *string                                                        "json:\"notes,omitempty\" graphql:\"notes\""
+	Private               *bool                                                          "json:\"private,omitempty\" graphql:\"private\""
+	HiddenFromStatusLists *bool                                                          "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
+	Progress              *int                                                           "json:\"progress,omitempty\" graphql:\"progress\""
 	Repeat      *int                                                           "json:\"repeat,omitempty\" graphql:\"repeat\""
 	Score       *float64                                                       "json:\"score,omitempty\" graphql:\"score\""
 	StartedAt   *AnimeCollection_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
@@ -2066,6 +2067,12 @@ func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetPrivate() *bool {
 		t = &AnimeCollection_MediaListCollection_Lists_Entries{}
 	}
 	return t.Private
+}
+func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
+	if t == nil {
+		t = &AnimeCollection_MediaListCollection_Lists_Entries{}
+	}
+	return t.HiddenFromStatusLists
 }
 func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetProgress() *int {
 	if t == nil {
@@ -2611,12 +2618,13 @@ func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_Media_Co
 }
 
 type AnimeCollectionWithRelations_MediaListCollection_Lists_Entries struct {
-	CompletedAt *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
-	ID          int                                                                         "json:\"id\" graphql:\"id\""
-	Media       *CompleteAnime                                                              "json:\"media,omitempty\" graphql:\"media\""
-	Notes       *string                                                                     "json:\"notes,omitempty\" graphql:\"notes\""
-	Private     *bool                                                                       "json:\"private,omitempty\" graphql:\"private\""
-	Progress    *int                                                                        "json:\"progress,omitempty\" graphql:\"progress\""
+	CompletedAt           *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
+	ID                    int                                                                         "json:\"id\" graphql:\"id\""
+	Media                 *CompleteAnime                                                              "json:\"media,omitempty\" graphql:\"media\""
+	Notes                 *string                                                                     "json:\"notes,omitempty\" graphql:\"notes\""
+	Private               *bool                                                                       "json:\"private,omitempty\" graphql:\"private\""
+	HiddenFromStatusLists *bool                                                                       "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
+	Progress              *int                                                                        "json:\"progress,omitempty\" graphql:\"progress\""
 	Repeat      *int                                                                        "json:\"repeat,omitempty\" graphql:\"repeat\""
 	Score       *float64                                                                    "json:\"score,omitempty\" graphql:\"score\""
 	StartedAt   *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
@@ -2652,6 +2660,12 @@ func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetPriv
 		t = &AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{}
 	}
 	return t.Private
+}
+func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
+	if t == nil {
+		t = &AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{}
+	}
+	return t.HiddenFromStatusLists
 }
 func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetProgress() *int {
 	if t == nil {
@@ -5919,12 +5933,13 @@ func (t *MangaCollection_MediaListCollection_Lists_Entries_Media_BaseManga_EndDa
 }
 
 type MangaCollection_MediaListCollection_Lists_Entries struct {
-	CompletedAt *MangaCollection_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
-	ID          int                                                            "json:\"id\" graphql:\"id\""
-	Media       *BaseManga                                                     "json:\"media,omitempty\" graphql:\"media\""
-	Notes       *string                                                        "json:\"notes,omitempty\" graphql:\"notes\""
-	Private     *bool                                                          "json:\"private,omitempty\" graphql:\"private\""
-	Progress    *int                                                           "json:\"progress,omitempty\" graphql:\"progress\""
+	CompletedAt           *MangaCollection_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
+	ID                    int                                                            "json:\"id\" graphql:\"id\""
+	Media                 *BaseManga                                                     "json:\"media,omitempty\" graphql:\"media\""
+	Notes                 *string                                                        "json:\"notes,omitempty\" graphql:\"notes\""
+	Private               *bool                                                          "json:\"private,omitempty\" graphql:\"private\""
+	HiddenFromStatusLists *bool                                                          "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
+	Progress              *int                                                           "json:\"progress,omitempty\" graphql:\"progress\""
 	Repeat      *int                                                           "json:\"repeat,omitempty\" graphql:\"repeat\""
 	Score       *float64                                                       "json:\"score,omitempty\" graphql:\"score\""
 	StartedAt   *MangaCollection_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
@@ -5960,6 +5975,12 @@ func (t *MangaCollection_MediaListCollection_Lists_Entries) GetPrivate() *bool {
 		t = &MangaCollection_MediaListCollection_Lists_Entries{}
 	}
 	return t.Private
+}
+func (t *MangaCollection_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
+	if t == nil {
+		t = &MangaCollection_MediaListCollection_Lists_Entries{}
+	}
+	return t.HiddenFromStatusLists
 }
 func (t *MangaCollection_MediaListCollection_Lists_Entries) GetProgress() *int {
 	if t == nil {
@@ -8260,6 +8281,7 @@ const AnimeCollectionDocument = `query AnimeCollection ($userName: String) {
 				notes
 				repeat
 				private
+				hiddenFromStatusLists
 				startedAt {
 					year
 					month
@@ -8394,6 +8416,7 @@ const AnimeCollectionWithRelationsDocument = `query AnimeCollectionWithRelations
 				notes
 				repeat
 				private
+				hiddenFromStatusLists
 				startedAt {
 					year
 					month
@@ -9528,21 +9551,23 @@ func (c *Client) AnimeAiringScheduleRaw(ctx context.Context, ids []*int, interce
 	return &res, nil
 }
 
-const UpdateMediaListEntryDocument = `mutation UpdateMediaListEntry ($mediaId: Int, $status: MediaListStatus, $scoreRaw: Int, $progress: Int, $startedAt: FuzzyDateInput, $completedAt: FuzzyDateInput) {
-	SaveMediaListEntry(mediaId: $mediaId, status: $status, scoreRaw: $scoreRaw, progress: $progress, startedAt: $startedAt, completedAt: $completedAt) {
+const UpdateMediaListEntryDocument = `mutation UpdateMediaListEntry ($mediaId: Int, $status: MediaListStatus, $scoreRaw: Int, $progress: Int, $startedAt: FuzzyDateInput, $completedAt: FuzzyDateInput, $private: Boolean, $hiddenFromStatusLists: Boolean) {
+	SaveMediaListEntry(mediaId: $mediaId, status: $status, scoreRaw: $scoreRaw, progress: $progress, startedAt: $startedAt, completedAt: $completedAt, private: $private, hiddenFromStatusLists: $hiddenFromStatusLists) {
 		id
 	}
 }
 `
 
-func (c *Client) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error) {
+func (c *Client) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, private *bool, hiddenFromStatusLists *bool, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error) {
 	vars := map[string]any{
-		"mediaId":     mediaID,
-		"status":      status,
-		"scoreRaw":    scoreRaw,
-		"progress":    progress,
-		"startedAt":   startedAt,
-		"completedAt": completedAt,
+		"mediaId":               mediaID,
+		"status":                status,
+		"scoreRaw":              scoreRaw,
+		"progress":              progress,
+		"startedAt":             startedAt,
+		"completedAt":           completedAt,
+		"private":               private,
+		"hiddenFromStatusLists": hiddenFromStatusLists,
 	}
 
 	var res UpdateMediaListEntry
@@ -9646,6 +9671,7 @@ const MangaCollectionDocument = `query MangaCollection ($userName: String) {
 				notes
 				repeat
 				private
+				hiddenFromStatusLists
 				startedAt {
 					year
 					month

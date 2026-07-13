@@ -221,6 +221,24 @@
           "descriptions": []
         },
         {
+          "name": "Private",
+          "jsonName": "private",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": false,
+          "descriptions": []
+        },
+        {
+          "name": "HiddenFromStatusLists",
+          "jsonName": "hiddenFromStatusLists",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": false,
+          "descriptions": []
+        },
+        {
           "name": "Type",
           "jsonName": "type",
           "goType": "string",
@@ -233,6 +251,77 @@
       "returns": "true",
       "returnGoType": "true",
       "returnTypescriptType": "true"
+    }
+  },
+  {
+    "name": "resolveAdultPrivacyDefaults",
+    "trimmedName": "resolveAdultPrivacyDefaults",
+    "comments": [
+      "resolveAdultPrivacyDefaults implements the adult-privacy default (server backstop).",
+      "It returns the effective (private, hiddenFromStatusLists) to send to AniList.",
+      "",
+      "The default only applies when:",
+      "  - the \"make adult entries private\" setting is enabled, and",
+      "  - the media is adult (isAdult), and",
+      "  - the entry is being added (no existing entry in the collection — the default is on-add only).",
+      "",
+      "A caller that explicitly provides a flag is never overridden.",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist.go",
+    "filename": "anilist.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandlePrivatizeAdultEntries",
+    "trimmedName": "PrivatizeAdultEntries",
+    "comments": [
+      "HandlePrivatizeAdultEntries",
+      "",
+      "\t@summary marks every adult (isAdult) list entry that is currently public as private + hidden from status lists.",
+      "\t@desc This is the bulk action behind the \"adult titles are publicly visible\" collection alert.",
+      "\t@desc The \"type\" field (\"anime\" | \"manga\" | \"\") restricts the action; empty means both.",
+      "\t@returns int - the number of entries updated",
+      "\t@route /api/v1/anilist/privatize-adult-entries [POST]",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist.go",
+    "filename": "anilist.go",
+    "api": {
+      "summary": "marks every adult (isAdult) list entry that is currently public as private + hidden from status lists.",
+      "descriptions": [
+        "This is the bulk action behind the \"adult titles are publicly visible\" collection alert.",
+        "The \"type\" field (\"anime\" | \"manga\" | \"\") restricts the action; empty means both."
+      ],
+      "endpoint": "/api/v1/anilist/privatize-adult-entries",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Type",
+          "jsonName": "type",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "int - the number of entries updated",
+      "returnGoType": "int - the number of entries updated",
+      "returnTypescriptType": "int - the number of entries updated"
     }
   },
   {
