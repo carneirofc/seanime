@@ -54,6 +54,17 @@ export const API_ENDPOINTS = {
         },
         /**
          *  @description
+         *  Route marks every adult (isAdult) list entry that is currently public as private + hidden from status lists.
+         *  This is the bulk action behind the "adult titles are publicly visible" collection alert.
+         *  The "type" field ("anime" | "manga" | "") restricts the action; empty means both.
+         */
+        PrivatizeAdultEntries: {
+            key: "ANILIST-privatize-adult-entries",
+            methods: ["POST"],
+            endpoint: "/api/v1/anilist/privatize-adult-entries",
+        },
+        /**
+         *  @description
          *  Route returns more details about an AniList anime entry.
          *  This fetches more fields omitted from the base queries.
          */

@@ -70,6 +70,19 @@ export type EditAnilistListEntry_Variables = {
     progress?: number
     startedAt?: AL_FuzzyDateInput
     completedAt?: AL_FuzzyDateInput
+    private?: boolean
+    hiddenFromStatusLists?: boolean
+    type: string
+}
+
+/**
+ * - Filepath: internal/handlers/anilist.go
+ * - Filename: anilist.go
+ * - Endpoint: /api/v1/anilist/privatize-adult-entries
+ * @description
+ * Route marks every adult (isAdult) list entry that is currently public as private + hidden from status lists.
+ */
+export type PrivatizeAdultEntries_Variables = {
     type: string
 }
 

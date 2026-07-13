@@ -63,6 +63,7 @@ export type AL_AnimeCollection_MediaListCollection_Lists_Entries = {
     media?: AL_BaseAnime
     notes?: string
     private?: boolean
+    hiddenFromStatusLists?: boolean
     progress?: number
     repeat?: number
     score?: number
@@ -830,6 +831,7 @@ export type AL_MangaCollection_MediaListCollection_Lists_Entries = {
     media?: AL_BaseManga
     notes?: string
     private?: boolean
+    hiddenFromStatusLists?: boolean
     progress?: number
     repeat?: number
     score?: number
@@ -1562,6 +1564,8 @@ export type Anime_EntryListData = {
     repeat?: number
     startedAt?: string
     completedAt?: string
+    private?: boolean
+    hiddenFromStatusLists?: boolean
 }
 
 /**
@@ -3436,6 +3440,8 @@ export type Manga_EntryListData = {
     repeat?: number
     startedAt?: string
     completedAt?: string
+    private?: boolean
+    hiddenFromStatusLists?: boolean
 }
 
 /**
@@ -3851,6 +3857,7 @@ export type Models_AnilistSettings = {
     splitAdultContent: boolean
     hideMediaTagsSpoilers: boolean
     disableCacheLayer: boolean
+    makeAdultEntriesPrivate: boolean
 }
 
 /**

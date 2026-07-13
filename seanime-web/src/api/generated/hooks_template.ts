@@ -62,6 +62,17 @@
 //     })
 // }
 
+// export function usePrivatizeAdultEntries() {
+//     return useServerMutation<int - the number of entries updated, PrivatizeAdultEntries_Variables>({
+//         endpoint: API_ENDPOINTS.ANILIST.PrivatizeAdultEntries.endpoint,
+//         method: API_ENDPOINTS.ANILIST.PrivatizeAdultEntries.methods[0],
+//         mutationKey: [API_ENDPOINTS.ANILIST.PrivatizeAdultEntries.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
 // export function useGetAnilistAnimeDetails(id: number) {
 //     return useServerQuery<AL_AnimeDetailsById_Media>({
 //         endpoint: API_ENDPOINTS.ANILIST.GetAnilistAnimeDetails.endpoint.replace("{id}", String(id)),
