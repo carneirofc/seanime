@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- ✨ anilist: Added per-entry privacy controls — the list-entry editor now has "Private" (hide from other AniList users) and "Hide from status lists" toggles for both anime and manga, threaded through a new `UpdateEntryParams` on the platform and the `SaveMediaListEntry` mutation; entries fetched from AniList now surface `private`/`hiddenFromStatusLists`, with a lock badge on private entry cards
+- ✨ anilist: Added an "adult privacy" policy — a new "Make adult titles private by default" setting (enabled by default) makes newly-added adult (`isAdult`) entries default to private + hidden from status lists on AniList; existing entries are never re-forced, and a deliberate later choice always persists
+- ✨ anilist: Added an adult-exposure alert — an inline warning in the entry editor and a session-dismissible collection banner ("N adult titles are publicly visible") on the anime and manga libraries, with a one-click "Make all private" bulk action (`/api/v1/anilist/privatize-adult-entries`); the alert is independent of the setting and reflects real exposure
+
 ## v3.9.1-fork.3
 
 - ✨ extensions: Install extensions from the local filesystem — `file://` URIs and absolute paths are now accepted anywhere an extension URL is (manifest, payload, repository, marketplace), reading from disk instead of over HTTP

@@ -1,3 +1,6 @@
+# Local development
+dev-datadir/
+
 # OS / editors
 .DS_Store
 .idea
