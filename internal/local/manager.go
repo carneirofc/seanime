@@ -688,12 +688,16 @@ func (m *ManagerImpl) SynchronizeAnilist() error {
 
 				_ = m.anilistPlatformRef.Get().UpdateEntry(
 					context.Background(),
-					entry.GetMedia().GetID(),
-					entry.GetStatus(),
-					score,
-					entry.GetProgress(),
-					startDate,
-					endDate,
+					platform.UpdateEntryParams{
+						MediaID:               entry.GetMedia().GetID(),
+						Status:                entry.GetStatus(),
+						ScoreRaw:              score,
+						Progress:              entry.GetProgress(),
+						StartedAt:             startDate,
+						CompletedAt:           endDate,
+						Private:               entry.GetPrivate(),
+						HiddenFromStatusLists: entry.GetHiddenFromStatusLists(),
+					},
 				)
 			}
 		}
@@ -751,12 +755,16 @@ func (m *ManagerImpl) SynchronizeAnilist() error {
 
 				_ = m.anilistPlatformRef.Get().UpdateEntry(
 					context.Background(),
-					entry.GetMedia().GetID(),
-					entry.GetStatus(),
-					score,
-					entry.GetProgress(),
-					startDate,
-					endDate,
+					platform.UpdateEntryParams{
+						MediaID:               entry.GetMedia().GetID(),
+						Status:                entry.GetStatus(),
+						ScoreRaw:              score,
+						Progress:              entry.GetProgress(),
+						StartedAt:             startDate,
+						CompletedAt:           endDate,
+						Private:               entry.GetPrivate(),
+						HiddenFromStatusLists: entry.GetHiddenFromStatusLists(),
+					},
 				)
 			}
 		}
@@ -967,12 +975,16 @@ func (m *ManagerImpl) SynchronizeSimulatedCollectionToAnilist() error {
 
 				_ = m.anilistPlatformRef.Get().UpdateEntry(
 					context.Background(),
-					entry.GetMedia().GetID(),
-					entry.GetStatus(),
-					score,
-					entry.GetProgress(),
-					startDate,
-					endDate,
+					platform.UpdateEntryParams{
+						MediaID:               entry.GetMedia().GetID(),
+						Status:                entry.GetStatus(),
+						ScoreRaw:              score,
+						Progress:              entry.GetProgress(),
+						StartedAt:             startDate,
+						CompletedAt:           endDate,
+						Private:               entry.GetPrivate(),
+						HiddenFromStatusLists: entry.GetHiddenFromStatusLists(),
+					},
 				)
 			}
 		}
@@ -1030,12 +1042,16 @@ func (m *ManagerImpl) SynchronizeSimulatedCollectionToAnilist() error {
 
 				_ = m.anilistPlatformRef.Get().UpdateEntry(
 					context.Background(),
-					entry.GetMedia().GetID(),
-					entry.GetStatus(),
-					score,
-					entry.GetProgress(),
-					startDate,
-					endDate,
+					platform.UpdateEntryParams{
+						MediaID:               entry.GetMedia().GetID(),
+						Status:                entry.GetStatus(),
+						ScoreRaw:              score,
+						Progress:              entry.GetProgress(),
+						StartedAt:             startDate,
+						CompletedAt:           endDate,
+						Private:               entry.GetPrivate(),
+						HiddenFromStatusLists: entry.GetHiddenFromStatusLists(),
+					},
 				)
 			}
 		}
