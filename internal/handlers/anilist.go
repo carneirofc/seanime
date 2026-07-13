@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"seanime/internal/api/anilist"
+	"seanime/internal/platforms/platform"
 	"seanime/internal/platforms/shared_platform"
+	"seanime/internal/util/limiter"
 	"seanime/internal/util/result"
 	"strconv"
 	"time"
@@ -108,13 +111,15 @@ func (h *Handler) HandleGetRawAnimeCollectionTags(c echo.Context) error {
 func (h *Handler) HandleEditAnilistListEntry(c echo.Context) error {
 
 	type body struct {
-		MediaId   *int                     `json:"mediaId"`
-		Status    *anilist.MediaListStatus `json:"status"`
-		Score     *int                     `json:"score"`
-		Progress  *int                     `json:"progress"`
-		StartDate *anilist.FuzzyDateInput  `json:"startedAt"`
-		EndDate   *anilist.FuzzyDateInput  `json:"completedAt"`
-		Type      string                   `json:"type"`
+		MediaId               *int                     `json:"mediaId"`
+		Status                *anilist.MediaListStatus `json:"status"`
+		Score                 *int                     `json:"score"`
+		Progress              *int                     `json:"progress"`
+		StartDate             *anilist.FuzzyDateInput  `json:"startedAt"`
+		EndDate               *anilist.FuzzyDateInput  `json:"completedAt"`
+		Private               *bool                    `json:"private"`
+		HiddenFromStatusLists *bool                    `json:"hiddenFromStatusLists"`
+		Type                  string                   `json:"type"`
 	}
 
 	p := new(body)
@@ -122,14 +127,22 @@ func (h *Handler) HandleEditAnilistListEntry(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
+	// Adult-privacy default (server backstop): when the media is being *added* (no existing entry)
+	// and it is adult, default private + hidden from status lists to true unless the caller set them.
+	private, hidden := h.resolveAdultPrivacyDefaults(c.Request().Context(), *p.MediaId, p.Type, p.Private, p.HiddenFromStatusLists)
+
 	err := h.App.AnilistPlatformRef.Get().UpdateEntry(
 		c.Request().Context(),
-		*p.MediaId,
-		p.Status,
-		p.Score,
-		p.Progress,
-		p.StartDate,
-		p.EndDate,
+		platform.UpdateEntryParams{
+			MediaID:               *p.MediaId,
+			Status:                p.Status,
+			ScoreRaw:              p.Score,
+			Progress:              p.Progress,
+			StartedAt:             p.StartDate,
+			CompletedAt:           p.EndDate,
+			Private:               private,
+			HiddenFromStatusLists: hidden,
+		},
 	)
 	if err != nil {
 		return h.RespondWithError(c, err)
@@ -146,6 +159,156 @@ func (h *Handler) HandleEditAnilistListEntry(c echo.Context) error {
 	}
 
 	return h.RespondWithData(c, true)
+}
+
+// resolveAdultPrivacyDefaults implements the adult-privacy default (server backstop).
+// It returns the effective (private, hiddenFromStatusLists) to send to AniList.
+//
+// The default only applies when:
+//   - the "make adult entries private" setting is enabled, and
+//   - the media is adult (isAdult), and
+//   - the entry is being added (no existing entry in the collection — the default is on-add only).
+//
+// A caller that explicitly provides a flag is never overridden.
+func (h *Handler) resolveAdultPrivacyDefaults(ctx context.Context, mediaId int, mediaType string, private, hidden *bool) (*bool, *bool) {
+	// Nothing to default if both are already set.
+	if private != nil && hidden != nil {
+		return private, hidden
+	}
+
+	if h.App.Settings == nil || h.App.Settings.GetAnilist() == nil || !h.App.Settings.GetAnilist().MakeAdultEntriesPrivate {
+		return private, hidden
+	}
+
+	isAdult := false
+	entryExists := false
+
+	switch mediaType {
+	case "manga":
+		if collection, err := h.App.GetMangaCollection(false); err == nil && collection != nil {
+			if _, found := collection.GetListEntryFromMangaId(mediaId); found {
+				entryExists = true
+			}
+		}
+		if !entryExists {
+			if media, err := h.App.AnilistPlatformRef.Get().GetManga(ctx, mediaId); err == nil && media.GetIsAdult() != nil {
+				isAdult = *media.GetIsAdult()
+			}
+		}
+	default: // anime
+		if collection, err := h.App.GetAnimeCollection(false); err == nil && collection != nil {
+			if _, found := collection.GetListEntryFromAnimeId(mediaId); found {
+				entryExists = true
+			}
+		}
+		if !entryExists {
+			if media, err := h.App.AnilistPlatformRef.Get().GetAnime(ctx, mediaId); err == nil && media.GetIsAdult() != nil {
+				isAdult = *media.GetIsAdult()
+			}
+		}
+	}
+
+	// Default only on add of an adult entry.
+	if entryExists || !isAdult {
+		return private, hidden
+	}
+
+	if private == nil {
+		private = new(true)
+	}
+	if hidden == nil {
+		hidden = new(true)
+	}
+	return private, hidden
+}
+
+// HandlePrivatizeAdultEntries
+//
+//	@summary marks every adult (isAdult) list entry that is currently public as private + hidden from status lists.
+//	@desc This is the bulk action behind the "adult titles are publicly visible" collection alert.
+//	@desc The "type" field ("anime" | "manga" | "") restricts the action; empty means both.
+//	@returns int - the number of entries updated
+//	@route /api/v1/anilist/privatize-adult-entries [POST]
+func (h *Handler) HandlePrivatizeAdultEntries(c echo.Context) error {
+	type body struct {
+		Type string `json:"type"`
+	}
+
+	p := new(body)
+	if err := c.Bind(p); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	ctx := c.Request().Context()
+	platformRef := h.App.AnilistPlatformRef.Get()
+
+	// Collect the media IDs of adult entries that are currently public (private != true).
+	mediaIds := make([]int, 0)
+
+	if p.Type == "" || p.Type == "anime" {
+		if collection, err := h.App.GetAnimeCollection(false); err == nil && collection != nil && collection.MediaListCollection != nil {
+			for _, list := range collection.MediaListCollection.Lists {
+				if list == nil {
+					continue
+				}
+				for _, entry := range list.GetEntries() {
+					media := entry.GetMedia()
+					if media == nil || media.GetIsAdult() == nil || !*media.GetIsAdult() {
+						continue
+					}
+					if entry.GetPrivate() != nil && *entry.GetPrivate() {
+						continue
+					}
+					mediaIds = append(mediaIds, media.GetID())
+				}
+			}
+		}
+	}
+
+	if p.Type == "" || p.Type == "manga" {
+		if collection, err := h.App.GetMangaCollection(false); err == nil && collection != nil && collection.MediaListCollection != nil {
+			for _, list := range collection.MediaListCollection.Lists {
+				if list == nil {
+					continue
+				}
+				for _, entry := range list.Entries {
+					media := entry.GetMedia()
+					if media == nil || media.GetIsAdult() == nil || !*media.GetIsAdult() {
+						continue
+					}
+					if entry.GetPrivate() != nil && *entry.GetPrivate() {
+						continue
+					}
+					mediaIds = append(mediaIds, media.GetID())
+				}
+			}
+		}
+	}
+
+	updated := 0
+	rateLimiter := limiter.NewLimiter(1*time.Second, 1)
+	for _, mediaId := range mediaIds {
+		rateLimiter.Wait()
+		err := platformRef.UpdateEntry(ctx, platform.UpdateEntryParams{
+			MediaID:               mediaId,
+			Private:               new(true),
+			HiddenFromStatusLists: new(true),
+		})
+		if err != nil {
+			h.App.Logger.Error().Err(err).Int("mediaId", mediaId).Msg("anilist: failed to privatize adult entry")
+			continue
+		}
+		updated++
+	}
+
+	if p.Type == "" || p.Type == "anime" {
+		_, _ = h.App.RefreshAnimeCollection()
+	}
+	if p.Type == "" || p.Type == "manga" {
+		_, _ = h.App.RefreshMangaCollection()
+	}
+
+	return h.RespondWithData(c, updated)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------

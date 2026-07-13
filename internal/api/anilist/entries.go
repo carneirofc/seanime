@@ -36,6 +36,8 @@ func (c *Client) AddMediaToPlanning(mIds []int, rateLimiter *limiter.Limiter, lo
 				&progress,
 				nil,
 				nil,
+				nil,
+				nil,
 			)
 			if err != nil {
 				logger.Error().Msg("anilist: An error occurred while adding media to planning list: " + err.Error())
