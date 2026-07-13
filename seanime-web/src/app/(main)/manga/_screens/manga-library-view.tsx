@@ -1,5 +1,6 @@
 import { AL_MediaListStatus, Manga_Collection, Manga_CollectionList } from "@/api/generated/types"
 import { useRefetchMangaChapterContainers } from "@/api/hooks/manga.hooks"
+import { AdultExposureBanner } from "@/app/(main)/_features/media/_components/adult-exposure-banner"
 import { MediaCardLazyGrid } from "@/app/(main)/_features/media/_components/media-card-grid"
 import { MediaEntryCard } from "@/app/(main)/_features/media/_components/media-entry-card"
 import { MediaGenreSelector } from "@/app/(main)/_features/media/_components/media-genre-selector"
@@ -68,6 +69,10 @@ export function MangaLibraryView(props: MangaLibraryViewProps) {
                 data-manga-library-view-container
             >
                 <div className="w-full flex justify-end">
+                </div>
+
+                <div className="mb-4">
+                    <AdultExposureBanner type="manga" />
                 </div>
 
                 <AnimatePresence mode="wait" initial={false}>

@@ -4,6 +4,7 @@ import {
     AnilistListRecentAiringAnime_Variables,
     DeleteAnilistListEntry_Variables,
     EditAnilistListEntry_Variables,
+    PrivatizeAdultEntries_Variables,
 } from "@/api/generated/endpoint.types"
 import { API_ENDPOINTS } from "@/api/generated/endpoints"
 import {
@@ -89,6 +90,29 @@ export function useEditAnilistListEntry(id: Nullish<string | number>, type: "ani
                 await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetAnilistMangaCollection.key] })
                 await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetRawAnilistMangaCollection.key] })
                 await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetRawAnilistMangaCollectionTags.key] })
+                await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetMangaCollection.key] })
+            }
+        },
+    })
+}
+
+export function usePrivatizeAdultEntries(type: "anime" | "manga" | "") {
+    const queryClient = useQueryClient()
+
+    return useServerMutation<number, PrivatizeAdultEntries_Variables>({
+        endpoint: API_ENDPOINTS.ANILIST.PrivatizeAdultEntries.endpoint,
+        method: API_ENDPOINTS.ANILIST.PrivatizeAdultEntries.methods[0],
+        mutationKey: [API_ENDPOINTS.ANILIST.PrivatizeAdultEntries.key],
+        onSuccess: async (count) => {
+            toast.success(`${count ?? 0} adult ${count === 1 ? "entry" : "entries"} made private`)
+            if (type === "" || type === "anime") {
+                await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.ANIME_COLLECTION.GetLibraryCollection.key] })
+                await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.ANILIST.GetAnimeCollection.key] })
+                await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.ANILIST.GetRawAnimeCollection.key] })
+            }
+            if (type === "" || type === "manga") {
+                await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetAnilistMangaCollection.key] })
+                await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetRawAnilistMangaCollection.key] })
                 await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.MANGA.GetMangaCollection.key] })
             }
         },

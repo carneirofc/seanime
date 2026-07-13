@@ -16,7 +16,7 @@ import { normalizeDate } from "@/lib/helpers/date"
 import { getImageUrl } from "@/lib/server/assets"
 import { useWindowSize } from "@uidotdev/usehooks"
 import React, { Fragment } from "react"
-import { BiListPlus, BiPlus, BiStar, BiTrash } from "react-icons/bi"
+import { BiListPlus, BiLockOpen, BiPlus, BiStar, BiTrash } from "react-icons/bi"
 import { TbEdit } from "react-icons/tb"
 import { useToggle } from "react-use"
 import { z } from "zod"
@@ -36,6 +36,8 @@ export const mediaListDataSchema = defineSchema(({ z, presets }) => z.object({
     progress: z.number().min(0).nullish(),
     startedAt: presets.datePicker.nullish(),
     completedAt: presets.datePicker.nullish(),
+    private: z.boolean().nullish(),
+    hiddenFromStatusLists: z.boolean().nullish(),
 }))
 
 function IsomorphicPopover(props: PopoverProps & ModalProps & { media?: AL_BaseAnime | AL_BaseManga, forceModal?: boolean }) {
@@ -125,6 +127,8 @@ export const AnilistMediaEntryModal = (props: AnilistMediaEntryModalProps) => {
                 month: data.completedAt.getMonth() + 1,
                 year: data.completedAt.getFullYear(),
             } : undefined,
+            private: data.private ?? false,
+            hiddenFromStatusLists: data.hiddenFromStatusLists ?? false,
             type: type,
         })
     }, [repeat, listData?.repeat, media?.id, type, mutate, mutateRepeat])
@@ -244,6 +248,8 @@ function Content(props: AnilistMediaEntryModalProps & {
                     progress: listData?.progress,
                     startedAt: listData?.startedAt ? (normalizeDate(listData?.startedAt)) : undefined,
                     completedAt: listData?.completedAt ? (normalizeDate(listData?.completedAt)) : undefined,
+                    private: listData?.private ?? false,
+                    hiddenFromStatusLists: listData?.hiddenFromStatusLists ?? false,
                 }}
             >
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -333,6 +339,28 @@ function Content(props: AnilistMediaEntryModalProps & {
                         }}
                     />
                 </div>}
+
+                <div className="flex flex-col gap-2 mt-4 border-t border-[--border] pt-4">
+                    {media?.isAdult && !listData?.private && (
+                        <div
+                            data-anilist-media-entry-modal-adult-exposure-warning
+                            className="flex items-center gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300"
+                        >
+                            <BiLockOpen className="text-lg shrink-0" />
+                            <span>This is an adult title and is currently visible to other AniList users. Enable &quot;Private&quot; to hide it.</span>
+                        </div>
+                    )}
+                    <Field.Switch
+                        name="private"
+                        label="Private"
+                        help="Hide this entry from other AniList users."
+                    />
+                    <Field.Switch
+                        name="hiddenFromStatusLists"
+                        label="Hide from status lists"
+                        help="Keep this entry off your public Watching/Completed/etc. status lists."
+                    />
+                </div>
 
                 <div className="flex w-full items-center justify-between mt-4">
                     <div>

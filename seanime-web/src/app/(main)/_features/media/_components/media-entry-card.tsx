@@ -42,13 +42,14 @@ import { SeaLink } from "@/components/shared/sea-link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ContextMenuGroup, ContextMenuItem, ContextMenuLabel, ContextMenuTrigger } from "@/components/ui/context-menu"
+import { Tooltip } from "@/components/ui/tooltip"
 import { preloadMediaEntry } from "@/lib/entry-preloader"
 import { useRouter } from "@/lib/navigation"
 import { __navigationPreloadModeAtom, shouldWarmEntryOnIntent } from "@/lib/navigation-preload-settings"
 import { useAtomValue, useSetAtom } from "jotai/react"
 import capitalize from "lodash/capitalize"
 import React, { useState } from "react"
-import { BiAddToQueue, BiPlay } from "react-icons/bi"
+import { BiAddToQueue, BiLockAlt, BiPlay } from "react-icons/bi"
 import { LuBookOpen } from "react-icons/lu"
 import { LuBookmark, LuEye, LuFolderTree } from "react-icons/lu"
 import { RiCalendarLine } from "react-icons/ri"
@@ -466,6 +467,24 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                         score={listData?.score}
                     />
                 </div>
+                {listData?.private && (
+                    <div
+                        data-media-entry-card-body-private-badge-container
+                        className="absolute z-10 left-1 top-1"
+                    >
+                        <Tooltip
+                            trigger={<Badge
+                                intent="gray-solid"
+                                size="sm"
+                                className="rounded-full bg-gray-950/80"
+                            >
+                                <BiLockAlt />
+                            </Badge>}
+                        >
+                            Private entry
+                        </Tooltip>
+                    </div>
+                )}
                 {(type === "anime" && !!libraryData && hasMissingEpisodes) && (
                     <div
                         data-media-entry-card-body-missing-episodes-badge-container

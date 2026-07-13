@@ -1,5 +1,6 @@
 import { AL_MediaListStatus, Anime_LibraryCollectionEntry, Anime_LibraryCollectionList } from "@/api/generated/types"
 import { __mainLibrary_paramsAtom } from "@/app/(main)/_features/anime-library/_lib/handle-library-collection"
+import { AdultExposureBanner } from "@/app/(main)/_features/media/_components/adult-exposure-banner"
 import { MediaCardLazyGrid } from "@/app/(main)/_features/media/_components/media-card-grid"
 import { MediaEntryCard } from "@/app/(main)/_features/media/_components/media-entry-card"
 import { PageWrapper } from "@/components/shared/page-wrapper"
@@ -36,6 +37,7 @@ export function LibraryCollectionLists({ collectionList, isLoading, streamingMed
                     duration: 0.25,
                 },
             }}>
+            <AdultExposureBanner type="anime" />
             {collectionList.map(collection => {
                 if (!collection.entries?.length) return null
                 return <LibraryCollectionListItem
