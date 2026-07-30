@@ -165,13 +165,21 @@ jobs:
         shell: bash
 
       # Build the Linux binaries
+      # Two variants, mirroring the Windows split:
+      #  - nosystray (seanime-server-linux-*): headless, used by the Electron sidecar
+      #  - systray   (seanime-server-systray-linux-*): tray icon, used for the standalone
+      #    server download. fyne.io/systray's Linux backend is pure-Go D-Bus, so CGO stays off.
       # ./seanime-server-linux-amd64
       # ./seanime-server-linux-arm64
+      # ./seanime-server-systray-linux-amd64
+      # ./seanime-server-systray-linux-arm64
       - name: Build Linux 📦️
         if: matrix.id == 'seanime-server-linux'
         run: |
-          CGO_ENABLED=0 GOARCH=amd64 go build -o seanime-server-linux-amd64 ${{ matrix.go_flags }} .
-          CGO_ENABLED=0 GOARCH=arm64 go build -o seanime-server-linux-arm64 ${{ matrix.go_flags }} .
+          CGO_ENABLED=0 GOARCH=amd64 go build -o seanime-server-linux-amd64 -tags=nosystray ${{ matrix.go_flags }} .
+          CGO_ENABLED=0 GOARCH=arm64 go build -o seanime-server-linux-arm64 -tags=nosystray ${{ matrix.go_flags }} .
+          CGO_ENABLED=0 GOARCH=amd64 go build -o seanime-server-systray-linux-amd64 ${{ matrix.go_flags }} .
+          CGO_ENABLED=0 GOARCH=arm64 go build -o seanime-server-systray-linux-arm64 ${{ matrix.go_flags }} .
 
       # Build the macOS binaries
       # ./seanime-server-darwin-amd64
@@ -379,13 +387,17 @@ jobs:
             # Extract binaries
             tar -xf ./artifacts/binaries-seanime-server-linux.tar -C ./artifacts
 
-            # Rename & compress binaries
-            mv ./artifacts/seanime-server-linux-amd64 ./seanime
+            # Rename & compress binaries.
+            # The standalone Linux download ships the systray variant (like Windows),
+            # so running the server directly shows a tray icon. The plain
+            # seanime-server-linux-* (nosystray) binaries are reserved for the
+            # Electron sidecar.
+            mv ./artifacts/seanime-server-systray-linux-amd64 ./seanime
             tar czf ./seanime-${{ env.VERSION }}_Linux_x86_64.tar.gz ./seanime
             rm -rf ./seanime
 
 
-            mv ./artifacts/seanime-server-linux-arm64 ./seanime
+            mv ./artifacts/seanime-server-systray-linux-arm64 ./seanime
             tar czf ./seanime-${{ env.VERSION }}_Linux_arm64.tar.gz ./seanime
             rm -rf ./seanime
           fi

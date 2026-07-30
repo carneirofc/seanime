@@ -122,9 +122,14 @@ jobs:
 
       - name: Extract server binaries (Linux) 📂
         if: matrix.os == 'ubuntu-latest' && matrix.id == 'seanime-denshi-linux-x64'
-        # Extracts seanime-server-linux-amd64
+        # Extracts seanime-server-linux-amd64 (the sidecar the Electron app launches).
+        # The tar also contains the systray variant (seanime-server-systray-linux-*),
+        # which is only for the standalone server download — drop it so it isn't
+        # bundled into the AppImage (Electron provides its own tray).
         run: |
           tar -xf ./seanime-denshi/binaries/binaries-${{ matrix.go_binary_id }}.tar -C ./seanime-denshi/binaries
+          rm -f ./seanime-denshi/binaries/seanime-server-systray-linux-amd64
+          rm -f ./seanime-denshi/binaries/seanime-server-systray-linux-arm64
           rm -rf ./seanime-denshi/binaries/binaries-${{ matrix.go_binary_id }}.tar
 
       - name: Extract server binaries (Windows) 📂
