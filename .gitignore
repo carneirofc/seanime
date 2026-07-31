@@ -45,8 +45,47 @@ seanime-server-windows-senshi.exe
 # Locally built server binary (repo root); the leading slash keeps the
 # seanime-web/ and seanime-denshi/ directories tracked.
 /seanime
-/seanime-server-*linux*
-/seanime-server-*darwin*
+/seanime-server-*
+/main
+__debug_bin*
+
+# --- Build artifacts (defensive) ---
+# These must never be committed. Kept broad on purpose: an 85 MB `seanime`
+# binary was committed once because only the Windows names were listed here.
+# Build output directories, at any depth (no tracked path uses these names)
+node_modules/
+dist/
+out/
+build/
+coverage/
+.next/
+# Go test binaries & profiling output
+*.test
+*.prof
+*.pprof
+*.coverprofile
+coverage.out
+# Native libraries from cgo builds
+*.so
+*.dylib
+*.dll
+# Packaged release artifacts (electron-builder / CI tarballs)
+*.AppImage
+*.dmg
+*.deb
+*.rpm
+*.snap
+*.msi
+*.pkg
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+# TypeScript incremental build info, any workspace
+*.tsbuildinfo
+# NOTE: *.wasm is deliberately NOT ignored - seanime-web/public/jassub/*.wasm
+# are vendored runtime assets that must stay tracked.
 
 # Windows / shell scripts (local helpers)
 *.sh
