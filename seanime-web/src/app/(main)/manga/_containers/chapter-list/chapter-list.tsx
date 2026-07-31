@@ -5,7 +5,7 @@ import {
     Manga_Entry,
     Manga_MediaDownloadData,
 } from "@/api/generated/types"
-import { useEmptyMangaEntryCache } from "@/api/hooks/manga.hooks"
+import { useEmptyMangaEntryCache, useGetMangaSourceRefresh, useStartMangaSourceRefresh } from "@/api/hooks/manga.hooks"
 import { SeaCommandInjectableItem, useSeaCommandInject } from "@/app/(main)/_features/sea-command/use-inject"
 import { ChapterListBulkActions } from "@/app/(main)/manga/_containers/chapter-list/_components/chapter-list-bulk-actions"
 import { DownloadedChapterList, manga_downloadedChapterContainerAtom } from "@/app/(main)/manga/_containers/chapter-list/downloaded-chapter-list"
@@ -15,6 +15,7 @@ import { ChapterReaderDrawer } from "@/app/(main)/manga/_containers/chapter-read
 import { __manga_selectedChapterAtom } from "@/app/(main)/manga/_lib/handle-chapter-reader"
 import { useHandleMangaChapters } from "@/app/(main)/manga/_lib/handle-manga-chapters"
 import { useHandleDownloadMangaChapter } from "@/app/(main)/manga/_lib/handle-manga-downloads"
+import { __manga_preferencesHydratedAtom } from "@/app/(main)/manga/_lib/handle-manga-selected-provider"
 import { getChapterNumberFromChapter, useMangaChapterListRowSelection, useMangaDownloadDataUtils } from "@/app/(main)/manga/_lib/handle-manga-utils"
 import { LANGUAGES_LIST } from "@/app/(main)/manga/_lib/language-map"
 import { monochromeCheckboxClasses } from "@/components/shared/classnames"
@@ -28,7 +29,7 @@ import { DataGrid, defineDataGridColumns } from "@/components/ui/datagrid"
 import { DropdownMenu, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Select } from "@/components/ui/select"
-import { useAtom, useSetAtom } from "jotai/react"
+import { useAtom, useAtomValue, useSetAtom } from "jotai/react"
 import React from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { FaRedo } from "react-icons/fa"
@@ -36,6 +37,7 @@ import { GiOpenBook } from "react-icons/gi"
 import { IoBookOutline, IoLibrary } from "react-icons/io5"
 import { LuDownload, LuExternalLink, LuSearch } from "react-icons/lu"
 import { MdOutlineOfflinePin } from "react-icons/md"
+import { toast } from "sonner"
 
 type ChapterListProps = {
     mediaId: string | null
@@ -135,10 +137,12 @@ export function ChapterList(props: ChapterListProps) {
      * Set selected chapter
      */
     const setSelectedChapter = useSetAtom(__manga_selectedChapterAtom)
-    /**
-     * Clear manga cache
-     */
     const { mutate: clearMangaCache, isPending: isClearingMangaCache } = useEmptyMangaEntryCache()
+    const { data: sourceRefreshJob } = useGetMangaSourceRefresh()
+    const { mutate: startSourceRefresh, isPending: isStartingSourceRefresh } = useStartMangaSourceRefresh()
+    const preferencesHydrated = useAtomValue(__manga_preferencesHydratedAtom)
+    const sourceRefreshRunning = sourceRefreshJob?.status === "running" || sourceRefreshJob?.status === "stopping"
+    const sourceRefreshEligible = entry.listData?.status === "CURRENT" || entry.listData?.status === "REPEATING"
     /**
      * Download chapter
      */
@@ -236,18 +240,6 @@ export function ChapterList(props: ChapterListProps) {
         const chapterNumber = chapterIdToNumbersMap.get(chapter.id)
         return !!chapterNumber && chapterNumber > entry.listData?.progress
     }, [chapterIdToNumbersMap, chapterContainer, entry])
-
-    const confirmReloadSource = useConfirmationDialog({
-        title: "Reload sources",
-        actionIntent: "primary",
-        actionText: "Reload",
-        description: "This action will empty the cache for this manga and fetch the latest data from the selected source.",
-        onConfirm: () => {
-            if (mediaId) {
-                clearMangaCache({ mediaId: Number(mediaId) })
-            }
-        },
-    })
 
     /**
      * Chapter columns
@@ -409,6 +401,19 @@ export function ChapterList(props: ChapterListProps) {
 
     const unreadChapters = React.useMemo(() => chapterContainer?.chapters?.filter(ch => retainUnreadChapters(ch)) ?? [], [chapterContainer, entry])
     const allChapters = React.useMemo(() => chapterContainer?.chapters?.toReversed() ?? [], [chapterContainer])
+    const downloadableUnreadChapters = React.useMemo(() => unreadChapters.filter(chapter => {
+        return !isChapterLocal(chapter) && !isChapterDownloaded(chapter) && !isChapterQueued(chapter)
+    }), [unreadChapters, downloadData, isChapterDownloaded, isChapterLocal, isChapterQueued])
+
+    const confirmDownloadUnread = useConfirmationDialog({
+        title: "Download unread chapters",
+        actionIntent: "primary",
+        actionText: "Add to queue",
+        description: `Add ${downloadableUnreadChapters.length} unread ${downloadableUnreadChapters.length === 1
+            ? "chapter"
+            : "chapters"} to the download queue?`,
+        onConfirm: () => downloadChapters(downloadableUnreadChapters),
+    })
 
     /**
      * Set "showUnreadChapter" state if there are unread chapters
@@ -549,7 +554,7 @@ export function ChapterList(props: ChapterListProps) {
                     })}
                     leftAddon="Source"
                     size="sm"
-                    disabled={isClearingMangaCache}
+                    disabled={sourceRefreshRunning}
                 />
 
                 <MangaProviderDiagnosticsDrawer provider={selectedProvider} mediaId={mediaId ? Number(mediaId) : null} />
@@ -557,11 +562,19 @@ export function ChapterList(props: ChapterListProps) {
                 <Button
                     leftIcon={<FaRedo />}
                     intent="gray-outline"
-                    onClick={() => confirmReloadSource.open()}
-                    loading={isClearingMangaCache}
+                    onClick={() => {
+                        if (mediaId) {
+                            startSourceRefresh({ mode: "refresh_selected", mediaIds: [Number(mediaId)] }, {
+                                onSuccess: () => toast.info("Source refresh started"),
+                            })
+                        }
+                    }}
+                    loading={isStartingSourceRefresh || sourceRefreshRunning}
+                    disabled={!preferencesHydrated || !selectedExtension || !sourceRefreshEligible || sourceRefreshRunning}
+                    title={!sourceRefreshEligible ? "Source refresh is available for current and re-reading manga" : undefined}
                     size="sm"
                 >
-                    Reload sources
+                    {sourceRefreshRunning ? "Refresh running" : "Refresh source"}
                 </Button>
 
                 <Button
@@ -591,6 +604,16 @@ export function ChapterList(props: ChapterListProps) {
                     )
                 })()}
             </div>
+
+            {!providerExtensionsLoading && !selectedExtension && (
+                <Alert
+                    intent="warning-basic"
+                    title={selectedProvider ? "Saved source unavailable" : "No manga source available"}
+                    description={selectedProvider
+                        ? `The saved source “${selectedProvider}” is not currently installed. Install it again or choose another source to continue.`
+                        : "Install or select a manga source to load chapters."}
+                />
+            )}
 
             <ErrorBoundary
                 fallbackRender={({ error }) => <Alert
@@ -755,6 +778,17 @@ export function ChapterList(props: ChapterListProps) {
                                             fieldClass="w-fit"
                                             {...monochromeCheckboxClasses}
                                         />}
+                                        {/*{!downloadDataLoading && !!downloadableUnreadChapters.length && (
+                                         <Button
+                                         intent="gray-outline"
+                                         size="sm"
+                                         leftIcon={<LuDownload />}
+                                         loading={isSendingDownloadRequest}
+                                         onClick={() => confirmDownloadUnread.open()}
+                                         >
+                                         Download unread ({downloadableUnreadChapters.length})
+                                         </Button>
+                                         )}*/}
                                     </div>
 
                                     <ChapterListBulkActions
@@ -820,7 +854,7 @@ export function ChapterList(props: ChapterListProps) {
                 data={downloadData}
             />
 
-            <ConfirmationDialog {...confirmReloadSource} />
+            <ConfirmationDialog {...confirmDownloadUnread} />
         </div>
     )
 }

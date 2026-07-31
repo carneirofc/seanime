@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	hibikemanga "seanime/internal/extension/hibike/manga"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestAttachAlternativeProvidersToContainer_UsesExactMatchesWhenAvailable(t *testing.T) {
@@ -161,4 +163,14 @@ func TestNormalizeChapterProvider_PreservesSourceProvider(t *testing.T) {
 	if chapter.SourceProvider != "mirror-a" {
 		t.Fatalf("expected source provider to be preserved, got %q", chapter.SourceProvider)
 	}
+}
+
+func TestGetLatestMangaChapterNumberUsesChapterValue(t *testing.T) {
+	chapters := []*hibikemanga.ChapterDetails{
+		{Chapter: "205", Index: 0},
+		{Chapter: "204.5", Index: 1},
+		{Chapter: "1", Index: 205},
+	}
+
+	require.Equal(t, 205, getLatestMangaChapterNumber(chapters))
 }

@@ -46,6 +46,12 @@ type GetMangaChapterContainerOptions struct {
 	Titles                      []*string
 	Year                        int
 	IncludeProviderAvailability bool
+	skipCache                   bool
+	beforeProviderCall          func() error
+	// allowAutoSearch lets the caller fall back to searching the provider when no manga mapping
+	// exists for the entry. Callers driven by the UI leave this false so the user is asked to pick
+	// a source explicitly (see ErrMangaMatchRequired); internal refresh flows opt in.
+	allowAutoSearch bool
 }
 
 // GetMangaChapterContainer returns the ChapterContainer for a manga entry based on the provider.
@@ -116,7 +122,11 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 	containerBucket := r.getFcProviderBucket(provider, mediaId, bucketTypeChapter)
 
 	// Check if the container is in the cache
-	if found, _ := r.fileCacher.Get(containerBucket, chapterContainerKey, &container); found {
+	foundInCache := false
+	if !opts.skipCache {
+		foundInCache, _ = r.fileCacher.Get(containerBucket, chapterContainerKey, &container)
+	}
+	if foundInCache {
 		r.logger.Info().Str("bucket", containerBucket.Name()).Msg("manga: Chapter Container Cache HIT")
 
 		// Trigger hook event
@@ -153,20 +163,86 @@ func (r *Repository) GetMangaChapterContainer(opts *GetMangaChapterContainerOpti
 	}
 
 	if mangaId == "" {
-		r.logger.Debug().
-			Str("provider", provider).
-			Int("mediaId", mediaId).
-			Msg("manga: Match selection required before loading chapters")
-		return nil, ErrMangaMatchRequired
+		if !opts.allowAutoSearch {
+			r.logger.Debug().
+				Str("provider", provider).
+				Int("mediaId", mediaId).
+				Msg("manga: Match selection required before loading chapters")
+			return nil, ErrMangaMatchRequired
+		}
+
+		// +---------------------+
+		// |       Search        |
+		// +---------------------+
+
+		r.logger.Trace().Msg("manga: Searching for manga")
+
+		if titles == nil {
+			return nil, ErrNoTitlesProvided
+		}
+
+		titles = lo.Filter(titles, func(title *string, _ int) bool {
+			return util.IsMostlyLatinString(*title)
+		})
+
+		var searchRes []*hibikemanga.SearchResult
+
+		var err error
+		for _, title := range titles {
+			var _searchRes []*hibikemanga.SearchResult
+
+			if opts.beforeProviderCall != nil {
+				if err := opts.beforeProviderCall(); err != nil {
+					return nil, err
+				}
+			}
+			_searchRes, err = providerExtension.GetProvider().Search(hibikemanga.SearchOptions{
+				Query: *title,
+				Year:  opts.Year,
+			})
+			if err == nil {
+
+				HydrateSearchResultSearchRating(_searchRes, title)
+
+				searchRes = append(searchRes, _searchRes...)
+			} else {
+				r.logger.Warn().Err(err).Msg("manga: Search failed")
+			}
+		}
+
+		if len(searchRes) == 0 {
+			r.logger.Error().Msg("manga: No search results found")
+			if err != nil {
+				return nil, fmt.Errorf("%w, %w", ErrNoResults, err)
+			} else {
+				return nil, ErrNoResults
+			}
+		}
+
+		// Overwrite the provider just in case
+		for _, res := range searchRes {
+			res.Provider = provider
+		}
+
+		bestRes := GetBestSearchResult(searchRes)
+
+		mangaId = bestRes.ID
 	}
 
 	// +---------------------+
 	// |    Get chapters     |
 	// +---------------------+
 
+	if opts.beforeProviderCall != nil {
+		if err := opts.beforeProviderCall(); err != nil {
+			return nil, err
+		}
+	}
 	chapterList, err := providerExtension.GetProvider().FindChapters(mangaId)
 	if err != nil {
 		r.logger.Error().Err(err).Msg("manga: Failed to get chapters")
+		// Always wrap the provider error: errors.Is(err, ErrNoChapters) still matches, and the
+		// underlying cause is needed to tell "provider is down" apart from "no chapters exist".
 		return nil, fmt.Errorf("%w: %w", ErrNoChapters, err)
 	}
 
@@ -520,12 +596,7 @@ func (r *Repository) GetMangaLatestChapterNumbersMap() (ret map[int][]MangaLates
 				})
 
 				for language, chapters := range groupByLanguage {
-					lastChapter := slices.MaxFunc(chapters, func(a *hibikemanga.ChapterDetails, b *hibikemanga.ChapterDetails) int {
-						return cmp.Compare(a.Index, b.Index)
-					})
-
-					chapterNumFloat, _ := strconv.ParseFloat(lastChapter.Chapter, 32)
-					chapterCount := int(math.Floor(chapterNumFloat))
+					chapterCount := getLatestMangaChapterNumber(chapters)
 
 					if _, ok := ret[mediaId]; !ok {
 						ret[mediaId] = []MangaLatestChapterNumberItem{}
@@ -555,6 +626,20 @@ func (r *Repository) GetMangaLatestChapterNumbersMap() (ret map[int][]MangaLates
 
 	mangaLatestChapterNumberMap.Set(ChapterCountMapCacheKey, ret)
 	return
+}
+
+func getLatestMangaChapterNumber(chapters []*hibikemanga.ChapterDetails) int {
+	latest := 0.0
+	for _, chapter := range chapters {
+		if chapter == nil {
+			continue
+		}
+		number, err := strconv.ParseFloat(chapter.Chapter, 64)
+		if err == nil && number > latest {
+			latest = number
+		}
+	}
+	return int(math.Floor(latest))
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -435,7 +435,9 @@ func (c *Cacher) RemoveAllBy(filter func(filename string) bool) error {
 				continue
 			}
 			if filter(e.Name()) {
-				_ = os.Remove(filepath.Join(c.dir, e.Name()))
+				if err := os.Remove(filepath.Join(c.dir, e.Name())); err != nil {
+					return err
+				}
 				// Evict the matching in-memory store so stale entries aren't
 				// served after the backing file is removed.
 				delete(c.stores, strings.TrimSuffix(e.Name(), ".cache"))

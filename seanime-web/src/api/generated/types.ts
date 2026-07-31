@@ -1615,6 +1615,8 @@ export type Anime_Episode = {
      */
     metadataIssue?: string
     baseAnime?: AL_BaseAnime
+    torrentAvailability?: Anime_EpisodeTorrentAvailability
+    isMissingGroup?: boolean
     _isNakamaEpisode: boolean
 }
 
@@ -1648,6 +1650,13 @@ export type Anime_EpisodeMetadata = {
     hasImage?: boolean
     title?: string
 }
+
+/**
+ * - Filepath: internal/library/anime/episode.go
+ * - Filename: episode.go
+ * - Package: anime
+ */
+export type Anime_EpisodeTorrentAvailability = "available" | "checking" | "waiting" | "unknown"
 
 /**
  * - Filepath: internal/library/anime/collection.go
@@ -3445,6 +3454,16 @@ export type Manga_EntryListData = {
 }
 
 /**
+ * - Filepath: internal/manga/preferences.go
+ * - Filename: preferences.go
+ * - Package: manga
+ */
+export type Manga_MangaEntryPreference = {
+    provider: string
+    filters?: Record<string, Manga_MangaProviderFilter>
+}
+
+/**
  * - Filepath: internal/manga/chapter_container.go
  * - Filename: chapter_container.go
  * - Package: manga
@@ -3455,6 +3474,114 @@ export type Manga_MangaLatestChapterNumberItem = {
     scanlator: string
     language: string
     number: number
+}
+
+/**
+ * - Filepath: internal/manga/preferences.go
+ * - Filename: preferences.go
+ * - Package: manga
+ */
+export type Manga_MangaPreferences = {
+    entries?: Record<number, Manga_MangaEntryPreference>
+}
+
+/**
+ * - Filepath: internal/manga/preferences.go
+ * - Filename: preferences.go
+ * - Package: manga
+ */
+export type Manga_MangaProviderFilter = {
+    scanlators?: Array<string>
+    language: string
+}
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshChange = {
+    mediaId: number
+    title: string
+    fromProvider: string
+    toProvider: string
+    kind: string
+}
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshIssue = {
+    mediaId: number
+    title: string
+    kind: string
+    providers?: Array<string>
+}
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshJob = {
+    id: string
+    mode: Manga_MangaSourceRefreshMode
+    status: Manga_MangaSourceRefreshStatus
+    stage: Manga_MangaSourceRefreshStage
+    current: number
+    total: number
+    result: Manga_MangaSourceRefreshResult
+    error?: string
+}
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshMode = "refresh_selected" | "find_missing" | "refresh_and_find" | "reevaluate_all"
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshResult = {
+    refreshed: number
+    found: number
+    replaced: number
+    notFound: number
+    failed: number
+    changes?: Array<Manga_MangaSourceRefreshChange>
+    issues?: Array<Manga_MangaSourceRefreshIssue>
+}
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshStage = "refreshing" | "discovering" | "done"
+
+/**
+ * - Filepath: internal/manga/source_refresh.go
+ * - Filename: source_refresh.go
+ * - Package: manga
+ */
+export type Manga_MangaSourceRefreshStatus = "running" | "stopping" | "completed" | "cancelled" | "failed"
+
+/**
+ * - Filepath: internal/manga/chapter_container_mapping.go
+ * - Filename: chapter_container_mapping.go
+ * - Package: manga
+ */
+export type Manga_MappingPreview = {
+    chapterCount: number
+    latest: string
+    languages?: Array<string>
+    scanlators?: Array<string>
 }
 
 /**
@@ -3718,6 +3845,22 @@ export type MKVParser_ContentEncoding = {
  */
 export type MKVParser_ContentEncodings = {
     ContentEncoding?: Array<MKVParser_ContentEncoding>
+}
+
+/**
+ * - Filepath: internal/mkvparser/metadata.go
+ * - Filename: metadata.go
+ * - Package: mkvparser
+ */
+export type MKVParser_CueInfo = {
+    /**
+     * Time in nanoseconds
+     */
+    Time: number
+    /**
+     * Absolute byte position of the cluster
+     */
+    Position: number
 }
 
 /**
@@ -4064,6 +4207,7 @@ export type Models_LibrarySettings = {
      * "", "library", "torrentstream", "debridstream", "onlinestream", "ext:[extensionId]"
      */
     defaultPlaybackSource: string
+    showTorrentAvailability: boolean
 }
 
 /**
@@ -4362,6 +4506,131 @@ export type Models_TorrentstreamSettings = {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Mpvcore
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * - Filepath: internal/mpvcore/types.go
+ * - Filename: types.go
+ * - Package: mpvcore
+ */
+export type MpvCore_ClientEventType = "playback-loaded" |
+    "loaded-metadata" |
+    "can-play" |
+    "paused" |
+    "resumed" |
+    "status" |
+    "seeked" |
+    "completed" |
+    "ended" |
+    "player-error" |
+    "terminated" |
+    "fullscreen-changed" |
+    "pip-changed" |
+    "audio-track-changed" |
+    "subtitle-track-changed" |
+    "playlist-state" |
+    "skip-data"
+
+/**
+ * - Filepath: internal/mpvcore/insight.go
+ * - Filename: insight.go
+ * - Package: mpvcore
+ */
+export type MpvCore_InSightCharacter = {
+    mal_id: number
+    url: string
+    images: MpvCore_InSightCharacter_Images
+    name: string
+    role: string
+    favorites: number
+}
+
+/**
+ * - Filepath: internal/mpvcore/insight.go
+ * - Filename: insight.go
+ * - Package: mpvcore
+ */
+export type MpvCore_InSightCharacterDetails = {
+    mal_id: number
+    url: string
+    images: MpvCore_InSightCharacterDetails_Images
+    name: string
+    name_kanji: string
+    nicknames?: Array<string>
+    favorites: number
+    about: string
+}
+
+/**
+ * - Filepath: internal/mpvcore/insight.go
+ * - Filename: insight.go
+ * - Package: mpvcore
+ */
+export type MpvCore_InSightCharacterDetails_Images = {
+    jpg: { image_url: string; }
+    webp: { image_url: string; small_image_url: string; }
+}
+
+/**
+ * - Filepath: internal/mpvcore/insight.go
+ * - Filename: insight.go
+ * - Package: mpvcore
+ */
+export type MpvCore_InSightCharacter_Images = {
+    jpg: { image_url: string; }
+    webp: { image_url: string; small_image_url: string; }
+}
+
+/**
+ * - Filepath: internal/mpvcore/insight.go
+ * - Filename: insight.go
+ * - Package: mpvcore
+ */
+export type MpvCore_InSightData = {
+    characters?: Array<MpvCore_InSightCharacter>
+    suggestions?: Array<MpvCore_InSightSegment>
+}
+
+/**
+ * - Filepath: internal/mpvcore/insight.go
+ * - Filename: insight.go
+ * - Package: mpvcore
+ */
+export type MpvCore_InSightSegment = {
+    characterId: number
+    startTime: number
+    endTime: number
+}
+
+/**
+ * - Filepath: internal/mpvcore/types.go
+ * - Filename: types.go
+ * - Package: mpvcore
+ */
+export type MpvCore_ServerEvent = "open-and-await" |
+    "abort-open" |
+    "watch" |
+    "stream-error" |
+    "pause" |
+    "resume" |
+    "seek" |
+    "seek-to" |
+    "terminate" |
+    "set-fullscreen" |
+    "set-pip" |
+    "set-audio-track" |
+    "set-subtitle-track" |
+    "add-subtitle-track" |
+    "show-message" |
+    "get-status" |
+    "get-playlist" |
+    "get-skip-data" |
+    "set-skip-data" |
+    "play-playlist-episode" |
+    "in-sight-data"
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Nakama
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4514,7 +4783,8 @@ export type Nakama_WatchPartySessionMediaInfo = {
      * Path to local file if StreamType is file
      */
     localFilePath: string
-    onlinestreamParams?: VideoCore_OnlinestreamParams
+    media?: AL_BaseAnime
+    onlinestreamParams?: Player_OnlinestreamParams
     torrentStreamParams?: Torrentstream_StartStreamOptions
 }
 
@@ -4611,7 +4881,7 @@ export type NativePlayer_PlaybackInfo = {
      * nil if not ebml
      */
     mkvMetadata?: MKVParser_Metadata
-    subtitleTracks?: Array<VideoCore_VideoSubtitleTrack>
+    subtitleTracks?: Array<NativePlayer_VideoSubtitleTrack>
     /**
      * nil if not in list
      */
@@ -4643,6 +4913,37 @@ export type NativePlayer_ServerEvent = "open-and-await" |
  * - Package: nativeplayer
  */
 export type NativePlayer_StreamType = "torrent" | "localfile" | "debrid" | "url" | "nakama"
+
+/**
+ * - Filepath: internal/nativeplayer/events.go
+ * - Filename: events.go
+ * - Package: nativeplayer
+ */
+export type NativePlayer_SubtitleEventsPayload = {
+    events?: Array<MKVParser_SubtitleEvent>
+    playbackId: string
+    generationId: number
+    seekTime: number
+}
+
+/**
+ * - Filepath: internal/nativeplayer/nativeplayer.go
+ * - Filename: nativeplayer.go
+ * - Package: nativeplayer
+ */
+export type NativePlayer_VideoSubtitleTrack = {
+    index: number
+    src?: string
+    content?: string
+    label: string
+    language: string
+    /**
+     * "srt" | "vtt" | "ass" | "ssa"
+     */
+    type?: string
+    default?: boolean
+    useLibassRenderer?: boolean
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Onlinestream
@@ -4699,6 +5000,7 @@ export type Onlinestream_MappingResponse = {
 export type Onlinestream_Subtitle = {
     url: string
     language: string
+    isDefault: boolean
 }
 
 /**

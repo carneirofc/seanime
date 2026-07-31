@@ -1,10 +1,17 @@
+import { useVideoCoreSaveScreenshot } from "@/api/hooks/videocore.hooks"
 import { vc_subtitleManager } from "@/app/(main)/_features/video-core/video-core"
 import { vc_anime4kManager } from "@/app/(main)/_features/video-core/video-core"
 import { vc_videoElement } from "@/app/(main)/_features/video-core/video-core-atoms"
 import { vc_showOverlayFeedback } from "@/app/(main)/_features/video-core/video-core-overlay-display"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
+import { upath } from "@/lib/helpers/upath"
+import { atom, useAtomValue, useSetAtom } from "jotai"
 import React from "react"
+import { toast } from "sonner"
 import { vc_anime4kOption } from "./video-core-anime-4k"
+
+export const vc_screenshotPromptOpenAtom = atom(false)
+export const vc_pendingScreenshotAtom = atom<{ blob: Blob; isAnime4K: boolean } | null>(null)
 
 export function useVideoCoreScreenshot() {
 
@@ -14,25 +21,63 @@ export function useVideoCoreScreenshot() {
     const anime4kManager = useAtomValue(vc_anime4kManager)
     const anime4kOption = useAtomValue(vc_anime4kOption)
 
+    const serverStatus = useServerStatus()
+    const { mutateAsync: saveScreenshotMutation } = useVideoCoreSaveScreenshot()
+
+    const setPromptOpen = useSetAtom(vc_screenshotPromptOpenAtom)
+    const setPendingScreenshot = useSetAtom(vc_pendingScreenshotAtom)
+
     const screenshotTimeout = React.useRef<NodeJS.Timeout | null>(null)
 
-    async function saveScreenshot(blob: Blob, isAnime4K: boolean = false) {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        document.body.appendChild(a)
-        a.style.display = "none"
-        a.href = url
-        a.download = `seanime_screenshot_${new Date().getTime()}${isAnime4K ? "_anime4k" : ""}.png`
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+    const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                const base64String = (reader.result as string).split(",")[1]
+                resolve(base64String)
+            }
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+        })
+    }
 
+    async function saveScreenshot(blob: Blob, isAnime4K: boolean = false) {
+        // Copy to clipboard first
         try {
             await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
-            showOverlayFeedback({ message: "Screenshot saved", type: "message" })
         }
         catch (e) {
+            console.error("Failed to copy screenshot to clipboard", e)
+        }
+
+        const screenshotDir = serverStatus?.settings?.mediaPlayer?.screenshotDir
+
+        if (!screenshotDir || !upath.isAbsolute(screenshotDir)) {
+            setPendingScreenshot({ blob, isAnime4K })
+            setPromptOpen(true)
+            return
+        }
+
+        const filename = `seanime_screenshot_${new Date().getTime()}${isAnime4K ? "_anime4k" : ""}.png`
+
+        try {
+            const base64Data = await blobToBase64(blob)
+            await saveScreenshotMutation({
+                dir: screenshotDir,
+                filename,
+                base64Data,
+            })
+
             showOverlayFeedback({ message: "Screenshot saved", type: "message" })
+        }
+        catch (error) {
+            console.error("Failed to save screenshot:", error)
+            showOverlayFeedback({ message: "Screenshot failed" })
+            toast.error("Failed to save screenshot to server")
+
+            // Reprompt the screenshot dir when saving fails
+            setPendingScreenshot({ blob, isAnime4K })
+            setPromptOpen(true)
         }
     }
 

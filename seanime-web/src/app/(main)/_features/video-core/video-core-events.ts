@@ -26,7 +26,7 @@ import { clientIdAtom } from "@/app/websocket-provider"
 import { logger } from "@/lib/helpers/debug"
 import { WSEvents } from "@/lib/server/ws-events"
 import { useAtomValue, useSetAtom } from "jotai"
-import React, { useCallback, useRef } from "react"
+import React, { useCallback } from "react"
 import { toast } from "sonner"
 
 export type ClientSubtitleFileUploadedEventPayload = {
@@ -242,8 +242,6 @@ export function useVideoCoreSetupEvents(id: string,
         }
     }, [isActivePlayer, state, anime4kManager])
 
-    const lastSeekedSent = useRef(Date.now() - 1000)
-
     // video events
     React.useEffect(() => {
         if (!isActivePlayer || !videoElement) return
@@ -284,8 +282,6 @@ export function useVideoCoreSetupEvents(id: string,
         }
 
         function handleSeeked() {
-            if (Date.now() - lastSeekedSent.current < 1000) return
-            lastSeekedSent.current = Date.now()
             log.trace("Video seeked")
             sendEvent("video-seeked", {
                 currentTime: player.currentTime,
@@ -796,4 +792,3 @@ export function useVideoCoreEvents() {
         sendEvent: sendEvent,
     }
 }
-

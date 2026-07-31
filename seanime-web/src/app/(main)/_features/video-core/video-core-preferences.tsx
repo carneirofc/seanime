@@ -1,4 +1,6 @@
 import { useSaveMediaPlayerSettings } from "@/api/hooks/settings.hooks"
+import { getSkipPatternError } from "@/app/(main)/_features/media-core/media-core-chapters"
+import { mediaCoreDefaultPreferences, mediaCorePreferencesAtom } from "@/app/(main)/_features/media-core/media-core-preferences"
 import { vc_subtitleManager } from "@/app/(main)/_features/video-core/video-core"
 import { vc_mediaCaptionsManager } from "@/app/(main)/_features/video-core/video-core"
 import { vc_audioManager } from "@/app/(main)/_features/video-core/video-core"
@@ -27,6 +29,7 @@ import {
     VideoCoreKeybindings,
 } from "@/app/(main)/_features/video-core/video-core.atoms"
 import { vc_dispatchAction } from "@/app/(main)/_features/video-core/video-core.utils"
+import { DirectorySelector } from "@/components/shared/directory-selector"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
 import { defineSchema, Field, Form } from "@/components/ui/form"
@@ -36,6 +39,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TextInput } from "@/components/ui/text-input"
 import { logger } from "@/lib/helpers/debug"
+import { upath } from "@/lib/helpers/upath"
 import { atom, useAtom, useAtomValue } from "jotai"
 import { useSetAtom } from "jotai/react"
 import React, { useCallback, useEffect, useRef, useState } from "react"
@@ -50,12 +54,12 @@ export const videoCorePreferencesModalAtom = atom(false)
 const tabsRootClass = cn("w-full contents space-y-4")
 
 const tabsTriggerClass = cn(
-    "text-base px-6 rounded-md w-fit border-none data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white",
+    "text-base px-6 rounded-[--radius-md] w-fit border-none data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white",
     "h-10 lg:justify-center px-3 flex-1",
 )
 
 const tabsListClass = cn(
-    "w-full flex flex-row lg:flex-row flex-wrap h-fit mt-4!",
+    "w-full flex flex-row lg:flex-row flex-wrap h-fit !mt-4",
 )
 
 const tabContentClass = cn(
@@ -125,7 +129,7 @@ const KeybindingRow = ({
     handleKeyRecord: (actionKey: keyof VideoCoreKeybindings) => void
     formatKeyDisplay?: (actionKey: keyof VideoCoreKeybindings) => keyof VideoCoreKeybindings | string
 }) => (
-    <div className="flex items-center justify-between py-2 border rounded-lg px-3 bg-(--paper)">
+    <div className="flex items-center justify-between py-2 border rounded-lg px-3 bg-[--paper]">
         <div className="flex-1">
             <div className="font-medium text-sm">{action}</div>
             {hasValue && (
@@ -146,12 +150,12 @@ const KeybindingRow = ({
         </div>
         <div className="flex items-center gap-2">
             <Button
-                intent={recordingKey === actionKey ? "white-subtle" : "gray-glass"}
+                intent={recordingKey === actionKey ? "white-subtle" : "gray-subtle"}
                 size="sm"
                 onClick={() => handleKeyRecord(actionKey)}
                 className={cn(
                     "h-8 px-3 text-lg font-mono",
-                    recordingKey === actionKey && "text-xs! text-white",
+                    recordingKey === actionKey && "!text-xs text-white",
                 )}
             >
                 {recordingKey === actionKey ? "Press key..." : formatKeyDisplay(editedKeybindings?.[actionKey]?.key as any ?? "" as any)}
@@ -183,6 +187,15 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
     const [editedAudioLanguage, setEditedAudioLanguage] = useState(settings.preferredAudioLanguage)
     const [editedSubsBlacklist, setEditedSubsBlacklist] = useState(settings.preferredSubtitleBlacklist)
     const [editedSubtitleDelay, setEditedSubtitleDelay] = useState(settings.subtitleDelay ?? 0)
+    const [editedScreenshotDir, setEditedScreenshotDir] = useState(mediaPlayerSettings?.screenshotDir ?? "")
+    const [preferences, setPreferences] = useAtom(mediaCorePreferencesAtom)
+    const [editedSkipPatterns, setEditedSkipPatterns] = useState(preferences.skipPatterns)
+    const skipPatternError = React.useMemo(() => getSkipPatternError(editedSkipPatterns), [editedSkipPatterns])
+
+    const isAbsolute = React.useMemo(() => {
+        if (!editedScreenshotDir) return true
+        return upath.isAbsolute(editedScreenshotDir)
+    }, [editedScreenshotDir])
     // const [editedSubCustomization, setEditedSubCustomization] = useState<VideoCoreSettings["subtitleCustomization"]>(
     //     settings.subtitleCustomization || vc_initialSettings.subtitleCustomization
     // )
@@ -198,9 +211,11 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
             setEditedSubsBlacklist(settings.preferredSubtitleBlacklist)
             setEditedSubtitleDelay(settings.subtitleDelay ?? 0)
             setEditedUseLibassRenderer(useLibassRenderer)
+            setEditedScreenshotDir(mediaPlayerSettings?.screenshotDir ?? "")
+            setEditedSkipPatterns(preferences.skipPatterns)
             // setEditedSubCustomization(settings.subtitleCustomization || vc_initialSettings.subtitleCustomization)
         }
-    }, [open, keybindings, settings, useLibassRenderer])
+    }, [open, keybindings, settings, useLibassRenderer, mediaPlayerSettings, preferences.skipPatterns])
 
     const handleKeyRecord = (actionKey: keyof VideoCoreKeybindings) => {
         setRecordingKey(actionKey)
@@ -226,6 +241,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
     }
 
     const handleSave = () => {
+        if (skipPatternError) return
         setKeybindings(editedKeybindings)
         const newSettings = {
             ...settings,
@@ -236,7 +252,19 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
             // subtitleCustomization: editedSubCustomization,
         }
         setSettings(newSettings)
+        setPreferences(current => ({ ...current, skipPatterns: editedSkipPatterns.trim() }))
         setUseLibassRenderer(editedUseLibassRenderer)
+
+        const currentMediaPlayer = serverStatus?.settings?.mediaPlayer
+        if (currentMediaPlayer) {
+            saveMediaPlayerSettings({
+                mediaPlayer: {
+                    ...currentMediaPlayer,
+                    screenshotDir: editedScreenshotDir,
+                },
+            })
+        }
+
         // Update subtitle manager with new settings
         subtitleManager?.updateSettings(newSettings)
         mediaCaptionsManager?.updateSettings(newSettings)
@@ -250,6 +278,8 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
         setEditedSubsBlacklist(vc_initialSettings.preferredSubtitleBlacklist)
         setEditedSubtitleDelay(vc_initialSettings.subtitleDelay)
         setEditedUseLibassRenderer(true)
+        setEditedScreenshotDir(mediaPlayerSettings?.screenshotDir ?? "")
+        setEditedSkipPatterns(mediaCoreDefaultPreferences.skipPatterns)
         // setEditedSubCustomization(vc_initialSettings.subtitleCustomization)
     }
 
@@ -299,8 +329,8 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
             title="Preferences"
             open={open}
             onOpenChange={setOpen}
-            contentClass="max-w-5xl focus:outline-none focus-visible:outline-none outline-none bg-(--background) backdrop-blur-sm z-101"
-            overlayClass="z-150 bg-black/50"
+            contentClass="max-w-5xl focus:outline-none focus-visible:outline-none outline-none bg-[--background] backdrop-blur-sm z-[101]"
+            overlayClass="z-[150] bg-black/50"
             portalContainer={isFullscreen ? containerElement || undefined : undefined}
         >
 
@@ -311,12 +341,59 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                 triggerClass={tabsTriggerClass}
                 listClass={tabsListClass}
             >
-                <TabsList className="flex-wrap max-w-full bg-(--paper) p-2 border rounded-xl">
+                <TabsList className="flex-wrap max-w-full bg-[--paper] p-2 border rounded-xl">
                     <TabsTrigger value="keybinds">Keyboard Shortcuts</TabsTrigger>
                     <TabsTrigger value="subtitles">Subtitles & Audio</TabsTrigger>
+                    <TabsTrigger value="general">General</TabsTrigger>
                     <TabsTrigger value="translation">Translation</TabsTrigger>
                     {/*<TabsTrigger value="browser-client">Rendering</TabsTrigger>*/}
                 </TabsList>
+
+                <TabsContent value="general" className={tabContentClass}>
+                    <div className="space-y-4">
+                        <TextInput
+                            label="Extra Chapters to Skip"
+                            value={editedSkipPatterns}
+                            onValueChange={setEditedSkipPatterns}
+                            placeholder="^Intro$,^Outro$,^Preview$"
+                            help="Comma-separated regular expressions matched case-insensitively. Existing opening and ending rules remain active."
+                            error={skipPatternError}
+                            onKeyDown={event => event.stopPropagation()}
+                            onInput={event => event.stopPropagation()}
+                        />
+                        <DirectorySelector
+                            value={editedScreenshotDir}
+                            onSelect={setEditedScreenshotDir}
+                            label="Screenshot Directory"
+                            help="Configure the directory where screenshots will be saved"
+                            error={!isAbsolute ? "Must be an absolute path" : ""}
+                        />
+
+                        <div className="flex items-center justify-between pt-6">
+                            <Button
+                                intent="gray-outline"
+                                onClick={handleReset}
+                            >
+                                Reset all
+                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    intent="gray-outline"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    intent="primary"
+                                    onClick={handleSave}
+                                    disabled={!isAbsolute || !!skipPatternError}
+                                >
+                                    Save
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </TabsContent>
 
                 <TabsContent value="keybinds" className={tabContentClass}>
                     <div className="space-y-3 hidden lg:block">
@@ -573,6 +650,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                                 <Button
                                     intent="primary"
                                     onClick={handleSave}
+                                    disabled={!!skipPatternError}
                                 >
                                     Save
                                 </Button>
@@ -654,6 +732,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                             <Button
                                 intent="primary"
                                 onClick={handleSave}
+                                disabled={!!skipPatternError}
                             >
                                 Save
                             </Button>
@@ -700,7 +779,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                                                     { value: "openai", label: "OpenAI" },
                                                     { value: "openai-compatible", label: "OpenAI Compatible" },
                                                 ]}
-                                                contentClass="z-999"
+                                                contentClass="z-[999]"
                                             />
                                         </div>
 
@@ -769,7 +848,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                                                     { value: "th", label: "Thai" },
                                                     { value: "vi", label: "Vietnamese" },
                                                 ]}
-                                                contentClass="z-999"
+                                                contentClass="z-[999]"
                                                 help="Select the language you want subtitles to be translated to"
                                             />
                                         </div>
@@ -807,7 +886,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                                         </div>
                                     </div>
 
-                                    <p className="text-(--muted)">
+                                    <p className="text-[--muted]">
                                         Reloading the player is required only when switching translation provider, language, endpoint, model, or API
                                         key.
                                     </p>

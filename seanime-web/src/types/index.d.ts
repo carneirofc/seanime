@@ -75,6 +75,21 @@ declare global {
                 get: () => Promise<DenshiSettings>;
                 set: (settings: DenshiSettings) => Promise<DenshiSettings>;
             };
+            mpvCore: {
+                createTempSubtitle: (filename: string, content: string) => Promise<string>;
+                writeConfigFile: (content: string) => Promise<string | null>;
+                createScreenshotPath: () => Promise<string>;
+                saveScreenshot: (filePath: string, base64Data: string) => Promise<boolean>;
+                setLoggingEnabled: (enabled: boolean) => Promise<boolean>;
+                exportLogs: () => Promise<string>;
+                getAnime4KDirectory: () => Promise<MpvCoreAnime4KDirectory>;
+                scanAnime4KDirectory: (directory: string) => Promise<MpvCoreAnime4KDirectory>;
+                openAnime4KDirectory: (directory?: string) => Promise<boolean>;
+            };
+            powerSaveBlocker?: {
+                start: () => Promise<number>;
+                stop: (id: number) => Promise<void>;
+            };
             cast?: {
                 discover: () => Promise<void>;
                 stopDiscovery: () => Promise<void>;
@@ -107,6 +122,14 @@ declare global {
         name: string;
         host: string;
         port: number;
+    }
+
+    interface MpvCoreAnime4KDirectory {
+        directory: string;
+        shaders: Array<{
+            name: string;
+            path: string;
+        }>;
     }
 
     interface CastSessionState {

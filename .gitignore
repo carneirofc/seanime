@@ -42,6 +42,11 @@ seanime-server-nosystray-windows.exe
 seanime-server-systray-windows.exe
 seanime-server-systray-windows.exe~
 seanime-server-windows-senshi.exe
+# Locally built server binary (repo root); the leading slash keeps the
+# seanime-web/ and seanime-denshi/ directories tracked.
+/seanime
+/seanime-server-*linux*
+/seanime-server-*darwin*
 
 # Windows / shell scripts (local helpers)
 *.sh

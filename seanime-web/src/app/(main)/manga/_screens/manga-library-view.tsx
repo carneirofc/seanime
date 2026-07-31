@@ -1,5 +1,6 @@
 import { AL_MediaListStatus, Manga_Collection, Manga_CollectionList } from "@/api/generated/types"
-import { useRefetchMangaChapterContainers } from "@/api/hooks/manga.hooks"
+import { useGetMangaSourceRefresh } from "@/api/hooks/manga.hooks"
+import { useUpdateTheme } from "@/api/hooks/theme.hooks"
 import { AdultExposureBanner } from "@/app/(main)/_features/media/_components/adult-exposure-banner"
 import { MediaCardLazyGrid } from "@/app/(main)/_features/media/_components/media-card-grid"
 import { MediaEntryCard } from "@/app/(main)/_features/media/_components/media-entry-card"
@@ -10,6 +11,7 @@ import { SeaCommandInjectableItem, useSeaCommandInject } from "@/app/(main)/_fea
 import { seaCommand_compareMediaTitles } from "@/app/(main)/_features/sea-command/utils"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { __mangaLibraryHeaderImageAtom, __mangaLibraryHeaderMangaAtom } from "@/app/(main)/manga/_components/library-header"
+import { MangaSourceRefreshModal } from "@/app/(main)/manga/_components/manga-source-refresh-modal"
 import { __mangaLibrary_paramsAtom, __mangaLibrary_paramsInputAtom } from "@/app/(main)/manga/_lib/handle-manga-collection"
 import { LuffyError } from "@/components/shared/luffy-error"
 import { PageWrapper } from "@/components/shared/page-wrapper"
@@ -19,6 +21,7 @@ import { Button, IconButton } from "@/components/ui/button"
 import { Carousel, CarouselContent, CarouselDotButtons } from "@/components/ui/carousel"
 import { cn } from "@/components/ui/core/styling"
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Tooltip } from "@/components/ui/tooltip"
 import { RiEyeCloseLine } from "react-icons/ri"
 import { TbRating18Plus } from "react-icons/tb"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -29,9 +32,8 @@ import { useSetAtom } from "jotai"
 import { useAtom, useAtomValue } from "jotai/react"
 import { AnimatePresence } from "motion/react"
 import React, { memo } from "react"
-import { BiDotsVertical } from "react-icons/bi"
-import { LuBookOpenCheck, LuRefreshCcw } from "react-icons/lu"
-import { toast } from "sonner"
+import { BiDotsVerticalRounded } from "react-icons/bi"
+import { LuBookOpenCheck, LuEye, LuEyeOff, LuRefreshCcw } from "react-icons/lu"
 import { CommandItemMedia } from "../../_features/sea-command/_components/command-utils"
 
 type MangaLibraryViewProps = {
@@ -43,6 +45,7 @@ type MangaLibraryViewProps = {
     showStatuses?: AL_MediaListStatus[]
     type?: "carousel" | "grid"
     withTitle?: boolean
+    isMangaPage?: boolean
 }
 
 export function MangaLibraryView(props: MangaLibraryViewProps) {
@@ -56,6 +59,7 @@ export function MangaLibraryView(props: MangaLibraryViewProps) {
         showStatuses,
         type = "grid",
         withTitle = true,
+        isMangaPage,
         ...rest
     } = props
 
@@ -104,6 +108,7 @@ export function MangaLibraryView(props: MangaLibraryViewProps) {
                             showStatuses={showStatuses}
                             type={type}
                             withTitle={withTitle}
+                            isMangaPage={isMangaPage}
                         />
                         : <FilteredCollectionLists
                             key="filtered-collection"
@@ -121,13 +126,14 @@ export function MangaLibraryView(props: MangaLibraryViewProps) {
     )
 }
 
-export function CollectionLists({ collectionList, genres, storedProviders, showStatuses, type, withTitle }: {
+export function CollectionLists({ collectionList, genres, storedProviders, showStatuses, type, withTitle, isMangaPage }: {
     collectionList: Manga_Collection | undefined
     genres: string[]
     storedProviders: Record<string, string>
     showStatuses?: AL_MediaListStatus[]
     type?: "carousel" | "grid"
     withTitle?: boolean
+    isMangaPage?: boolean
 }) {
 
     const lists = collectionList?.lists?.filter(list => {
@@ -158,6 +164,7 @@ export function CollectionLists({ collectionList, genres, storedProviders, showS
                             showStatuses={showStatuses}
                             type={type}
                             withTitle={withTitle}
+                            isMangaPage={isMangaPage}
                         />
 
                         {(collection.type === "CURRENT" && !!genres?.length) && <GenreSelector genres={genres} className="my-0!" />}
@@ -245,12 +252,13 @@ export function FilteredCollectionLists({ collectionList, genres, showStatuses, 
 
 }
 
-const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, withTitle }: {
+const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, withTitle, isMangaPage }: {
     list: Manga_CollectionList,
     storedProviders: Record<string, string>,
     showStatuses?: AL_MediaListStatus[],
     type?: "carousel" | "grid",
     withTitle?: boolean
+    isMangaPage?: boolean
 }) => {
 
     const ts = useThemeSettings()
@@ -260,7 +268,11 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
     const [params, setParams] = useAtom(__mangaLibrary_paramsAtom)
     const router = useRouter()
 
-    const { mutate: refetchMangaChapterContainers, isPending: isRefetchingMangaChapterContainers } = useRefetchMangaChapterContainers()
+    const { data: sourceRefreshJob } = useGetMangaSourceRefresh(list.type === "CURRENT")
+    const { mutate: updateTheme, isPending: isUpdatingTheme } = useUpdateTheme()
+    const [sourceRefreshModalOpen, setSourceRefreshModalOpen] = React.useState(false)
+    const sourceRefreshTriggerRef = React.useRef<HTMLButtonElement>(null)
+    const sourceRefreshRunning = sourceRefreshJob?.status === "running" || sourceRefreshJob?.status === "stopping"
 
     const { inject, remove } = useSeaCommandInject()
 
@@ -324,57 +336,97 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                     </Button>
                 )}
 
-                {list.type === "CURRENT" && <DropdownMenu
-                    trigger={<div className="relative">
-                        <IconButton
-                            intent="white-basic"
-                            size="xs"
-                            className="mt-1"
-                            icon={<BiDotsVertical />}
-                            // loading={isRefetchingMangaChapterContainers}
-                        />
-                        {/*{params.unreadOnly && <div className="absolute -top-1 -right-1 bg-(--blue) size-2 rounded-full"></div>}*/}
-                        {isRefetchingMangaChapterContainers &&
-                            <div className="absolute -top-1 -right-1 bg-(--orange) size-3 rounded-full animate-ping"></div>}
-                    </div>}
-                >
-                    <DropdownMenuItem
-                        onClick={() => {
-                            if (isRefetchingMangaChapterContainers) return
+                <div className="flex gap-1 items-center">
+                    {list.type === "CURRENT" && isMangaPage && <Tooltip
+                        trigger={<div className="relative">
+                            <Button
+                                ref={sourceRefreshTriggerRef}
+                                intent="white-subtle"
+                                leftIcon={<LuRefreshCcw className="text-xl" />}
+                                onClick={() => setSourceRefreshModalOpen(true)}
+                                hideTextOnSmallScreen
+                            >
+                                Refresh
+                            </Button>
+                            {sourceRefreshRunning &&
+                                <div
+                                    className="absolute -top-1 -right-1 bg-[--orange] size-2.5 rounded-full"
+                                    aria-label="Source refresh running"
+                                ></div>}
+                        </div>}
+                    >
+                        {sourceRefreshRunning ? "View manga source refresh" : "Refresh manga sources"}
+                    </Tooltip>}
 
-                            toast.info("Refetching from sources...")
-                            refetchMangaChapterContainers({
-                                selectedProviderMap: storedProviders,
-                            })
-                        }}
+                    {list.type === "CURRENT" && <DropdownMenu
+                        trigger={<div className="relative">
+                            <IconButton
+                                ref={isMangaPage ? undefined : sourceRefreshTriggerRef}
+                                data-manga-library-dropdown-menu-trigger
+                                icon={<BiDotsVerticalRounded className="text-2xl" />}
+                                intent="gray-basic"
+                                aria-label="Manga list actions"
+                            />
+                            {!isMangaPage && sourceRefreshRunning &&
+                                <div
+                                    className="absolute -top-1 -right-1 bg-[--orange] size-2.5 rounded-full"
+                                    aria-label="Source refresh running"
+                                ></div>}
+                        </div>}
                     >
-                        <LuRefreshCcw /> {isRefetchingMangaChapterContainers ? "Refetching..." : "Refresh sources"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => {
-                            setParams(draft => {
-                                draft.unreadOnly = !draft.unreadOnly
-                                return
-                            })
-                        }}
-                    >
-                        <LuBookOpenCheck /> {params.unreadOnly ? "Show all" : "Unread chapters only"}
-                    </DropdownMenuItem>
-                    {serverStatus?.settings?.anilist?.enableAdultContent && serverStatus?.settings?.anilist?.splitAdultContent && (
+                        {!isMangaPage && <DropdownMenuItem
+                            onClick={() => setSourceRefreshModalOpen(true)}
+                        >
+                            <LuRefreshCcw /> {sourceRefreshRunning ? "View source refresh" : "Refresh sources"}
+                        </DropdownMenuItem>}
                         <DropdownMenuItem
                             onClick={() => {
                                 setParams(draft => {
-                                    draft.isAdult = !draft.isAdult
+                                    draft.unreadOnly = !draft.unreadOnly
                                     return
                                 })
                             }}
                         >
-                            {params.isAdult ? <RiEyeCloseLine /> : <TbRating18Plus className="text-pink-500" />}
-                            {params.isAdult ? "Show safe content" : "Adult content"}
+                            <LuBookOpenCheck /> {params.unreadOnly ? "Show all" : "Unread chapters only"}
                         </DropdownMenuItem>
-                    )}
-                    <PluginMangaLibraryDropdownItems />
-                </DropdownMenu>}
+                        <DropdownMenuItem
+                            disabled={isUpdatingTheme}
+                            onClick={() => updateTheme({
+                                theme: {
+                                    id: 0,
+                                    ...ts,
+                                    showMangaUnreadCount: !ts.showMangaUnreadCount,
+                                },
+                            })}
+                        >
+                            {ts.showMangaUnreadCount ? <LuEyeOff /> : <LuEye />}
+                            {ts.showMangaUnreadCount ? "Hide unread counts" : "Show unread counts"}
+                        </DropdownMenuItem>
+                        {serverStatus?.settings?.anilist?.enableAdultContent && serverStatus?.settings?.anilist?.splitAdultContent && (
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setParams(draft => {
+                                        draft.isAdult = !draft.isAdult
+                                        return
+                                    })
+                                }}
+                            >
+                                {params.isAdult ? <RiEyeCloseLine /> : <TbRating18Plus className="text-pink-500" />}
+                                {params.isAdult ? "Show safe content" : "Adult content"}
+                            </DropdownMenuItem>
+                        )}
+                        <PluginMangaLibraryDropdownItems />
+                    </DropdownMenu>}
+                </div>
+
+                {list.type === "CURRENT" && (
+                    <MangaSourceRefreshModal
+                        open={sourceRefreshModalOpen}
+                        onOpenChange={setSourceRefreshModalOpen}
+                        job={sourceRefreshJob}
+                        returnFocusRef={sourceRefreshTriggerRef}
+                    />
+                )}
 
             </div>
 

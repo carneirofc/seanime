@@ -79,6 +79,9 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
+            "react": path.resolve(__dirname, "node_modules/react"),
+            "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+            [path.resolve(__dirname, "node_modules/jassub/dist/default.woff2")]: path.resolve(__dirname, "public/fonts/Roboto-Medium.ttf"),
         },
     },
     server: { // dev server

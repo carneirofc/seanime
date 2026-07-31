@@ -28853,6 +28853,17 @@
         "comments": []
       },
       {
+        "name": "episodeAvailability",
+        "jsonName": "episodeAvailability",
+        "goType": "episodeAvailability",
+        "typescriptType": "INTERNAL_episodeAvailability",
+        "usedTypescriptType": "INTERNAL_episodeAvailability",
+        "usedStructName": "core.episodeAvailability",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "WSEventManager",
         "jsonName": "WSEventManager",
         "goType": "events.WSEventManager",
@@ -28956,6 +28967,17 @@
         "typescriptType": "VideoCore_VideoCore",
         "usedTypescriptType": "VideoCore_VideoCore",
         "usedStructName": "videocore.VideoCore",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediacoreCoordinator",
+        "jsonName": "MediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": true,
         "comments": []
@@ -31167,6 +31189,15 @@
         "comments": [
           " \"\", \"library\", \"torrentstream\", \"debridstream\", \"onlinestream\", \"ext:[extensionId]\""
         ]
+      },
+      {
+        "name": "ShowTorrentAvailability",
+        "jsonName": "showTorrentAvailability",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -37682,12 +37713,23 @@
         "comments": []
       },
       {
-        "name": "videoCoreSubscriber",
-        "jsonName": "videoCoreSubscriber",
-        "goType": "videocore.Subscriber",
-        "typescriptType": "VideoCore_Subscriber",
-        "usedTypescriptType": "VideoCore_Subscriber",
-        "usedStructName": "videocore.Subscriber",
+        "name": "mediacoreCoordinator",
+        "jsonName": "mediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "mediacoreSubscriber",
+        "jsonName": "mediacoreSubscriber",
+        "goType": "mediacore.Subscriber",
+        "typescriptType": "Subscriber",
+        "usedTypescriptType": "Subscriber",
+        "usedStructName": "mediacore.Subscriber",
         "required": false,
         "public": false,
         "comments": []
@@ -37782,6 +37824,17 @@
         "comments": []
       },
       {
+        "name": "preparingTarget",
+        "jsonName": "preparingTarget",
+        "goType": "PlaybackTarget",
+        "typescriptType": "Directstream_PlaybackTarget",
+        "usedTypescriptType": "Directstream_PlaybackTarget",
+        "usedStructName": "directstream.PlaybackTarget",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "preparationCanceled",
         "jsonName": "preparationCanceled",
         "goType": "bool",
@@ -37795,6 +37848,28 @@
         "jsonName": "preparationCancelFunc",
         "goType": "",
         "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "currentPlaybackTarget",
+        "jsonName": "currentPlaybackTarget",
+        "goType": "PlaybackTarget",
+        "typescriptType": "Directstream_PlaybackTarget",
+        "usedTypescriptType": "Directstream_PlaybackTarget",
+        "usedStructName": "directstream.PlaybackTarget",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "defaultPlaybackTarget",
+        "jsonName": "defaultPlaybackTarget",
+        "goType": "PlaybackTarget",
+        "typescriptType": "Directstream_PlaybackTarget",
+        "usedTypescriptType": "Directstream_PlaybackTarget",
+        "usedStructName": "directstream.PlaybackTarget",
         "required": true,
         "public": false,
         "comments": []
@@ -38002,6 +38077,17 @@
         "comments": []
       },
       {
+        "name": "MediacoreCoordinator",
+        "jsonName": "MediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "HMACTokenFunc",
         "jsonName": "HMACTokenFunc",
         "goType": "",
@@ -38015,6 +38101,23 @@
       " Manager handles direct stream playback and progress tracking for the built-in video player.",
       " It is similar to playbackmanager.PlaybackManager."
     ]
+  },
+  {
+    "filepath": "../internal/directstream/manager.go",
+    "filename": "manager.go",
+    "name": "PlaybackTarget",
+    "formattedName": "Directstream_PlaybackTarget",
+    "package": "directstream",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"videocore\"",
+        "\"mpvcore\""
+      ]
+    },
+    "comments": []
   },
   {
     "filepath": "../internal/directstream/nakama.go",
@@ -38215,10 +38318,10 @@
       {
         "name": "playbackInfo",
         "jsonName": "playbackInfo",
-        "goType": "nativeplayer.PlaybackInfo",
-        "typescriptType": "NativePlayer_PlaybackInfo",
-        "usedTypescriptType": "NativePlayer_PlaybackInfo",
-        "usedStructName": "nativeplayer.PlaybackInfo",
+        "goType": "player.PlaybackInfo",
+        "typescriptType": "Player_PlaybackInfo",
+        "usedTypescriptType": "Player_PlaybackInfo",
+        "usedStructName": "player.PlaybackInfo",
         "required": false,
         "public": false,
         "comments": []
@@ -38257,6 +38360,17 @@
         "comments": []
       },
       {
+        "name": "playbackTarget",
+        "jsonName": "playbackTarget",
+        "goType": "PlaybackTarget",
+        "typescriptType": "Directstream_PlaybackTarget",
+        "usedTypescriptType": "Directstream_PlaybackTarget",
+        "usedStructName": "directstream.PlaybackTarget",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "subtitleEventCache",
         "jsonName": "subtitleEventCache",
         "goType": "",
@@ -38282,6 +38396,37 @@
         "goType": "time.Time",
         "typescriptType": "string",
         "usedStructName": "time.Time",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "subtitleLastSentGen",
+        "jsonName": "subtitleLastSentGen",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "subtitleGeneration",
+        "jsonName": "subtitleGeneration",
+        "goType": "atomic.Int64",
+        "typescriptType": "Int64",
+        "usedTypescriptType": "Int64",
+        "usedStructName": "atomic.Int64",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "subtitleSeekMu",
+        "jsonName": "subtitleSeekMu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
         "required": false,
         "public": false,
         "comments": []
@@ -38485,11 +38630,24 @@
         "comments": []
       },
       {
+        "name": "request",
+        "jsonName": "request",
+        "goType": "subtitleRequest",
+        "typescriptType": "Directstream_subtitleRequest",
+        "usedTypescriptType": "Directstream_subtitleRequest",
+        "usedStructName": "directstream.subtitleRequest",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "completed",
         "jsonName": "completed",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": true,
+        "goType": "atomic.Bool",
+        "typescriptType": "Bool",
+        "usedTypescriptType": "Bool",
+        "usedStructName": "atomic.Bool",
+        "required": false,
         "public": false,
         "comments": [
           " ran until the EOF"
@@ -40061,6 +40219,108 @@
         "goType": "string",
         "typescriptType": "string",
         "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/discordrpc/presence/presence.go",
+    "filename": "presence.go",
+    "name": "CustomActivity",
+    "formattedName": "DiscordRPC_CustomActivity",
+    "package": "discordrpc_presence",
+    "fields": [
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Details",
+        "jsonName": "details",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "State",
+        "jsonName": "state",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LargeImageKey",
+        "jsonName": "largeImageKey",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LargeImageText",
+        "jsonName": "largeImageText",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SmallImageKey",
+        "jsonName": "smallImageKey",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SmallImageText",
+        "jsonName": "smallImageText",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Buttons",
+        "jsonName": "buttons",
+        "goType": "[]discordrpc_client.Button",
+        "typescriptType": "Array\u003cDiscordRPC_Button\u003e",
+        "usedTypescriptType": "DiscordRPC_Button",
+        "usedStructName": "discordrpc_client.Button",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "StartTimestamp",
+        "jsonName": "startTimestamp",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "EndTimestamp",
+        "jsonName": "endTimestamp",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": false,
         "public": true,
         "comments": []
       }
@@ -50193,6 +50453,25 @@
   {
     "filepath": "../internal/library/anime/episode.go",
     "filename": "episode.go",
+    "name": "EpisodeTorrentAvailability",
+    "formattedName": "Anime_EpisodeTorrentAvailability",
+    "package": "anime",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"available\"",
+        "\"checking\"",
+        "\"waiting\"",
+        "\"unknown\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/library/anime/episode.go",
+    "filename": "episode.go",
     "name": "Episode",
     "formattedName": "Anime_Episode",
     "package": "anime",
@@ -50347,6 +50626,26 @@
         "typescriptType": "AL_BaseAnime",
         "usedTypescriptType": "AL_BaseAnime",
         "usedStructName": "anilist.BaseAnime",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "TorrentAvailability",
+        "jsonName": "torrentAvailability",
+        "goType": "EpisodeTorrentAvailability",
+        "typescriptType": "Anime_EpisodeTorrentAvailability",
+        "usedTypescriptType": "Anime_EpisodeTorrentAvailability",
+        "usedStructName": "anime.EpisodeTorrentAvailability",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsMissingGroup",
+        "jsonName": "isMissingGroup",
+        "goType": "bool",
+        "typescriptType": "boolean",
         "required": false,
         "public": true,
         "comments": []
@@ -60071,6 +60370,33 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "skipCache",
+        "jsonName": "skipCache",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "beforeProviderCall",
+        "jsonName": "beforeProviderCall",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "allowAutoSearch",
+        "jsonName": "allowAutoSearch",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": false,
+        "comments": []
       }
     ],
     "comments": []
@@ -60124,6 +60450,52 @@
         "goType": "int",
         "typescriptType": "number",
         "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/chapter_container_mapping.go",
+    "filename": "chapter_container_mapping.go",
+    "name": "MappingPreview",
+    "formattedName": "Manga_MappingPreview",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "ChapterCount",
+        "jsonName": "chapterCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Latest",
+        "jsonName": "latest",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Languages",
+        "jsonName": "languages",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Scanlators",
+        "jsonName": "scanlators",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
         "public": true,
         "comments": []
       }
@@ -62123,6 +62495,172 @@
     "comments": []
   },
   {
+    "filepath": "../internal/manga/preferences.go",
+    "filename": "preferences.go",
+    "name": "MangaProviderFilter",
+    "formattedName": "Manga_MangaProviderFilter",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Scanlators",
+        "jsonName": "scanlators",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Language",
+        "jsonName": "language",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/preferences.go",
+    "filename": "preferences.go",
+    "name": "MangaEntryPreference",
+    "formattedName": "Manga_MangaEntryPreference",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Provider",
+        "jsonName": "provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Filters",
+        "jsonName": "filters",
+        "goType": "map[string]MangaProviderFilter",
+        "typescriptType": "Record\u003cstring, Manga_MangaProviderFilter\u003e",
+        "usedTypescriptType": "Manga_MangaProviderFilter",
+        "usedStructName": "manga.MangaProviderFilter",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/preferences.go",
+    "filename": "preferences.go",
+    "name": "MangaPreferences",
+    "formattedName": "Manga_MangaPreferences",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Entries",
+        "jsonName": "entries",
+        "goType": "map[int]MangaEntryPreference",
+        "typescriptType": "Record\u003cnumber, Manga_MangaEntryPreference\u003e",
+        "usedTypescriptType": "Manga_MangaEntryPreference",
+        "usedStructName": "manga.MangaEntryPreference",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/preferences.go",
+    "filename": "preferences.go",
+    "name": "MangaProviderFilterPatch",
+    "formattedName": "Manga_MangaProviderFilterPatch",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Provider",
+        "jsonName": "provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Scanlators",
+        "jsonName": "scanlators",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "usedStructName": "manga.[]string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Language",
+        "jsonName": "language",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/preferences.go",
+    "filename": "preferences.go",
+    "name": "MangaPreferencePatch",
+    "formattedName": "Manga_MangaPreferencePatch",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Provider",
+        "jsonName": "provider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Filter",
+        "jsonName": "filter",
+        "goType": "MangaProviderFilterPatch",
+        "typescriptType": "Manga_MangaProviderFilterPatch",
+        "usedTypescriptType": "Manga_MangaProviderFilterPatch",
+        "usedStructName": "manga.MangaProviderFilterPatch",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/preferences.go",
+    "filename": "preferences.go",
+    "name": "MangaPreferencesUpdatedPayload",
+    "formattedName": "Manga_MangaPreferencesUpdatedPayload",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "MediaIds",
+        "jsonName": "mediaIds",
+        "goType": "[]int",
+        "typescriptType": "Array\u003cnumber\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
     "filepath": "../internal/manga/provider_match.go",
     "filename": "provider_match.go",
     "name": "GetMangaProviderMatchesOptions",
@@ -62617,6 +63155,50 @@
         "comments": []
       },
       {
+        "name": "preferencesMu",
+        "jsonName": "preferencesMu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "sourceRefreshMu",
+        "jsonName": "sourceRefreshMu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "sourceRefresh",
+        "jsonName": "sourceRefresh",
+        "goType": "mangaSourceRefreshState",
+        "typescriptType": "Manga_mangaSourceRefreshState",
+        "usedTypescriptType": "Manga_mangaSourceRefreshState",
+        "usedStructName": "manga.mangaSourceRefreshState",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "sourceRefreshLog",
+        "jsonName": "sourceRefreshLog",
+        "goType": "map[string]mangaSourceRefreshCompleted",
+        "typescriptType": "Record\u003cstring, Manga_mangaSourceRefreshCompleted\u003e",
+        "usedTypescriptType": "Manga_mangaSourceRefreshCompleted",
+        "usedStructName": "manga.mangaSourceRefreshCompleted",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "downloadDir",
         "jsonName": "downloadDir",
         "goType": "string",
@@ -62733,6 +63315,331 @@
         "jsonName": "ExtensionBankRef",
         "goType": "",
         "typescriptType": "any",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshMode",
+    "formattedName": "Manga_MangaSourceRefreshMode",
+    "package": "manga",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"refresh_selected\"",
+        "\"find_missing\"",
+        "\"refresh_and_find\"",
+        "\"reevaluate_all\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshStatus",
+    "formattedName": "Manga_MangaSourceRefreshStatus",
+    "package": "manga",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"running\"",
+        "\"stopping\"",
+        "\"completed\"",
+        "\"cancelled\"",
+        "\"failed\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshStage",
+    "formattedName": "Manga_MangaSourceRefreshStage",
+    "package": "manga",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"refreshing\"",
+        "\"discovering\"",
+        "\"done\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshIssue",
+    "formattedName": "Manga_MangaSourceRefreshIssue",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Kind",
+        "jsonName": "kind",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Providers",
+        "jsonName": "providers",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshChange",
+    "formattedName": "Manga_MangaSourceRefreshChange",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "FromProvider",
+        "jsonName": "fromProvider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ToProvider",
+        "jsonName": "toProvider",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Kind",
+        "jsonName": "kind",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshResult",
+    "formattedName": "Manga_MangaSourceRefreshResult",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Refreshed",
+        "jsonName": "refreshed",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Found",
+        "jsonName": "found",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Replaced",
+        "jsonName": "replaced",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "NotFound",
+        "jsonName": "notFound",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Failed",
+        "jsonName": "failed",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Changes",
+        "jsonName": "changes",
+        "goType": "[]MangaSourceRefreshChange",
+        "typescriptType": "Array\u003cManga_MangaSourceRefreshChange\u003e",
+        "usedTypescriptType": "Manga_MangaSourceRefreshChange",
+        "usedStructName": "manga.MangaSourceRefreshChange",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Issues",
+        "jsonName": "issues",
+        "goType": "[]MangaSourceRefreshIssue",
+        "typescriptType": "Array\u003cManga_MangaSourceRefreshIssue\u003e",
+        "usedTypescriptType": "Manga_MangaSourceRefreshIssue",
+        "usedStructName": "manga.MangaSourceRefreshIssue",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/source_refresh.go",
+    "filename": "source_refresh.go",
+    "name": "MangaSourceRefreshJob",
+    "formattedName": "Manga_MangaSourceRefreshJob",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Id",
+        "jsonName": "id",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Mode",
+        "jsonName": "mode",
+        "goType": "MangaSourceRefreshMode",
+        "typescriptType": "Manga_MangaSourceRefreshMode",
+        "usedTypescriptType": "Manga_MangaSourceRefreshMode",
+        "usedStructName": "manga.MangaSourceRefreshMode",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Status",
+        "jsonName": "status",
+        "goType": "MangaSourceRefreshStatus",
+        "typescriptType": "Manga_MangaSourceRefreshStatus",
+        "usedTypescriptType": "Manga_MangaSourceRefreshStatus",
+        "usedStructName": "manga.MangaSourceRefreshStatus",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Stage",
+        "jsonName": "stage",
+        "goType": "MangaSourceRefreshStage",
+        "typescriptType": "Manga_MangaSourceRefreshStage",
+        "usedTypescriptType": "Manga_MangaSourceRefreshStage",
+        "usedStructName": "manga.MangaSourceRefreshStage",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Current",
+        "jsonName": "current",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Total",
+        "jsonName": "total",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Result",
+        "jsonName": "result",
+        "goType": "MangaSourceRefreshResult",
+        "typescriptType": "Manga_MangaSourceRefreshResult",
+        "usedTypescriptType": "Manga_MangaSourceRefreshResult",
+        "usedStructName": "manga.MangaSourceRefreshResult",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Error",
+        "jsonName": "error",
+        "goType": "string",
+        "typescriptType": "string",
         "required": false,
         "public": true,
         "comments": []
@@ -65280,6 +66187,24 @@
         "required": true,
         "public": false,
         "comments": []
+      },
+      {
+        "name": "isFileLoaded",
+        "jsonName": "isFileLoaded",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "freshDuration",
+        "jsonName": "freshDuration",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": false,
+        "comments": []
       }
     ],
     "comments": []
@@ -66415,6 +67340,15 @@
       {
         "name": "playbackSwitch",
         "jsonName": "playbackSwitch",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "isFileLoaded",
+        "jsonName": "isFileLoaded",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": true,
@@ -69079,12 +70013,12 @@
         "comments": []
       },
       {
-        "name": "videoCore",
-        "jsonName": "videoCore",
-        "goType": "videocore.VideoCore",
-        "typescriptType": "VideoCore_VideoCore",
-        "usedTypescriptType": "VideoCore_VideoCore",
-        "usedStructName": "videocore.VideoCore",
+        "name": "mediacoreCoordinator",
+        "jsonName": "mediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": false,
         "comments": []
@@ -69166,12 +70100,12 @@
         "comments": []
       },
       {
-        "name": "VideoCore",
-        "jsonName": "VideoCore",
-        "goType": "videocore.VideoCore",
-        "typescriptType": "VideoCore_VideoCore",
-        "usedTypescriptType": "VideoCore_VideoCore",
-        "usedStructName": "videocore.VideoCore",
+        "name": "MediacoreCoordinator",
+        "jsonName": "MediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": true,
         "comments": []
@@ -71067,6 +72001,38 @@
   {
     "filepath": "../internal/mkvparser/metadata.go",
     "filename": "metadata.go",
+    "name": "CueInfo",
+    "formattedName": "MKVParser_CueInfo",
+    "package": "mkvparser",
+    "fields": [
+      {
+        "name": "Time",
+        "jsonName": "Time",
+        "goType": "uint64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": [
+          " Time in nanoseconds"
+        ]
+      },
+      {
+        "name": "Position",
+        "jsonName": "Position",
+        "goType": "uint64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": [
+          " Absolute byte position of the cluster"
+        ]
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mkvparser/metadata.go",
+    "filename": "metadata.go",
     "name": "Metadata",
     "formattedName": "MKVParser_Metadata",
     "package": "mkvparser",
@@ -71182,6 +72148,17 @@
         "typescriptType": "Array\u003cMKVParser_AttachmentInfo\u003e",
         "usedTypescriptType": "MKVParser_AttachmentInfo",
         "usedStructName": "mkvparser.AttachmentInfo",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Cues",
+        "jsonName": "",
+        "goType": "[]CueInfo",
+        "typescriptType": "Array\u003cMKVParser_CueInfo\u003e",
+        "usedTypescriptType": "MKVParser_CueInfo",
+        "usedStructName": "mkvparser.CueInfo",
         "required": false,
         "public": true,
         "comments": []
@@ -72074,6 +73051,406 @@
     ]
   },
   {
+    "filepath": "../internal/mpvcore/adapter.go",
+    "filename": "adapter.go",
+    "name": "Adapter",
+    "formattedName": "MpvCore_Adapter",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "mc",
+        "jsonName": "mc",
+        "goType": "MpvCore",
+        "typescriptType": "MpvCore_MpvCore",
+        "usedTypescriptType": "MpvCore_MpvCore",
+        "usedStructName": "mpvcore.MpvCore",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "sub",
+        "jsonName": "sub",
+        "goType": "Subscriber",
+        "typescriptType": "MpvCore_Subscriber",
+        "usedTypescriptType": "MpvCore_Subscriber",
+        "usedStructName": "mpvcore.Subscriber",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "eventsCh",
+        "jsonName": "eventsCh",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSight",
+    "formattedName": "MpvCore_InSight",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "logger",
+        "jsonName": "logger",
+        "goType": "zerolog.Logger",
+        "typescriptType": "Logger",
+        "usedTypescriptType": "Logger",
+        "usedStructName": "zerolog.Logger",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "core",
+        "jsonName": "core",
+        "goType": "MpvCore",
+        "typescriptType": "MpvCore_MpvCore",
+        "usedTypescriptType": "MpvCore_MpvCore",
+        "usedStructName": "mpvcore.MpvCore",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "mu",
+        "jsonName": "mu",
+        "goType": "sync.RWMutex",
+        "typescriptType": "RWMutex",
+        "usedTypescriptType": "RWMutex",
+        "usedStructName": "sync.RWMutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "data",
+        "jsonName": "data",
+        "goType": "InSightData",
+        "typescriptType": "MpvCore_InSightData",
+        "usedTypescriptType": "MpvCore_InSightData",
+        "usedStructName": "mpvcore.InSightData",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "rateLimiter",
+        "jsonName": "rateLimiter",
+        "goType": "limiter.Limiter",
+        "typescriptType": "Limiter",
+        "usedTypescriptType": "Limiter",
+        "usedStructName": "limiter.Limiter",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "characterDetailsCache",
+        "jsonName": "characterDetailsCache",
+        "goType": "",
+        "typescriptType": "any",
+        "required": false,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSightData",
+    "formattedName": "MpvCore_InSightData",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Characters",
+        "jsonName": "characters",
+        "goType": "[]InSightCharacter",
+        "typescriptType": "Array\u003cMpvCore_InSightCharacter\u003e",
+        "usedTypescriptType": "MpvCore_InSightCharacter",
+        "usedStructName": "mpvcore.InSightCharacter",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Suggestions",
+        "jsonName": "suggestions",
+        "goType": "[]InSightSegment",
+        "typescriptType": "Array\u003cMpvCore_InSightSegment\u003e",
+        "usedTypescriptType": "MpvCore_InSightSegment",
+        "usedStructName": "mpvcore.InSightSegment",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSightSegment",
+    "formattedName": "MpvCore_InSightSegment",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CharacterID",
+        "jsonName": "characterId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "StartTime",
+        "jsonName": "startTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "EndTime",
+        "jsonName": "endTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSightCharacter",
+    "formattedName": "MpvCore_InSightCharacter",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "MalID",
+        "jsonName": "mal_id",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "URL",
+        "jsonName": "url",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Images",
+        "jsonName": "images",
+        "goType": "MpvCore_InSightCharacter_Images",
+        "inlineStructType": "struct{\nJpg __STRUCT__ `json:\"jpg\"`\nWebp __STRUCT__ `json:\"webp\"`}",
+        "typescriptType": "MpvCore_InSightCharacter_Images",
+        "usedTypescriptType": "{ jpg: { image_url: string; }; webp: { image_url: string; small_image_url: string; }; }",
+        "usedStructName": "mpvcore.InSightCharacter_Images",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Role",
+        "jsonName": "role",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Favorites",
+        "jsonName": "favorites",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSightCharacter_Images",
+    "formattedName": "MpvCore_InSightCharacter_Images",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Jpg",
+        "jsonName": "jpg",
+        "goType": "__STRUCT__",
+        "inlineStructType": "struct{\nImageURL string `json:\"image_url\"`}",
+        "typescriptType": "{ image_url: string; }",
+        "usedTypescriptType": "{ image_url: string; }",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Webp",
+        "jsonName": "webp",
+        "goType": "__STRUCT__",
+        "inlineStructType": "struct{\nImageURL string `json:\"image_url\"`\nSmallImageURL string `json:\"small_image_url\"`}",
+        "typescriptType": "{ image_url: string; small_image_url: string; }",
+        "usedTypescriptType": "{ image_url: string; small_image_url: string; }",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSightCharacterDetails",
+    "formattedName": "MpvCore_InSightCharacterDetails",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "MalID",
+        "jsonName": "mal_id",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "URL",
+        "jsonName": "url",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Images",
+        "jsonName": "images",
+        "goType": "MpvCore_InSightCharacterDetails_Images",
+        "inlineStructType": "struct{\nJpg __STRUCT__ `json:\"jpg\"`\nWebp __STRUCT__ `json:\"webp\"`}",
+        "typescriptType": "MpvCore_InSightCharacterDetails_Images",
+        "usedTypescriptType": "{ jpg: { image_url: string; }; webp: { image_url: string; small_image_url: string; }; }",
+        "usedStructName": "mpvcore.InSightCharacterDetails_Images",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "NameKanji",
+        "jsonName": "name_kanji",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Nicknames",
+        "jsonName": "nicknames",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Favorites",
+        "jsonName": "favorites",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "About",
+        "jsonName": "about",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/insight.go",
+    "filename": "insight.go",
+    "name": "InSightCharacterDetails_Images",
+    "formattedName": "MpvCore_InSightCharacterDetails_Images",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Jpg",
+        "jsonName": "jpg",
+        "goType": "__STRUCT__",
+        "inlineStructType": "struct{\nImageURL string `json:\"image_url\"`}",
+        "typescriptType": "{ image_url: string; }",
+        "usedTypescriptType": "{ image_url: string; }",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Webp",
+        "jsonName": "webp",
+        "goType": "__STRUCT__",
+        "inlineStructType": "struct{\nImageURL string `json:\"image_url\"`\nSmallImageURL string `json:\"small_image_url\"`}",
+        "typescriptType": "{ image_url: string; small_image_url: string; }",
+        "usedTypescriptType": "{ image_url: string; small_image_url: string; }",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
     "filepath": "../internal/mpvcore/mpvcore.go",
     "filename": "mpvcore.go",
     "name": "MpvCore",
@@ -72087,6 +73464,17 @@
         "typescriptType": "Events_WSEventManagerInterface",
         "usedTypescriptType": "Events_WSEventManagerInterface",
         "usedStructName": "events.WSEventManagerInterface",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "clientPlayerEventSubscriber",
+        "jsonName": "clientPlayerEventSubscriber",
+        "goType": "events.ClientEventSubscriber",
+        "typescriptType": "Events_ClientEventSubscriber",
+        "usedTypescriptType": "Events_ClientEventSubscriber",
+        "usedStructName": "events.ClientEventSubscriber",
         "required": false,
         "public": false,
         "comments": []
@@ -72138,15 +73526,211 @@
         "typescriptType": "any",
         "required": true,
         "public": false,
-        "comments": [
-          " This function is called to refresh the AniList collection"
-        ]
+        "comments": []
       },
       {
         "name": "isOfflineRef",
         "jsonName": "isOfflineRef",
         "goType": "",
         "typescriptType": "any",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "pendingMu",
+        "jsonName": "pendingMu",
+        "goType": "sync.RWMutex",
+        "typescriptType": "RWMutex",
+        "usedTypescriptType": "RWMutex",
+        "usedStructName": "sync.RWMutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "pendingState",
+        "jsonName": "pendingState",
+        "goType": "PlaybackState",
+        "typescriptType": "MpvCore_PlaybackState",
+        "usedTypescriptType": "MpvCore_PlaybackState",
+        "usedStructName": "mpvcore.PlaybackState",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "stateMu",
+        "jsonName": "stateMu",
+        "goType": "sync.RWMutex",
+        "typescriptType": "RWMutex",
+        "usedTypescriptType": "RWMutex",
+        "usedStructName": "sync.RWMutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "state",
+        "jsonName": "state",
+        "goType": "PlaybackState",
+        "typescriptType": "MpvCore_PlaybackState",
+        "usedTypescriptType": "MpvCore_PlaybackState",
+        "usedStructName": "mpvcore.PlaybackState",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "statusMu",
+        "jsonName": "statusMu",
+        "goType": "sync.RWMutex",
+        "typescriptType": "RWMutex",
+        "usedTypescriptType": "RWMutex",
+        "usedStructName": "sync.RWMutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "status",
+        "jsonName": "status",
+        "goType": "PlaybackStatus",
+        "typescriptType": "MpvCore_PlaybackStatus",
+        "usedTypescriptType": "MpvCore_PlaybackStatus",
+        "usedStructName": "mpvcore.PlaybackStatus",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "subscribers",
+        "jsonName": "subscribers",
+        "goType": "",
+        "typescriptType": "any",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "eventBus",
+        "jsonName": "eventBus",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "stopCh",
+        "jsonName": "stopCh",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "startOnce",
+        "jsonName": "startOnce",
+        "goType": "sync.Once",
+        "typescriptType": "Once",
+        "usedTypescriptType": "Once",
+        "usedStructName": "sync.Once",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "settingsMu",
+        "jsonName": "settingsMu",
+        "goType": "sync.RWMutex",
+        "typescriptType": "RWMutex",
+        "usedTypescriptType": "RWMutex",
+        "usedStructName": "sync.RWMutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "settings",
+        "jsonName": "settings",
+        "goType": "models.Settings",
+        "typescriptType": "Models_Settings",
+        "usedTypescriptType": "Models_Settings",
+        "usedStructName": "models.Settings",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "logger",
+        "jsonName": "logger",
+        "goType": "zerolog.Logger",
+        "typescriptType": "Logger",
+        "usedTypescriptType": "Logger",
+        "usedStructName": "zerolog.Logger",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "inSight",
+        "jsonName": "inSight",
+        "goType": "InSight",
+        "typescriptType": "MpvCore_InSight",
+        "usedTypescriptType": "MpvCore_InSight",
+        "usedStructName": "mpvcore.InSight",
+        "required": false,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/mpvcore.go",
+    "filename": "mpvcore.go",
+    "name": "Subscriber",
+    "formattedName": "MpvCore_Subscriber",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "id",
+        "jsonName": "id",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "eventCh",
+        "jsonName": "eventCh",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "closed",
+        "jsonName": "closed",
+        "goType": "atomic.Bool",
+        "typescriptType": "Bool",
+        "usedTypescriptType": "Bool",
+        "usedStructName": "atomic.Bool",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "closeOnce",
+        "jsonName": "closeOnce",
+        "goType": "sync.Once",
+        "typescriptType": "Once",
+        "usedTypescriptType": "Once",
+        "usedStructName": "sync.Once",
         "required": false,
         "public": false,
         "comments": []
@@ -72243,6 +73827,639 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "StreamType",
+    "formattedName": "MpvCore_StreamType",
+    "package": "mpvcore",
+    "fields": [],
+    "aliasOf": {
+      "goType": "PlaybackType",
+      "typescriptType": "MpvCore_PlaybackType",
+      "usedTypescriptType": "MpvCore_PlaybackType",
+      "declaredValues": [],
+      "usedStructName": "mpvcore.PlaybackType"
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "ClientEventType",
+    "formattedName": "MpvCore_ClientEventType",
+    "package": "mpvcore",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"playback-loaded\"",
+        "\"loaded-metadata\"",
+        "\"can-play\"",
+        "\"paused\"",
+        "\"resumed\"",
+        "\"status\"",
+        "\"seeked\"",
+        "\"completed\"",
+        "\"ended\"",
+        "\"player-error\"",
+        "\"terminated\"",
+        "\"fullscreen-changed\"",
+        "\"pip-changed\"",
+        "\"audio-track-changed\"",
+        "\"subtitle-track-changed\"",
+        "\"playlist-state\"",
+        "\"skip-data\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "ServerEvent",
+    "formattedName": "MpvCore_ServerEvent",
+    "package": "mpvcore",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"open-and-await\"",
+        "\"abort-open\"",
+        "\"watch\"",
+        "\"stream-error\"",
+        "\"pause\"",
+        "\"resume\"",
+        "\"seek\"",
+        "\"seek-to\"",
+        "\"terminate\"",
+        "\"set-fullscreen\"",
+        "\"set-pip\"",
+        "\"set-audio-track\"",
+        "\"set-subtitle-track\"",
+        "\"add-subtitle-track\"",
+        "\"show-message\"",
+        "\"get-status\"",
+        "\"get-playlist\"",
+        "\"get-skip-data\"",
+        "\"set-skip-data\"",
+        "\"play-playlist-episode\"",
+        "\"in-sight-data\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "ClientEvent",
+    "formattedName": "MpvCore_ClientEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "ClientID",
+        "jsonName": "clientId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "goType": "ClientEventType",
+        "typescriptType": "MpvCore_ClientEventType",
+        "usedTypescriptType": "MpvCore_ClientEventType",
+        "usedStructName": "mpvcore.ClientEventType",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Payload",
+        "jsonName": "payload",
+        "goType": "json.RawMessage",
+        "typescriptType": "RawMessage",
+        "usedTypescriptType": "RawMessage",
+        "usedStructName": "json.RawMessage",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "BaseVideoEvent",
+    "formattedName": "MpvCore_BaseVideoEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "PlaybackType",
+        "jsonName": "playbackType",
+        "goType": "PlaybackType",
+        "typescriptType": "MpvCore_PlaybackType",
+        "usedTypescriptType": "MpvCore_PlaybackType",
+        "usedStructName": "mpvcore.PlaybackType",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PlaybackID",
+        "jsonName": "playbackId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ClientID",
+        "jsonName": "clientId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "PlaybackLoadedEvent",
+    "formattedName": "MpvCore_PlaybackLoadedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "State",
+        "jsonName": "state",
+        "goType": "PlaybackState",
+        "typescriptType": "MpvCore_PlaybackState",
+        "usedTypescriptType": "MpvCore_PlaybackState",
+        "usedStructName": "mpvcore.PlaybackState",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "LoadedMetadataEvent",
+    "formattedName": "MpvCore_LoadedMetadataEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Paused",
+        "jsonName": "paused",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "CanPlayEvent",
+    "formattedName": "MpvCore_CanPlayEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Paused",
+        "jsonName": "paused",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "PausedEvent",
+    "formattedName": "MpvCore_PausedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "ResumedEvent",
+    "formattedName": "MpvCore_ResumedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "StatusEvent",
+    "formattedName": "MpvCore_StatusEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Paused",
+        "jsonName": "paused",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "SeekedEvent",
+    "formattedName": "MpvCore_SeekedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Paused",
+        "jsonName": "paused",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "CompletedEvent",
+    "formattedName": "MpvCore_CompletedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "CurrentTime",
+        "jsonName": "currentTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Duration",
+        "jsonName": "duration",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "EndedEvent",
+    "formattedName": "MpvCore_EndedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "AutoNext",
+        "jsonName": "autoNext",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "ErrorEvent",
+    "formattedName": "MpvCore_ErrorEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Error",
+        "jsonName": "error",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "TerminatedEvent",
+    "formattedName": "MpvCore_TerminatedEvent",
+    "package": "mpvcore",
+    "fields": [],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "FullscreenChangedEvent",
+    "formattedName": "MpvCore_FullscreenChangedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Fullscreen",
+        "jsonName": "fullscreen",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "PipChangedEvent",
+    "formattedName": "MpvCore_PipChangedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Pip",
+        "jsonName": "pip",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "AudioTrackChangedEvent",
+    "formattedName": "MpvCore_AudioTrackChangedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "TrackID",
+        "jsonName": "trackId",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "SubtitleTrackChangedEvent",
+    "formattedName": "MpvCore_SubtitleTrackChangedEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "TrackID",
+        "jsonName": "trackId",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "PlaylistStateEvent",
+    "formattedName": "MpvCore_PlaylistStateEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "Playlist",
+        "jsonName": "playlist",
+        "goType": "PlaylistState",
+        "typescriptType": "MpvCore_PlaylistState",
+        "usedTypescriptType": "MpvCore_PlaylistState",
+        "usedStructName": "mpvcore.PlaylistState",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
+  },
+  {
+    "filepath": "../internal/mpvcore/types.go",
+    "filename": "types.go",
+    "name": "SkipDataEvent",
+    "formattedName": "MpvCore_SkipDataEvent",
+    "package": "mpvcore",
+    "fields": [
+      {
+        "name": "SkipData",
+        "jsonName": "skipData",
+        "goType": "SkipData",
+        "typescriptType": "MpvCore_SkipData",
+        "usedTypescriptType": "MpvCore_SkipData",
+        "usedStructName": "mpvcore.SkipData",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [],
+    "embeddedStructNames": [
+      "mpvcore.BaseVideoEvent"
+    ]
   },
   {
     "filepath": "../internal/nakama/nakama.go",
@@ -72391,23 +74608,12 @@
         "comments": []
       },
       {
-        "name": "nativePlayer",
-        "jsonName": "nativePlayer",
-        "goType": "nativeplayer.NativePlayer",
-        "typescriptType": "NativePlayer_NativePlayer",
-        "usedTypescriptType": "NativePlayer_NativePlayer",
-        "usedStructName": "nativeplayer.NativePlayer",
-        "required": false,
-        "public": false,
-        "comments": []
-      },
-      {
-        "name": "videoCore",
-        "jsonName": "videoCore",
-        "goType": "videocore.VideoCore",
-        "typescriptType": "VideoCore_VideoCore",
-        "usedTypescriptType": "VideoCore_VideoCore",
-        "usedStructName": "videocore.VideoCore",
+        "name": "mediacoreCoordinator",
+        "jsonName": "mediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": false,
         "comments": []
@@ -72739,23 +74945,12 @@
         "comments": []
       },
       {
-        "name": "NativePlayer",
-        "jsonName": "NativePlayer",
-        "goType": "nativeplayer.NativePlayer",
-        "typescriptType": "NativePlayer_NativePlayer",
-        "usedTypescriptType": "NativePlayer_NativePlayer",
-        "usedStructName": "nativeplayer.NativePlayer",
-        "required": false,
-        "public": true,
-        "comments": []
-      },
-      {
-        "name": "VideoCore",
-        "jsonName": "VideoCore",
-        "goType": "videocore.VideoCore",
-        "typescriptType": "VideoCore_VideoCore",
-        "usedTypescriptType": "VideoCore_VideoCore",
-        "usedStructName": "videocore.VideoCore",
+        "name": "MediacoreCoordinator",
+        "jsonName": "MediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": true,
         "comments": []
@@ -74428,12 +76623,23 @@
         ]
       },
       {
+        "name": "Media",
+        "jsonName": "media",
+        "goType": "anilist.BaseAnime",
+        "typescriptType": "AL_BaseAnime",
+        "usedTypescriptType": "AL_BaseAnime",
+        "usedStructName": "anilist.BaseAnime",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "OnlinestreamParams",
         "jsonName": "onlinestreamParams",
-        "goType": "videocore.OnlinestreamParams",
-        "typescriptType": "VideoCore_OnlinestreamParams",
-        "usedTypescriptType": "VideoCore_OnlinestreamParams",
-        "usedStructName": "videocore.OnlinestreamParams",
+        "goType": "player.OnlinestreamParams",
+        "typescriptType": "Player_OnlinestreamParams",
+        "usedTypescriptType": "Player_OnlinestreamParams",
+        "usedStructName": "player.OnlinestreamParams",
         "required": false,
         "public": true,
         "comments": []
@@ -74917,6 +77123,17 @@
         "comments": []
       },
       {
+        "name": "Media",
+        "jsonName": "media",
+        "goType": "anilist.BaseAnime",
+        "typescriptType": "AL_BaseAnime",
+        "usedTypescriptType": "AL_BaseAnime",
+        "usedStructName": "anilist.BaseAnime",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "TorrentStreamParams",
         "jsonName": "torrentStreamParams",
         "goType": "torrentstream.StartStreamOptions",
@@ -74941,10 +77158,10 @@
       {
         "name": "OnlinestreamParams",
         "jsonName": "onlinestreamParams",
-        "goType": "videocore.OnlinestreamParams",
-        "typescriptType": "VideoCore_OnlinestreamParams",
-        "usedTypescriptType": "VideoCore_OnlinestreamParams",
-        "usedStructName": "videocore.OnlinestreamParams",
+        "goType": "player.OnlinestreamParams",
+        "typescriptType": "Player_OnlinestreamParams",
+        "usedTypescriptType": "Player_OnlinestreamParams",
+        "usedStructName": "player.OnlinestreamParams",
         "required": false,
         "public": true,
         "comments": []
@@ -75112,7 +77329,8 @@
       "typescriptType": "string",
       "declaredValues": [
         "\"playbackmanager\"",
-        "\"videocore\""
+        "\"videocore\"",
+        "\"mpvcore\""
       ]
     },
     "comments": [
@@ -75171,7 +77389,7 @@
     ],
     "comments": [
       " WatchPartyGenericPlayer is a player-agnostic interface for controlling",
-      " both the playbackmanager.PlaybackManager (system player) and the videocore.VideoCore (videocore.NativePlayer or videocore.WebPlayer)."
+      " both the playbackmanager.PlaybackManager (system player) and the mediacore.Coordinator."
     ]
   },
   {
@@ -75222,12 +77440,12 @@
         "comments": []
       },
       {
-        "name": "videoCoreSubscriber",
-        "jsonName": "videoCoreSubscriber",
-        "goType": "videocore.Subscriber",
-        "typescriptType": "VideoCore_Subscriber",
-        "usedTypescriptType": "VideoCore_Subscriber",
-        "usedStructName": "videocore.Subscriber",
+        "name": "mediacoreSubscriber",
+        "jsonName": "mediacoreSubscriber",
+        "goType": "mediacore.Subscriber",
+        "typescriptType": "Subscriber",
+        "usedTypescriptType": "Subscriber",
+        "usedStructName": "mediacore.Subscriber",
         "required": false,
         "public": false,
         "comments": []
@@ -75355,6 +77573,54 @@
     "comments": []
   },
   {
+    "filepath": "../internal/nativeplayer/events.go",
+    "filename": "events.go",
+    "name": "SubtitleEventsPayload",
+    "formattedName": "NativePlayer_SubtitleEventsPayload",
+    "package": "nativeplayer",
+    "fields": [
+      {
+        "name": "Events",
+        "jsonName": "events",
+        "goType": "[]mkvparser.SubtitleEvent",
+        "typescriptType": "Array\u003cMKVParser_SubtitleEvent\u003e",
+        "usedTypescriptType": "MKVParser_SubtitleEvent",
+        "usedStructName": "mkvparser.SubtitleEvent",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PlaybackID",
+        "jsonName": "playbackId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "GenerationID",
+        "jsonName": "generationId",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SeekTime",
+        "jsonName": "seekTime",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
     "filepath": "../internal/nativeplayer/nativeplayer.go",
     "filename": "nativeplayer.go",
     "name": "StreamType",
@@ -75372,6 +77638,90 @@
         "\"nakama\""
       ]
     },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/nativeplayer/nativeplayer.go",
+    "filename": "nativeplayer.go",
+    "name": "VideoSubtitleTrack",
+    "formattedName": "NativePlayer_VideoSubtitleTrack",
+    "package": "nativeplayer",
+    "fields": [
+      {
+        "name": "Index",
+        "jsonName": "index",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Src",
+        "jsonName": "src",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Content",
+        "jsonName": "content",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Label",
+        "jsonName": "label",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Language",
+        "jsonName": "language",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Type",
+        "jsonName": "type",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": [
+          " \"srt\" | \"vtt\" | \"ass\" | \"ssa\""
+        ]
+      },
+      {
+        "name": "Default",
+        "jsonName": "default",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "UseLibassRenderer",
+        "jsonName": "useLibassRenderer",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
     "comments": []
   },
   {
@@ -75459,10 +77809,10 @@
       {
         "name": "SubtitleTracks",
         "jsonName": "subtitleTracks",
-        "goType": "[]videocore.VideoSubtitleTrack",
-        "typescriptType": "Array\u003cVideoCore_VideoSubtitleTrack\u003e",
-        "usedTypescriptType": "VideoCore_VideoSubtitleTrack",
-        "usedStructName": "videocore.VideoSubtitleTrack",
+        "goType": "[]VideoSubtitleTrack",
+        "typescriptType": "Array\u003cNativePlayer_VideoSubtitleTrack\u003e",
+        "usedTypescriptType": "NativePlayer_VideoSubtitleTrack",
+        "usedStructName": "nativeplayer.VideoSubtitleTrack",
         "required": false,
         "public": true,
         "comments": []
@@ -75557,11 +77907,11 @@
       {
         "name": "videoCore",
         "jsonName": "videoCore",
-        "goType": "videocore.VideoCore",
-        "typescriptType": "VideoCore_VideoCore",
-        "usedTypescriptType": "VideoCore_VideoCore",
-        "usedStructName": "videocore.VideoCore",
-        "required": false,
+        "goType": "VideoCoreDelegate",
+        "typescriptType": "NativePlayer_VideoCoreDelegate",
+        "usedTypescriptType": "NativePlayer_VideoCoreDelegate",
+        "usedStructName": "nativeplayer.VideoCoreDelegate",
+        "required": true,
         "public": false,
         "comments": []
       },
@@ -75677,11 +78027,192 @@
       {
         "name": "VideoCore",
         "jsonName": "VideoCore",
-        "goType": "videocore.VideoCore",
-        "typescriptType": "VideoCore_VideoCore",
-        "usedTypescriptType": "VideoCore_VideoCore",
-        "usedStructName": "videocore.VideoCore",
-        "required": false,
+        "goType": "VideoCoreDelegate",
+        "typescriptType": "NativePlayer_VideoCoreDelegate",
+        "usedTypescriptType": "NativePlayer_VideoCoreDelegate",
+        "usedStructName": "nativeplayer.VideoCoreDelegate",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/notification/hub.go",
+    "filename": "hub.go",
+    "name": "Hub",
+    "formattedName": "Hub",
+    "package": "notification",
+    "fields": [],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/notification/hub.go",
+    "filename": "hub.go",
+    "name": "Severity",
+    "formattedName": "Severity",
+    "package": "notification",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"normal\"",
+        "\"info\"",
+        "\"success\"",
+        "\"warning\"",
+        "\"error\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/notification/hub.go",
+    "filename": "hub.go",
+    "name": "Urgency",
+    "formattedName": "Urgency",
+    "package": "notification",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"silent\"",
+        "\"normal\"",
+        "\"urgent\""
+      ]
+    },
+    "comments": []
+  },
+  {
+    "filepath": "../internal/notification/hub.go",
+    "filename": "hub.go",
+    "name": "Progress",
+    "formattedName": "Progress",
+    "package": "notification",
+    "fields": [
+      {
+        "name": "Current",
+        "jsonName": "Current",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Total",
+        "jsonName": "Total",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Intermediate",
+        "jsonName": "Intermediate",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/notification/hub.go",
+    "filename": "hub.go",
+    "name": "Notification",
+    "formattedName": "Notification",
+    "package": "notification",
+    "fields": [
+      {
+        "name": "ID",
+        "jsonName": "id",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "EmitterId",
+        "jsonName": "emitterId",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Body",
+        "jsonName": "body",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Severity",
+        "jsonName": "severity",
+        "goType": "Severity",
+        "typescriptType": "Severity",
+        "usedTypescriptType": "Severity",
+        "usedStructName": "notification.Severity",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Urgency",
+        "jsonName": "urgency",
+        "goType": "Urgency",
+        "typescriptType": "Urgency",
+        "usedTypescriptType": "Urgency",
+        "usedStructName": "notification.Urgency",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ShouldNotifySystem",
+        "jsonName": "shouldNotifySystem",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HasNotifiedSystem",
+        "jsonName": "hasNotifiedSystem",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Progress",
+        "jsonName": "progress",
+        "goType": "Progress",
+        "typescriptType": "Progress",
+        "usedTypescriptType": "Progress",
+        "usedStructName": "notification.Progress",
+        "required": true,
         "public": true,
         "comments": []
       }
@@ -76100,6 +78631,15 @@
         "jsonName": "language",
         "goType": "string",
         "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsDefault",
+        "jsonName": "isDefault",
+        "goType": "bool",
+        "typescriptType": "boolean",
         "required": true,
         "public": true,
         "comments": []
@@ -79575,12 +82115,12 @@
         "comments": []
       },
       {
-        "name": "nativePlayer",
-        "jsonName": "nativePlayer",
-        "goType": "nativeplayer.NativePlayer",
-        "typescriptType": "NativePlayer_NativePlayer",
-        "usedTypescriptType": "NativePlayer_NativePlayer",
-        "usedStructName": "nativeplayer.NativePlayer",
+        "name": "mediacoreCoordinator",
+        "jsonName": "mediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": false,
         "comments": []
@@ -79781,12 +82321,12 @@
         "comments": []
       },
       {
-        "name": "NativePlayer",
-        "jsonName": "NativePlayer",
-        "goType": "nativeplayer.NativePlayer",
-        "typescriptType": "NativePlayer_NativePlayer",
-        "usedTypescriptType": "NativePlayer_NativePlayer",
-        "usedStructName": "nativeplayer.NativePlayer",
+        "name": "MediacoreCoordinator",
+        "jsonName": "MediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": true,
         "comments": []
@@ -88326,6 +90866,121 @@
     "comments": []
   },
   {
+    "filepath": "../internal/testmocks/fake_manga_provider.go",
+    "filename": "fake_manga_provider.go",
+    "name": "FakeMangaProvider",
+    "formattedName": "FakeMangaProvider",
+    "package": "testmocks",
+    "fields": [
+      {
+        "name": "mu",
+        "jsonName": "mu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "searchResults",
+        "jsonName": "searchResults",
+        "goType": "[]hibikemanga.SearchResult",
+        "typescriptType": "Array\u003cHibikeManga_SearchResult\u003e",
+        "usedTypescriptType": "HibikeManga_SearchResult",
+        "usedStructName": "hibikemanga.SearchResult",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "chapters",
+        "jsonName": "chapters",
+        "goType": "map[string][]hibikemanga.ChapterDetails",
+        "typescriptType": "Record\u003cstring, Array\u003cHibikeManga_ChapterDetails\u003e\u003e",
+        "usedTypescriptType": "HibikeManga_ChapterDetails",
+        "usedStructName": "hibikemanga.ChapterDetails",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "searchErr",
+        "jsonName": "searchErr",
+        "goType": "error",
+        "typescriptType": "error",
+        "usedTypescriptType": "error",
+        "usedStructName": "testmocks.error",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "chaptersErr",
+        "jsonName": "chaptersErr",
+        "goType": "error",
+        "typescriptType": "error",
+        "usedTypescriptType": "error",
+        "usedStructName": "testmocks.error",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "searchCalls",
+        "jsonName": "searchCalls",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "chapterCalls",
+        "jsonName": "chapterCalls",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "settings",
+        "jsonName": "settings",
+        "goType": "hibikemanga.Settings",
+        "typescriptType": "HibikeManga_Settings",
+        "usedTypescriptType": "HibikeManga_Settings",
+        "usedStructName": "hibikemanga.Settings",
+        "required": false,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/testmocks/fake_manga_provider.go",
+    "filename": "fake_manga_provider.go",
+    "name": "FakeMangaProviderBuilder",
+    "formattedName": "FakeMangaProviderBuilder",
+    "package": "testmocks",
+    "fields": [
+      {
+        "name": "provider",
+        "jsonName": "provider",
+        "goType": "FakeMangaProvider",
+        "typescriptType": "FakeMangaProvider",
+        "usedTypescriptType": "FakeMangaProvider",
+        "usedStructName": "testmocks.FakeMangaProvider",
+        "required": false,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
     "filepath": "../internal/testmocks/fake_metadata_provider.go",
     "filename": "fake_metadata_provider.go",
     "name": "FakeMetadataProviderBuilder",
@@ -95316,15 +97971,6 @@
         "comments": []
       },
       {
-        "name": "animeProviderSmartSearchCaches",
-        "jsonName": "animeProviderSmartSearchCaches",
-        "goType": "",
-        "typescriptType": "any",
-        "required": false,
-        "public": false,
-        "comments": []
-      },
-      {
         "name": "settings",
         "jsonName": "settings",
         "goType": "RepositorySettings",
@@ -95830,6 +98476,17 @@
         ]
       },
       {
+        "name": "lastBytesReadUseful",
+        "jsonName": "lastBytesReadUseful",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": false,
+        "comments": [
+          " Track the last bytes read useful data"
+        ]
+      },
+      {
         "name": "lastBytesWrittenData",
         "jsonName": "lastBytesWrittenData",
         "goType": "int64",
@@ -95849,6 +98506,31 @@
         "required": false,
         "public": false,
         "comments": []
+      },
+      {
+        "name": "lastMetadataDuration",
+        "jsonName": "lastMetadataDuration",
+        "goType": "time.Duration",
+        "typescriptType": "Duration",
+        "usedTypescriptType": "Duration",
+        "usedStructName": "time.Duration",
+        "required": false,
+        "public": false,
+        "comments": [
+          " Track the duration of the last metadata fetch"
+        ]
+      },
+      {
+        "name": "lastProgressLog",
+        "jsonName": "lastProgressLog",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": false,
+        "comments": [
+          " Track when we last logged progress"
+        ]
       }
     ],
     "comments": []
@@ -96518,12 +99200,12 @@
         "comments": []
       },
       {
-        "name": "nativePlayer",
-        "jsonName": "nativePlayer",
-        "goType": "nativeplayer.NativePlayer",
-        "typescriptType": "NativePlayer_NativePlayer",
-        "usedTypescriptType": "NativePlayer_NativePlayer",
-        "usedStructName": "nativeplayer.NativePlayer",
+        "name": "mediacoreCoordinator",
+        "jsonName": "mediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": false,
         "comments": []
@@ -96642,6 +99324,15 @@
         "comments": [
           " Flag on whether the client should prepare a stream"
         ]
+      },
+      {
+        "name": "acceleratedStartup",
+        "jsonName": "acceleratedStartup",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": false,
+        "comments": []
       }
     ],
     "comments": []
@@ -96791,12 +99482,12 @@
         "comments": []
       },
       {
-        "name": "NativePlayer",
-        "jsonName": "NativePlayer",
-        "goType": "nativeplayer.NativePlayer",
-        "typescriptType": "NativePlayer_NativePlayer",
-        "usedTypescriptType": "NativePlayer_NativePlayer",
-        "usedStructName": "nativeplayer.NativePlayer",
+        "name": "MediacoreCoordinator",
+        "jsonName": "MediacoreCoordinator",
+        "goType": "mediacore.Coordinator",
+        "typescriptType": "Coordinator",
+        "usedTypescriptType": "Coordinator",
+        "usedStructName": "mediacore.Coordinator",
         "required": false,
         "public": true,
         "comments": []
@@ -99525,6 +102216,39 @@
         "required": true,
         "public": false,
         "comments": []
+      },
+      {
+        "name": "mu",
+        "jsonName": "mu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "closeOnce",
+        "jsonName": "closeOnce",
+        "goType": "sync.Once",
+        "typescriptType": "Once",
+        "usedTypescriptType": "Once",
+        "usedStructName": "sync.Once",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "closeErr",
+        "jsonName": "closeErr",
+        "goType": "error",
+        "typescriptType": "error",
+        "usedTypescriptType": "error",
+        "usedStructName": "torrentutil.error",
+        "required": true,
+        "public": false,
+        "comments": []
       }
     ],
     "comments": [
@@ -99782,6 +102506,58 @@
         "typescriptType": "Array\u003cstring\u003e",
         "required": false,
         "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/videocore/adapter.go",
+    "filename": "adapter.go",
+    "name": "Adapter",
+    "formattedName": "VideoCore_Adapter",
+    "package": "videocore",
+    "fields": [
+      {
+        "name": "vc",
+        "jsonName": "vc",
+        "goType": "VideoCore",
+        "typescriptType": "VideoCore_VideoCore",
+        "usedTypescriptType": "VideoCore_VideoCore",
+        "usedStructName": "videocore.VideoCore",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "np",
+        "jsonName": "np",
+        "goType": "nativeplayer.NativePlayer",
+        "typescriptType": "NativePlayer_NativePlayer",
+        "usedTypescriptType": "NativePlayer_NativePlayer",
+        "usedStructName": "nativeplayer.NativePlayer",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "sub",
+        "jsonName": "sub",
+        "goType": "Subscriber",
+        "typescriptType": "VideoCore_Subscriber",
+        "usedTypescriptType": "VideoCore_Subscriber",
+        "usedStructName": "videocore.Subscriber",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "eventsCh",
+        "jsonName": "eventsCh",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
         "comments": []
       }
     ],

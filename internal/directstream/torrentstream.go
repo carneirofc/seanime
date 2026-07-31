@@ -10,7 +10,7 @@ import (
 	"seanime/internal/api/anilist"
 	"seanime/internal/library/anime"
 	"seanime/internal/mkvparser"
-	"seanime/internal/nativeplayer"
+	"seanime/internal/player"
 	"seanime/internal/util/result"
 	"seanime/internal/util/torrentutil"
 
@@ -35,8 +35,8 @@ type TorrentStream struct {
 	streamReadyCh chan struct{} // Closed by the initiator when the stream is ready
 }
 
-func (s *TorrentStream) Type() nativeplayer.StreamType {
-	return nativeplayer.StreamTypeTorrent
+func (s *TorrentStream) Type() player.PlaybackType {
+	return player.PlaybackTypeTorrent
 }
 
 func (s *TorrentStream) completedFilePath() (string, bool) {
@@ -74,12 +74,14 @@ func (s *TorrentStream) hasCompletedFile() bool {
 	return ok
 }
 
-func (s *TorrentStream) newReader() io.ReadSeekCloser {
+func (s *TorrentStream) newReader(ctx context.Context) io.ReadSeekCloser {
 	if reader, ok := s.openCompletedFile(); ok {
 		return reader
 	}
 
-	return torrentutil.NewReadSeeker(s.torrent, s.file, s.logger)
+	reader := torrentutil.NewReadSeeker(s.torrent, s.file, s.logger)
+	reader.SetContext(ctx)
+	return reader
 }
 
 func (s *TorrentStream) newMetadataReader() io.ReadSeekCloser {
@@ -90,6 +92,9 @@ func (s *TorrentStream) newMetadataReader() io.ReadSeekCloser {
 	reader := s.file.NewReader()
 	reader.SetResponsive()
 	reader.SetReadahead(0)
+	if s.manager != nil && s.manager.playbackCtx != nil {
+		reader.SetContext(s.manager.playbackCtx)
+	}
 	return reader
 }
 
@@ -103,6 +108,13 @@ func (s *TorrentStream) newSubtitleReader() io.ReadSeekCloser {
 
 func (s *TorrentStream) LoadContentType() string {
 	s.contentTypeOnce.Do(func() {
+		if !s.shouldProcessMediaOnServer() {
+			s.contentType = loadContentType(s.file.DisplayPath())
+			if s.contentType == "" {
+				s.contentType = "application/octet-stream"
+			}
+			return
+		}
 		r := s.newMetadataReader()
 		defer r.Close()
 		s.contentType = loadContentType(s.file.DisplayPath(), r)
@@ -111,10 +123,10 @@ func (s *TorrentStream) LoadContentType() string {
 	return s.contentType
 }
 
-func (s *TorrentStream) LoadPlaybackInfo() (ret *nativeplayer.PlaybackInfo, err error) {
+func (s *TorrentStream) LoadPlaybackInfo() (ret *player.PlaybackInfo, err error) {
 	s.playbackInfoOnce.Do(func() {
 		if s.file == nil || s.torrent == nil {
-			ret = &nativeplayer.PlaybackInfo{}
+			ret = &player.PlaybackInfo{}
 			err = fmt.Errorf("torrent is not set")
 			s.playbackInfoErr = err
 			return
@@ -129,12 +141,14 @@ func (s *TorrentStream) LoadPlaybackInfo() (ret *nativeplayer.PlaybackInfo, err 
 			}
 		}
 
-		playbackInfo := nativeplayer.PlaybackInfo{
+		streamURL := "{{SERVER_URL}}/api/v1/directstream/stream?id=" + id + s.manager.GetHMACTokenQueryParam("/api/v1/directstream/stream", "&")
+		playbackInfo := player.PlaybackInfo{
 			ID:                id,
-			StreamType:        s.Type(),
+			PlaybackType:      s.Type(),
+			PlaybackURI:       streamURL,
 			StreamPath:        s.file.Path(),
 			MimeType:          s.LoadContentType(),
-			StreamUrl:         "{{SERVER_URL}}/api/v1/directstream/stream?id=" + id + s.manager.GetHMACTokenQueryParam("/api/v1/directstream/stream", "&"),
+			StreamURL:         streamURL,
 			ContentLength:     s.file.Length(),
 			MkvMetadata:       nil,
 			MkvMetadataParser: mo.None[*mkvparser.MetadataParser](),
@@ -143,8 +157,9 @@ func (s *TorrentStream) LoadPlaybackInfo() (ret *nativeplayer.PlaybackInfo, err 
 			EntryListData:     entryListData,
 		}
 
-		// If the content type is an EBML content type, we can create a metadata parser
-		if isEbmlContent(s.LoadContentType()) {
+		// VideoCore needs server-side MKV metadata and subtitle extraction.
+		// MpvCore reads the proxied torrent bytes and lets libmpv demux them.
+		if s.shouldProcessMediaOnServer() && isEbmlContent(s.LoadContentType()) {
 			reader := s.newMetadataReader()
 			defer reader.Close()
 			parser := mkvparser.NewMetadataParser(reader, s.logger)
@@ -203,24 +218,6 @@ func (s *TorrentStream) GetStreamHandler() http.Handler {
 			return
 		}
 
-		if isThumbnailRequest(r) {
-			reader := s.newReader()
-			defer reader.Close()
-			ra, ok := handleRange(w, r, reader, name, size)
-			if !ok {
-				return
-			}
-			serveContentRange(w, r, r.Context(), reader, name, size, contentType, ra)
-			return
-		}
-
-		s.logger.Trace().Str("file", name).Msg("directstream(torrent): New reader")
-		tr := s.newReader()
-		defer func() {
-			s.logger.Trace().Msg("directstream(torrent): Closing reader")
-			_ = tr.Close()
-		}()
-
 		playbackCtx := s.manager.playbackCtx
 		if playbackCtx == nil {
 			playbackCtx = r.Context()
@@ -232,19 +229,27 @@ func (s *TorrentStream) GetStreamHandler() http.Handler {
 			cancelServe()
 		}()
 
-		ra, ok := handleRange(w, r, tr, name, size)
-		if !ok {
+		if isThumbnailRequest(r) {
+			reader := s.newReader(serveCtx)
+			defer reader.Close()
+			ra, ok := handleRange(w, r, reader, name, size)
+			if !ok {
+				return
+			}
+			serveContentRange(w, r, serveCtx, reader, name, size, contentType, ra)
 			return
 		}
 
-		if ra.Start > 0 {
-			go func(offset int64, subtitleCtx context.Context) {
-				if _, ok := s.playbackInfo.MkvMetadataParser.Get(); ok {
-					// Start a subtitle stream from the current position
-					subReader := s.newSubtitleReader()
-					s.StartSubtitleStream(s, subtitleCtx, subReader, offset)
-				}
-			}(ra.Start, serveCtx)
+		s.logger.Trace().Str("file", name).Msg("directstream(torrent): New reader")
+		tr := s.newReader(serveCtx)
+		defer func() {
+			s.logger.Trace().Msg("directstream(torrent): Closing reader")
+			_ = tr.Close()
+		}()
+
+		ra, ok := handleRange(w, r, tr, name, size)
+		if !ok {
+			return
 		}
 
 		serveContentRange(w, r, serveCtx, tr, name, size, s.LoadContentType(), ra)

@@ -1,5 +1,11 @@
 import { HibikeManga_SearchResult, Manga_Entry } from "@/api/generated/types"
-import { useGetMangaMapping, useMangaManualMapping, useMangaManualSearch, useRemoveMangaMapping } from "@/api/hooks/manga.hooks"
+import {
+    useGetMangaMapping,
+    useMangaManualMapping,
+    useMangaManualSearch,
+    usePreviewMangaMapping,
+    useRemoveMangaMapping,
+} from "@/api/hooks/manga.hooks"
 import { useSelectedMangaProvider } from "@/app/(main)/manga/_lib/handle-manga-selected-provider"
 import { useMangaReaderUtils } from "@/app/(main)/manga/_lib/handle-manga-utils"
 import { ConfirmationDialog, useConfirmationDialog } from "@/components/shared/confirmation-dialog"
@@ -104,6 +110,12 @@ function Content({
 
     // Match
     const { mutate: match, isPending: isMatching } = useMangaManualMapping()
+    const {
+        mutate: previewMapping,
+        data: mappingPreview,
+        isPending: previewLoading,
+        reset: resetPreview,
+    } = usePreviewMangaMapping()
 
     // Unmatch
     const { mutate: unmatch, isPending: isUnmatching } = useRemoveMangaMapping()
@@ -135,6 +147,10 @@ function Content({
             : "Are you sure you want to match this manga to the search result?",
         actionText: "Confirm",
         actionIntent: "success",
+        onCancel: () => {
+            resetPreview()
+            setSelectedMatch(null)
+        },
         onConfirm: () => {
             if (selectedMatch && selectedProvider) {
                 match({
@@ -197,7 +213,11 @@ function Content({
                                 fieldClass="w-full"
                             />
 
-                            <Field.Submit intent="white" loading={isMatching || searchLoading || mappingLoading} className="">Search</Field.Submit>
+                            <Field.Submit
+                                intent="white"
+                                loading={isMatching || previewLoading || searchLoading || mappingLoading}
+                                className=""
+                            >Search</Field.Submit>
                         </div>
                     </Form>
 

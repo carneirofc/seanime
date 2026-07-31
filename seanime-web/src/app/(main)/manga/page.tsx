@@ -75,6 +75,7 @@ export default function Page() {
                 filteredCollection={filteredMangaCollection}
                 storedProviders={storedProviders}
                 hasManga={hasManga}
+                isMangaPage
             />
         </div>
     )

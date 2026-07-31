@@ -8,6 +8,60 @@ All notable changes to this project will be documented in this file.
 - ✨ anilist: Added per-entry privacy controls — the list-entry editor now has "Private" (hide from other AniList users) and "Hide from status lists" toggles for both anime and manga, threaded through a new `UpdateEntryParams` on the platform and the `SaveMediaListEntry` mutation; entries fetched from AniList now surface `private`/`hiddenFromStatusLists`, with a lock badge on private entry cards
 - ✨ anilist: Added an "adult privacy" policy — a new "Make adult titles private by default" setting (enabled by default) makes newly-added adult (`isAdult`) entries default to private + hidden from status lists on AniList; existing entries are never re-forced, and a deliberate later choice always persists
 - ✨ anilist: Added an adult-exposure alert — an inline warning in the entry editor and a session-dismissible collection banner ("N adult titles are publicly visible") on the anime and manga libraries, with a one-click "Make all private" bulk action (`/api/v1/anilist/privatize-adult-entries`); the alert is independent of the setting and reflects real exposure
+- 🔀 Merged upstream 5rahim/seanime v3.10.2 into the fork (41 upstream commits); the fork version is now `3.10.2-fork.1`
+- ✨ playback: Restored upstream's MpvCore player engine, which an earlier fork merge had dropped — the Denshi playback settings can again choose between VideoCore (Chromium) and MpvCore (libmpv), including Anime4K shader selection, MPV logging/log export and custom `mpv.conf` options
+- ✨ manga: Adopted upstream's server-synced manga preferences and source-refresh job, while keeping the fork's manual source-match flow; provider auto-search stays opt-in, so UI-driven loads still ask you to pick a source (`ErrMangaMatchRequired`)
+
+## v3.10.2
+
+- ⚡️ Perf (Directstream): Improved torrent streaming handling
+  - Prevents delayed HTTP responses on large torrents
+  - Faster seeks and piece prioritization
+- ⚡️ Torrent Search: Reduced cache TTL and automatic retries
+- 🦺 TorBox: Fixed download link filename encoding
+- 🦺 Issue Recorder: Upgraded rrweb to fix session replay
+- 🦺 Autoselect: Fixed language parsing
+- 🦺 MpvCore: Fixed autonext on video end
+- 🦺 AniList: Restrict retries to 429 errors only
+
+## v3.10.1
+
+- ⚡️ Manga: Made the refresh button more prominent
+- 🦺 Cache layer: Fixed logging out on invalid token
+- 🦺 UI: Fixed manga list disappearing due to unread only option (regression)
+- 🦺 Plugins: Fixed DOM observe method incorrectly firing twice
+
+## v3.10.0
+
+- ⚡️ Manga: Improved source refresh
+  - Refresh saved sources, find missing sources, or compare all installed providers
+  - Retry failed entries or find alternatives when a source stops working
+- ⚡️ Built-in Players: Configure extra chapters to skip
+  - Custom patterns for auto-skip, skip buttons, and timeline highlighting
+- ⚡️ VideoCore: Faster and more reliable subtitles
+- ⚡️ Torrent: Optional availability badges for recently released episodes
+- ⚡️ Online Streaming: Improvement to reliability
+  - Refresh stale source urls before switching providers
+  - Keep provider, server, quality, audio, and subtitle choices during recovery
+  - Remember HLS quality between episodes
+  - Respect provider defaults and per-anime subtitle choices
+  - Support subtitles that require provider headers
+- ⚡️ Denshi: Restore scroll position on Search and Lists
+- ⚡️ Denshi: Export MpvCore logs from Video Playback settings
+- ⚡️ Plugins: Show badge counts for unpinned tray plugins
+- ⚡️ Plugins: Added APIs for custom Discord Rich Presence activities and AniList avatar URLs
+- 🦺 Transcoding / Direct Play: Fixed codec and container detection and stopped reusing stale media containers
+- 🦺 MpvCore: Fixed the player background color
+- 🦺 Nakama: Fixed watch parties using custom-source media
+- 🦺 VideoCore: Fixed stale playback sessions blocking a new client
+- 🦺 MPV/IINA: Restoring watch progress now waits until media is ready
+- 🦺 Cache: Fixed deleted file cache entries remaining active in memory
+- 🦺 UI: Fixed some visual bugs
+- ⬆️ MpvCore: Updated mpv-prism to 0.1.8
+  - Better support for dual-gpu setups
+  - Fixed startup race causing infinite loading
+  - Fixed logging on Windows
+- ⬆️ Updated dependencies
 
 ## v3.9.1-fork.3
 
@@ -40,6 +94,7 @@ All notable changes to this project will be documented in this file.
 - 💄 seanime-qt: Added a "Poster size" slider to the Appearance pane (70–140%, client-local and persisted) that resizes poster cards live across every grid — the anime and manga libraries, search, and the split media grids; the `Theme` singleton now owns the poster grid cell size (`posterCellWidth`/`posterCellHeight` derived from the pref) and `AnimeCard`'s poster fills the cell so it scales proportionally instead of at a fixed height
 - 💄 seanime-qt: Redesigned the advanced search view for clarity — a titled header with a live result count, a search field with an inline magnifier and clear (×) button, and the filters grouped into a distinct panel with active genre/tag selections shown as removable chips and a "Clear" action; results now auto-run on any filter change (title debounced), a busy indicator shows while a query is in flight, and the empty state adapts between a welcome prompt and "No results"
 - 🦺 seanime-qt: Fixed the search view's broken initial layout — a stray "Load more" button that rendered over the empty-state text (the empty grid and its footer no longer compete for layout), and softened the results populate animation to a single fade so a full page appears smoothly; backed by a new `searchBusy` flag on the controller that is set when a search/page starts and cleared on results or error
+
 
 ## v3.9.1
 
@@ -1897,4 +1952,3 @@ This release introduced a major bug, skip to v1.1.2+
 ## 0.1.0
 
 - 🎉 Alpha release
-

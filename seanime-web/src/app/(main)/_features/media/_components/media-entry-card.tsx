@@ -62,6 +62,7 @@ type MediaEntryCardBaseProps = {
     showListDataButton?: boolean
 }
 
+
 type MediaEntryCardListData = Anime_EntryListData | Manga_EntryListData
 
 type MediaEntryCardProps<T extends "anime" | "manga"> = {
@@ -281,7 +282,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                     >
                         <LuEye /> Preview
                     </ContextMenuItem>}
-                    {(libraryData || nakamaLibraryData || (listData && hasStreamingEnabled)) && <ContextMenuItem
+                    {((libraryData || nakamaLibraryData || (listData && hasStreamingEnabled)) && type === "anime") && <ContextMenuItem
                         onClick={handleAddToPlaylistClick}
                     >
                         <BiAddToQueue /> Add to Playlist
@@ -292,7 +293,7 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
                         <LuBookmark /> Add to Watchlist
                     </ContextMenuItem>
 
-                    {(!!libraryData) && <ContextMenuItem
+                    {(!!libraryData && type === "anime") && <ContextMenuItem
                         onClick={handleOpenInExplorerClick}
                     >
                         <LuFolderTree /> Open in Library Explorer
@@ -510,5 +511,3 @@ export function MediaEntryCard<T extends "anime" | "manga">(props: MediaEntryCar
         </MediaEntryCardContainer>
     )
 }
-
-
