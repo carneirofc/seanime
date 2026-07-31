@@ -155,7 +155,7 @@ export function AutoDownloaderPage() {
                                 )}
 
                                 <Card className="p-4 space-y-4">
-                                    <ul className="text-base text-[--muted]">
+                                    <ul className="text-base text-(--muted)">
                                         <li>Rules allow you to programmatically download new episodes based on the
                                             parameters you set.
                                         </li>
@@ -201,7 +201,7 @@ export function AutoDownloaderPage() {
                                         >
                                             <DropdownMenuItem
                                                 onClick={confirmDeleteNoLongerAiring.open}
-                                                className="text-[--red]"
+                                                className="text-(--red)"
                                                 disabled={deletingRule}
                                             >
                                                 <LuTrash /> Remove no longer airing media
@@ -209,7 +209,7 @@ export function AutoDownloaderPage() {
                                         </DropdownMenu>
                                     </div>
 
-                                    {(!data?.length) && <div className="p-4 text-[--muted] text-center">No rules</div>}
+                                    {(!data?.length) && <div className="p-4 text-(--muted) text-center">No rules</div>}
                                     {(!!data?.length) && <div className="space-y-2">
                                         {data?.toSorted(sortRules)?.map(rule => (
                                             <AutoDownloaderRuleItem
@@ -358,7 +358,7 @@ export function AutoDownloaderPage() {
                 title="Create new rules"
                 size="xl"
             >
-                <p className="text-[--muted] py-4">
+                <p className="text-(--muted) py-4">
                     Create multiple rules at once. Each rule will be created with the same parameters, except for the destination folder.
                     By default, the episode type will be "Recent releases".
                 </p>

@@ -332,7 +332,7 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
         if (isNativePlayerComponent === "control-bar" && isLoaded && (mpvCoreState.active || nativePlayerState.active) && status) {
             return (
                 <div className={cn("relative justify-left w-fit top-0 h-full flex items-center px-2 truncate", show === false && "hidden")}>
-                    <div className="flex-wrap w-fit h-14 flex gap-3 items-center text-sm pointer-events-auto text-[--foreground]">
+                    <div className="flex-wrap w-fit h-14 flex gap-3 items-center text-sm pointer-events-auto text-(--foreground)">
                         <div className="space-x-1">
                             <BiGroup className="inline-block text-lg" />
                             <span>{status.seeders}</span>
@@ -341,7 +341,7 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                             <BiDownArrow className="inline-block mr-1" />
                             {status.downloadSpeed !== "" ? status.downloadSpeed : "0 B/s"}
                         </div>
-                        <span className={cn("text-[--muted] font-medium", status.progressPercentage < 5 && "animate-pulse")}>
+                        <span className={cn("text-(--muted) font-medium", status.progressPercentage < 5 && "animate-pulse")}>
                             {status.progressPercentage.toFixed(2)}%
                         </span>
                         <div className="space-x-1">
@@ -412,7 +412,7 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                 layout
                 transition={{ type: "spring", stiffness: 300, damping: 28 }}
                 className={cn(
-                    "bg-gray-950/95 border border-[--border] text-[--foreground] shadow-2xl backdrop-blur-md select-none overflow-hidden",
+                    "bg-gray-950/95 border border-(--border) text-(--foreground) shadow-2xl backdrop-blur-md select-none overflow-hidden",
                     minimized
                         ? (isTorrentLoaded && status ? "rounded-full h-12 w-fit max-w-[420px]" : "rounded-full h-12 w-[320px]")
                         : "rounded-[2rem] p-5 w-[95vw] md:w-[400px]",
@@ -438,7 +438,7 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                                         exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
                                         transition={{ duration: 0.25 }}
-                                        className="text-[--foreground] text-xs font-semibold truncate block"
+                                        className="text-(--foreground) text-xs font-semibold truncate block"
                                     >
                                         {currentStepDetail || "Loading..."}
                                     </motion.span>
@@ -446,8 +446,8 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                             </div>}
 
                             {isTorrentLoaded && status && (
-                                <div className="flex items-center gap-2 text-[12px] font-medium text-[--muted] flex-shrink-0 mr-1 bg-gray-950/40 px-2.5 py-1 rounded-full">
-                                    <span className="font-bold text-[--foreground]">{status.progressPercentage.toFixed(1)}%</span>
+                                <div className="flex items-center gap-2 text-[12px] font-medium text-(--muted) flex-shrink-0 mr-1 bg-gray-950/40 px-2.5 py-1 rounded-full">
+                                    <span className="font-bold text-(--foreground)">{status.progressPercentage.toFixed(1)}%</span>
                                     <span className="flex items-center gap-0.5">
                                         <BiGroup className="size-3" />
                                         {status.seeders || "0"}
@@ -465,7 +465,7 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
 
                             <div className="flex items-center gap-1 flex-shrink-0">
                                 <button
-                                    className="p-1 rounded-full hover:bg-[--subtle] text-[--muted] hover:text-[--foreground] transition-colors"
+                                    className="p-1 rounded-full hover:bg-(--subtle) text-(--muted) hover:text-(--foreground) transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         setMinimized(false)
@@ -474,7 +474,7 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                                     <BiChevronDown className="text-lg" />
                                 </button>
                                 <button
-                                    className="p-1 rounded-full hover:bg-red-900 text-[--muted] hover:text-[--red] transition-colors"
+                                    className="p-1 rounded-full hover:bg-red-900 text-(--muted) hover:text-(--red) transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         confirmStop.open()
@@ -494,24 +494,24 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                             transition={{ duration: 0.15 }}
                             className="flex flex-col gap-4 w-full"
                         >
-                            <div className="flex items-center justify-between gap-4 border-b border-[--border]/60 pb-2">
+                            <div className="flex items-center justify-between gap-4 border-b border-(--border)/60 pb-2">
                                 <div className="min-w-0 flex-1">
-                                    <h3 className="text-sm font-bold text-[--foreground] truncate">
+                                    <h3 className="text-sm font-bold text-(--foreground) truncate">
                                         {autoSelectState?.mediaTitle || debridState?.torrentName || "Active Streaming"}
                                     </h3>
-                                    <p className="text-[11px] text-[--muted] mt-0.5">
+                                    <p className="text-[11px] text-(--muted) mt-0.5">
                                         {autoSelectState ? `Episode ${autoSelectState.episode}` : (debridState?.message || "Loading...")}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-1 flex-shrink-0">
                                     <button
-                                        className="p-1 rounded-full hover:bg-[--subtle] text-[--muted] hover:text-[--foreground] transition-colors"
+                                        className="p-1 rounded-full hover:bg-(--subtle) text-(--muted) hover:text-(--foreground) transition-colors"
                                         onClick={() => setMinimized(true)}
                                     >
                                         <BiChevronUp className="text-lg" />
                                     </button>
                                     <button
-                                        className="p-1 rounded-full hover:bg-red-900 text-[--red] transition-colors"
+                                        className="p-1 rounded-full hover:bg-red-900 text-(--red) transition-colors"
                                         onClick={(e) => {
                                             e.stopPropagation()
                                             confirmStop.open()
@@ -523,9 +523,9 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                             </div>
 
                             {currentStepDetail && !isTorrentLoaded && (
-                                <div className="flex items-center gap-2 bg-gray-950/40 border border-[--border] px-3 py-2.5 rounded-xl text-xs">
-                                    <Spinner className="size-3.5 text-[--brand] flex-shrink-0" />
-                                    <span className="text-[--foreground]/90 font-medium truncate flex-1">
+                                <div className="flex items-center gap-2 bg-gray-950/40 border border-(--border) px-3 py-2.5 rounded-xl text-xs">
+                                    <Spinner className="size-3.5 text-(--brand) flex-shrink-0" />
+                                    <span className="text-(--foreground)/90 font-medium truncate flex-1">
                                         {currentStepDetail}
                                     </span>
                                 </div>
@@ -533,8 +533,8 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
 
                             {autoSelectState?.candidates && autoSelectState.candidates.length > 0 && (
                                 <div className="flex flex-col gap-1.5 mt-1">
-                                    <h4 className="text-[10px] font-bold text-[--muted] uppercase tracking-wider px-1">Top Candidates</h4>
-                                    <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto border border-[--border] rounded-xl bg-gray-950 p-1">
+                                    <h4 className="text-[10px] font-bold text-(--muted) uppercase tracking-wider px-1">Top Candidates</h4>
+                                    <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto border border-(--border) rounded-xl bg-gray-950 p-1">
                                         {autoSelectState.candidates.map((cand, idx) => {
                                             const isSkipped = cand.status === "skipped"
                                             const isSelected = cand.status === "selected"
@@ -545,27 +545,27 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                                                     className={cn(
                                                         "flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-xs transition-colors",
                                                         isSkipped && "opacity-40",
-                                                        isSelected && "bg-[--subtle] border",
+                                                        isSelected && "bg-(--subtle) border",
                                                     )}
                                                 >
                                                     <div className="min-w-0 flex-1">
                                                         <p
-                                                            className={cn("font-medium text-[--foreground] truncate",
-                                                                isSkipped && "line-through text-[--muted]")}
+                                                            className={cn("font-medium text-(--foreground) truncate",
+                                                                isSkipped && "line-through text-(--muted)")}
                                                         >
                                                             {cand.name}
                                                         </p>
-                                                        <p className="text-[9px] text-[--muted] mt-0.5 font-mono">{cand.provider}</p>
+                                                        <p className="text-[9px] text-(--muted) mt-0.5 font-mono">{cand.provider}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2.5 flex-shrink-0">
-                                                        <span className="text-[10px] font-bold text-[--muted]">Score: {cand.score}</span>
+                                                        <span className="text-[10px] font-bold text-(--muted)">Score: {cand.score}</span>
                                                         {!isTorrentLoaded && <span
                                                             className={cn(
                                                                 "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border border-transparent",
-                                                                cand.status === "waiting" && "bg-gray-900 text-[--muted]",
-                                                                isSkipped && "bg-red-950 text-[--red] ",
-                                                                isAnalyzing && "bg-amber-950 text-[--amber] ",
-                                                                isSelected && "bg-green-950 text-[--green] ",
+                                                                cand.status === "waiting" && "bg-gray-900 text-(--muted)",
+                                                                isSkipped && "bg-red-950 text-(--red) ",
+                                                                isAnalyzing && "bg-amber-950 text-(--amber) ",
+                                                                isSelected && "bg-green-950 text-(--green) ",
                                                             )}
                                                         >
                                                             {cand.status}
@@ -579,18 +579,18 @@ export function PlaybackPlayPill({ isNativePlayerComponent, show }: {
                             )}
 
                             {isTorrentLoaded && status && (
-                                <div className="flex flex-col gap-2 bg-gray-950/30 border border-[--border] p-3 rounded-xl mt-1">
-                                    <div className="flex justify-between items-center text-[11px] text-[--muted] font-semibold">
-                                        <span>Speed: <strong className="text-[--foreground]">{status.downloadSpeed || "0 B/s"}</strong></span>
-                                        <span>Seeders: <strong className="text-[--foreground]">{status.seeders}</strong></span>
+                                <div className="flex flex-col gap-2 bg-gray-950/30 border border-(--border) p-3 rounded-xl mt-1">
+                                    <div className="flex justify-between items-center text-[11px] text-(--muted) font-semibold">
+                                        <span>Speed: <strong className="text-(--foreground)">{status.downloadSpeed || "0 B/s"}</strong></span>
+                                        <span>Seeders: <strong className="text-(--foreground)">{status.seeders}</strong></span>
                                     </div>
-                                    <div className="w-full bg-gray-950 border border-[--border] rounded-full h-1.5 overflow-hidden">
+                                    <div className="w-full bg-gray-950 border border-(--border) rounded-full h-1.5 overflow-hidden">
                                         <div
-                                            className="bg-[--green] h-full rounded-full transition-all duration-300"
+                                            className="bg-(--green) h-full rounded-full transition-all duration-300"
                                             style={{ width: `${status.progressPercentage}%` }}
                                         />
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px] text-[--muted] font-medium">
+                                    <div className="flex justify-between items-center text-[10px] text-(--muted) font-medium">
                                         <span>{status.progressPercentage.toFixed(1)}% complete</span>
                                         <span>Upload: {status.uploadSpeed || "0 B/s"}</span>
                                     </div>

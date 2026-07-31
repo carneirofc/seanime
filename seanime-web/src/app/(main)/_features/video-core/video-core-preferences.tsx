@@ -54,7 +54,7 @@ export const videoCorePreferencesModalAtom = atom(false)
 const tabsRootClass = cn("w-full contents space-y-4")
 
 const tabsTriggerClass = cn(
-    "text-base px-6 rounded-[--radius-md] w-fit border-none data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white",
+    "text-base px-6 rounded-(--radius-md) w-fit border-none data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white",
     "h-10 lg:justify-center px-3 flex-1",
 )
 
@@ -129,7 +129,7 @@ const KeybindingRow = ({
     handleKeyRecord: (actionKey: keyof VideoCoreKeybindings) => void
     formatKeyDisplay?: (actionKey: keyof VideoCoreKeybindings) => keyof VideoCoreKeybindings | string
 }) => (
-    <div className="flex items-center justify-between py-2 border rounded-lg px-3 bg-[--paper]">
+    <div className="flex items-center justify-between py-2 border rounded-lg px-3 bg-(--paper)">
         <div className="flex-1">
             <div className="font-medium text-sm">{action}</div>
             {hasValue && (
@@ -329,7 +329,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
             title="Preferences"
             open={open}
             onOpenChange={setOpen}
-            contentClass="max-w-5xl focus:outline-none focus-visible:outline-none outline-none bg-[--background] backdrop-blur-sm z-[101]"
+            contentClass="max-w-5xl focus:outline-none focus-visible:outline-none outline-none bg-(--background) backdrop-blur-sm z-[101]"
             overlayClass="z-[150] bg-black/50"
             portalContainer={isFullscreen ? containerElement || undefined : undefined}
         >
@@ -341,7 +341,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                 triggerClass={tabsTriggerClass}
                 listClass={tabsListClass}
             >
-                <TabsList className="flex-wrap max-w-full bg-[--paper] p-2 border rounded-xl">
+                <TabsList className="flex-wrap max-w-full bg-(--paper) p-2 border rounded-xl">
                     <TabsTrigger value="keybinds">Keyboard Shortcuts</TabsTrigger>
                     <TabsTrigger value="subtitles">Subtitles & Audio</TabsTrigger>
                     <TabsTrigger value="general">General</TabsTrigger>
@@ -886,7 +886,7 @@ export function VideoCorePreferencesModal({ isWebPlayer }: { isWebPlayer: boolea
                                         </div>
                                     </div>
 
-                                    <p className="text-[--muted]">
+                                    <p className="text-(--muted)">
                                         Reloading the player is required only when switching translation provider, language, endpoint, model, or API
                                         key.
                                     </p>

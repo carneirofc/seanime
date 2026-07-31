@@ -276,7 +276,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                     />
                     {mpvSettings.subtitleCustomization.enabled && (
                         <>
-                            <p className="text-[--muted] text-sm my-2">Options</p>
+                            <p className="text-(--muted) text-sm my-2">Options</p>
                             <MediaCoreMenuSubOption
                                 title="Font"
                                 icon={LuHeading}
@@ -396,7 +396,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                     openSection={openSection}
                     onOpenSectionChange={setOpenSection}
                 >
-                    <p className="text-sm text-[--muted] mb-2">Shift subtitle timing relative to the video. Use negative values if subtitles appear too late.</p>
+                    <p className="text-sm text-(--muted) mb-2">Shift subtitle timing relative to the video. Use negative values if subtitles appear too late.</p>
                     <div className="flex gap-1.5 items-center mt-3">
                         {[-0.5, -0.1].map(delta => (
                             <Button
@@ -409,7 +409,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                                 {delta}
                             </Button>
                         ))}
-                        <span className="text-sm text-center text-[--muted] px-1 flex-1">
+                        <span className="text-sm text-center text-(--muted) px-1 flex-1">
                             {subtitleDelay.toFixed(1)}s
                         </span>
                         {[0.1, 0.5].map(delta => (
@@ -439,7 +439,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                     openSection={openSection}
                     onOpenSectionChange={setOpenSection}
                 >
-                    <div className="border-b border-[--border] pb-3 mb-3">
+                    <div className="border-b border-(--border) pb-3 mb-3">
                         <Switch
                             label="Debanding"
                             side="right"
@@ -451,7 +451,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                             onValueChange={checked => setMpvSettings(current => ({ ...current, deband: checked }))}
                         />
                     </div>
-                    <p className="text-[--muted] text-sm mb-2">
+                    <p className="text-(--muted) text-sm mb-2">
                         Real-time sharpening and restoration. GPU-intensive.
                     </p>
                     <MediaCoreSettingSelect
@@ -471,7 +471,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
 
                     {shaderSettings.mode === "anime4k" && (
                         <>
-                            <p className="text-[--muted] text-sm my-2">Preset</p>
+                            <p className="text-(--muted) text-sm my-2">Preset</p>
                             <MediaCoreSettingSelect
                                 options={[
                                     { label: "Mode A", value: "mode-a", description: "Optimized for 1080p anime with compression artifacts and blur" },
@@ -493,7 +493,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                                 isFullscreen={isFullscreen}
                                 containerElement={containerElement}
                             />
-                            <p className="text-[--muted] text-sm my-2">Quality</p>
+                            <p className="text-(--muted) text-sm my-2">Quality</p>
                             <MediaCoreSettingSelect
                                 options={[
                                     { label: "Fast (Lower GPU usage)", value: "fast" },
@@ -512,7 +512,7 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
 
                     {shaderSettings.mode === "custom" && (
                         <div className="mt-4 border-t border-gray-800 pt-4 max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                            <p className="text-[--muted] text-xs font-semibold uppercase tracking-wider mb-2">Select Shaders</p>
+                            <p className="text-(--muted) text-xs font-semibold uppercase tracking-wider mb-2">Select Shaders</p>
                             {anime4kDirectory?.shaders.length ? (
                                 anime4kDirectory.shaders.map(shader => {
                                     const isChecked = (shaderSettings.customShaders || []).includes(shader.name)
@@ -538,15 +538,15 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                                     )
                                 })
                             ) : (
-                                <p className="text-[--muted] text-sm italic">No shaders found in the directory.</p>
+                                <p className="text-(--muted) text-sm italic">No shaders found in the directory.</p>
                             )}
                         </div>
                     )}
 
-                    {/*<p className="text-[--muted] text-sm my-2 break-all">*/}
+                    {/*<p className="text-(--muted) text-sm my-2 break-all">*/}
                     {/*    {anime4kDirectory?.directory || shaderSettings.directory || "No shader folder selected"}*/}
                     {/*</p>*/}
-                    <p className="text-[--muted] text-sm my-2">
+                    <p className="text-(--muted) text-sm my-2">
                         Detected {anime4kDirectory?.shaders.length ?? 0} shader files.
                     </p>
                     {shaderSettings.mode === "anime4k" && mc_resolveAnime4KProfile(anime4kDirectory, shaderSettings.anime4kMode, shaderSettings.anime4kQuality).missing.length > 0 && (
@@ -652,13 +652,13 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                     openSubSection={openSubSection}
                     onOpenSubSectionChange={setOpenSubSection}
                 >
-                    <p className="text-[--muted] text-sm mb-2">Outline Width</p>
+                    <p className="text-(--muted) text-sm mb-2">Outline Width</p>
                     <MediaCoreSettingSelect
                         options={mpvSubtitleOutlineOptions}
                         value={mpvSettings.subtitleCustomization.outline}
                         onValueChange={value => updateSubtitleStyle("outline", Number(value))}
                     />
-                    <p className="text-[--muted] text-sm my-2">Outline Color</p>
+                    <p className="text-(--muted) text-sm my-2">Outline Color</p>
                     <MediaCoreSettingSelect
                         options={mpvSubtitleColorOptions}
                         value={mpvSettings.subtitleCustomization.outlineColor}
@@ -673,19 +673,19 @@ export function MpvCoreSettingsMenu(props: MpvCoreSettingsMenuProps) {
                     openSubSection={openSubSection}
                     onOpenSubSectionChange={setOpenSubSection}
                 >
-                    <p className="text-[--muted] text-sm mb-2">Shadow Depth</p>
+                    <p className="text-(--muted) text-sm mb-2">Shadow Depth</p>
                     <MediaCoreSettingSelect
                         options={mpvSubtitleShadowOptions}
                         value={mpvSettings.subtitleCustomization.shadow}
                         onValueChange={value => updateSubtitleStyle("shadow", Number(value))}
                     />
-                    <p className="text-[--muted] text-sm my-2">Shadow Opacity</p>
+                    <p className="text-(--muted) text-sm my-2">Shadow Opacity</p>
                     <MediaCoreSettingSelect
                         options={mpvSubtitleOpacityOptions}
                         value={mpvSettings.subtitleCustomization.backColorOpacity}
                         onValueChange={value => updateSubtitleStyle("backColorOpacity", Number(value))}
                     />
-                    <p className="text-[--muted] text-sm my-2">Shadow Color</p>
+                    <p className="text-(--muted) text-sm my-2">Shadow Color</p>
                     <MediaCoreSettingSelect
                         options={mpvSubtitleColorOptions}
                         value={mpvSettings.subtitleCustomization.backColor}

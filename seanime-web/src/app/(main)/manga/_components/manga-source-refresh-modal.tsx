@@ -136,11 +136,11 @@ export function MangaSourceRefreshModal({ open, onOpenChange, job, returnFocusRe
                                     ? "Stopping after the current request"
                                     : job.stage === "refreshing" ? "Refreshing selected sources" : "Searching installed sources"}
                             </p>
-                            <p className="shrink-0 text-[--muted]">{job.current} of {job.total}</p>
+                            <p className="shrink-0 text-(--muted)">{job.current} of {job.total}</p>
                         </div>
                         <ProgressBar value={progress} size="sm" aria-label="Source refresh progress" />
                     </div>
-                    <p className="text-sm text-[--muted]">
+                    <p className="text-sm text-(--muted)">
                         You can close this modal. The refresh will continue in the background.
                     </p>
                 </div>
@@ -152,7 +152,7 @@ export function MangaSourceRefreshModal({ open, onOpenChange, job, returnFocusRe
                                 ? "Source refresh stopped"
                                 : "Source refresh failed"}
                         </p>
-                        <p className="mt-1 text-sm text-[--muted]">
+                        <p className="mt-1 text-sm text-(--muted)">
                             {formatRefreshSummary(job)}
                         </p>
                     </div>
@@ -174,7 +174,7 @@ export function MangaSourceRefreshModal({ open, onOpenChange, job, returnFocusRe
                                                 <SeaLink href={`/manga/entry?id=${issue.mediaId}`} className="font-medium break-words">
                                                     {issue.title}
                                                 </SeaLink>
-                                                <p className="text-[--muted] break-words">
+                                                <p className="text-(--muted) break-words">
                                                     {issue.kind === "not_found"
                                                         ? job.mode === "refresh_selected"
                                                             ? "The saved source returned no chapters."
@@ -192,7 +192,7 @@ export function MangaSourceRefreshModal({ open, onOpenChange, job, returnFocusRe
                 </div>
             ) : (
                 <div className="space-y-5">
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[--muted]">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-(--muted)">
                         <span>{providerCount} installed {providerCount === 1 ? "provider" : "providers"}</span>
                         <span>Current and re-reading manga only</span>
                     </div>
@@ -201,7 +201,7 @@ export function MangaSourceRefreshModal({ open, onOpenChange, job, returnFocusRe
                         value={mode}
                         onValueChange={value => setMode(value as Manga_MangaSourceRefreshMode)}
                         stackClass="space-y-2"
-                        itemContainerClass="items-start gap-3 rounded-xl border border-[--border] px-3 py-3 data-[state=checked]:border-brand/60 data-[state=checked]:bg-brand/5"
+                        itemContainerClass="items-start gap-3 rounded-xl border border-(--border) px-3 py-3 data-[state=checked]:border-brand/60 data-[state=checked]:bg-brand/5"
                         itemClass="mt-0.5 shrink-0"
                         itemLabelClass="min-w-0 flex-1"
                         options={[
@@ -257,8 +257,8 @@ export function MangaSourceRefreshModal({ open, onOpenChange, job, returnFocusRe
 function ModeLabel({ title, description }: { title: string, description: string }) {
     return (
         <span className="block min-w-0">
-            <span className="block font-medium text-[--foreground] break-words">{title}</span>
-            <span className="mt-0.5 block text-sm font-normal text-[--muted] break-words">{description}</span>
+            <span className="block font-medium text-(--foreground) break-words">{title}</span>
+            <span className="mt-0.5 block text-sm font-normal text-(--muted) break-words">{description}</span>
         </span>
     )
 }

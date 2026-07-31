@@ -150,11 +150,11 @@ export function PlaybackSettings() {
                     icon={LuCirclePlay}
                 />
 
-                <div className="flex flex-wrap items-center gap-2 text-sm bg-[--paper] rounded-lg p-3 border border-[--border]">
-                    <BiDesktop className="text-lg text-[--muted]" />
-                    <span className="text-[--muted]">Device:</span>
+                <div className="flex flex-wrap items-center gap-2 text-sm bg-(--paper) rounded-lg p-3 border border-(--border)">
+                    <BiDesktop className="text-lg text-(--muted)" />
+                    <span className="text-(--muted)">Device:</span>
                     <span className="font-medium">{serverStatus?.clientDevice || "-"}</span>
-                    <span className="text-[--muted]">/</span>
+                    <span className="text-(--muted)">/</span>
                     <span className="font-medium">{serverStatus?.clientPlatform || "-"}</span>
                 </div>
             </div>
@@ -180,12 +180,12 @@ export function PlaybackSettings() {
             {__isElectronDesktop__ && (
                 <SettingsCard
                     title="Seanime Denshi"
-                    className="border-[--border] bg-[--paper]"
+                    className="border-(--border) bg-(--paper)"
                 >
                     <div className="space-y-5">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-lg border border-[--border] bg-[--subtle]">
-                                <PiVideoDuotone className="text-2xl text-[--brand]" />
+                            <div className="p-3 rounded-lg border border-(--border) bg-(--subtle)">
+                                <PiVideoDuotone className="text-2xl text-(--brand)" />
                             </div>
                             <div className="flex-1">
                                 <Switch
@@ -201,11 +201,11 @@ export function PlaybackSettings() {
                         </div>
 
                         {usingNativePlayer && (
-                            <div className="space-y-4 border-t border-[--border] pt-5">
+                            <div className="space-y-4 border-t border-(--border) pt-5">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                         <p className="font-semibold">Built-in player engine</p>
-                                        <p className="text-sm text-[--muted]">Choose the renderer Denshi should use for integrated playback.</p>
+                                        <p className="text-sm text-(--muted)">Choose the renderer Denshi should use for integrated playback.</p>
                                     </div>
                                 </div>
 
@@ -234,7 +234,7 @@ export function PlaybackSettings() {
                                 />
 
                                 {usingMpvPlayer && (
-                                    <div className="space-y-1 pl-4 border-l border-[--border] ml-2">
+                                    <div className="space-y-1 pl-4 border-l border-(--border) ml-2">
                                         <div className="flex flex-wrap items-center gap-3">
                                             <div className="min-w-0 flex-1">
                                                 <Switch
@@ -262,7 +262,7 @@ export function PlaybackSettings() {
                                                 Export logs
                                             </Button>
                                         </div>}
-                                        <div className="space-y-2 pt-4 border-t border-[--border] mt-4">
+                                        <div className="space-y-2 pt-4 border-t border-(--border) mt-4">
                                             <div className="flex justify-between items-center">
                                                 <label className="text-sm font-semibold">Custom MPV Options</label>
                                             </div>
@@ -369,7 +369,7 @@ export function PlaybackSettings() {
                 </div>
             </SettingsCard>
 
-            <div className="flex items-center gap-2 text-sm text-[--muted] bg-[--paper] rounded-lg p-3 border border-[--border] border-dashed">
+            <div className="flex items-center gap-2 text-sm text-(--muted) bg-(--paper) rounded-lg p-3 border border-(--border) border-dashed">
                 <RiSettings3Fill className="text-base" />
                 <span>Settings are saved automatically</span>
             </div>
@@ -401,8 +401,8 @@ function PlaybackChoiceGroup(props: PlaybackChoiceGroupProps) {
             itemContainerClass={cn(
                 "group/playback-choice block relative min-w-0 max-w-sm overflow-hidden rounded-xl border bg-white/70 p-0 transition-colors",
                 "dark:bg-gray-950/30 border-gray-200 dark:border-gray-800",
-                "hover:border-gray-300 dark:hover:border-gray-700 hover:bg-[--subtle]",
-                "data-[state=checked]:border-[--border] data-[state=checked]:ring-1 data-[state=checked]:ring-white/30",
+                "hover:border-gray-300 dark:hover:border-gray-700 hover:bg-(--subtle)",
+                "data-[state=checked]:border-(--border) data-[state=checked]:ring-1 data-[state=checked]:ring-white/30",
                 "data-[state=checked]:bg-brand-50/40 dark:data-[state=checked]:bg-gray-800",
                 "data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-55",
             )}
@@ -423,8 +423,8 @@ function PlaybackChoiceLabel({ choice, selected }: { choice: PlaybackChoice, sel
             <div className="flex items-start gap-3 p-4 flex-1">
                 <div
                     className={cn(
-                        "mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg border bg-[--paper] text-[--muted]",
-                        selected && "bg-brand-500/10 text-[--brand]",
+                        "mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg border bg-(--paper) text-(--muted)",
+                        selected && "bg-brand-500/10 text-(--brand)",
                     )}
                 >
                     <Icon className="text-lg" />
@@ -434,7 +434,7 @@ function PlaybackChoiceLabel({ choice, selected }: { choice: PlaybackChoice, sel
                         <p className="font-semibold leading-snug text-sm">{choice.title}</p>
                         {choice.badge}
                     </div>
-                    <p className="mt-1 text-xs leading-normal text-[--muted]">{choice.description}</p>
+                    <p className="mt-1 text-xs leading-normal text-(--muted)">{choice.description}</p>
                 </div>
                 {selected && (
                     <div className="mt-1 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-brand text-white">

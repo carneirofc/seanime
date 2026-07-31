@@ -13,6 +13,19 @@ const { publicVars } = loadEnv({ prefixes: ["SEA_"] })
 const isElectronDesktop = process.env.SEA_PUBLIC_DESKTOP === "electron"
 const distPath = isElectronDesktop ? "out-denshi" : "out"
 
+/**
+ * Resolves an installed package's directory, tolerating either npm layout:
+ * nested in seanime-web/node_modules, or hoisted to the workspace root.
+ * Falls back to the local path so the alias still points somewhere sane.
+ */
+function resolvePackageDir(name: string): string {
+    const candidates = [
+        path.resolve(__dirname, "node_modules", name),
+        path.resolve(__dirname, "..", "node_modules", name),
+    ]
+    return candidates.find(candidate => fs.existsSync(candidate)) ?? candidates[0]
+}
+
 export default defineConfig({
     plugins: [
         pluginReact(),
@@ -79,9 +92,13 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
-            "react": path.resolve(__dirname, "node_modules/react"),
-            "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
-            [path.resolve(__dirname, "node_modules/jassub/dist/default.woff2")]: path.resolve(__dirname, "public/fonts/Roboto-Medium.ttf"),
+            // Pin a single copy of React. npm workspaces hoist dependencies to the repo root,
+            // so resolve against whichever node_modules actually holds the package instead of
+            // assuming it is nested under seanime-web/.
+            "react": resolvePackageDir("react"),
+            "react-dom": resolvePackageDir("react-dom"),
+            // jassub ships a default subtitle font we replace with Roboto.
+            [path.join(resolvePackageDir("jassub"), "dist/default.woff2")]: path.resolve(__dirname, "public/fonts/Roboto-Medium.ttf"),
         },
     },
     server: { // dev server

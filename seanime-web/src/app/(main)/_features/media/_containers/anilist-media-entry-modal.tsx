@@ -315,7 +315,7 @@ function Content(props: AnilistMediaEntryModalProps & {
                     />
                 </div>}
 
-                <div className="flex flex-col gap-2 mt-4 border-t border-[--border] pt-4">
+                <div className="flex flex-col gap-2 mt-4 border-t border-(--border) pt-4">
                     {media?.isAdult && !listData?.private && (
                         <div
                             data-anilist-media-entry-modal-adult-exposure-warning

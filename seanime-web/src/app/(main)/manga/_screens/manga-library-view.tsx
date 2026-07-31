@@ -350,7 +350,7 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                             </Button>
                             {sourceRefreshRunning &&
                                 <div
-                                    className="absolute -top-1 -right-1 bg-[--orange] size-2.5 rounded-full"
+                                    className="absolute -top-1 -right-1 bg-(--orange) size-2.5 rounded-full"
                                     aria-label="Source refresh running"
                                 ></div>}
                         </div>}
@@ -369,7 +369,7 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                             />
                             {!isMangaPage && sourceRefreshRunning &&
                                 <div
-                                    className="absolute -top-1 -right-1 bg-[--orange] size-2.5 rounded-full"
+                                    className="absolute -top-1 -right-1 bg-(--orange) size-2.5 rounded-full"
                                     aria-label="Source refresh running"
                                 ></div>}
                         </div>}

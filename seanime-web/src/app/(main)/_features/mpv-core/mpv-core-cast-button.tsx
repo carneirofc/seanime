@@ -101,7 +101,7 @@ export function MpvCoreCastButton(props: MpvCoreCastButtonProps) {
                     )}
 
                     {discovering && (
-                        <div className="flex items-center gap-2 text-sm text-[--muted]">
+                        <div className="flex items-center gap-2 text-sm text-(--muted)">
                             <LoadingSpinner />
                             <span>Searching for devices...</span>
                         </div>
@@ -109,7 +109,7 @@ export function MpvCoreCastButton(props: MpvCoreCastButtonProps) {
 
                     {!discovering && !devices.length && (
                         <div className="text-center py-6">
-                            <p className="text-sm text-[--muted]">No devices found</p>
+                            <p className="text-sm text-(--muted)">No devices found</p>
                             <Button intent="gray-subtle" size="sm" className="mt-2" onClick={() => void discover()}>
                                 Scan again
                             </Button>

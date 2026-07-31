@@ -18,8 +18,8 @@ export const TabsAnatomy = defineStyleAnatomy({
     ], {
         variants: {
             variant: {
-                underline: "h-12 border-b border-[--border]",
-                pill: "w-full flex flex-wrap md:flex-nowrap bg-[--paper] p-1 border rounded-xl h-fit",
+                underline: "h-12 border-b border-(--border)",
+                pill: "w-full flex flex-wrap md:flex-nowrap bg-(--paper) p-1 border rounded-xl h-fit",
                 none: "",
             },
         },
@@ -29,23 +29,23 @@ export const TabsAnatomy = defineStyleAnatomy({
     }),
     trigger: cva([
         "UI-Tabs__trigger appearance-none shadow-none",
-        "inline-flex h-full items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-[--background]",
-        "transition-all focus-visible:outline-none focus-visible:ring-1 ring-offset-1 ring-offset-[--background] focus-visible:ring-white/40",
+        "inline-flex h-full items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-(--background)",
+        "transition-all focus-visible:outline-none focus-visible:ring-1 ring-offset-1 ring-offset-(--background) focus-visible:ring-white/40",
         "disabled:pointer-events-none disabled:opacity-50",
     ], {
         variants: {
             variant: {
                 underline: [
-                    "px-3 py-1.5 border-transparent border-b-2 -mb-px text-[--muted]",
-                    "data-[state=active]:border-[--brand] data-[state=active]:text-[--foreground]",
+                    "px-3 py-1.5 border-transparent border-b-2 -mb-px text-(--muted)",
+                    "data-[state=active]:border-(--brand) data-[state=active]:text-(--foreground)",
                 ],
                 pill: [
-                    "text-base px-6 h-auto py-2 rounded-[--radius-md] w-fit md:w-full border-none text-[--muted]",
-                    "data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white",
+                    "text-base px-6 h-auto py-2 rounded-(--radius-md) w-fit md:w-full border-none text-(--muted)",
+                    "data-[state=active]:bg-(--subtle) data-[state=active]:text-white dark:hover:text-white",
                 ],
                 none: [
-                    "px-3 py-1.5 border-transparent border-b-2 -mb-px text-[--muted]",
-                    "data-[state=active]:border-[--brand] data-[state=active]:text-[--foreground]",
+                    "px-3 py-1.5 border-transparent border-b-2 -mb-px text-(--muted)",
+                    "data-[state=active]:border-(--brand) data-[state=active]:text-(--foreground)",
                 ],
             },
         },
@@ -64,16 +64,16 @@ export const TabsAnatomy = defineStyleAnatomy({
  * -----------------------------------------------------------------------------------------------*/
 
 function getActiveBgClass(classes?: string): string {
-    if (!classes) return "bg-[--subtle]"
+    if (!classes) return "bg-(--subtle)"
     const matches = classes.match(/data-\[state=active\]:(bg-\S+)/g)
-    if (!matches) return "bg-[--subtle]"
+    if (!matches) return "bg-(--subtle)"
     return matches.map(m => m.replace("data-\[state=active\]:", "")).join(" ")
 }
 
 function getRoundedClass(classes?: string): string {
-    if (!classes) return "rounded-[--radius-md]"
+    if (!classes) return "rounded-(--radius-md)"
     const match = classes.match(/(rounded\S*)/)
-    return match ? match[1] : "rounded-[--radius-md]"
+    return match ? match[1] : "rounded-(--radius-md)"
 }
 
 function getJustifyClass(classes?: string): string {
@@ -234,7 +234,7 @@ export const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>
                     {isActive && variant === "underline" && (
                         <motion.span
                             layoutId={layoutId}
-                            className="absolute bottom-0 left-0 right-0 h-[2px] bg-[--brand] z-10"
+                            className="absolute bottom-0 left-0 right-0 h-[2px] bg-(--brand) z-10"
                             transition={{ type: "spring", stiffness: 500, damping: 38 }}
                         />
                     )}
