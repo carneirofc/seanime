@@ -29,7 +29,11 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	// CORS middleware
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOriginFunc: func(origin string) (bool, error) {
-			return isTrustedCORSOrigin(origin, app.Config.Server.Password, app.Config.Server.AccessAllowlist), nil
+			// Cookie-credential auth must not reflect arbitrary origins
+			if app.IsOidcMode() {
+				return isTrustedCORSOriginWithCookies(origin, app.Config.Server.ExternalURL, app.Config.Server.AccessAllowlist), nil
+			}
+			return isTrustedCORSOrigin(origin, h.hasServerAuth(), app.Config.Server.AccessAllowlist), nil
 		},
 		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Cookie", "Authorization",
 			"X-Seanime-Token", clientIdHeaderName, clientIdProofHeaderName, clientPlatformHeader,
@@ -117,8 +121,9 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	})
 
 	e.Use(headMethodMiddleware)
-	// e.Use(h.controlPlaneBodyLimitMiddleware)
+	e.Use(h.controlPlaneBodyLimitMiddleware)
 	e.Use(h.controlPlaneMutationRateLimitMiddleware)
+	e.Use(h.csrfOriginCheckMiddleware)
 
 	e.GET("/events", h.webSocketEventHandler)
 
@@ -165,6 +170,12 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	// Auth
 	v1.POST("/auth/login", h.HandleLogin)
 	v1.POST("/auth/logout", h.HandleLogout)
+
+	// OIDC login (server access gate, unrelated to the AniList login above)
+	v1.GET("/auth/oidc/login", h.HandleOidcLogin)
+	v1.GET("/auth/oidc/callback", h.HandleOidcCallback)
+	v1.POST("/auth/oidc/logout", h.HandleOidcLogout)
+	v1.GET("/auth/media-token", h.HandleGetMediaToken)
 
 	// Settings
 	v1.GET("/settings", h.HandleGetSettings)
@@ -333,7 +344,6 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1.GET("/changelog", h.HandleGetChangelog)
 	v1.POST("/install-update", h.HandleInstallLatestUpdate)
 	v1.POST("/download-release", h.HandleDownloadRelease)
-	v1.POST("/download-mac-denshi-update", h.HandleDownloadMacDenshiUpdate)
 	v1.POST("/check-for-updates", h.HandleCheckForUpdates)
 
 	//

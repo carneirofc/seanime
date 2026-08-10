@@ -5,13 +5,20 @@ import (
 	"time"
 )
 
-// GetServerPasswordHMACAuth returns an HMAC authenticator using the hashed server password as the base secret
-// This is used for server endpoints that don't use Nakama
-func (a *App) GetServerPasswordHMACAuth() *util.HMACAuth {
+// GetServerHMACAuth returns the HMAC authenticator used for server-minted query
+// tokens (media URLs for external players, proxied streams, ...).
+//   - OIDC mode: derived from the per-boot random MediaTokenSecret. The password
+//     is ignored entirely and leaked tokens die on restart.
+//   - Password mode: derived from the hashed server password (legacy behavior,
+//     tokens survive restarts).
+func (a *App) GetServerHMACAuth() *util.HMACAuth {
 	var secret string
-	if a.Config != nil && a.Config.Server.Password != "" {
+	switch {
+	case a.IsOidcMode():
+		secret = a.MediaTokenSecret
+	case a.Config != nil && a.Config.Server.Password != "":
 		secret = a.ServerPasswordHash
-	} else {
+	default:
 		secret = "seanime-default-secret"
 	}
 

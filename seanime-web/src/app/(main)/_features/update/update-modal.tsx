@@ -100,15 +100,10 @@ export function UpdateModal(props: UpdateModalProps) {
                         <span className="text-(--muted)">{updateData?.current_version}</span> <FiArrowRight />
                         <span className="text-indigo-200">{updateData?.release?.version}</span></h4>
 
-                    {serverStatus?.isDesktopSidecar && <Alert
-                        intent="info"
-                        description="Update Seanime from the desktop application."
-                    />}
-
                     <UpdateChangelogBody updateData={updateData} />
 
                     <div className="flex gap-2 w-full items-center mt-4!">
-                        {!serverStatus?.isDesktopSidecar && <Modal
+                        <Modal
                             trigger={<Button leftIcon={<GrInstall className="text-2xl" />}>
                                 Update now
                             </Button>}
@@ -124,13 +119,12 @@ export function UpdateModal(props: UpdateModalProps) {
                                     Download and Install
                                 </Button>
                             </div>
-                        </Modal>}
+                        </Modal>
                         <div className="flex flex-1" />
                         <SeaLink href={updateData?.release?.html_url || ""} target="_blank">
                             <Button intent="white-subtle" rightIcon={<BiLinkExternal />}>See on GitHub</Button>
                         </SeaLink>
-                        {!serverStatus?.isDesktopSidecar &&
-                            <Button intent="white" leftIcon={<BiDownload />} onClick={() => setDownloaderOpen(true)}>Download</Button>}
+                        <Button intent="white" leftIcon={<BiDownload />} onClick={() => setDownloaderOpen(true)}>Download</Button>
                     </div>
                 </div>
             </Modal>

@@ -17,7 +17,6 @@ const (
 	clientIdTokenPrefix     = "client-id:"
 
 	ClientPlatformWeb    = "web"
-	ClientPlatformDenshi = "denshi"
 	ClientPlatformMobile = "mobile"
 )
 
@@ -25,8 +24,6 @@ func normalizeClientPlatform(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case ClientPlatformWeb:
 		return ClientPlatformWeb
-	case ClientPlatformDenshi:
-		return ClientPlatformDenshi
 	case ClientPlatformMobile:
 		return ClientPlatformMobile
 	default:
@@ -105,7 +102,9 @@ func canAcceptClaimedClientId(app *core.App, req *http.Request) bool {
 		return false
 	}
 
-	return isRequestPermitted(req, "", app.Config.Server.AccessAllowlist)
+	// Deliberately evaluated as if no auth gate existed: claimed client IDs are
+	// accepted only from origins the passwordless boundary would trust.
+	return isRequestPermitted(req, false, app.Config.Server.AccessAllowlist)
 }
 
 func resolveClientIdFromRequest(app *core.App, req *http.Request, cookieValue string) string {

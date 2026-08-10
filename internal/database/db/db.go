@@ -121,6 +121,8 @@ func migrateTables(db *gorm.DB) error {
 		&models.OAuthClient{},
 		&models.OAuthAuthCode{},
 		&models.OAuthAccessToken{},
+		// OIDC login sessions
+		&models.ServerSession{},
 	)
 	if err != nil {
 

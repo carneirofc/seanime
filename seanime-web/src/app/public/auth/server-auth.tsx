@@ -1,11 +1,44 @@
-import { serverAuthTokenAtom } from "@/app/(main)/_atoms/server-status.atoms"
+import { serverAuthTokenAtom, serverStatusAtom } from "@/app/(main)/_atoms/server-status.atoms"
+import { Button } from "@/components/ui/button"
 import { defineSchema, Field, Form } from "@/components/ui/form"
 import { Modal } from "@/components/ui/modal"
-import { useAtom } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import { sha256 } from "js-sha256"
 import React, { useState } from "react"
 
 export function ServerAuth() {
+
+    const serverStatus = useAtomValue(serverStatusAtom)
+
+    // OIDC mode: authentication is handled by the identity provider; the server
+    // normally serves the login shell instead of this route, but handle it anyway.
+    if (serverStatus?.authMethod === "oidc") {
+        return (
+            <Modal
+                title="Authentication required"
+                description="This Seanime server uses single sign-on."
+                open={true}
+                onOpenChange={() => {}}
+                overlayClass="bg-gray-900/100"
+                contentClass="border focus:outline-none focus-visible:outline-none outline-none"
+                hideCloseButton
+            >
+                <Button
+                    className="w-full"
+                    onClick={() => {
+                        window.location.href = "/api/v1/auth/oidc/login"
+                    }}
+                >
+                    Sign in with {serverStatus?.authProviderName || "SSO"}
+                </Button>
+            </Modal>
+        )
+    }
+
+    return <ServerPasswordAuth />
+}
+
+function ServerPasswordAuth() {
 
     const [, setAuthToken] = useAtom(serverAuthTokenAtom)
     const [loading, setLoading] = useState(false)

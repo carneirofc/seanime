@@ -130,7 +130,6 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Modal } from "@/components/ui/modal"
 import { useDisclosure } from "@/hooks/use-disclosure"
 import { logger } from "@/lib/helpers/debug"
-import { __isDesktop__, __isElectronDesktop__ } from "@/types/constants"
 import { useQueryClient } from "@tanstack/react-query"
 import { ErrorData } from "hls.js"
 import { atom } from "jotai"
@@ -848,24 +847,6 @@ export function VideoCore(props: VideoCoreProps) {
             closeTerminateConfirm()
         }
     }, [isMiniPlayer, state.active, isTerminateConfirmOpen, closeTerminateConfirm])
-
-    React.useEffect(() => {
-        if (!__isElectronDesktop__ || !window.electron?.on) return
-
-        const pausePlayback = () => {
-            if (videoRef.current && !videoRef.current.paused && !videoRef.current.ended) {
-                videoRef.current.pause()
-            }
-        }
-
-        const removeMinimizedListener = window.electron.on("window:minimized", pausePlayback)
-        const removeHiddenListener = window.electron.on("window:hidden", pausePlayback)
-
-        return () => {
-            removeMinimizedListener?.()
-            removeHiddenListener?.()
-        }
-    }, [])
 
     // Track if this player should dispatch terminated event on unmount
     React.useEffect(() => {
@@ -1808,7 +1789,6 @@ export function VideoCore(props: VideoCoreProps) {
                     hideCloseButton
                     closeClass={cn(
                         "z-99",
-                        __isDesktop__ && !isMiniPlayer && "top-8",
                         isMiniPlayer && "left-4",
                     )}
                     data-native-player-drawer

@@ -11,7 +11,6 @@ import { cn } from "@/components/ui/core/styling"
 import { Field } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { __isElectronDesktop__ } from "@/types/constants"
 import { useAtom } from "jotai/react"
 import React from "react"
 import { useFormContext, useWatch } from "react-hook-form"
@@ -421,18 +420,14 @@ export function ServerSettings(props: ServerSettingsProps) {
                 <Field.Switch
                     side="right"
                     name="disableUpdateCheck"
-                    label={__isElectronDesktop__ ? "Do not fetch updates" : "Do not check for updates"}
-                    help={__isElectronDesktop__ ? (<span className="flex gap-2 items-center">
-                        <LuCircleAlert className="size-4 text-(--blue)" />
-                        <span>If enabled, new releases won't be displayed. Seanime Denshi may still auto-update in the background.</span>
-                    </span>) : "If enabled, Seanime will not check for new releases."}
-                    moreHelp={__isElectronDesktop__ ? "You cannot disable auto-updates for Seanime Denshi." : undefined}
+                    label="Do not check for updates"
+                    help="If enabled, Seanime will not check for new releases."
                     icon={<TbDownloadOff className="" />}
                 />
                 <Field.Select
                     label="Update Channel"
                     name="updateChannel"
-                    help={__isElectronDesktop__ ? "Also applies to Seanime Denshi auto-updates." : ""}
+                    help=""
                     options={[
                         { label: "GitHub (Default)", value: "github" },
                         { label: "Seanime", value: "seanime" },

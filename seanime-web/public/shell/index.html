@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Seanime — Sign in</title>
+<link rel="icon" href="/shell/favicon.ico">
+<style>
+:root { color-scheme: dark }
+* { box-sizing: border-box }
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at top, #17171d 0%, #0c0c0f 60%);
+    color: #e5e5e8;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main {
+    text-align: center;
+    padding: 2.5rem 3rem;
+    border: 1px solid #26262e;
+    border-radius: 1rem;
+    background: rgba(18, 18, 23, .85);
+    max-width: 22rem;
+    width: calc(100% - 2rem);
+}
+h1 { font-size: 1.4rem; margin: 0 0 .35rem; letter-spacing: .02em }
+p.sub { color: #8b8b95; font-size: .9rem; margin: 0 }
+a.btn {
+    display: block;
+    margin-top: 1.75rem;
+    padding: .8rem 1rem;
+    border-radius: .6rem;
+    background: #6152df;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background .15s ease;
+}
+a.btn:hover { background: #7264e4 }
+#err {
+    margin: 1rem 0 0;
+    color: #f87171;
+    font-size: .88rem;
+}
+[hidden] { display: none !important }
+</style>
+</head>
+<body>
+<main>
+    <h1>Seanime</h1>
+    <p class="sub">This server requires authentication.</p>
+    <a class="btn" id="signin" href="/api/v1/auth/oidc/login">Sign in</a>
+    <p id="err" hidden></p>
+</main>
+<script>
+(function () {
+    var params = new URLSearchParams(window.location.search)
+
+    var messages = {
+        idp_denied: "The identity provider denied the request.",
+        not_allowed: "This account is not allowed on this server.",
+        oidc_failed: "Sign-in failed. Please try again.",
+    }
+    var error = params.get("error")
+    if (error) {
+        var el = document.getElementById("err")
+        el.textContent = messages[error] || "Sign-in failed."
+        el.hidden = false
+    }
+
+    var signin = document.getElementById("signin")
+    var redirect = params.get("redirect")
+    if (redirect && redirect.charAt(0) === "/" && redirect.charAt(1) !== "/") {
+        signin.href = "/api/v1/auth/oidc/login?redirect=" + encodeURIComponent(redirect)
+    }
+
+    // Label the button with the configured provider name
+    fetch("/api/v1/status", { credentials: "same-origin" })
+        .then(function (res) { return res.json() })
+        .then(function (json) {
+            var name = json && json.data && json.data.authProviderName
+            if (name) signin.textContent = "Sign in with " + name
+        })
+        .catch(function () {})
+})()
+</script>
+</body>
+</html>

@@ -1,9 +1,8 @@
 import { useGetAniListStats, useRefreshAnimeCollection } from "@/api/hooks/anilist.hooks"
-import { useLogout } from "@/api/hooks/auth.hooks"
+import { useLogout, useOidcLogout } from "@/api/hooks/auth.hooks"
 import { useGetExtensionUpdateData as useGetExtensionUpdateData, usePluginWithIssuesCount } from "@/api/hooks/extensions.hooks"
 import { isLoginModalOpenAtom } from "@/app/(main)/_atoms/server-status.atoms"
 import { useSyncIsActive } from "@/app/(main)/_atoms/sync.atoms"
-import { ElectronUpdateModal } from "@/app/(main)/_electron/electron-update-modal"
 import { SidebarNavbar } from "@/app/(main)/_features/layout/top-navbar"
 import { usePluginSidebarItems } from "@/app/(main)/_features/plugin/webview/plugin-sidebar"
 import { useSeaCommand } from "@/app/(main)/_features/sea-command/sea-command"
@@ -21,7 +20,6 @@ import { Button, IconButton } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
 import { Popover } from "@/components/ui/popover"
 import { defineSchema, Field, Form } from "@/components/ui/form"
-import { HoverCard } from "@/components/ui/hover-card"
 import { Modal } from "@/components/ui/modal"
 import { VerticalMenu, VerticalMenuItem } from "@/components/ui/vertical-menu"
 import { openTab } from "@/lib/helpers/browser"
@@ -30,7 +28,6 @@ import { ANILIST_PIN_URL, getAnilistAuthorizeUrl } from "@/lib/server/config"
 import { TORRENT_CLIENT, TORRENT_PROVIDER } from "@/lib/server/settings"
 import { WSEvents } from "@/lib/server/ws-events"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
-import { __isDesktop__, __isElectronDesktop__ } from "@/types/constants"
 import { useAtom } from "jotai"
 import React from "react"
 import { BiChevronRight, BiExtension, BiLogIn, BiLogOut } from "react-icons/bi"
@@ -39,7 +36,6 @@ import { HiOutlineServerStack } from "react-icons/hi2"
 import { IoCloudOfflineOutline, IoHomeOutline } from "react-icons/io5"
 import { LuBookmark, LuBookOpen, LuCalendar, LuCompass, LuExternalLink, LuRefreshCw, LuRss, LuSettings } from "react-icons/lu"
 import { MdOutlineConnectWithoutContact } from "react-icons/md"
-import { PiArrowCircleLeftDuotone, PiArrowCircleRightDuotone } from "react-icons/pi"
 import { RiListCheck3 } from "react-icons/ri"
 import { SiBittorrent, SiQbittorrent, SiTransmission } from "react-icons/si"
 import { TbReportSearch } from "react-icons/tb"
@@ -162,7 +158,6 @@ export function MainSidebar() {
 function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean, containerRef: React.RefObject<HTMLDivElement | null> }) {
     const ctx = useAppSidebarContext()
     const ts = useThemeSettings()
-    const router = useRouter()
     const pathname = usePathname()
     const serverStatus = useServerStatus()
 
@@ -409,12 +404,7 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
 
     return (
         <div>
-            <div
-                className={cn(
-                    "mb-4 p-4 pb-0 flex justify-center w-full",
-                    __isDesktop__ && "mt-2",
-                )}
-            >
+            <div className="mb-4 p-4 pb-0 flex justify-center w-full">
                 <img
                     src="/seanime-logo.png"
                     alt="logo"
@@ -441,7 +431,7 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
                         },
                     },
                 ]}
-                subContentClass={cn((ts.hideTopNavbar || __isDesktop__) && "border-transparent border-b-0!")}
+                subContentClass={cn(ts.hideTopNavbar && "border-transparent border-b-0!")}
                 onLinkItemClick={() => ctx.setOpen(false)}
                 isSidebar
             />
@@ -451,31 +441,6 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
                 handleExpandSidebar={() => { }}
                 handleUnexpandedSidebar={() => { }}
             />
-            {__isDesktop__ && <div className="w-full flex justify-center px-4">
-                <HoverCard
-                    side="right"
-                    sideOffset={-8}
-                    className="bg-transparent border-none"
-                    trigger={<IconButton
-                        intent="gray-basic"
-                        className="text-(--muted)! hover:text-(--foreground)!"
-                        icon={<PiArrowCircleLeftDuotone />}
-                        onClick={() => {
-                            router.back()
-                        }}
-                    />}
-                >
-                    <IconButton
-                        icon={<PiArrowCircleRightDuotone />}
-                        intent="gray-subtle"
-                        className="opacity-50 hover:opacity-100"
-                        onClick={() => {
-                            router.forward()
-                        }}
-                    />
-                </HoverCard>
-            </div>}
-
             <PluginSidebarTray place="sidebar" />
 
         </div>
@@ -483,11 +448,7 @@ function SidebarNavigation({ isCollapsed, containerRef }: { isCollapsed: boolean
 }
 
 function SidebarUpdates({ isCollapsed }: { isCollapsed: boolean }) {
-    return (
-        !__isDesktop__ ? <UpdateModal collapsed={isCollapsed} /> :
-            __isElectronDesktop__ ? <ElectronUpdateModal collapsed={isCollapsed} /> :
-                null
-    )
+    return <UpdateModal collapsed={isCollapsed} />
 }
 
 function SidebarFooter({ isCollapsed, onLogout }: { isCollapsed: boolean, onLogout: () => void }) {
@@ -627,6 +588,9 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
         },
     })
 
+    // OIDC server session sign-out
+    const { mutate: oidcLogout } = useOidcLogout()
+
     const anilistProfileUrl = user?.viewer?.name
         ? `https://anilist.co/user/${user.viewer.name}`
         : "https://anilist.co"
@@ -728,6 +692,15 @@ function SidebarUser({ isCollapsed, expandedSidebar, onLogout }: { isCollapsed: 
                                 onClick={() => { setLoginModal(true); setPopoverOpen(false) }}
                             >
                                 <BiLogIn className="shrink-0" /> Log in with AniList
+                            </button>
+                        )}
+                        {serverStatus?.authMethod === "oidc" && (
+                            <button
+                                className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-red-500/10 text-red-400 transition-colors text-left"
+                                onClick={() => { oidcLogout(); setPopoverOpen(false) }}
+                            >
+                                <BiLogOut className="shrink-0" />
+                                Sign out of server{serverStatus?.authUser?.username ? ` (${serverStatus.authUser.username})` : ""}
                             </button>
                         )}
                     </div>

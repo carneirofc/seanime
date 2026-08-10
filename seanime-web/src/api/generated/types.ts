@@ -3019,6 +3019,19 @@ export type RouteHandlerParam = {
  * - Filename: status.go
  * - Package: handlers
  * @description
+ *  ServerAuthUser describes the identity behind the current OIDC session.
+ */
+export type ServerAuthUser = {
+    username: string
+    subject: string
+    picture?: string
+}
+
+/**
+ * - Filepath: internal/handlers/status.go
+ * - Filename: status.go
+ * - Package: handlers
+ * @description
  *  Status is a struct containing the user data, settings, and OS.
  *  It is used by the client in various places to access necessary information.
  */
@@ -3042,15 +3055,17 @@ export type Status = {
      * If true, a new screen will be displayed
      */
     updating: boolean
-    /**
-     * The server is running as a desktop sidecar
-     */
-    isDesktopSidecar: boolean
     featureFlags?: INTERNAL_FeatureFlags
     disabledFeatures?: Array<INTERNAL_FeatureKey>
     serverReady: boolean
     serverHasPassword: boolean
     showChangelogTour: string
+    /**
+     * "oidc" | "password" | "none"
+     */
+    authMethod: string
+    authProviderName?: string
+    authUser?: ServerAuthUser
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5746,7 +5761,7 @@ export type Updater_AnnouncementConditions = {
      */
     os?: Array<string>
     /**
-     * ["web", "denshi"]
+     * ["web", "mobile"]
      */
     platform?: Array<string>
     /**

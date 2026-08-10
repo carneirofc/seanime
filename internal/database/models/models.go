@@ -743,6 +743,24 @@ func (o StringSlice) Value() (driver.Value, error) {
 }
 
 // +---------------------+
+// |    Login Session    |
+// +---------------------+
+
+// ServerSession is a browser login session created after a successful OIDC
+// authentication. The cookie carries the raw token; only its SHA-256 hex is stored.
+type ServerSession struct {
+	BaseModel
+	TokenHash  string    `gorm:"column:token_hash;uniqueIndex;not null" json:"-"`
+	Subject    string    `gorm:"column:subject;index" json:"subject"`
+	Username   string    `gorm:"column:username" json:"username"`
+	Email      string    `gorm:"column:email" json:"email"`
+	Picture    string    `gorm:"column:picture" json:"picture"`
+	CreatedIP  string    `gorm:"column:created_ip" json:"-"`
+	ExpiresAt  time.Time `gorm:"column:expires_at;index" json:"expiresAt"`
+	LastSeenAt time.Time `gorm:"column:last_seen_at" json:"lastSeenAt"`
+}
+
+// +---------------------+
 // |      OAuth 2.0      |
 // +---------------------+
 

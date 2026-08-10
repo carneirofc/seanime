@@ -1,34 +1,25 @@
 import { usePatchSetting } from "@/api/hooks/settings.hooks"
 import {
-    ElectronPlaybackMethod,
     PlaybackDownloadedMedia,
     PlaybackTorrentStreaming,
     useCurrentDevicePlaybackSettings,
     useExternalPlayerLink,
 } from "@/app/(main)/_atoms/playback.atoms"
-import { mc_settings } from "@/app/(main)/_features/mpv-core/mpv-core.atoms"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { useMediastreamActiveOnDevice } from "@/app/(main)/mediastream/_lib/mediastream.atoms"
 import { SettingsCard, SettingsPageHeader } from "@/app/(main)/settings/_components/settings-card"
 import { __settings_tabAtom } from "@/app/(main)/settings/_components/settings-page.atoms"
-import { ExperimentalBadge } from "@/components/shared/beta-badge.tsx"
 import { Alert } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
 import { RadioGroup } from "@/components/ui/radio-group"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { __isElectronDesktop__ } from "@/types/constants"
-import { useAtom, useSetAtom } from "jotai"
+import { useSetAtom } from "jotai"
 import React from "react"
 import { BiDesktop } from "react-icons/bi"
-import { FaHtml5 } from "react-icons/fa"
 import { LuCheck, LuCirclePlay, LuExternalLink, LuLaptop, LuPlay } from "react-icons/lu"
 import { MdOutlineBroadcastOnHome } from "react-icons/md"
-import { PiVideoDuotone } from "react-icons/pi"
 import { RiSettings3Fill } from "react-icons/ri"
-import { SiMpv } from "react-icons/si"
 import { toast } from "sonner"
 
 type PlaybackChoice = {
@@ -58,8 +49,6 @@ export function PlaybackSettings() {
         setDownloadedMediaPlayback,
         torrentStreamingPlayback,
         setTorrentStreamingPlayback,
-        electronPlaybackMethod,
-        setElectronPlaybackMethod,
     } = useCurrentDevicePlaybackSettings()
 
     const { activeOnDevice, setActiveOnDevice } = useMediastreamActiveOnDevice()
@@ -67,36 +56,14 @@ export function PlaybackSettings() {
     const setTab = useSetAtom(__settings_tabAtom)
     const { mutate: patchSetting, isPending: isPatching } = usePatchSetting()
 
-    const [mpvSettings, setMpvSettings] = useAtom(mc_settings)
-    const [isExportingMpvLogs, setIsExportingMpvLogs] = React.useState(false)
-
-    const usingNativePlayer = __isElectronDesktop__ && electronPlaybackMethod === ElectronPlaybackMethod.NativePlayer
-    const usingMpvPlayer = usingNativePlayer && serverStatus?.settings?.mediaPlayer?.mpvPrismEnabled
     const isMediastreamEnabled = !!serverStatus?.mediastreamSettings?.transcodeEnabled
 
     const downloadedMethod = downloadedMediaPlayback === PlaybackDownloadedMedia.ExternalPlayerLink
         ? PlaybackDownloadedMedia.ExternalPlayerLink
         : activeOnDevice ? "mediastream" : PlaybackDownloadedMedia.Default
 
-    const engineMethod = serverStatus?.settings?.mediaPlayer?.mpvPrismEnabled ? "mpvcore" : "videocore"
-
     function notifyUpdated() {
         toast.success("Playback settings updated")
-    }
-
-    function handleDenshiMethodChange(value: string) {
-        setElectronPlaybackMethod(value as ElectronPlaybackMethod)
-        notifyUpdated()
-    }
-
-    function handleDenshiEngineChange(value: string) {
-        const enabled = value === "mpvcore"
-        if (enabled === !!serverStatus?.settings?.mediaPlayer?.mpvPrismEnabled) return
-
-        patchSetting({
-            path: "mediaPlayer.mpvPrismEnabled",
-            value: enabled,
-        })
     }
 
     function handleDownloadedMethodChange(value: string) {
@@ -122,23 +89,6 @@ export function PlaybackSettings() {
     function handleTorrentMethodChange(value: string) {
         setTorrentStreamingPlayback(value)
         notifyUpdated()
-    }
-
-    async function handleExportMpvLogs() {
-        try {
-            setIsExportingMpvLogs(true)
-            if (!window.electron?.mpvCore) throw new Error("MpvCore is not available")
-            await window.electron.mpvCore.exportLogs()
-            toast.success("MpvCore logs exported")
-        }
-        catch (error) {
-            let msg = error instanceof Error ? error.message : "Failed to export MpvCore logs"
-            msg = msg.replace(/^Error:\s*/i, "").replace(/Error invoking remote method '.*?':\s*/i, "")
-            toast.error(msg)
-        }
-        finally {
-            setIsExportingMpvLogs(false)
-        }
     }
 
     return (
@@ -177,130 +127,12 @@ export function PlaybackSettings() {
                 />
             )}
 
-            {__isElectronDesktop__ && (
-                <SettingsCard
-                    title="Seanime Denshi"
-                    className="border-(--border) bg-(--paper)"
-                >
-                    <div className="space-y-5">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-lg border border-(--border) bg-(--subtle)">
-                                <PiVideoDuotone className="text-2xl text-(--brand)" />
-                            </div>
-                            <div className="flex-1">
-                                <Switch
-                                    label="Use built-in player"
-                                    help="When enabled, all media playback will use the built-in player (overrides settings below)"
-                                    value={electronPlaybackMethod === ElectronPlaybackMethod.NativePlayer}
-                                    onValueChange={v => {
-                                        setElectronPlaybackMethod(v ? ElectronPlaybackMethod.NativePlayer : ElectronPlaybackMethod.Default)
-                                        notifyUpdated()
-                                    }}
-                                />
-                            </div>
-                        </div>
-
-                        {usingNativePlayer && (
-                            <div className="space-y-4 border-t border-(--border) pt-5">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <div>
-                                        <p className="font-semibold">Built-in player engine</p>
-                                        <p className="text-sm text-(--muted)">Choose the renderer Denshi should use for integrated playback.</p>
-                                    </div>
-                                </div>
-
-                                <PlaybackChoiceGroup
-                                    columns="two"
-                                    value={engineMethod}
-                                    onValueChange={handleDenshiEngineChange}
-                                    disabled={isPatching}
-                                    options={[
-                                        {
-                                            value: "videocore",
-                                            title: "VideoCore",
-                                            description: "HTML5 player powered by Chromium's video handling.",
-                                            icon: FaHtml5,
-                                            preview: <VideoCorePreview />,
-                                        },
-                                        {
-                                            value: "mpvcore",
-                                            title: "MpvCore",
-                                            description: "Native player powered by libmpv, with broader codec support.",
-                                            icon: SiMpv,
-                                            badge: <ExperimentalBadge />,
-                                            preview: <MpvCorePreview />,
-                                        },
-                                    ]}
-                                />
-
-                                {usingMpvPlayer && (
-                                    <div className="space-y-1 pl-4 border-l border-(--border) ml-2">
-                                        <div className="flex flex-wrap items-center gap-3">
-                                            <div className="min-w-0 flex-1">
-                                                <Switch
-                                                    label="Enable logging"
-                                                    side="right"
-                                                    help="If enabled, debug logs will be written to the Denshi data directory."
-                                                    value={serverStatus?.settings?.mediaPlayer?.mpvPrismLogging ?? false}
-                                                    onValueChange={v => {
-                                                        patchSetting({
-                                                            path: "mediaPlayer.mpvPrismLogging",
-                                                            value: v,
-                                                        })
-                                                    }}
-                                                    disabled={isPatching}
-                                                />
-                                            </div>
-                                        </div>
-                                        {serverStatus?.settings?.mediaPlayer?.mpvPrismLogging && <div className="py-2">
-                                            <Button
-                                                intent="white"
-                                                size="sm"
-                                                loading={isExportingMpvLogs}
-                                                onClick={handleExportMpvLogs}
-                                            >
-                                                Export logs
-                                            </Button>
-                                        </div>}
-                                        <div className="space-y-2 pt-4 border-t border-(--border) mt-4">
-                                            <div className="flex justify-between items-center">
-                                                <label className="text-sm font-semibold">Custom MPV Options</label>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                Add custom <code>mpv.conf</code> options.
-                                            </p>
-                                            <Textarea
-                                                value={mpvSettings.customMpvConfig || ""}
-                                                onValueChange={value => {
-                                                    setMpvSettings({
-                                                        ...mpvSettings,
-                                                        customMpvConfig: value,
-                                                    })
-                                                }}
-                                                placeholder="# Add custom settings here"
-                                                className="font-mono text-sm mt-1 h-[300px]"
-                                                fieldClass=""
-                                                size="sm"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </SettingsCard>
-            )}
-
             <SettingsCard
                 title="Downloaded Media"
                 description="Choose how to play anime files stored on your device."
-                className={cn(
-                    "transition-all duration-200",
-                    usingNativePlayer && "opacity-60",
-                )}
+                className="transition-all duration-200"
             >
                 <div className="space-y-4">
-                    {usingNativePlayer && <OverrideNotice />}
                     <PlaybackChoiceGroup
                         value={downloadedMethod}
                         onValueChange={handleDownloadedMethodChange}
@@ -338,13 +170,9 @@ export function PlaybackSettings() {
             <SettingsCard
                 title="Torrent & Debrid Streaming"
                 description="Choose how to play streamed content from torrents and debrid services."
-                className={cn(
-                    "transition-all duration-200",
-                    usingNativePlayer && "opacity-60",
-                )}
+                className="transition-all duration-200"
             >
                 <div className="space-y-4">
-                    {usingNativePlayer && <OverrideNotice />}
                     <PlaybackChoiceGroup
                         columns="two"
                         value={torrentStreamingPlayback}
@@ -446,10 +274,6 @@ function PlaybackChoiceLabel({ choice, selected }: { choice: PlaybackChoice, sel
     )
 }
 
-function OverrideNotice() {
-    return null
-}
-
 function PreviewFrame({ children, className }: { children: React.ReactNode, className?: string }) {
     return (
         <div className={cn("relative h-40 aspect-[16/10]] overflow-hidden bg-gray-950 border-b border-gray-200 dark:border-gray-800/80", className)}>
@@ -466,42 +290,6 @@ function MockBlock({ className }: { className?: string }) {
     return <div className={cn("rounded-[3px] bg-white/[0.08]", className)} />
 }
 
-function DenshiBuiltInPreview({ activeEngine }: { activeEngine: string }) {
-    return (
-        <PreviewFrame>
-            <div className="flex h-5 items-center gap-1.5 bg-gray-900 border-b border-white/5 px-2.5">
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <MockLine w="w-10" className="ml-1" />
-            </div>
-            <div className="flex h-[calc(100%-1.25rem)]">
-                <div className="w-12 shrink-0 border-r border-white/5 bg-gray-900/50 p-2 space-y-2">
-                    <MockBlock className="h-3.5 w-full" />
-                    <MockLine w="w-full" />
-                    <MockLine w="w-4/5" />
-                    <MockLine w="w-3/5" />
-                </div>
-                <div className="flex-1 relative bg-gray-950">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="size-8 rounded-full bg-white/10 flex items-center justify-center">
-                            <LuPlay className="text-[10px] text-white/50" />
-                        </div>
-                    </div>
-                    <div className="absolute inset-x-3 bottom-3 space-y-1.5">
-                        <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
-                            <div className="h-full w-3/5 bg-white/25 rounded-full" />
-                        </div>
-                        <div className="flex justify-between">
-                            <MockLine w="w-6" />
-                            <MockLine w="w-6" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </PreviewFrame>
-    )
-}
 
 function ContentRoutingPreview() {
     return (
@@ -525,82 +313,6 @@ function ContentRoutingPreview() {
                         <div className={cn("h-3.5 w-7 rounded-full bg-white/10 p-0.5 transition-colors", i === 0 && "bg-white/25")} />
                     </div>
                 ))}
-            </div>
-        </PreviewFrame>
-    )
-}
-
-function VideoCorePreview() {
-    return (
-        <PreviewFrame className="bg-gray-950">
-            <div className="flex h-5 items-center gap-1.5 bg-gray-900 border-b border-white/5 px-2.5">
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <span className="size-[4px] rounded-full bg-white/20" />
-                {/*<MockLine w="w-12" className="ml-1" />*/}
-            </div>
-            <div className="relative h-[calc(100%-1.25rem)]">
-                <div className="absolute inset-0 flex items-center justify-center text-[22px] font-semibold tracking-wider text-white/[0.1] select-none pointer-events-none font-mono">
-                    HTML5
-                </div>
-                {/* <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="size-8 rounded-full bg-white/10 flex items-center justify-center">
-                 <LuPlay className="text-[10px] text-white/50" />
-                 </div>
-                 </div> */}
-                <div className="absolute inset-x-3 bottom-3 space-y-1.5">
-                    <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full w-2/5 bg-white/25 rounded-full" />
-                    </div>
-                    <div className="flex justify-between">
-                        <MockLine w="w-6" />
-                        <MockLine w="w-6" />
-                    </div>
-                </div>
-            </div>
-        </PreviewFrame>
-    )
-}
-
-function MpvCorePreview() {
-    return (
-        <PreviewFrame className="bg-gray-950">
-            <div className="flex h-5 items-center gap-1.5 bg-gray-900 border-b border-white/5 px-2.5">
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <span className="size-[4px] rounded-full bg-white/20" />
-                <MockLine w="w-12" className="ml-1" />
-            </div>
-            <div className="relative h-[calc(100%-1.25rem)]">
-                <div className="absolute inset-0 flex items-center justify-center text-[22px] font-semibold tracking-wider text-white/[0.1] select-none pointer-events-none font-mono">
-                    MPV
-                </div>
-                {/* <div className="absolute right-2.5 top-2.5 w-20 rounded border border-white/10 bg-gray-900/95 p-1.5 space-y-1.5 shadow-lg z-10">
-                 <MockLine w="w-10" className="bg-white/20" />
-                 <div className="h-px bg-white/5" />
-                 <div className="flex items-center gap-1">
-                 <span className="size-1 rounded-full bg-white/60" />
-                 <MockLine w="w-10" />
-                 </div>
-                 <div className="flex items-center gap-1">
-                 <span className="size-1 rounded-full bg-white/0" />
-                 <MockLine w="w-8" className="opacity-50" />
-                 </div>
-                 </div>
-                 <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="size-8 rounded-full bg-white/10 flex items-center justify-center">
-                 <LuPlay className="text-[10px] text-white/50" />
-                 </div>
-                 </div> */}
-                <div className="absolute inset-x-3 bottom-3 space-y-1.5">
-                    <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full w-2/5 bg-white/25 rounded-full" />
-                    </div>
-                    <div className="flex justify-between">
-                        <MockLine w="w-6" />
-                        <MockLine w="w-6" />
-                    </div>
-                </div>
             </div>
         </PreviewFrame>
     )

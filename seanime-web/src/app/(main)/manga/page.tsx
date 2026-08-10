@@ -6,7 +6,6 @@ import { MangaLibraryView } from "@/app/(main)/manga/_screens/manga-library-view
 import { LuffyError } from "@/components/shared/luffy-error"
 import { cn } from "@/components/ui/core/styling"
 import { ThemeLibraryScreenBannerType, useThemeSettings } from "@/lib/theme/theme-hooks"
-import { __isDesktop__ } from "@/types/constants"
 import React from "react"
 
 
@@ -61,9 +60,8 @@ export default function Page() {
                     <div
                         data-manga-page-dynamic-banner-spacer
                         className={cn(
-                            !__isDesktop__ && "h-28",
-                            (!__isDesktop__ && ts.hideTopNavbar) && "h-40",
-                            __isDesktop__ && "h-40",
+                            "h-28",
+                            ts.hideTopNavbar && "h-40",
                         )}
                     ></div>
                 </>

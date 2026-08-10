@@ -2230,6 +2230,41 @@
     }
   },
   {
+    "name": "csrfOriginCheckMiddleware",
+    "trimmedName": "csrfOriginCheckMiddleware",
+    "comments": [
+      "csrfOriginCheckMiddleware protects cookie-authenticated state-changing",
+      "requests while OIDC login is active. SameSite=Lax already blocks cross-site",
+      "non-GET cookie sends in modern browsers; this server-side check backstops",
+      "legacy browsers and Lax carve-outs without introducing CSRF tokens — the UI",
+      "is served same-origin by this very server, so no legitimate cross-origin",
+      "cookie-bearing client exists.",
+      "",
+      "Policy for POST/PATCH/PUT/DELETE on /api/:",
+      "  - Sec-Fetch-Site present  -\u003e must be \"same-origin\" or \"none\"",
+      "  - else Origin/Referer set -\u003e host must match the request host or ExternalURL",
+      "  - all absent              -\u003e non-browser client (curl, scripts), allowed;",
+      "    these cannot be driven by a victim's browser",
+      "",
+      "Nakama peer paths are exempt: peers authenticate with a header credential,",
+      "which cross-site requests cannot forge.",
+      ""
+    ],
+    "filepath": "internal/handlers/csrf_middleware.go",
+    "filename": "csrf_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleCustomSourceListAnime",
     "trimmedName": "CustomSourceListAnime",
     "comments": [
@@ -3627,52 +3662,6 @@
         {
           "name": "Destination",
           "jsonName": "destination",
-          "goType": "string",
-          "usedStructType": "",
-          "typescriptType": "string",
-          "required": true,
-          "descriptions": []
-        }
-      ],
-      "returns": "handlers.DownloadReleaseResponse",
-      "returnGoType": "handlers.DownloadReleaseResponse",
-      "returnTypescriptType": "DownloadReleaseResponse"
-    }
-  },
-  {
-    "name": "HandleDownloadMacDenshiUpdate",
-    "trimmedName": "DownloadMacDenshiUpdate",
-    "comments": [
-      "HandleDownloadMacDenshiUpdate",
-      "",
-      "\t@summary downloads, extracts, and installs macOS update, then closes the app",
-      "\t@route /api/v1/download-mac-denshi-update [POST]",
-      "\t@returns handlers.DownloadReleaseResponse",
-      ""
-    ],
-    "filepath": "internal/handlers/download.go",
-    "filename": "download.go",
-    "api": {
-      "summary": "downloads, extracts, and installs macOS update, then closes the app",
-      "descriptions": [],
-      "endpoint": "/api/v1/download-mac-denshi-update",
-      "methods": [
-        "POST"
-      ],
-      "params": [],
-      "bodyFields": [
-        {
-          "name": "DownloadUrl",
-          "jsonName": "download_url",
-          "goType": "string",
-          "usedStructType": "",
-          "typescriptType": "string",
-          "required": true,
-          "descriptions": []
-        },
-        {
-          "name": "Version",
-          "jsonName": "version",
           "goType": "string",
           "usedStructType": "",
           "typescriptType": "string",
@@ -5371,6 +5360,29 @@
     }
   },
   {
+    "name": "hasServerAuth",
+    "trimmedName": "hasServerAuth",
+    "comments": [
+      "hasServerAuth reports whether the server has an authentication gate (OIDC",
+      "login or a server password). Most passwordless request-boundary heuristics",
+      "are skipped when an auth gate exists, since the auth middleware enforces it.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security.go",
+    "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "isTrustedRequestHost",
     "trimmedName": "isTrustedRequestHost",
     "comments": [
@@ -5395,7 +5407,7 @@
     "name": "isRequestPermitted",
     "trimmedName": "isRequestPermitted",
     "comments": [
-      "isRequestPermitted determines if an HTTP request is permitted based on server password, access allowlist, and request origin metadata.",
+      "isRequestPermitted determines if an HTTP request is permitted based on the server auth gate, access allowlist, and request origin metadata.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5417,6 +5429,32 @@
     "trimmedName": "isTrustedCORSOrigin",
     "comments": [
       "isTrustedCORSOrigin determines if the provided CORS origin is trusted based on server security settings and allowlist rules.",
+      "Only valid for header-token auth: with cookie-credential auth use isTrustedCORSOriginWithCookies instead.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security.go",
+    "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "isTrustedCORSOriginWithCookies",
+    "trimmedName": "isTrustedCORSOriginWithCookies",
+    "comments": [
+      "isTrustedCORSOriginWithCookies is the CORS policy while cookie-credential auth",
+      "(OIDC login) is active. Because CORS runs with AllowCredentials, reflecting an",
+      "arbitrary origin would let any website ride the session cookie; only the",
+      "canonical external origin, local development origins and explicit allowlist",
+      "entries are accepted.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5437,7 +5475,7 @@
     "name": "isTrustedRequest",
     "trimmedName": "isTrustedRequest",
     "comments": [
-      "isTrustedRequest determines whether the request is from a trusted source based on server password, security mode, or request origin.",
+      "isTrustedRequest determines whether the request is from a trusted source based on the server auth gate, security mode, or request origin.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -9380,6 +9418,198 @@
     }
   },
   {
+    "name": "sessionCookieName",
+    "trimmedName": "sessionCookieName",
+    "comments": [
+      "Cookie names use the __Host- prefix (requires Secure, Path=/, no Domain) unless",
+      "the config opts into insecure local development.",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "safeRedirectPath",
+    "trimmedName": "safeRedirectPath",
+    "comments": [
+      "safeRedirectPath only accepts same-site absolute paths, preventing open redirects.",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOidcLogin",
+    "trimmedName": "OidcLogin",
+    "comments": [
+      "HandleOidcLogin",
+      "",
+      "\t@summary starts the OIDC login flow.",
+      "\t@desc Redirects the browser to the configured identity provider's authorization endpoint.",
+      "\t@desc Only available when OIDC login is configured on the server.",
+      "\t@route /api/v1/auth/oidc/login [GET]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "starts the OIDC login flow.",
+      "descriptions": [
+        "Redirects the browser to the configured identity provider's authorization endpoint.",
+        "Only available when OIDC login is configured on the server."
+      ],
+      "endpoint": "/api/v1/auth/oidc/login",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOidcCallback",
+    "trimmedName": "OidcCallback",
+    "comments": [
+      "HandleOidcCallback",
+      "",
+      "\t@summary completes the OIDC login flow.",
+      "\t@desc Exchanges the authorization code, verifies the ID token, checks the identity",
+      "\t@desc against the configured allowlist and establishes a login session cookie.",
+      "\t@route /api/v1/auth/oidc/callback [GET]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "completes the OIDC login flow.",
+      "descriptions": [
+        "Exchanges the authorization code, verifies the ID token, checks the identity",
+        "against the configured allowlist and establishes a login session cookie."
+      ],
+      "endpoint": "/api/v1/auth/oidc/callback",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleOidcLogout",
+    "trimmedName": "OidcLogout",
+    "comments": [
+      "HandleOidcLogout",
+      "",
+      "\t@summary logs out the current OIDC session.",
+      "\t@desc Deletes the server-side session and expires the session cookie.",
+      "\t@route /api/v1/auth/oidc/logout [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "logs out the current OIDC session.",
+      "descriptions": [
+        "Deletes the server-side session and expires the session cookie."
+      ],
+      "endpoint": "/api/v1/auth/oidc/logout",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleGetMediaToken",
+    "trimmedName": "GetMediaToken",
+    "comments": [
+      "HandleGetMediaToken",
+      "",
+      "\t@summary mints an HMAC query token for the given endpoint path.",
+      "\t@desc While OIDC login is active, media query tokens are signed with a server-side",
+      "\t@desc secret and cannot be minted client-side; authenticated clients request them here",
+      "\t@desc (e.g. for external player URLs).",
+      "\t@route /api/v1/auth/media-token [GET]",
+      "\t@returns string",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "mints an HMAC query token for the given endpoint path.",
+      "descriptions": [
+        "While OIDC login is active, media query tokens are signed with a server-side",
+        "secret and cannot be minted client-side; authenticated clients request them here",
+        "(e.g. for external player URLs)."
+      ],
+      "endpoint": "/api/v1/auth/media-token",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "string",
+      "returnGoType": "string",
+      "returnTypescriptType": "string"
+    }
+  },
+  {
+    "name": "resolveServerSession",
+    "trimmedName": "resolveServerSession",
+    "comments": [
+      "resolveServerSession validates the session cookie on the request; see core.App.ResolveServerSession.",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleGetOnlineStreamEpisodeList",
     "trimmedName": "GetOnlineStreamEpisodeList",
     "comments": [
@@ -10843,6 +11073,50 @@
     }
   },
   {
+    "name": "oidcSessionAuth",
+    "trimmedName": "oidcSessionAuth",
+    "comments": [
+      "oidcSessionAuth authenticates requests with the OIDC session cookie.",
+      "The password header and password-derived HMAC tokens are never consulted.",
+      ""
+    ],
+    "filepath": "internal/handlers/server_auth_middleware.go",
+    "filename": "server_auth_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "tryNakamaAuth",
+    "trimmedName": "tryNakamaAuth",
+    "comments": [
+      "tryNakamaAuth authenticates Nakama peer connections on their dedicated paths",
+      "using the Nakama host password header. Works in both password and OIDC modes.",
+      ""
+    ],
+    "filepath": "internal/handlers/server_auth_middleware.go",
+    "filename": "server_auth_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "OAuthMiddleware",
     "trimmedName": "OAuthMiddleware",
     "comments": [
@@ -11314,6 +11588,27 @@
           "descriptions": []
         }
       ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "sessionAuthUser",
+    "trimmedName": "sessionAuthUser",
+    "comments": [
+      "sessionAuthUser builds the AuthUser payload from context values set by the auth middleware.",
+      ""
+    ],
+    "filepath": "internal/handlers/status.go",
+    "filename": "status.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
       "returns": "bool",
       "returnGoType": "bool",
       "returnTypescriptType": "boolean"

@@ -29224,15 +29224,6 @@
         "comments": []
       },
       {
-        "name": "IsDesktopSidecar",
-        "jsonName": "IsDesktopSidecar",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": true,
-        "public": true,
-        "comments": []
-      },
-      {
         "name": "Flags",
         "jsonName": "Flags",
         "goType": "SeanimeFlags",
@@ -29304,6 +29295,15 @@
       {
         "name": "ClientIdentitySecret",
         "jsonName": "ClientIdentitySecret",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaTokenSecret",
+        "jsonName": "MediaTokenSecret",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
@@ -29505,9 +29505,9 @@
         "name": "Server",
         "jsonName": "Server",
         "goType": "INTERNAL_Config_Server",
-        "inlineStructType": "struct{\nHost string\nPort int\nOffline bool\nUseBinaryPath bool\nSystray bool\nDoHUrl string\nPassword string\nSecureMode string\nAccessAllowlist []string\nTrustedProxies []string\nExternalURL string\nTls __STRUCT__}",
+        "inlineStructType": "struct{\nHost string\nPort int\nOffline bool\nUseBinaryPath bool\nSystray bool\nDoHUrl string\nPassword string\nSecureMode string\nAccessAllowlist []string\nTrustedProxies []string\nExternalURL string\nTls __STRUCT__\nOidc __STRUCT__}",
         "typescriptType": "INTERNAL_Config_Server",
-        "usedTypescriptType": "{ Host: string; Port: number; Offline: boolean; UseBinaryPath: boolean; Systray: boolean; DoHUrl: string; Password: string; SecureMode: string; AccessAllowlist: Array\u003cstring\u003e; TrustedProxies: Array\u003cstring\u003e; ExternalURL: string; Tls: { Enabled: boolean; CertPath: string; KeyPath: string; }; }",
+        "usedTypescriptType": "{ Host: string; Port: number; Offline: boolean; UseBinaryPath: boolean; Systray: boolean; DoHUrl: string; Password: string; SecureMode: string; AccessAllowlist: Array\u003cstring\u003e; TrustedProxies: Array\u003cstring\u003e; ExternalURL: string; Tls: { Enabled: boolean; CertPath: string; KeyPath: string; }; Oidc: { IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }; }",
         "usedStructName": "core.Config_Server",
         "required": true,
         "public": true,
@@ -29771,6 +29771,17 @@
         "inlineStructType": "struct{\nEnabled bool\nCertPath string\nKeyPath string}",
         "typescriptType": "{ Enabled: boolean; CertPath: string; KeyPath: string; }",
         "usedTypescriptType": "{ Enabled: boolean; CertPath: string; KeyPath: string; }",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Oidc",
+        "jsonName": "Oidc",
+        "goType": "__STRUCT__",
+        "inlineStructType": "struct{\nIssuerURL string\nClientID string\nClientSecret string\nScopes []string\nUsernameClaim string\nAllowedSubjects []string\nAllowedUsernames []string\nProviderName string\nSessionTTLDays int\nSessionMaxDays int\nAllowInsecure bool}",
+        "typescriptType": "{ IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }",
+        "usedTypescriptType": "{ IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }",
         "required": true,
         "public": true,
         "comments": []
@@ -30252,15 +30263,6 @@
       {
         "name": "Update",
         "jsonName": "Update",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": true,
-        "public": true,
-        "comments": []
-      },
-      {
-        "name": "IsDesktopSidecar",
-        "jsonName": "IsDesktopSidecar",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": true,
@@ -33975,6 +33977,96 @@
       "declaredValues": null
     },
     "comments": null
+  },
+  {
+    "filepath": "../internal/database/models/models.go",
+    "filename": "models.go",
+    "name": "ServerSession",
+    "formattedName": "Models_ServerSession",
+    "package": "models",
+    "fields": [
+      {
+        "name": "TokenHash",
+        "jsonName": "",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Subject",
+        "jsonName": "subject",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Username",
+        "jsonName": "username",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Email",
+        "jsonName": "email",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Picture",
+        "jsonName": "picture",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "CreatedIP",
+        "jsonName": "",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ExpiresAt",
+        "jsonName": "expiresAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LastSeenAt",
+        "jsonName": "lastSeenAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ServerSession is a browser login session created after a successful OIDC",
+      " authentication. The cookie carries the raw token; only its SHA-256 hex is stored."
+    ],
+    "embeddedStructNames": [
+      "models.BaseModel"
+    ]
   },
   {
     "filepath": "../internal/database/models/models.go",
@@ -40438,15 +40530,6 @@
         "comments": []
       },
       {
-        "name": "hasHadConnection",
-        "jsonName": "hasHadConnection",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": true,
-        "public": false,
-        "comments": []
-      },
-      {
         "name": "mu",
         "jsonName": "mu",
         "goType": "sync.Mutex",
@@ -46887,17 +46970,6 @@
         ]
       },
       {
-        "name": "IsDesktopSidecar",
-        "jsonName": "isDesktopSidecar",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": true,
-        "public": true,
-        "comments": [
-          " The server is running as a desktop sidecar"
-        ]
-      },
-      {
         "name": "FeatureFlags",
         "jsonName": "featureFlags",
         "goType": "core.FeatureFlags",
@@ -46945,11 +47017,81 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "AuthMethod",
+        "jsonName": "authMethod",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": [
+          " \"oidc\" | \"password\" | \"none\""
+        ]
+      },
+      {
+        "name": "AuthProviderName",
+        "jsonName": "authProviderName",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AuthUser",
+        "jsonName": "authUser",
+        "goType": "ServerAuthUser",
+        "typescriptType": "ServerAuthUser",
+        "usedTypescriptType": "ServerAuthUser",
+        "usedStructName": "handlers.ServerAuthUser",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": [
       " Status is a struct containing the user data, settings, and OS.",
       " It is used by the client in various places to access necessary information."
+    ]
+  },
+  {
+    "filepath": "../internal/handlers/status.go",
+    "filename": "status.go",
+    "name": "ServerAuthUser",
+    "formattedName": "ServerAuthUser",
+    "package": "handlers",
+    "fields": [
+      {
+        "name": "Username",
+        "jsonName": "username",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Subject",
+        "jsonName": "subject",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Picture",
+        "jsonName": "picture",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ServerAuthUser describes the identity behind the current OIDC session."
     ]
   },
   {
@@ -99808,7 +99950,7 @@
         "required": false,
         "public": true,
         "comments": [
-          " [\"web\", \"denshi\"]"
+          " [\"web\", \"mobile\"]"
         ]
       },
       {

@@ -15,7 +15,7 @@ import (
 )
 
 // These helpers add baseline security for unauthenticated servers
-// If the server password is not set, some actions like mutating certain settings will be denied unless the request comes from a trusted local origin (like denshi or localhost).
+// If the server password is not set, some actions like mutating certain settings will be denied unless the request comes from a trusted local origin (like localhost).
 // This helps prevent some CSRF attacks from websites when running in passwordless mode
 
 var errPrivilegedExecutionDenied = errors.New("this action requires either a server password or a trusted local origin")
@@ -40,8 +40,18 @@ func respondWithAbort(c echo.Context, code int, err error) error {
 	return errGuardResponseWritten
 }
 
-func isStrictModeSensitive(req *http.Request, serverPassword string) bool {
-	return serverPassword == "" && security.IsStrict() && !isRequestFromTrustedLocal(req)
+// hasServerAuth reports whether the server has an authentication gate (OIDC
+// login or a server password). Most passwordless request-boundary heuristics
+// are skipped when an auth gate exists, since the auth middleware enforces it.
+func (h *Handler) hasServerAuth() bool {
+	if h == nil || h.App == nil || h.App.Config == nil {
+		return false
+	}
+	return h.App.IsOidcMode() || h.App.Config.Server.Password != ""
+}
+
+func isStrictModeSensitive(req *http.Request, hasServerAuth bool) bool {
+	return !hasServerAuth && security.IsStrict() && !isRequestFromTrustedLocal(req)
 }
 
 func reqHasOriginMetadata(req *http.Request) bool {
@@ -86,10 +96,6 @@ func isHardenedTrustedRequestHost(req *http.Request) bool {
 func isTrustedHardenedOriginURL(parsed *url.URL) bool {
 	if parsed == nil {
 		return false
-	}
-
-	if parsed.Scheme == "app" && parsed.Host == "-" {
-		return true
 	}
 
 	host := strings.ToLower(parsed.Hostname())
@@ -171,9 +177,9 @@ func isTrustedRequestHost(req *http.Request) bool {
 	return addr.IsLoopback() || addr.IsPrivate()
 }
 
-// isRequestPermitted determines if an HTTP request is permitted based on server password, access allowlist, and request origin metadata.
-func isRequestPermitted(req *http.Request, serverPassword string, accessAllowlist []string) bool {
-	if serverPassword != "" || security.IsLax() {
+// isRequestPermitted determines if an HTTP request is permitted based on the server auth gate, access allowlist, and request origin metadata.
+func isRequestPermitted(req *http.Request, hasServerAuth bool, accessAllowlist []string) bool {
+	if hasServerAuth || security.IsLax() {
 		return true
 	}
 
@@ -215,8 +221,9 @@ func isRequestPermitted(req *http.Request, serverPassword string, accessAllowlis
 }
 
 // isTrustedCORSOrigin determines if the provided CORS origin is trusted based on server security settings and allowlist rules.
-func isTrustedCORSOrigin(rawOrigin string, serverPassword string, accessAllowlist []string) bool {
-	if serverPassword != "" || security.IsLax() {
+// Only valid for header-token auth: with cookie-credential auth use isTrustedCORSOriginWithCookies instead.
+func isTrustedCORSOrigin(rawOrigin string, hasServerAuth bool, accessAllowlist []string) bool {
+	if hasServerAuth || security.IsLax() {
 		return true
 	}
 
@@ -225,9 +232,6 @@ func isTrustedCORSOrigin(rawOrigin string, serverPassword string, accessAllowlis
 		return false
 	}
 
-	if parsed.Scheme == "app" && parsed.Host == "-" {
-		return true
-	}
 	if isAllowlistedOrigin(parsed, accessAllowlist) {
 		return true
 	}
@@ -248,6 +252,36 @@ func isTrustedCORSOrigin(rawOrigin string, serverPassword string, accessAllowlis
 	return addr.IsLoopback() || addr.IsPrivate()
 }
 
+// isTrustedCORSOriginWithCookies is the CORS policy while cookie-credential auth
+// (OIDC login) is active. Because CORS runs with AllowCredentials, reflecting an
+// arbitrary origin would let any website ride the session cookie; only the
+// canonical external origin, local development origins and explicit allowlist
+// entries are accepted.
+func isTrustedCORSOriginWithCookies(rawOrigin string, externalURL string, accessAllowlist []string) bool {
+	parsed, ok := parseTrustedOrigin(rawOrigin)
+	if !ok || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+		return false
+	}
+
+	if external, ok := parseTrustedOrigin(externalURL); ok &&
+		strings.EqualFold(external.Scheme, parsed.Scheme) &&
+		strings.EqualFold(external.Hostname(), parsed.Hostname()) &&
+		getEffectivePort(external.Scheme, external.Port()) == getEffectivePort(parsed.Scheme, parsed.Port()) {
+		return true
+	}
+
+	if isAllowlistedOrigin(parsed, accessAllowlist) {
+		return true
+	}
+
+	host := strings.ToLower(parsed.Hostname())
+	if host == "localhost" {
+		return true
+	}
+	addr, err := netip.ParseAddr(host)
+	return err == nil && addr.IsLoopback()
+}
+
 func (h *Handler) trustedLocalRequestMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if h == nil || h.App == nil || h.App.Config == nil {
@@ -259,7 +293,7 @@ func (h *Handler) trustedLocalRequestMiddleware(next echo.HandlerFunc) echo.Hand
 			return next(c)
 		}
 
-		if isRequestPermitted(req, h.App.Config.Server.Password, h.App.Config.Server.AccessAllowlist) {
+		if isRequestPermitted(req, h.hasServerAuth(), h.App.Config.Server.AccessAllowlist) {
 			return next(c)
 		}
 
@@ -267,9 +301,9 @@ func (h *Handler) trustedLocalRequestMiddleware(next echo.HandlerFunc) echo.Hand
 	}
 }
 
-// isTrustedRequest determines whether the request is from a trusted source based on server password, security mode, or request origin.
-func isTrustedRequest(req *http.Request, serverPassword string) bool {
-	if serverPassword != "" || security.IsLax() {
+// isTrustedRequest determines whether the request is from a trusted source based on the server auth gate, security mode, or request origin.
+func isTrustedRequest(req *http.Request, hasServerAuth bool) bool {
+	if hasServerAuth || security.IsLax() {
 		return true
 	}
 	if security.IsHardened() {
@@ -285,7 +319,7 @@ func (h *Handler) guardPrivilegedSettingsMutation(c echo.Context, prev *models.S
 		return nil
 	}
 
-	if canMutatePrivilegedSettings(c.Request(), h.App.Config.Server.Password, prev, nextMedia, nextTorrent) {
+	if canMutatePrivilegedSettings(c.Request(), h.hasServerAuth(), prev, nextMedia, nextTorrent) {
 		return nil
 	}
 
@@ -302,7 +336,7 @@ func (h *Handler) guardPrivilegedExtensionManagement(c echo.Context) error {
 		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
 	}
 
-	if canUsePrivilegedExtensionManagement(c.Request(), h.App.Config.Server.Password) {
+	if canUsePrivilegedExtensionManagement(c.Request(), h.hasServerAuth()) {
 		return nil
 	}
 
@@ -315,7 +349,7 @@ func (h *Handler) guardPrivilegedMediastreamSettingsMutation(c echo.Context, pre
 		return nil
 	}
 
-	if canMutatePrivilegedMediastreamSettings(c.Request(), h.App.Config.Server.Password, prev, next) {
+	if canMutatePrivilegedMediastreamSettings(c.Request(), h.hasServerAuth(), prev, next) {
 		return nil
 	}
 
@@ -323,12 +357,12 @@ func (h *Handler) guardPrivilegedMediastreamSettingsMutation(c echo.Context, pre
 }
 
 // canMutatePrivilegedSettings determines if privileged settings modifications can proceed based on request origin, server password, and settings changes.
-func canMutatePrivilegedSettings(req *http.Request, serverPassword string, prev *models.Settings, nextMedia *models.MediaPlayerSettings, nextTorrent *models.TorrentSettings) bool {
+func canMutatePrivilegedSettings(req *http.Request, hasServerAuth bool, prev *models.Settings, nextMedia *models.MediaPlayerSettings, nextTorrent *models.TorrentSettings) bool {
 	if security.IsStrict() && !isRequestFromTrustedLocal(req) && privilegedSettingsChanged(prev, nextMedia, nextTorrent) {
 		return false
 	}
 
-	if isTrustedRequest(req, serverPassword) {
+	if isTrustedRequest(req, hasServerAuth) {
 		return true
 	}
 
@@ -340,12 +374,12 @@ func canMutatePrivilegedSettings(req *http.Request, serverPassword string, prev 
 }
 
 // canMutatePrivilegedMediastreamSettings determines if privileged mediastream settings can be modified based on request trust and setting changes.
-func canMutatePrivilegedMediastreamSettings(req *http.Request, serverPassword string, prev *models.MediastreamSettings, next *models.MediastreamSettings) bool {
+func canMutatePrivilegedMediastreamSettings(req *http.Request, hasServerAuth bool, prev *models.MediastreamSettings, next *models.MediastreamSettings) bool {
 	if security.IsStrict() && !isRequestFromTrustedLocal(req) && privilegedMediastreamSettingsChanged(prev, next) {
 		return false
 	}
 
-	if isTrustedRequest(req, serverPassword) {
+	if isTrustedRequest(req, hasServerAuth) {
 		return true
 	}
 
@@ -357,16 +391,16 @@ func canMutatePrivilegedMediastreamSettings(req *http.Request, serverPassword st
 }
 
 // canUsePrivilegedExtensionManagement determines if the request can access privileged extension management based on security mode, origin, and server password.
-func canUsePrivilegedExtensionManagement(req *http.Request, serverPassword string) bool {
+func canUsePrivilegedExtensionManagement(req *http.Request, hasServerAuth bool) bool {
 	if security.IsStrict() && !isRequestFromTrustedLocal(req) {
 		return false
 	}
 
-	return isTrustedRequest(req, serverPassword)
+	return isTrustedRequest(req, hasServerAuth)
 }
 
-func canConsumeMedia(req *http.Request, serverPassword string, accessAllowlist []string) bool {
-	return isRequestPermitted(req, serverPassword, accessAllowlist)
+func canConsumeMedia(req *http.Request, hasServerAuth bool, accessAllowlist []string) bool {
+	return isRequestPermitted(req, hasServerAuth, accessAllowlist)
 }
 
 func (h *Handler) guardMediaConsumption(c echo.Context) error {
@@ -374,7 +408,7 @@ func (h *Handler) guardMediaConsumption(c echo.Context) error {
 		return nil
 	}
 
-	if canConsumeMedia(c.Request(), h.App.Config.Server.Password, h.App.Config.Server.AccessAllowlist) {
+	if canConsumeMedia(c.Request(), h.hasServerAuth(), h.App.Config.Server.AccessAllowlist) {
 		return nil
 	}
 
@@ -387,7 +421,7 @@ func (h *Handler) guardPrivilegedMediaPlayer(c echo.Context, settings *models.Se
 		return nil
 	}
 
-	if isTrustedRequest(c.Request(), h.App.Config.Server.Password) || !isPrivilegedMediaPlayer(settings) {
+	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedMediaPlayer(settings) {
 		return nil
 	}
 
@@ -404,7 +438,7 @@ func (h *Handler) guardPrivilegedTorrentClient(c echo.Context, settings *models.
 		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
 	}
 
-	if isTrustedRequest(c.Request(), h.App.Config.Server.Password) || !isPrivilegedTorrentClient(settings) {
+	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedTorrentClient(settings) {
 		return nil
 	}
 
@@ -417,7 +451,7 @@ func (h *Handler) guardPrivilegedMediastream(c echo.Context, settings *models.Me
 		return nil
 	}
 
-	if isTrustedRequest(c.Request(), h.App.Config.Server.Password) || !isPrivilegedMediastream(settings) {
+	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedMediastream(settings) {
 		return nil
 	}
 
@@ -434,7 +468,7 @@ func (h *Handler) guardPrivilegedLocalExecution(c echo.Context) error {
 		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
 	}
 
-	if isTrustedRequest(c.Request(), h.App.Config.Server.Password) {
+	if isTrustedRequest(c.Request(), h.hasServerAuth()) {
 		return nil
 	}
 
@@ -543,10 +577,6 @@ func parseTrustedOrigin(rawOrigin string) (*url.URL, bool) {
 		return nil, false
 	}
 
-	if parsed.Scheme == "app" && parsed.Host == "-" {
-		return parsed, true
-	}
-
 	if parsed.Scheme != "http" && parsed.Scheme != "https" {
 		return nil, false
 	}
@@ -587,10 +617,6 @@ func isRequestFromTrustedOrigin(req *http.Request) bool {
 	parsed, ok := parseTrustedOrigin(rawOrigin)
 	if !ok {
 		return false
-	}
-
-	if parsed.Scheme == "app" && parsed.Host == "-" {
-		return true
 	}
 
 	if parsed.Scheme != "http" && parsed.Scheme != "https" {

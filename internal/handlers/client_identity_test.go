@@ -102,7 +102,7 @@ func TestResolveClientIdFromRequest(t *testing.T) {
 func newTrustedClientIDRequest(method string, path string) *http.Request {
 	req := httptest.NewRequest(method, "http://127.0.0.1:43211"+path, nil)
 	req.RemoteAddr = "127.0.0.1:51111"
-	req.Header.Set("Origin", "app://-")
+	req.Header.Set("Origin", "http://127.0.0.1:43211")
 	return req
 }
 
@@ -116,9 +116,9 @@ func newUntrustedClientIDRequest(method string, path string) *http.Request {
 func TestClientAppPlatform(t *testing.T) {
 	t.Run("accepts normalized header platform", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/status", nil)
-		req.Header.Set(clientPlatformHeader, " DensHi ")
+		req.Header.Set(clientPlatformHeader, " WeB ")
 
-		assert.Equal(t, ClientPlatformDenshi, getClientPlatformFromRequest(req))
+		assert.Equal(t, ClientPlatformWeb, getClientPlatformFromRequest(req))
 	})
 
 	t.Run("accepts websocket query platform", func(t *testing.T) {

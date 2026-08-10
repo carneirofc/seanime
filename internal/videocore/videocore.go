@@ -25,7 +25,7 @@ import (
 
 type (
 	// VideoCore represents the built-in HTML5 video player.
-	// It can be the NativePlayer (Seanime Denshi player) or the WebPlayer.
+	// It can be the NativePlayer or the WebPlayer.
 	VideoCore struct {
 		wsEventManager              events.WSEventManagerInterface
 		clientPlayerEventSubscriber *events.ClientEventSubscriber

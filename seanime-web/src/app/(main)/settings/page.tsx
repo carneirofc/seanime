@@ -7,7 +7,6 @@ import { useAnimeListTorrentProviderExtensions } from "@/api/hooks/extensions.ho
 import { useCheckForUpdates } from "@/api/hooks/releases.hooks"
 import { useSaveSettings } from "@/api/hooks/settings.hooks"
 import { useGetTorrentstreamSettings } from "@/api/hooks/torrentstream.hooks"
-import { electronUpdateModalOpenAtom } from "@/app/(main)/_electron/electron-update-modal"
 import { CustomLibraryBanner } from "@/app/(main)/_features/anime-library/_containers/custom-library-banner"
 import { __issueReport_overlayOpenAtom } from "@/app/(main)/_features/issue-report/issue-report"
 import { updateModalOpenAtom as webUpdateModalOpenAtom } from "@/app/(main)/_features/update/update-modal"
@@ -39,7 +38,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useRouter, useSearchParams } from "@/lib/navigation"
 import { DEFAULT_TORRENT_CLIENT, DEFAULT_TORRENT_PROVIDER, settingsSchema, TORRENT_PROVIDER } from "@/lib/server/settings"
 import { THEME_DEFAULT_VALUES } from "@/lib/theme/theme-hooks"
-import { __isElectronDesktop__ } from "@/types/constants"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSetAtom } from "jotai"
 import { useAtom } from "jotai/react"
@@ -71,7 +69,6 @@ import { TbDatabaseExclamation, TbRobot } from "react-icons/tb"
 import { VscDebugAlt } from "react-icons/vsc"
 import { toast } from "sonner"
 import { SettingsCard, SettingsNavCard, SettingsPageHeader } from "./_components/settings-card"
-import { DenshiSettings } from "./_containers/denshi-settings"
 import { DiscordRichPresenceSettings } from "./_containers/discord-rich-presence-settings"
 import { LocalSettings } from "./_containers/local-settings"
 import { McpSettings } from "./_containers/mcp-settings"
@@ -113,7 +110,6 @@ export default function Page() {
 
     const { mutate: checkForUpdates, isPending: isCheckingForUpdates } = useCheckForUpdates()
     const setWebUpdateModalOpen = useSetAtom(webUpdateModalOpenAtom)
-    const setElectronUpdateModalOpen = useSetAtom(electronUpdateModalOpenAtom)
 
     React.useEffect(() => {
         if (!isPending && !!data?.settings) {
@@ -192,8 +188,7 @@ export default function Page() {
                                                 {status?.version} {status?.versionName}
                                             </p>
                                             <p className="text-(--muted) text-sm text-center w-full">
-                                                {capitalize(status?.os)}{__isElectronDesktop__ &&
-                                                <span className="font-medium"> - Denshi</span>}
+                                                {capitalize(status?.os)}
                                             </p>
                                         </div>
                                     </div>
@@ -299,12 +294,6 @@ export default function Page() {
                                 {/*</div>*/}
 
                                 <Card className="lg:p-2 contents lg:block border-0 bg-transparent lg:border lg:bg-gray-950/80">
-                                    {__isElectronDesktop__ && (
-                                        <TabsTrigger
-                                            value="denshi"
-                                            className="group"
-                                        ><LuMonitor className="text-xl mr-3 transition-transform duration-200" /> Denshi</TabsTrigger>
-                                    )}
                                     {/* <TabsTrigger
                                      value="cache"
                                      className="group"
@@ -484,14 +473,6 @@ export default function Page() {
                                 }
 
                                 formRef.current?.reset(formRef.current.getValues())
-
-                                if (__isElectronDesktop__ && window.electron?.denshiSettings) {
-                                    const denshiSettings = await window.electron.denshiSettings.get()
-                                    await window.electron.denshiSettings.set({
-                                        ...denshiSettings,
-                                        updateChannel: data.updateChannel || "github",
-                                    })
-                                }
                             }}
                             defaultValues={{
                                 libraryPath: status?.settings?.library?.libraryPath,
@@ -648,15 +629,7 @@ export default function Page() {
                                                             if (data?.release) {
                                                                 queryClient.setQueryData([API_ENDPOINTS.RELEASES.GetLatestUpdate.key], data)
 
-                                                                if (__isElectronDesktop__) {
-                                                                    // Also trigger Electron update
-                                                                    if (window.electron) {
-                                                                        window.electron.checkForUpdates().catch(() => { })
-                                                                    }
-                                                                    setElectronUpdateModalOpen(true)
-                                                                } else {
-                                                                    setWebUpdateModalOpen(true)
-                                                                }
+                                                                setWebUpdateModalOpen(true)
                                                             } else {
                                                                 toast.success("You are running the latest version")
                                                             }
@@ -1065,19 +1038,6 @@ export default function Page() {
 
                         </TabsContent>
 
-                        {__isElectronDesktop__ && (
-                            <TabsContent value="denshi" className={tabContentClass}>
-
-                                <SettingsPageHeader
-                                    title="Denshi"
-                                    description="Desktop client settings"
-                                    icon={LuMonitor}
-                                />
-
-                                <DenshiSettings />
-
-                            </TabsContent>
-                        )}
 
 
                         {/*<TabsContent value="data" className="space-y-4">*/}

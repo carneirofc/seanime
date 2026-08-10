@@ -32,9 +32,15 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 		e.Use(middleware.Secure())
 	}
 
+	if app.Config.IsOidcMode() {
+		app.Logger.Debug().Msg("app: OIDC mode, adding security headers middleware")
+		e.Use(securityHeadersMiddleware(app))
+	}
+
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if strings.HasPrefix(c.Request().URL.Path, "/manga-downloads/") {
+			// With cookie-credential auth, manga downloads must not be shared cross-origin
+			if !app.Config.IsOidcMode() && strings.HasPrefix(c.Request().URL.Path, "/manga-downloads/") {
 				headers := c.Response().Header()
 				headers.Set("Access-Control-Allow-Origin", "*")
 				headers.Set("Cross-Origin-Resource-Policy", "cross-origin")
@@ -43,6 +49,16 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 			return next(c)
 		}
 	})
+
+	if app.Config.IsOidcMode() {
+		var shellFS fs.FS
+		if err == nil {
+			if sub, subErr := fs.Sub(distFS, "shell"); subErr == nil {
+				shellFS = sub
+			}
+		}
+		e.Use(webBundleGateMiddleware(app, shellFS))
+	}
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

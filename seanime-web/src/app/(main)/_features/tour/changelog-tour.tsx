@@ -336,46 +336,6 @@ function useSetupTour(): Record<string, () => TourStep[]> {
                 popoverWidth: 460,
             },
             {
-                id: "denshi",
-                title: "Denshi Window State",
-                content: "Seanime Denshi now remembers its window position and size, so reopening the app brings you back to the same desktop layout.",
-                route: "/settings",
-                prepare: async () => {
-                    setSettingsTab("denshi")
-                },
-                condition: () => typeof window !== "undefined" && !!window.electron,
-                conditionFailBehavior: "skip",
-                ignoreOutsideClick: true,
-            },
-            // {
-            //     id: "denshi",
-            //     title: "View Transitions",
-            //     content: "Seanime Denshi now uses the View Transitions API for native transitions between different screens.",
-            //     route: "/schedule",
-            //     prepare: async () => {
-            //         setSettingsTab("seanime")
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         router.push("/lists")
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         router.push("/settings")
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         // scroll to bottom
-            //         window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         router.push("/schedule")
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         router.push("/lists")
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         router.push("/settings")
-            //         await new Promise(resolve => setTimeout(resolve, 650))
-            //         router.push("/")
-            //         await new Promise(resolve => setTimeout(resolve, 500))
-            //     },
-            //     condition: () => typeof window !== "undefined" && !!window.electron,
-            //     conditionFailBehavior: "skip",
-            //     ignoreOutsideClick: true,
-            // },
-            {
                 id: "changelog-2",
                 title: "Bug Fixes",
                 content: "Several bugs have been fixed in this release, including some related to the built-in player. Read the full changelog for more details.",
@@ -398,21 +358,6 @@ function useSetupTour(): Record<string, () => TourStep[]> {
                 route: "/",
                 nextLabel: "Start",
                 ignoreOutsideClick: true,
-            },
-            {
-                id: "libmpv-player",
-                target: "[data-tab-trigger='playback']",
-                title: "New Built-in Player (Denshi)",
-                content: "Denshi now features a libmpv-based built-in player. It offers hardware-accelerated rendering directly in the app viewport, flawless codec & subtitle support, and supports mpv.conf options and shaders.",
-                route: "/settings",
-                prepare: async () => {
-                    setSettingsTab("playback")
-                    await tourHelpers.waitForSelector("[data-tab-trigger='playback']")
-                },
-                ignoreOutsideClick: true,
-                popoverWidth: 460,
-                condition: () => typeof window !== "undefined" && !!window.electron,
-                conditionFailBehavior: "skip",
             },
             {
                 id: "torrent-streaming-perf",
@@ -485,21 +430,6 @@ function useSetupTour(): Record<string, () => TourStep[]> {
                 content: "Badge counts from tray plugins are now shown on the main tray icon even when the plugin is not pinned.",
                 route: "/",
                 ignoreOutsideClick: true,
-            },
-            {
-                id: "mpvcore-logs",
-                target: "[data-tab-trigger='playback']",
-                title: "Export MpvCore Logs",
-                content: "When MpvCore logging is enabled you can now export its logs from the Video Playback settings for faster bug reports.",
-                route: "/settings",
-                prepare: async () => {
-                    setSettingsTab("playback")
-                    await tourHelpers.waitForSelector("[data-tab-trigger='playback']")
-                },
-                condition: () => typeof window !== "undefined" && !!window.electron,
-                conditionFailBehavior: "skip",
-                ignoreOutsideClick: true,
-                popoverWidth: 460,
             },
             {
                 id: "changelog-2",

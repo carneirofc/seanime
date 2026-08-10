@@ -18,7 +18,6 @@ import {
     gettingStartedSchema,
     useDefaultSettingsPaths,
 } from "@/lib/server/settings"
-import { __isDesktop__, __isElectronDesktop__ } from "@/types/constants"
 import { AnimatePresence, motion } from "motion/react"
 import React from "react"
 import { useFormContext, useWatch } from "react-hook-form"
@@ -287,11 +286,7 @@ function PlayerStep({ form, status }: { form: any, status: Status }) {
         >
             <motion.div variants={itemVariants} className="text-center space-y-4">
 
-                {__isElectronDesktop__ && <div className="max-w-3xl mx-auto p-4 rounded-xl border mb-8! font-medium">
-                    Seanime Denshi includes a built-in media player that is enabled by default. You can still configure an external media player.
-                </div>}
-
-                <h2 className="text-3xl font-bold">{__isDesktop__ ? "External " : ""}Media Player</h2>
+                <h2 className="text-3xl font-bold">Media Player</h2>
                 <p className="text-(--muted) text-sm max-w-lg mx-auto">
                     Configure your preferred external media player for watching anime and tracking progress automatically.
                 </p>

@@ -57,6 +57,7 @@ import (
 	"seanime/internal/videocore"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -160,7 +161,6 @@ type (
 		TotalLibrarySize uint64
 		LibraryDir       string
 		AnilistCacheDir  string
-		IsDesktopSidecar bool
 		Flags            SeanimeFlags
 
 		// Internal state
@@ -171,6 +171,9 @@ type (
 		isOfflineRef         *util.Ref[bool]
 		ServerPasswordHash   string
 		ClientIdentitySecret string
+		// MediaTokenSecret signs media/query HMAC tokens while OIDC login is active.
+		// Regenerated each boot so leaked query tokens die with the process.
+		MediaTokenSecret string
 		logoutInProgress     atomic.Bool
 
 		// Plugin system
@@ -241,11 +244,6 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 	logger.Info().Msgf("app: Data directory: %s", cfg.Data.AppDataDir)
 	logger.Info().Msgf("app: Working directory: %s", cfg.Data.WorkingDir)
 
-	// Log if running in desktop sidecar mode
-	if configOpts.Flags.IsDesktopSidecar {
-		logger.Info().Msg("app: Desktop sidecar mode enabled")
-	}
-
 	// Initialize database connection
 	database, err := db.NewDatabase(cfg.Data.AppDataDir, cfg.Database.Name, logger)
 	if err != nil {
@@ -276,11 +274,6 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 
 	// Initialize WebSocket event manager for real-time communication
 	wsEventManager := events.NewWSEventManager(logger)
-
-	// Exit if no WebSocket connections in desktop sidecar mode
-	if configOpts.Flags.IsDesktopSidecar {
-		wsEventManager.ExitIfNoConnsAsDesktopSidecar()
-	}
 
 	// Initialize DNS-over-HTTPS service in background
 	go doh.HandleDoH(cfg.Server.DoHUrl, logger)
@@ -449,7 +442,6 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 		DiscordPresence:               nil, // Initialized in App.InitOrRefreshModules
 		previousVersion:               previousVersion,
 		FeatureFlags:                  NewFeatureFlags(cfg, logger),
-		IsDesktopSidecar:              configOpts.Flags.IsDesktopSidecar,
 		SecondarySettings: struct {
 			Mediastream   *models.MediastreamSettings
 			Torrentstream *models.TorrentstreamSettings
@@ -463,6 +455,7 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 		isOfflineRef:                    isOfflineRef,
 		ServerPasswordHash:              serverPasswordHash,
 		ClientIdentitySecret:            util.GenerateCryptoID(),
+		MediaTokenSecret:                util.GenerateCryptoID(),
 	}
 
 	plugin.GlobalAppContext.SetModulesPartial(plugin.AppContextModules{
@@ -508,6 +501,30 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 	if cfg.Server.SecureMode != "" {
 		app.SetSecureMode(cfg.Server.SecureMode, false)
 		logger.Warn().Str("mode", cfg.Server.SecureMode).Msg("app: Secure mode configured")
+	}
+
+	if cfg.IsOidcMode() {
+		if cfg.Server.Password != "" {
+			logger.Warn().Msg("app: OIDC login is configured; the server password is IGNORED while OIDC is active")
+		}
+		// The passwordless request-boundary heuristics are no substitute for the
+		// session gate once the server is meant to face the internet.
+		if cfg.Server.SecureMode == "" || cfg.Server.SecureMode == "lax" {
+			app.SetSecureMode("hardened", false)
+			logger.Warn().Msg("app: OIDC login active, forcing secure mode to \"hardened\"")
+		}
+		if len(cfg.Server.TrustedProxies) == 0 && cfg.Server.Oidc.AllowInsecure == false {
+			logger.Warn().Msg("app: OIDC login active but no trusted proxies configured; if the server runs behind a reverse proxy, set server.trustedProxies so client IPs and rate limits work correctly")
+		}
+		logger.Info().Str("issuer", cfg.Server.Oidc.IssuerURL).Msg("app: OIDC login enabled")
+
+		// Periodically evict expired login sessions
+		go func() {
+			for {
+				_, _ = database.DeleteExpiredServerSessions()
+				time.Sleep(1 * time.Hour)
+			}
+		}()
 	}
 
 	// Run database migrations if version has changed
@@ -567,6 +584,11 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 	app.performActionsOnce()
 
 	return app
+}
+
+// IsOidcMode reports whether OIDC login is active; see Config.IsOidcMode.
+func (a *App) IsOidcMode() bool {
+	return a.Config != nil && a.Config.IsOidcMode()
 }
 
 func (a *App) IsOffline() bool {

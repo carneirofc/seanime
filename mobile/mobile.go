@@ -21,11 +21,10 @@ func StartServer(dataDir string, cacheDir string, port int) {
 		_ = os.Setenv("SEANIME_WORKING_DIR", dataDir)
 
 		flags := core.SeanimeFlags{
-			DataDir:          dataDir,
-			Host:             "127.0.0.1",
-			Port:             port,
-			DisablePassword:  true,
-			IsDesktopSidecar: false,
+			DataDir:         dataDir,
+			Host:            "127.0.0.1",
+			Port:            port,
+			DisablePassword: true,
 		}
 
 		app := core.NewApp(&core.ConfigOptions{

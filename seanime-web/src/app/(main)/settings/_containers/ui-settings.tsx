@@ -18,7 +18,6 @@ import {
     ThemeMediaPageBannerTypeOptions,
     useThemeSettings,
 } from "@/lib/theme/theme-hooks.ts"
-import { __isDesktop__ } from "@/types/constants"
 import { colord } from "colord"
 import { atom } from "jotai"
 import { useAtom } from "jotai/react"
@@ -1094,7 +1093,7 @@ export function UISettings() {
                                                 <div className="h-px w-7 bg-white/10 rounded" />
                                             </div>
                                         </SwThumb>,
-                                        __isDesktop__ ? "Hide top navbar (web interface)" : "Hide top navbar",
+                                        "Hide top navbar",
                                     )}
                                     name="hideTopNavbar"
                                     help="Switches to sidebar-only mode."

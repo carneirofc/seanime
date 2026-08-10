@@ -40,6 +40,26 @@ export function useLogin() {
     })
 }
 
+/**
+ * Signs out of the server's OIDC session (unrelated to the AniList logout below).
+ * The server deletes the session and expires the cookie; a full reload then lands
+ * on the login shell.
+ */
+export function useOidcLogout() {
+    return useServerMutation<boolean>({
+        endpoint: "/auth/oidc/logout",
+        method: "POST",
+        mutationKey: ["oidc-logout"],
+        onSuccess: () => {
+            window.location.href = "/login"
+        },
+        onError: () => {
+            // The cookie may already be gone; land on the login shell either way
+            window.location.href = "/login"
+        },
+    })
+}
+
 export function useLogout() {
     const queryClient = useQueryClient()
     const router = useRouter()

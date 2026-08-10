@@ -1,7 +1,6 @@
 import { HibikeTorrent_AnimeTorrent, HibikeTorrent_BatchEpisodeFiles } from "@/api/generated/types"
 import { useTorrentstreamStartStream } from "@/api/hooks/torrentstream.hooks"
 import {
-    ElectronPlaybackMethod,
     PlaybackTorrentStreaming,
     useCurrentDevicePlaybackSettings,
     useExternalPlayerLink,
@@ -24,7 +23,6 @@ import { ForcePlaybackMethod, useForcePlaybackMethod } from "@/app/(main)/entry/
 import { clientIdAtom } from "@/app/websocket-provider"
 import { logger } from "@/lib/helpers/debug"
 import { WSEvents } from "@/lib/server/ws-events"
-import { __isElectronDesktop__ } from "@/types/constants"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAtomValue } from "jotai"
 import { useSetAtom } from "jotai/react"
@@ -53,7 +51,7 @@ export function useHandleStartTorrentStream() {
 
     const setLoadingState = useSetAtom(__torrentstream__loadingStateAtom)
     const setIsLoaded = useSetAtom(__torrentstream__isLoadedAtom)
-    const { torrentStreamingPlayback, electronPlaybackMethod } = useCurrentDevicePlaybackSettings()
+    const { torrentStreamingPlayback } = useCurrentDevicePlaybackSettings()
     const { externalPlayerLink } = useExternalPlayerLink()
     const clientId = useAtomValue(clientIdAtom)
 
@@ -62,10 +60,7 @@ export function useHandleStartTorrentStream() {
     const { resetForcePlaybackMethod, getForcePlaybackMethod } = useForcePlaybackMethod()
 
     const getPlaybackType = React.useCallback((forcePlaybackMethod?: ForcePlaybackMethod) => {
-        if (
-            (!forcePlaybackMethod && __isElectronDesktop__ && electronPlaybackMethod === ElectronPlaybackMethod.NativePlayer) ||
-            (forcePlaybackMethod && forcePlaybackMethod === "nativeplayer")
-        ) {
+        if (forcePlaybackMethod && forcePlaybackMethod === "nativeplayer") {
             return "nativeplayer"
         }
         if (!!externalPlayerLink?.length && (
@@ -75,7 +70,7 @@ export function useHandleStartTorrentStream() {
             return "externalPlayerLink"
         }
         return "default"
-    }, [externalPlayerLink, torrentStreamingPlayback, electronPlaybackMethod])
+    }, [externalPlayerLink, torrentStreamingPlayback])
 
     const handleStreamSelection = (params: ManualTorrentStreamSelectionProps) => {
         const forcePlaybackMethod = getForcePlaybackMethod()
@@ -128,7 +123,7 @@ export function useHandleStartTorrentStream() {
     }
 
     return {
-        isUsingNativePlayer: __isElectronDesktop__ && electronPlaybackMethod === ElectronPlaybackMethod.NativePlayer,
+        isUsingNativePlayer: false,
         handleStreamSelection,
         handleAutoSelectStream,
         isPending,

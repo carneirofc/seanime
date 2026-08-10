@@ -36,7 +36,6 @@ import { MangaPreferencesSync, MangaSourceRefreshSync } from "@/app/(main)/manga
 import { LoadingOverlayWithLogo } from "@/components/shared/loading-overlay-with-logo"
 import { AppLayout, AppLayoutContent, AppLayoutSidebar, AppSidebarProvider } from "@/components/ui/app-layout"
 import { usePathname, useRouter } from "@/lib/navigation"
-import { __isElectronDesktop__ } from "@/types/constants"
 import React from "react"
 import { useServerStatus } from "../../_hooks/use-server-status"
 import { useInvalidateQueriesListener } from "../../_listeners/invalidate-queries.listeners"
@@ -45,8 +44,6 @@ import { NakamaManager } from "../nakama/nakama-manager"
 import { NakamaWatchPartyChat, NakamaWatchPartyChatProvider } from "../nakama/nakama-watch-party-chat"
 import { RateLimitLoader } from "../rate-limit-loader"
 import { TopIndefiniteLoader } from "../top-indefinite-loader"
-
-const NativePlayerLazyWrapper = React.lazy(() => import("@/app/(main)/_features/native-player/native-player-lazy-wrapper"))
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
@@ -72,11 +69,6 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
             <SeaCommand />
 
             <PluginManager />
-            {(__isElectronDesktop__) && (
-                <React.Suspense fallback={null}>
-                    <NativePlayerLazyWrapper />
-                </React.Suspense>
-            )}
             <NakamaManager />
             <NakamaWatchPartyChatProvider />
             <NakamaWatchPartyChat />

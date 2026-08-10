@@ -44,7 +44,7 @@ Leave a star if you like the project! ⭐️
 
 ## About
 
-Seanime is a **media server** with a **web interface** and **desktop app** for managing your local library, streaming anime and reading manga.
+Seanime is a **media server** with a **web interface** for managing your local library, streaming anime and reading manga.
 
 > [!IMPORTANT]
 >Seanime does not provide, host, or distribute any media content. Users are responsible for obtaining media through legal means and complying with their local laws. Extensions listed on the app are unaffiliated with Seanime and may be removed if they violated copyright laws. </strong>
@@ -52,8 +52,7 @@ Seanime is a **media server** with a **web interface** and **desktop app** for m
 
 ## Features
 
-- **Cross-platform**: Web interface and desktop app for Windows, Linux, and macOS, companion and mobile server apps for iOS and Android
-- **Seanime Denshi**: Desktop client with built-in libmpv-based video player (support for SSA/ASS subtitles, shaders, and more)
+- **Cross-platform**: Server binaries for Windows, Linux, and macOS (with optional system tray), companion and mobile server apps for iOS and Android
 - **Seanime Tenji**: Companion app for iOS and Android to browse your library, manage your AniList, stream content, and enjoy offline access. Connect to your existing Seanime server or host your own directly on your mobile device with the Mobile Server app
 - **AniList Integration**: Browse and manage your lists, discover anime and manga
 - **Custom Sources**: Support for adding non-AniList anime and manga series 
@@ -65,7 +64,7 @@ Seanime is a **media server** with a **web interface** and **desktop app** for m
 - **Extension Marketplace**: In-app repository to install and manage extensions for online streaming, manga sources, and torrent providers
 - **Manga Reader**: Read chapters from your local library or via extensions with a unified interface
 - **Transcoding & Direct Play**: Stream your library to any device web browser with on-the-fly transcoding or direct play
-- **External Player Support**: Seamless integration with MPV, VLC, and MPC-HC on desktop
+- **External Player Support**: Seamless integration with MPV, VLC, and MPC-HC
 - **Mobile Player Integration**: Open files and streams in mobile players (Outplayer, VLC, etc.) via intents or deep links
 - **Playlists**: Create and manage playlists for a seamless binge watching experience
 - **Customizable UI**: Personalize the interface with color themes, background images, and layout options
@@ -112,7 +111,6 @@ The maintenance of this project is made possible by the sponsors.
 
 * Server: [Go](https://go.dev/)
 * Frontend: [React](https://reactjs.org/), [Rsbuild/Rspack](https://rsbuild.rs/), [Tanstack Router](https://tanstack.com/router)
-* Seanime Denshi: [Electron](https://www.electronjs.org/)
 
 ## Development and Build
 

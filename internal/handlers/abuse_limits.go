@@ -71,12 +71,15 @@ var (
 	authFailureRateLimits         = newRateLimitStore()
 	websocketUpgradeRateLimits    = newRateLimitStore()
 	controlPlaneMutationLimits    = newRateLimitStore()
+	oauthFlowRateLimits           = newRateLimitStore()
 	authFailureWindow             = 5 * time.Minute
 	websocketUpgradeWindow        = time.Minute
 	controlPlaneMutationWindow    = time.Minute
+	oauthFlowWindow               = 5 * time.Minute
 	maxAuthFailuresPerWindow      = 10
 	maxWebsocketAttemptsPerWindow = 40
 	maxMutationsPerWindow         = 90
+	maxOauthFlowsPerWindow        = 10
 )
 
 func authFailureRateLimitKey(req *http.Request) string {
@@ -89,6 +92,10 @@ func websocketUpgradeRateLimitKey(req *http.Request) string {
 
 func controlPlaneMutationRateLimitKey(req *http.Request) string {
 	return "mutate:" + requestClientIP(req)
+}
+
+func oauthFlowRateLimitKey(req *http.Request) string {
+	return "oauth:" + requestClientIP(req)
 }
 
 func shouldRateLimitMutation(req *http.Request) bool {

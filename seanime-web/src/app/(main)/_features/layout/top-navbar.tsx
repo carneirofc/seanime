@@ -11,7 +11,6 @@ import { cn } from "@/components/ui/core/styling"
 import { VerticalMenu } from "@/components/ui/vertical-menu"
 import { usePathname } from "@/lib/navigation"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
-import { __isDesktop__ } from "@/types/constants"
 import { useSetAtom } from "jotai/react"
 import React from "react"
 import { LuFolderDown } from "react-icons/lu"
@@ -38,16 +37,9 @@ export function TopNavbar(props: TopNavbarProps) {
                 data-top-navbar
                 className={cn(
                     "w-full h-20 relative overflow-hidden flex items-center",
-                    (ts.hideTopNavbar || __isDesktop__) && "lg:hidden",
-                    // __isDesktop__ && "absolute top-0 left-0 z-[-1]"
+                    ts.hideTopNavbar && "lg:hidden",
                 )}
             >
-                {/*{__isDesktop__ && (*/}
-                {/*    <div*/}
-                {/*        className="absolute inset-0 z-0"*/}
-                {/*        style={{ WebkitAppRegion: "drag" } as any}*/}
-                {/*    />*/}
-                {/*)}*/}
                 <div
                     data-top-navbar-content-container
                     className="relative z-10 px-4 w-full flex flex-row md:items-center overflow-x-auto overflow-y-hidden"
@@ -94,7 +86,7 @@ export function SidebarNavbar(props: SidebarNavbarProps) {
     const openDownloadQueue = useSetAtom(__manga_chapterDownloadsDrawerIsOpenAtom)
     const isMangaPage = pathname.startsWith("/manga")
 
-    if (!ts.hideTopNavbar && !__isDesktop__) return null
+    if (!ts.hideTopNavbar) return null
 
     return (
         <div data-sidebar-navbar className="flex flex-col gap-1">

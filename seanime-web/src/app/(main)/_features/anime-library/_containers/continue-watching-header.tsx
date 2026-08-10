@@ -17,7 +17,6 @@ import { useRouter } from "@/lib/navigation"
 import { getAssetUrl } from "@/lib/server/assets"
 import { useContinueWatchingSpoilers } from "@/lib/theme/anime-spoilers"
 import { ThemeLibraryScreenBannerType, ThemeMediaPageBannerSize, ThemeMediaPageBannerType, useThemeSettings } from "@/lib/theme/theme-hooks"
-import { __isDesktop__ } from "@/types/constants"
 import { atom, useAtomValue } from "jotai"
 import { useAtom, useSetAtom } from "jotai/react"
 import { AnimatePresence, motion } from "motion/react"
@@ -68,9 +67,6 @@ function HeaderCarouselDots({ totalEpisodes, currentIndex, onIndexChange, classN
         <div
             className={cn(
                 "hidden lg:flex items-center gap-2 z-10 pl-8 max-w-[20rem] flex-wrap top-18",
-                // ts.hideTopNavbar && !__isDesktop__ && "top-16",
-                // (ts.hideTopNavbar || __isDesktop__) && "top-6",
-                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && (__isDesktop__ || ts.hideTopNavbar) && "top-[0.6rem]",
                 className,
             )}
         >
@@ -129,10 +125,6 @@ function MediaMetadata({ episode, episodes, onHoverChange }: MediaMetadataProps)
                 "absolute left-2 w-fit h-80 bg-linear-to-t z-3 hidden lg:block",
                 "top-20",
                 ts.hideTopNavbar && "top-16",
-                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-16",
-                // (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "top-8",
-                (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-0",
-                (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-8",
             )}
             data-media-id={anime.id}
             data-media-mal-id={anime.idMal}
@@ -274,10 +266,6 @@ function EpisodeCardSidebar({ episode, isTransitioning }: EpisodeCardSidebarProp
                 "absolute right-6 w-fit h-100 z-3 hidden lg:block overflow-hidden",
                 "top-20",
                 ts.hideTopNavbar && "top-16",
-                // ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-16",
-                // (ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && ts.hideTopNavbar) && "top-8",
-                (__isDesktop__ && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-4",
-                (__isDesktop__ && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-12",
             )}
         >
             <div className="p-6 w-fit">
@@ -363,7 +351,6 @@ function BannerImage({ episode, isTransitioning, shouldBlurBanner }: BannerImage
                 "lg:h-140 w-full flex-none object-cover object-center top-0 bg-(--background) absolute",
                 !ts.libraryScreenCustomBackgroundImage && "fixed",
                 !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
-                __isDesktop__ && "-top-8",
                 ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "lg:h-120",
             )}
         >

@@ -754,11 +754,6 @@ export const API_ENDPOINTS = {
             methods: ["POST"],
             endpoint: "/api/v1/download-release",
         },
-        DownloadMacDenshiUpdate: {
-            key: "DOWNLOAD-download-mac-denshi-update",
-            methods: ["POST"],
-            endpoint: "/api/v1/download-mac-denshi-update",
-        },
     },
     EXPLORER: {
         /**
@@ -1827,6 +1822,52 @@ export const API_ENDPOINTS = {
             key: "OAUTH-o-auth-revoke",
             methods: ["POST"],
             endpoint: "/api/v1/oauth/revoke",
+        },
+    },
+    OIDC_AUTH: {
+        /**
+         *  @description
+         *  Route starts the OIDC login flow.
+         *  Redirects the browser to the configured identity provider's authorization endpoint.
+         *  Only available when OIDC login is configured on the server.
+         */
+        OidcLogin: {
+            key: "OIDC-AUTH-oidc-login",
+            methods: ["GET"],
+            endpoint: "/api/v1/auth/oidc/login",
+        },
+        /**
+         *  @description
+         *  Route completes the OIDC login flow.
+         *  Exchanges the authorization code, verifies the ID token, checks the identity
+         *  against the configured allowlist and establishes a login session cookie.
+         */
+        OidcCallback: {
+            key: "OIDC-AUTH-oidc-callback",
+            methods: ["GET"],
+            endpoint: "/api/v1/auth/oidc/callback",
+        },
+        /**
+         *  @description
+         *  Route logs out the current OIDC session.
+         *  Deletes the server-side session and expires the session cookie.
+         */
+        OidcLogout: {
+            key: "OIDC-AUTH-oidc-logout",
+            methods: ["POST"],
+            endpoint: "/api/v1/auth/oidc/logout",
+        },
+        /**
+         *  @description
+         *  Route mints an HMAC query token for the given endpoint path.
+         *  While OIDC login is active, media query tokens are signed with a server-side
+         *  secret and cannot be minted client-side; authenticated clients request them here
+         *  (e.g. for external player URLs).
+         */
+        GetMediaToken: {
+            key: "OIDC-AUTH-get-media-token",
+            methods: ["GET"],
+            endpoint: "/api/v1/auth/media-token",
         },
     },
     ONLINESTREAM: {

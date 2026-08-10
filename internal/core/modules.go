@@ -294,7 +294,7 @@ func (a *App) initModulesOnce() {
 		VideoCore:            a.VideoCore,
 		MediacoreCoordinator: a.MediacoreCoordinator,
 		HMACTokenFunc: func(endpoint string, symbol string) string {
-			qp, err := a.GetServerPasswordHMACAuth().GenerateQueryParam(endpoint, symbol)
+			qp, err := a.GetServerHMACAuth().GenerateQueryParam(endpoint, symbol)
 			if err != nil {
 				return ""
 			}

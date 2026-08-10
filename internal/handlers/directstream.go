@@ -107,7 +107,7 @@ func (h *Handler) HandleDirectstreamConvertSubs(c echo.Context) error {
 func (h *Handler) HandleDirectstreamGetStream() http.Handler {
 	streamHandler := h.App.DirectStreamManager.ServeEchoStream()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if h != nil && h.App != nil && h.App.Config != nil && !canConsumeMedia(r, h.App.Config.Server.Password, h.App.Config.Server.AccessAllowlist) {
+		if h != nil && h.App != nil && h.App.Config != nil && !canConsumeMedia(r, h.hasServerAuth(), h.App.Config.Server.AccessAllowlist) {
 			http.Error(w, errPrivilegedExecutionDenied.Error(), http.StatusForbidden)
 			return
 		}

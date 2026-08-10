@@ -1,7 +1,5 @@
 # Seanime Development and Build Guide
 
-- [Seanime Denshi Guide](https://github.com/5rahim/seanime/blob/main/seanime-denshi/README.md)
-
 ## Tech stack
 
 * Server: Built with [Go](https://go.dev/)
@@ -17,7 +15,6 @@
 	* Data Fetching: [React Query](https://tanstack.com/query/latest)
 	* State Management: [Jotai](https://jotai.org/) for global state
 	* Built-in Player: Custom-made (VideoCore)
-* Seanime Denshi: Built with a custom [Electron](https://www.electronjs.org/)/Chromium to support more codecs
 
 ## Prerequisites
 
@@ -47,7 +44,7 @@ Choose the appropriate command based on your target platform:
    go build -o seanime.exe -trimpath -ldflags="-s -w -H=windowsgui -extldflags '-static'"
    ```
 
-2. **Windows (No System Tray)** - Used by the desktop app:
+2. **Windows (No System Tray)** - Headless build:
    ```bash
    go build -o seanime.exe -trimpath -ldflags="-s -w" -tags=nosystray
    ```

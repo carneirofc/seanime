@@ -95,13 +95,27 @@ export function useServerPassword() {
 export function useServerHMACAuth() {
     const serverStatus = useServerStatus()
     const [password] = useAtom(serverAuthTokenAtom)
+    const isOidc = serverStatus?.authMethod === "oidc"
+
+    // With OIDC login the HMAC secret lives server-side only; the session-authenticated
+    // client asks the server to mint tokens (needed for external player URLs).
+    const fetchServerMintedToken = async (endpoint: string): Promise<string> => {
+        const res = await fetch(`/api/v1/auth/media-token?endpoint=${encodeURIComponent(endpoint)}`, { credentials: "same-origin" })
+        if (!res.ok) return ""
+        const json = await res.json() as { data?: string }
+        return json?.data ?? ""
+    }
 
     return {
         password,
         getHMACTokenQueryParam: async (endpoint: string, symbol?: string): Promise<string> => {
-            if (!serverStatus?.serverHasPassword || !password) return ""
-
             try {
+                if (isOidc) {
+                    const token = await fetchServerMintedToken(endpoint)
+                    return token ? `${symbol ?? "?"}token=${token}` : ""
+                }
+
+                if (!serverStatus?.serverHasPassword || !password) return ""
                 const hmacAuth = createServerPasswordHMACAuth(password)
                 return await hmacAuth.generateQueryParam(endpoint, symbol)
             }
@@ -111,9 +125,12 @@ export function useServerHMACAuth() {
             }
         },
         generateHMACToken: async (endpoint: string) => {
-            if (!serverStatus?.serverHasPassword || !password) return ""
-
             try {
+                if (isOidc) {
+                    return await fetchServerMintedToken(endpoint)
+                }
+
+                if (!serverStatus?.serverHasPassword || !password) return ""
                 const hmacAuth = createServerPasswordHMACAuth(password)
                 return await hmacAuth.generateToken(endpoint)
             }

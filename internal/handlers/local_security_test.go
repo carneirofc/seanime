@@ -34,12 +34,6 @@ func TestRequestHasTrustedLocalOrigin(t *testing.T) {
 			want:    true,
 		},
 		{
-			name:    "allows denshi app origin",
-			origin:  "app://-",
-			reqHost: "127.0.0.1:43211",
-			want:    true,
-		},
-		{
 			name:    "falls back to referer",
 			referer: "http://[::1]:43211/settings",
 			reqHost: "example.com",
@@ -67,7 +61,7 @@ func TestRequestHasTrustedLocalOrigin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// local browser and denshi should still be able to change these settings.
+			// local browser requests should still be able to change these settings.
 			req := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", nil)
 			req.Host = tt.reqHost
 			if tt.origin != "" {
@@ -98,13 +92,6 @@ func TestRequestHasStrictTrustedLocalBoundary(t *testing.T) {
 		{
 			name:       "allows direct loopback browser request",
 			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "127.0.0.1:51111",
-			want:       true,
-		},
-		{
-			name:       "allows denshi from loopback",
-			origin:     "app://-",
 			reqHost:    "127.0.0.1:43211",
 			remoteAddr: "127.0.0.1:51111",
 			want:       true,
@@ -200,7 +187,7 @@ func TestCanAccessLocalServer(t *testing.T) {
 		origin          string
 		reqHost         string
 		remoteAddr      string
-		serverPassword  string
+		hasServerAuth   bool
 		accessAllowlist []string
 		secureMode      string
 		want            bool
@@ -284,17 +271,17 @@ func TestCanAccessLocalServer(t *testing.T) {
 			want:    false,
 		},
 		{
-			name:           "allows authenticated requests regardless of host",
-			reqHost:        "evil.example",
-			serverPassword: "configured",
-			want:           true,
+			name:          "allows authenticated requests regardless of host",
+			reqHost:       "evil.example",
+			hasServerAuth: true,
+			want:          true,
 		},
 		{
-			name:           "allows authenticated requests regardless of host in strict mode",
-			reqHost:        "evil.example",
-			serverPassword: "configured",
-			secureMode:     security.SecureModeStrict,
-			want:           true,
+			name:          "allows authenticated requests regardless of host in strict mode",
+			reqHost:       "evil.example",
+			hasServerAuth: true,
+			secureMode:    security.SecureModeStrict,
+			want:          true,
 		},
 		{
 			name:            "allows passwordless public host when allowlisted",
@@ -342,7 +329,7 @@ func TestCanAccessLocalServer(t *testing.T) {
 				req.Header.Set("Sec-Fetch-Site", "cross-site")
 			}
 
-			assert.Equal(t, tt.want, isRequestPermitted(req, tt.serverPassword, tt.accessAllowlist))
+			assert.Equal(t, tt.want, isRequestPermitted(req, tt.hasServerAuth, tt.accessAllowlist))
 		})
 	}
 }
@@ -351,7 +338,7 @@ func TestTrustedCORSOrigin(t *testing.T) {
 	tests := []struct {
 		name            string
 		origin          string
-		serverPassword  string
+		hasServerAuth   bool
 		accessAllowlist []string
 		secureMode      string
 		want            bool
@@ -410,7 +397,7 @@ func TestTrustedCORSOrigin(t *testing.T) {
 				security.SetSecureMode("")
 			})
 
-			assert.Equal(t, tt.want, isTrustedCORSOrigin(tt.origin, tt.serverPassword, tt.accessAllowlist))
+			assert.Equal(t, tt.want, isTrustedCORSOrigin(tt.origin, tt.hasServerAuth, tt.accessAllowlist))
 		})
 	}
 }
@@ -429,15 +416,15 @@ func TestCanMutatePrivilegedSettings(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		origin         string
-		reqHost        string
-		remoteAddr     string
-		secureMode     string
-		serverPassword string
-		nextMedia      *models.MediaPlayerSettings
-		nextTorrent    *models.TorrentSettings
-		want           bool
+		name          string
+		origin        string
+		reqHost       string
+		remoteAddr    string
+		secureMode    string
+		hasServerAuth bool
+		nextMedia     *models.MediaPlayerSettings
+		nextTorrent   *models.TorrentSettings
+		want          bool
 	}{
 		{
 			name:    "allows unrelated settings changes without trusted origin",
@@ -542,10 +529,10 @@ func TestCanMutatePrivilegedSettings(t *testing.T) {
 			want: false,
 		},
 		{
-			name:           "allows authenticated writes even without trusted origin",
-			origin:         "https://evil.example",
-			reqHost:        "192.168.1.10:43211",
-			serverPassword: "configured",
+			name:          "allows authenticated writes even without trusted origin",
+			origin:        "https://evil.example",
+			reqHost:       "192.168.1.10:43211",
+			hasServerAuth: true,
 			nextMedia: &models.MediaPlayerSettings{
 				Default: "mpv",
 				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
@@ -592,7 +579,7 @@ func TestCanMutatePrivilegedSettings(t *testing.T) {
 				req.Header.Set("Origin", tt.origin)
 			}
 
-			assert.Equal(t, tt.want, canMutatePrivilegedSettings(req, tt.serverPassword, prev, tt.nextMedia, tt.nextTorrent))
+			assert.Equal(t, tt.want, canMutatePrivilegedSettings(req, tt.hasServerAuth, prev, tt.nextMedia, tt.nextTorrent))
 		})
 	}
 
@@ -613,7 +600,7 @@ func TestCanMutatePrivilegedSettings(t *testing.T) {
 			MpvArgs: "--no-config",
 		}
 
-		assert.False(t, canMutatePrivilegedSettings(req, "configured", prev, nextMedia, nil))
+		assert.False(t, canMutatePrivilegedSettings(req, true, prev, nextMedia, nil))
 	})
 }
 
@@ -624,14 +611,14 @@ func TestCanMutatePrivilegedMediastreamSettings(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		origin         string
-		reqHost        string
-		remoteAddr     string
-		secureMode     string
-		serverPassword string
-		next           *models.MediastreamSettings
-		want           bool
+		name          string
+		origin        string
+		reqHost       string
+		remoteAddr    string
+		secureMode    string
+		hasServerAuth bool
+		next          *models.MediastreamSettings
+		want          bool
 	}{
 		{
 			name:    "allows unrelated mediastream changes without trusted origin",
@@ -689,10 +676,10 @@ func TestCanMutatePrivilegedMediastreamSettings(t *testing.T) {
 			want: false,
 		},
 		{
-			name:           "allows authenticated mediastream writes without trusted origin",
-			origin:         "https://evil.example",
-			reqHost:        "192.168.1.10:43211",
-			serverPassword: "configured",
+			name:          "allows authenticated mediastream writes without trusted origin",
+			origin:        "https://evil.example",
+			reqHost:       "192.168.1.10:43211",
+			hasServerAuth: true,
 			next: &models.MediastreamSettings{
 				FfmpegPath:  "/tmp/ffmpeg-wrapper",
 				FfprobePath: "/tmp/ffprobe-wrapper",
@@ -718,7 +705,7 @@ func TestCanMutatePrivilegedMediastreamSettings(t *testing.T) {
 				req.Header.Set("Origin", tt.origin)
 			}
 
-			assert.Equal(t, tt.want, canMutatePrivilegedMediastreamSettings(req, tt.serverPassword, prev, tt.next))
+			assert.Equal(t, tt.want, canMutatePrivilegedMediastreamSettings(req, tt.hasServerAuth, prev, tt.next))
 		})
 	}
 
@@ -738,20 +725,20 @@ func TestCanMutatePrivilegedMediastreamSettings(t *testing.T) {
 			FfprobePath: "ffprobe",
 		}
 
-		assert.False(t, canMutatePrivilegedMediastreamSettings(req, "configured", prev, next))
+		assert.False(t, canMutatePrivilegedMediastreamSettings(req, true, prev, next))
 	})
 }
 
 func TestCanUsePrivilegedExtensionManagement(t *testing.T) {
 	tests := []struct {
-		name           string
-		origin         string
-		reqHost        string
-		path           string
-		remoteAddr     string
-		secureMode     string
-		serverPassword string
-		want           bool
+		name          string
+		origin        string
+		reqHost       string
+		path          string
+		remoteAddr    string
+		secureMode    string
+		hasServerAuth bool
+		want          bool
 	}{
 		{
 			name:       "allows trusted local origin when passwordless",
@@ -786,12 +773,12 @@ func TestCanUsePrivilegedExtensionManagement(t *testing.T) {
 			want:       false,
 		},
 		{
-			name:           "allows authenticated extension management without trusted origin",
-			origin:         "https://evil.example",
-			reqHost:        "192.168.1.10:43211",
-			path:           "/api/v1/extensions/external/install",
-			serverPassword: "configured",
-			want:           true,
+			name:          "allows authenticated extension management without trusted origin",
+			origin:        "https://evil.example",
+			reqHost:       "192.168.1.10:43211",
+			path:          "/api/v1/extensions/external/install",
+			hasServerAuth: true,
+			want:          true,
 		},
 		{
 			name:    "rejects untrusted origin for playground execution when passwordless",
@@ -826,7 +813,7 @@ func TestCanUsePrivilegedExtensionManagement(t *testing.T) {
 				req.Header.Set("Origin", tt.origin)
 			}
 
-			assert.Equal(t, tt.want, canUsePrivilegedExtensionManagement(req, tt.serverPassword))
+			assert.Equal(t, tt.want, canUsePrivilegedExtensionManagement(req, tt.hasServerAuth))
 		})
 	}
 
@@ -841,7 +828,7 @@ func TestCanUsePrivilegedExtensionManagement(t *testing.T) {
 		req.RemoteAddr = "203.0.113.10:51111"
 		req.Header.Set("Origin", "http://127.0.0.1:43211")
 
-		assert.False(t, canUsePrivilegedExtensionManagement(req, "configured"))
+		assert.False(t, canUsePrivilegedExtensionManagement(req, true))
 	})
 }
 
@@ -851,19 +838,19 @@ func TestCanConsumeMedia(t *testing.T) {
 		origin          string
 		reqHost         string
 		remoteAddr      string
-		serverPassword  string
+		hasServerAuth   bool
 		accessAllowlist []string
 		secureMode      string
 		want            bool
 	}{
 		{
-			name:           "allows authenticated public playback in strict mode",
-			origin:         "https://demo.example",
-			reqHost:        "demo.example",
-			remoteAddr:     "203.0.113.10:51111",
-			serverPassword: "configured",
-			secureMode:     security.SecureModeStrict,
-			want:           true,
+			name:          "allows authenticated public playback in strict mode",
+			origin:        "https://demo.example",
+			reqHost:       "demo.example",
+			remoteAddr:    "203.0.113.10:51111",
+			hasServerAuth: true,
+			secureMode:    security.SecureModeStrict,
+			want:          true,
 		},
 		{
 			name:            "allows allowlisted public playback in strict mode",
@@ -900,7 +887,7 @@ func TestCanConsumeMedia(t *testing.T) {
 				req.Header.Set("Origin", tt.origin)
 			}
 
-			assert.Equal(t, tt.want, canConsumeMedia(req, tt.serverPassword, tt.accessAllowlist))
+			assert.Equal(t, tt.want, canConsumeMedia(req, tt.hasServerAuth, tt.accessAllowlist))
 		})
 	}
 }
@@ -1015,19 +1002,19 @@ func TestShouldRestrictSensitiveLocalInfo(t *testing.T) {
 	req.Header.Set("Origin", "https://evil.example")
 
 	security.SetSecureMode("")
-	assert.False(t, isStrictModeSensitive(req, ""))
+	assert.False(t, isStrictModeSensitive(req, false))
 
 	security.SetSecureMode(security.SecureModeStrict)
-	assert.True(t, isStrictModeSensitive(req, ""))
-	assert.False(t, isStrictModeSensitive(req, "configured"))
+	assert.True(t, isStrictModeSensitive(req, false))
+	assert.False(t, isStrictModeSensitive(req, true))
 
 	security.SetSecureMode(security.SecureModeLax)
-	assert.False(t, isStrictModeSensitive(req, ""))
+	assert.False(t, isStrictModeSensitive(req, false))
 
 	req.Host = "127.0.0.1:43211"
 	req.RemoteAddr = "127.0.0.1:51111"
 	req.Header.Set("Origin", "http://127.0.0.1:43211")
-	assert.False(t, isStrictModeSensitive(req, ""))
+	assert.False(t, isStrictModeSensitive(req, false))
 }
 
 func TestGuardStrictLocalOnlyAction(t *testing.T) {

@@ -13,7 +13,6 @@ import { logger } from "@/lib/helpers/debug"
 import { usePathname, useRouter } from "@/lib/navigation"
 import { ANILIST_PIN_URL, getAnilistAuthorizeUrl } from "@/lib/server/config"
 import { WSEvents } from "@/lib/server/ws-events"
-import { __isDesktop__ } from "@/types/constants"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAtomValue } from "jotai"
 import React from "react"
@@ -135,7 +134,7 @@ export function ServerDataWrapper(props: ServerDataWrapperProps) {
         return <LuffyError title="Transcoding not enabled" />
     }
 
-    if (!currentServerStatus.user && (host === "127.0.0.1:43211" || host === "127.0.0.1:43210") && !__isDesktop__) {
+    if (!currentServerStatus.user && (host === "127.0.0.1:43211" || host === "127.0.0.1:43210")) {
         return <div className="container max-w-3xl py-10">
             <Card className="md:py-10">
                 <AppLayoutStack>

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"seanime/internal/events"
 	"seanime/internal/security"
+	"strings"
 
 	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
@@ -23,8 +24,19 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 		return c.JSON(http.StatusTooManyRequests, NewErrorResponse(errTooManyRequests))
 	}
 
-	// When a server password is set, require auth via query param
-	if h.App.Config.Server.Password != "" {
+	if h.App.IsOidcMode() {
+		// The session cookie rides along on the websocket upgrade request;
+		// no query-param token is involved in OIDC mode.
+		if _, ok := h.resolveServerSession(req); !ok {
+			authKey := authFailureRateLimitKey(req)
+			if !authFailureRateLimits.allow(authKey, maxAuthFailuresPerWindow, authFailureWindow) {
+				return c.JSON(http.StatusTooManyRequests, NewErrorResponse(errTooManyAuthenticationAttempts))
+			}
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		}
+		authFailureRateLimits.reset(authFailureRateLimitKey(req))
+	} else if h.App.Config.Server.Password != "" {
+		// When a server password is set, require auth via query param
 		token := c.QueryParam("token")
 		if token != h.App.ServerPasswordHash {
 			authKey := authFailureRateLimitKey(req)
@@ -39,7 +51,7 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 
 	contextClientId := getContextClientId(c)
 
-	if h.App.Config.Server.Password == "" {
+	if !h.hasServerAuth() {
 		if !security.IsLax() && reqHasOriginMetadata(req) && !isRequestFromTrustedOrigin(req) && !isRequestFromAllowlistedOrigin(req, h.App.Config.Server.AccessAllowlist) {
 			return c.JSON(http.StatusForbidden, NewErrorResponse(errPrivilegedExecutionDenied))
 		}
@@ -47,7 +59,17 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 
 	requestUpgrader := upgrader
 	requestUpgrader.CheckOrigin = func(r *http.Request) bool {
-		return isRequestPermitted(r, h.App.Config.Server.Password, h.App.Config.Server.AccessAllowlist)
+		if h.App.IsOidcMode() {
+			// Cookie-authenticated upgrade: only same-origin browsers (no Origin
+			// header never happens on browser WS; non-browser clients are fine),
+			// the canonical external origin, or allowlisted origins may connect.
+			origin := strings.TrimSpace(r.Header.Get("Origin"))
+			if origin == "" {
+				return true // non-browser client
+			}
+			return isTrustedCORSOriginWithCookies(origin, h.App.Config.Server.ExternalURL, h.App.Config.Server.AccessAllowlist)
+		}
+		return isRequestPermitted(r, h.hasServerAuth(), h.App.Config.Server.AccessAllowlist)
 	}
 
 	ws, err := requestUpgrader.Upgrade(c.Response(), c.Request(), nil)

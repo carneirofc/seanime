@@ -2,7 +2,6 @@ import { TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE } from "@/app/(main)/_features/cus
 import { SeaImage } from "@/components/shared/sea-image"
 import { cn } from "@/components/ui/core/styling"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
-import { __isDesktop__ } from "@/types/constants"
 import React from "react"
 
 type MediaEntryPageSmallBannerProps = {
@@ -24,7 +23,7 @@ export function MediaEntryPageSmallBanner(props: MediaEntryPageSmallBannerProps)
                 data-media-entry-page-small-banner
                 className={cn(
                     "h-120 w-full flex-none object-cover object-center absolute -top-20 overflow-hidden bg-(--background)",
-                    (ts.hideTopNavbar || __isDesktop__) && "h-108",
+                    ts.hideTopNavbar && "h-108",
                     !ts.disableSidebarTransparency && TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE,
                 )}
             >

@@ -32,13 +32,12 @@ jobs:
         with:
           node-version: '22'
 
-      # outputs in "seanime-web/out/" and "seanime-web/out-denshi/"
+      # outputs in "seanime-web/out/"
       - name: Install dependencies and build web app
         run: |
           cd seanime-web/
           npm install
           npm run build
-          npm run build:denshi
           cd ..
       # Upload the output to be used in the next job
       - name: Upload web folder
@@ -46,11 +45,6 @@ jobs:
         with:
           name: web
           path: seanime-web/out # output dir of build
-      - name: Upload web folder (Electron)
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-denshi
-          path: seanime-web/out-denshi # output dir of build:denshi
 
   build-server:
     needs: build-webapp # TODO Uncomment if building web
@@ -65,17 +59,17 @@ jobs:
             id: seanime-server-systray-windows
             go_flags: -trimpath -buildmode=exe -ldflags="-s -w -H=windowsgui -extldflags '-static'"
 
-          # This is the non-systray version of the Windows binary used for the Electron Windows build
+          # This is the headless (non-systray) version of the Windows binary
           - os: windows-latest # seanime-server-windows.exe
             id: seanime-server-windows
             go_flags: -trimpath -ldflags="-s -w" -tags=nosystray
 
-          # These are the Linux binaries used for the server build and the Electron Linux build
+          # These are the Linux binaries used for the server build
           - os: ubuntu-latest # seanime-server-linux-arm64, seanime-server-linux-amd64
             id: seanime-server-linux
             go_flags: -trimpath -ldflags="-s -w"
 
-          # These are the macOS binaries used for the server build and the Electron macOS build
+          # These are the macOS binaries used for the server build
           - os: macos-latest # seanime-server-darwin-arm64, seanime-server-darwin-amd64
             id: seanime-server-darwin
             go_env: CGO_ENABLED=0
@@ -166,7 +160,7 @@ jobs:
 
       # Build the Linux binaries
       # Two variants, mirroring the Windows split:
-      #  - nosystray (seanime-server-linux-*): headless, used by the Electron sidecar
+      #  - nosystray (seanime-server-linux-*): headless server build
       #  - systray   (seanime-server-systray-linux-*): tray icon, used for the standalone
       #    server download. fyne.io/systray's Linux backend is pure-Go D-Bus, so CGO stays off.
       # ./seanime-server-linux-amd64
@@ -224,12 +218,6 @@ jobs:
           # go-seanime-server-windows
           name: go-${{ matrix.id }}
           path: binaries-${{ matrix.id }}.zip
-
-  build-electron:
-    needs: build-server
-    uses: ./.github/workflows/electron-build.yml
-  #    secrets:
-  #      SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
 
   # Build the Windows Inno Setup installer (setup.exe).
   # Packages the systray (windowsgui, no console) server binary so the
@@ -301,21 +289,13 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [ build-server, build-electron, build-installer ]
+    needs: [ build-server, build-installer ]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Download electron artifacts 📥
-        uses: actions/download-artifact@v4
-        with:
-          pattern: electron-*
-          path: ./artifacts
-          # ./artifacts
-          merge-multiple: true
 
       - name: Download Windows installer 📥
         uses: actions/download-artifact@v4
@@ -390,8 +370,8 @@ jobs:
             # Rename & compress binaries.
             # The standalone Linux download ships the systray variant (like Windows),
             # so running the server directly shows a tray icon. The plain
-            # seanime-server-linux-* (nosystray) binaries are reserved for the
-            # Electron sidecar.
+            # seanime-server-linux-* (nosystray) binaries are the headless
+            # server build.
             mv ./artifacts/seanime-server-systray-linux-amd64 ./seanime
             tar czf ./seanime-${{ env.VERSION }}_Linux_x86_64.tar.gz ./seanime
             rm -rf ./seanime
@@ -412,46 +392,6 @@ jobs:
             rm -rf ./seanime.exe
           fi
         shell: bash
-
-      - name: Print all artifacts
-        run: ls -la ./artifacts
-
-      - name: Move & Rename Electron assets 📝🗃️
-        # Move Electron assets to the root directory and rename them
-        run: |
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip ./seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip.blockmap ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip.blockmap ./seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip.blockmap
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg ./seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg.blockmap ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg.blockmap ./seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg.blockmap
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_x64.dmg ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_x64.dmg ./seanime-denshi-${{ env.VERSION }}_MacOS_x64.dmg
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_x64.zip ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_x64.zip ./seanime-denshi-${{ env.VERSION }}_MacOS_x64.zip
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_x64.dmg.blockmap ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_MacOS_x64.dmg.blockmap ./seanime-denshi-${{ env.VERSION }}_MacOS_x64.dmg.blockmap
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_Linux_x86_64.AppImage ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_Linux_x86_64.AppImage ./seanime-denshi-${{ env.VERSION }}_Linux_x86_64.AppImage
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_Windows_x64.exe ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_Windows_x64.exe ./seanime-denshi-${{ env.VERSION }}_Windows_x64.exe
-          fi
-          if [ -f ./artifacts/seanime-denshi-${{ env.VERSION }}_Windows_x64.exe.blockmap ]; then
-              mv ./artifacts/seanime-denshi-${{ env.VERSION }}_Windows_x64.exe.blockmap ./seanime-denshi-${{ env.VERSION }}_Windows_x64.exe.blockmap
-          fi
-
-          # Copy electron-builder YML files if they exist
-          find ./artifacts -name "*.yml" -exec cp {} ./ \;
 
       - name: Print all
         run: ls -la .
@@ -492,18 +432,6 @@ jobs:
         with:
           fail_on_unmatched_files: false
           files: |
-            latest.yml
-            latest-linux.yml
-            latest-mac.yml
-            latest-mac-arm64.yml
-            # Electron Desktop builds
-            seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip
-            seanime-denshi-${{ env.VERSION }}_MacOS_arm64.zip.blockmap
-            seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg
-            seanime-denshi-${{ env.VERSION }}_MacOS_arm64.dmg.blockmap
-            seanime-denshi-${{ env.VERSION }}_Linux_x86_64.AppImage
-            seanime-denshi-${{ env.VERSION }}_Windows_x64.exe
-            seanime-denshi-${{ env.VERSION }}_Windows_x64.exe.blockmap
             # Server builds
             seanime-${{ env.VERSION }}_MacOS_x86_64.tar.gz
             seanime-${{ env.VERSION }}_MacOS_arm64.tar.gz

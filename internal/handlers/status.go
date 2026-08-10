@@ -41,13 +41,51 @@ type Status struct {
 	TorrentstreamSettings *models.TorrentstreamSettings `json:"torrentstreamSettings"`
 	DebridSettings        *models.DebridSettings        `json:"debridSettings"`
 	AnilistClientID       string                        `json:"anilistClientId"`
-	Updating              bool                          `json:"updating"`         // If true, a new screen will be displayed
-	IsDesktopSidecar      bool                          `json:"isDesktopSidecar"` // The server is running as a desktop sidecar
+	Updating              bool                          `json:"updating"` // If true, a new screen will be displayed
 	FeatureFlags          core.FeatureFlags             `json:"featureFlags"`
 	DisabledFeatures      []core.FeatureKey             `json:"disabledFeatures"`
 	ServerReady           bool                          `json:"serverReady"`
 	ServerHasPassword     bool                          `json:"serverHasPassword"`
 	ShowChangelogTour     string                        `json:"showChangelogTour"`
+	AuthMethod            string                        `json:"authMethod"` // "oidc" | "password" | "none"
+	AuthProviderName      string                        `json:"authProviderName,omitempty"`
+	AuthUser              *ServerAuthUser               `json:"authUser,omitempty"`
+}
+
+// ServerAuthUser describes the identity behind the current OIDC session.
+type ServerAuthUser struct {
+	Username string `json:"username"`
+	Subject  string `json:"subject"`
+	Picture  string `json:"picture,omitempty"`
+}
+
+func (h *Handler) authMethod() string {
+	switch {
+	case h.App.IsOidcMode():
+		return "oidc"
+	case h.App.Config.Server.Password != "":
+		return "password"
+	default:
+		return "none"
+	}
+}
+
+func (h *Handler) authProviderName() string {
+	if !h.App.IsOidcMode() {
+		return ""
+	}
+	return h.App.Config.Server.Oidc.ProviderName
+}
+
+// sessionAuthUser builds the AuthUser payload from context values set by the auth middleware.
+func sessionAuthUser(c echo.Context) *ServerAuthUser {
+	subject, _ := c.Get("sessionSubject").(string)
+	if subject == "" {
+		return nil
+	}
+	username, _ := c.Get("sessionUsername").(string)
+	picture, _ := c.Get("sessionPicture").(string)
+	return &ServerAuthUser{Username: username, Subject: subject, Picture: picture}
 }
 
 var clientInfoCache = result.NewMap[string, util.ClientInfo]()
@@ -56,7 +94,9 @@ func (h *Handler) newRestrictedStatus() *Status {
 	return &Status{
 		User:              user.NewSimulatedUser(),
 		ServerReady:       h.App.ServerReady,
-		ServerHasPassword: h.App.Config.Server.Password != "",
+		ServerHasPassword: h.authMethod() == "password",
+		AuthMethod:        h.authMethod(),
+		AuthProviderName:  h.authProviderName(),
 	}
 }
 
@@ -76,7 +116,7 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 		return status
 	}
 
-	if isStrictModeSensitive(c.Request(), h.App.Config.Server.Password) {
+	if isStrictModeSensitive(c.Request(), h.hasServerAuth()) {
 		return h.newRestrictedStatus()
 	}
 
@@ -123,12 +163,14 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 		DebridSettings:        h.App.SecondarySettings.Debrid,
 		AnilistClientID:       h.App.Config.Anilist.ClientID,
 		Updating:              false,
-		IsDesktopSidecar:      h.App.IsDesktopSidecar,
 		FeatureFlags:          h.App.FeatureFlags,
 		ServerReady:           h.App.ServerReady,
-		ServerHasPassword:     h.App.Config.Server.Password != "",
+		ServerHasPassword:     h.authMethod() == "password",
 		DisabledFeatures:      h.App.FeatureManager.DisabledFeatures,
 		ShowChangelogTour:     h.App.ShowTour,
+		AuthMethod:            h.authMethod(),
+		AuthProviderName:      h.authProviderName(),
+		AuthUser:              sessionAuthUser(c),
 	}
 
 	return status

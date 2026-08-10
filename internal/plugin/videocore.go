@@ -109,20 +109,6 @@ func (a *AppContextImpl) BindVideoCoreToContextObj(vm *goja.Runtime, obj *goja.O
 	_ = obj.Set("videoCore", vcObj)
 }
 
-func (p *VideoCore) getDenshiClientId() string {
-	wsEventManager, ok := p.ctx.WSEventManager().Get()
-	if ok {
-		ids := wsEventManager.GetClientIds()
-		for _, id := range ids {
-			platform := wsEventManager.GetClientPlatform(id)
-			if platform == "denshi" {
-				return id
-			}
-		}
-	}
-	return ""
-}
-
 func (p *VideoCore) playStream(streamUrl string, anidbEpisode string, media *anilist.BaseAnime) goja.Value {
 	promise, resolve, reject := p.vm.NewPromise()
 
@@ -138,7 +124,7 @@ func (p *VideoCore) playStream(streamUrl string, anidbEpisode string, media *ani
 	}
 
 	go func() {
-		clientId := p.getDenshiClientId()
+		clientId := ""
 
 		opts := directstream.PlayUrlStreamOptions{
 			ClientId:     clientId,
@@ -181,7 +167,7 @@ func (p *VideoCore) playLocalFile(path string) goja.Value {
 	}
 
 	go func() {
-		clientId := p.getDenshiClientId()
+		clientId := ""
 
 		lfs, _, err := db_bridge.GetLocalFiles(db)
 		if err != nil {
@@ -274,20 +260,7 @@ func (p *VideoCore) convertEventToJSObject(event player.Event) goja.Value {
 		if session.Target == "mpvcore" {
 			playerType = "mpv"
 		} else {
-			wsEventManager, ok := p.ctx.WSEventManager().Get()
-			if ok && clientId != "" {
-				platform := wsEventManager.GetClientPlatform(clientId)
-				if platform == "denshi" {
-					playerType = "native"
-				} else {
-					playerType = "web"
-				}
-			} else {
-				if session.Target == "videocore" {
-					// default to web if not explicitly denshi client
-					playerType = "web"
-				}
-			}
+			playerType = "web"
 		}
 	}
 
@@ -871,17 +844,7 @@ func (p *VideoCore) getPlaybackState() goja.Value {
 			}
 		} else {
 			// fallback if playback info is nil
-			wsEventManager, ok := p.ctx.WSEventManager().Get()
-			if ok && state.ClientID != "" {
-				platform := wsEventManager.GetClientPlatform(state.ClientID)
-				if platform == "denshi" {
-					state.PlayerType = "native"
-				} else {
-					state.PlayerType = "web"
-				}
-			} else {
-				state.PlayerType = "web"
-			}
+			state.PlayerType = "web"
 		}
 	}
 

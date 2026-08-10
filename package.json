@@ -2,8 +2,7 @@
   "name": "seanime-workspace",
   "private": true,
   "workspaces": [
-    "seanime-web",
-    "seanime-denshi"
+    "seanime-web"
   ],
   "scripts": {
     "dev": "concurrently --kill-others-on-fail --names codegen,go,web --prefix-colors magenta,yellow,cyan \"npm run dev:codegen\" \"npm run dev:go\" \"npm run dev:web\"",
@@ -19,7 +18,6 @@
     "build:all": "npm run build && npm run build:installer",
     "dist:windows": "npm run build:all",
     "build:web": "npm run build --workspace seanime-web",
-    "build:denshi": "npm run build --workspace seanime-denshi",
     "test:go": "go test ./...",
     "postinstall": "patch-package || exit 0"
   },

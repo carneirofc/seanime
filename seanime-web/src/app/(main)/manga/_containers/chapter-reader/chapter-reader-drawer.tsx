@@ -33,7 +33,6 @@ import { Button, IconButton } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
 import { Drawer } from "@/components/ui/drawer"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { __isDesktop__ } from "@/types/constants"
 import { useAtom, useAtomValue, useSetAtom } from "jotai/react"
 import mousetrap from "mousetrap"
 import React from "react"
@@ -397,21 +396,14 @@ export function ChapterReaderDrawer(props: ChapterDrawerProps) {
                 data-chapter-reader-drawer-progress-container
                 className={cn(
                     "fixed left-0 w-full z-6 opacity-0 transition-opacity hidden duration-500",
-                    !__isDesktop__ && "top-0 justify-center",
-                    __isDesktop__ && cn(
-                        "bottom-12",
-                        hiddenBar && "bottom-0 justify-left",
-                    ),
+                    "top-0 justify-center",
                     (shouldUpdateProgress && isLastPage && !pageContainerLoading && !pageContainerError) && "flex opacity-100",
                 )}
                 tabIndex={-1}
             >
                 <Button
                     onClick={() => handleUpdateProgress()}
-                    className={cn(
-                        !__isDesktop__ && "rounded-tl-none rounded-tr-none",
-                        __isDesktop__ && "rounded-bl-none rounded-br-none rounded-tl-none",
-                    )}
+                    className="rounded-tl-none rounded-tr-none"
                     size="md"
                     intent="success"
                     loading={isUpdatingProgress}

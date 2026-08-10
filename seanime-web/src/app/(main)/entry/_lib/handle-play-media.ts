@@ -3,7 +3,6 @@ import { useDirectstreamPlayLocalFile } from "@/api/hooks/directstream.hooks"
 import { useNakamaPlayVideo } from "@/api/hooks/nakama.hooks"
 import { usePlaybackPlayVideo, usePlaybackStartManualTracking } from "@/api/hooks/playback_manager.hooks"
 import {
-    ElectronPlaybackMethod,
     PlaybackDownloadedMedia,
     useCurrentDevicePlaybackSettings,
     useExternalPlayerLink,
@@ -17,7 +16,6 @@ import { ExternalPlayerLink } from "@/lib/external-player-link/external-player-l
 import { openTab } from "@/lib/helpers/browser"
 import { logger } from "@/lib/helpers/debug"
 import { useRouter } from "@/lib/navigation"
-import { __isElectronDesktop__ } from "@/types/constants"
 import { useAtomValue, useSetAtom } from "jotai"
 import React from "react"
 import { toast } from "sonner"
@@ -33,7 +31,7 @@ export function useHandlePlayMedia() {
     const { mutate: startManualTracking, isPending: isStarting } = usePlaybackStartManualTracking()
     const setCurrentExternalPlayerLink = useSetAtom(__mpt_currentExternalPlayerLinkAtom)
 
-    const { downloadedMediaPlayback, electronPlaybackMethod } = useCurrentDevicePlaybackSettings()
+    const { downloadedMediaPlayback } = useCurrentDevicePlaybackSettings()
     const { externalPlayerLink } = useExternalPlayerLink()
     const { getHMACTokenQueryParam: getServerHMACTokenQueryParam } = useServerHMACAuth()
 
@@ -104,17 +102,6 @@ export function useHandlePlayMedia() {
 
         logger("PLAY MEDIA").info("Playing media file", path)
 
-        //
-        // Electron native player
-        //
-        if (__isElectronDesktop__ && (
-            (!forcePlaybackMethod && electronPlaybackMethod === ElectronPlaybackMethod.NativePlayer) ||
-            (forcePlaybackMethod && forcePlaybackMethod === "nativeplayer")
-        )) {
-            directstreamPlayLocalFile({ path, clientId: clientId ?? "" })
-            return
-        }
-
         // If external player link is set, open the media file in the external player
         if ((!forcePlaybackMethod && downloadedMediaPlayback === PlaybackDownloadedMedia.ExternalPlayerLink) ||
             (forcePlaybackMethod && forcePlaybackMethod === "externalPlayerLink")
@@ -146,7 +133,7 @@ export function useHandlePlayMedia() {
     }
 
     return {
-        isUsingNativePlayer: __isElectronDesktop__ && electronPlaybackMethod === ElectronPlaybackMethod.NativePlayer,
+        isUsingNativePlayer: false,
         playMediaFile,
     }
 }

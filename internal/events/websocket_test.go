@@ -12,9 +12,9 @@ func TestWSEventManagerGetClientPlatform(t *testing.T) {
 	manager := NewWSEventManager(util.NewLogger())
 
 	manager.AddConn("web-client", nil)
-	manager.AddConn("denshi-client", nil, "denshi")
+	manager.AddConn("mobile-client", nil, "mobile")
 
 	require.Empty(t, manager.GetClientPlatform("web-client"))
-	require.Equal(t, "denshi", manager.GetClientPlatform("denshi-client"))
+	require.Equal(t, "mobile", manager.GetClientPlatform("mobile-client"))
 	require.Empty(t, manager.GetClientPlatform("missing-client"))
 }

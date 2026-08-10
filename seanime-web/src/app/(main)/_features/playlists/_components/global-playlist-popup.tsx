@@ -1,6 +1,5 @@
 import { Button, IconButton } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
-import { __isDesktop__ } from "@/types/constants"
 import React, { useRef, useState } from "react"
 import { BiX } from "react-icons/bi"
 import { RiPlayList2Fill } from "react-icons/ri"
@@ -62,7 +61,6 @@ const PlaylistManagerPopup: React.FC<PlaylistManagerPopupProps> = ({
                     containerConfig.containerPositions[position],
                     containerConfig.dimensions[size],
                     isOpen ? containerConfig.states.open : containerConfig.states.closed,
-                    __isDesktop__ && "pt-8 sm:pt-0",
                     className,
                 )}
             >
@@ -70,10 +68,7 @@ const PlaylistManagerPopup: React.FC<PlaylistManagerPopupProps> = ({
                 <IconButton
                     intent="white"
                     size="sm"
-                    className={cn(
-                        "absolute top-2 right-2 sm:hidden rounded-full",
-                        __isDesktop__ && "top-8",
-                    )}
+                    className="absolute top-2 right-2 sm:hidden rounded-full"
                     onClick={toggleContainer}
                     icon={<BiX className="h-6 w-6" />}
                 />

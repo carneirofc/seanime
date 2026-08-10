@@ -871,17 +871,6 @@
 //     })
 // }
 
-// export function useDownloadMacDenshiUpdate() {
-//     return useServerMutation<DownloadReleaseResponse, DownloadMacDenshiUpdate_Variables>({
-//         endpoint: API_ENDPOINTS.DOWNLOAD.DownloadMacDenshiUpdate.endpoint,
-//         method: API_ENDPOINTS.DOWNLOAD.DownloadMacDenshiUpdate.methods[0],
-//         mutationKey: [API_ENDPOINTS.DOWNLOAD.DownloadMacDenshiUpdate.key],
-//         onSuccess: async () => {
-//
-//         },
-//     })
-// }
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // explorer
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2311,6 +2300,48 @@
 //         onSuccess: async () => {
 //
 //         },
+//     })
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// oidc_auth
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// export function useOidcLogin() {
+//     return useServerQuery<boolean>({
+//         endpoint: API_ENDPOINTS.OIDC_AUTH.OidcLogin.endpoint,
+//         method: API_ENDPOINTS.OIDC_AUTH.OidcLogin.methods[0],
+//         queryKey: [API_ENDPOINTS.OIDC_AUTH.OidcLogin.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useOidcCallback() {
+//     return useServerQuery<boolean>({
+//         endpoint: API_ENDPOINTS.OIDC_AUTH.OidcCallback.endpoint,
+//         method: API_ENDPOINTS.OIDC_AUTH.OidcCallback.methods[0],
+//         queryKey: [API_ENDPOINTS.OIDC_AUTH.OidcCallback.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useOidcLogout() {
+//     return useServerMutation<boolean>({
+//         endpoint: API_ENDPOINTS.OIDC_AUTH.OidcLogout.endpoint,
+//         method: API_ENDPOINTS.OIDC_AUTH.OidcLogout.methods[0],
+//         mutationKey: [API_ENDPOINTS.OIDC_AUTH.OidcLogout.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useGetMediaToken() {
+//     return useServerQuery<string>({
+//         endpoint: API_ENDPOINTS.OIDC_AUTH.GetMediaToken.endpoint,
+//         method: API_ENDPOINTS.OIDC_AUTH.GetMediaToken.methods[0],
+//         queryKey: [API_ENDPOINTS.OIDC_AUTH.GetMediaToken.key],
+//         enabled: true,
 //     })
 // }
 

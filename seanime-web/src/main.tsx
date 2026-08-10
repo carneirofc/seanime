@@ -2,23 +2,18 @@ import { useIsSimulatedUser } from "@/app/(main)/_hooks/use-server-status"
 import { ClientProviders, queryClient, store } from "@/app/client-providers"
 import "./app/globals.css"
 import { __navigationPreloadModeAtom, getActualNavigationPreloadMode, NavigationPreloadMode } from "@/lib/navigation-preload-settings"
-import { __isElectronDesktop__ } from "@/types/constants"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { useAtomValue } from "jotai/react"
-import React from "react"
 import ReactDOM from "react-dom/client"
 import { ErrorBoundary, FallbackProps } from "react-error-boundary"
 import { LuffyError } from "./components/shared/luffy-error"
 import { Button } from "./components/ui/button"
-import { setupDenshiScrollRestoration } from "./lib/router/denshi-scroll-restoration"
-import { getDenshiViewTransition } from "./lib/router/view-transitions"
 import { routeTree } from "./routeTree.gen"
 import "@fontsource-variable/inter/index.css"
 
 type RouterPreloadMode = false | "intent" | "viewport"
 
 function createAppRouter(defaultPreload: RouterPreloadMode, defaultPreloadDelay?: number) {
-    const viewTransition = getDenshiViewTransition()
     const router = createRouter({
         routeTree,
         defaultPreload,
@@ -28,13 +23,8 @@ function createAppRouter(defaultPreload: RouterPreloadMode, defaultPreloadDelay?
             store,
         },
         scrollRestoration: false,
-        defaultViewTransition: viewTransition,
         defaultPreloadStaleTime: 30 * 1000,
     })
-
-    if (viewTransition) {
-        setupDenshiScrollRestoration(router)
-    }
 
     return router
 }
@@ -65,44 +55,6 @@ function AppRouterProvider() {
     const preloadMode = getActualNavigationPreloadMode(_preloadMode, isSimulatedUser)
 
     return <RouterProvider router={routersByPreloadMode[preloadMode]} />
-}
-
-function DesktopStartupReady() {
-    React.useEffect(() => {
-        if (!__isElectronDesktop__ || window.location.pathname.startsWith("/splashscreen") || !window.electron?.startup?.ready) {
-            return
-        }
-
-        let sent = false
-        let ff = 0
-        let sf = 0
-        let fallbackId = 0
-
-        const sendReady = () => {
-            if (sent) return
-
-            sent = true
-            window.electron?.startup?.ready()
-        }
-
-        ff = window.requestAnimationFrame(() => {
-            sf = window.requestAnimationFrame(() => {
-                sendReady()
-            })
-        })
-
-        fallbackId = window.setTimeout(() => {
-            sendReady()
-        }, 500)
-
-        return () => {
-            window.cancelAnimationFrame(ff)
-            window.cancelAnimationFrame(sf)
-            window.clearTimeout(fallbackId)
-        }
-    }, [])
-
-    return null
 }
 
 function RootErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
@@ -160,7 +112,6 @@ ReactDOM.createRoot(document.getElementById("root")!, {
 }).render(
     <ErrorBoundary FallbackComponent={RootErrorFallback}>
         <ClientProviders>
-            <DesktopStartupReady />
             <AppRouterProvider />
         </ClientProviders>
     </ErrorBoundary>,

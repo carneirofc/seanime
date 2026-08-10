@@ -8,6 +8,7 @@ import (
 	"seanime/internal/constants"
 	"seanime/internal/util"
 	"strconv"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
@@ -31,6 +32,19 @@ type Config struct {
 			Enabled  bool
 			CertPath string
 			KeyPath  string
+		}
+		Oidc struct {
+			IssuerURL        string   // OIDC issuer; discovery happens at <issuer>/.well-known/openid-configuration
+			ClientID         string
+			ClientSecret     string   // can be supplied via SEANIME_OIDC_CLIENT_SECRET instead of the config file
+			Scopes           []string // defaults to ["openid", "profile", "email"]
+			UsernameClaim    string   // ID-token claim matched against AllowedUsernames, defaults to "preferred_username"
+			AllowedSubjects  []string // stable `sub` claim values; survives username changes at the IdP
+			AllowedUsernames []string // matched case-insensitively against UsernameClaim (falls back to "email")
+			ProviderName     string   // display name for the login button, defaults to "SSO"
+			SessionTTLDays   int      // sliding session expiry, defaults to 30
+			SessionMaxDays   int      // absolute session lifetime cap, defaults to 90
+			AllowInsecure    bool     // dev only: permits http ExternalURL and non-__Host- cookies
 		}
 	}
 	Database struct {
@@ -163,6 +177,13 @@ func NewConfig(options *ConfigOptions, logger *zerolog.Logger) (*Config, error) 
 	viper.SetDefault("offline.assetDir", "$SEANIME_DATA_DIR/offline/assets")
 	viper.SetDefault("extensions.dir", "$SEANIME_DATA_DIR/extensions")
 	viper.SetDefault("torrent.dir", "$SEANIME_DATA_DIR/torrent")
+	viper.SetDefault("server.oidc.scopes", []string{"openid", "profile", "email"})
+	viper.SetDefault("server.oidc.usernameClaim", "preferred_username")
+	viper.SetDefault("server.oidc.providerName", "SSO")
+	viper.SetDefault("server.oidc.sessionTTLDays", 30)
+	viper.SetDefault("server.oidc.sessionMaxDays", 90)
+	// Allow the OIDC client secret to be supplied via the environment instead of the config file
+	_ = viper.BindEnv("server.oidc.clientSecret", "SEANIME_OIDC_CLIENT_SECRET")
 
 	// Create and populate the config file if it doesn't exist
 	if err = createConfigFile(configPath); err != nil {
@@ -252,6 +273,12 @@ func NewConfig(options *ConfigOptions, logger *zerolog.Logger) (*Config, error) 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// IsOidcMode reports whether OIDC login is configured. While OIDC is active the
+// server password is ignored entirely and browser access requires an IdP session.
+func (cfg *Config) IsOidcMode() bool {
+	return cfg.Server.Oidc.IssuerURL != "" && cfg.Server.Oidc.ClientID != "" && cfg.Server.Oidc.ClientSecret != ""
+}
 
 func (cfg *Config) GetServerAddr(df ...string) string {
 	return fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
@@ -389,6 +416,27 @@ func validateConfig(cfg *Config, logger *zerolog.Logger) error {
 	}
 	if err := checkIsValidPath(cfg.Extensions.Dir); err != nil {
 		return wrapInvalidConfigValue("extensions.dir", err)
+	}
+
+	if oidc := cfg.Server.Oidc; oidc.IssuerURL != "" || oidc.ClientID != "" || oidc.ClientSecret != "" {
+		if !cfg.IsOidcMode() {
+			return errInvalidConfigValue("server.oidc", "issuerURL, clientID and clientSecret must all be set to enable OIDC login")
+		}
+		if cfg.Server.ExternalURL == "" {
+			return errInvalidConfigValue("server.externalURL", "must be set when OIDC login is enabled (used to derive the redirect URI)")
+		}
+		if !oidc.AllowInsecure && !strings.HasPrefix(cfg.Server.ExternalURL, "https://") {
+			return errInvalidConfigValue("server.externalURL", "must use https:// when OIDC login is enabled (set server.oidc.allowInsecure for local development)")
+		}
+		if len(oidc.AllowedSubjects) == 0 && len(oidc.AllowedUsernames) == 0 {
+			return errInvalidConfigValue("server.oidc", "at least one of allowedSubjects or allowedUsernames must be set; refusing to admit every IdP account")
+		}
+		if oidc.SessionTTLDays <= 0 {
+			return errInvalidConfigValue("server.oidc.sessionTTLDays", "must be positive")
+		}
+		if oidc.SessionMaxDays < oidc.SessionTTLDays {
+			return errInvalidConfigValue("server.oidc.sessionMaxDays", "cannot be lower than sessionTTLDays")
+		}
 	}
 
 	if cfg.Server.Tls.Enabled {

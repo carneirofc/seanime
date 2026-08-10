@@ -10,13 +10,10 @@ import { useInvalidateQueriesListener } from "@/app/(main)/_listeners/invalidate
 import { LoadingOverlayWithLogo } from "@/components/shared/loading-overlay-with-logo"
 import { AppLayout, AppLayoutContent, AppLayoutSidebar, AppSidebarProvider } from "@/components/ui/app-layout"
 import { usePathname, useRouter } from "@/lib/navigation"
-import { __isElectronDesktop__ } from "@/types/constants"
 import React from "react"
 import { SeaCommand } from "../sea-command/sea-command"
 import { TopIndefiniteLoader } from "../top-indefinite-loader"
 import { RateLimitLoader } from "../rate-limit-loader"
-
-const NativePlayerLazyWrapper = React.lazy(() => import("@/app/(main)/_features/native-player/native-player-lazy-wrapper"))
 
 type OfflineLayoutProps = {
     children?: React.ReactNode
@@ -63,11 +60,6 @@ export function OfflineLayout(props: OfflineLayoutProps) {
             <ErrorExplainer />
             <SeaCommand />
             <PluginManager />
-            {__isElectronDesktop__ && (
-                <React.Suspense fallback={null}>
-                    <NativePlayerLazyWrapper />
-                </React.Suspense>
-            )}
             <TopIndefiniteLoader />
             <RateLimitLoader />
 

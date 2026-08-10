@@ -7282,6 +7282,24 @@
           "comments": []
         },
         {
+          "name": "Private",
+          "jsonName": "private",
+          "goType": "bool",
+          "typescriptType": "boolean",
+          "required": false,
+          "public": true,
+          "comments": []
+        },
+        {
+          "name": "HiddenFromStatusLists",
+          "jsonName": "hiddenFromStatusLists",
+          "goType": "bool",
+          "typescriptType": "boolean",
+          "required": false,
+          "public": true,
+          "comments": []
+        },
+        {
           "name": "next",
           "jsonName": "next",
           "goType": "",
