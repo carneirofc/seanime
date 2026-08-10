@@ -82,7 +82,11 @@ func (h *Handler) oidcSessionAuth(next echo.HandlerFunc, c echo.Context) error {
 	case "/api/v1/auth/oidc/login", "/api/v1/auth/oidc/callback":
 		return next(c)
 	case "/api/v1/status":
-		if _, ok := h.resolveServerSession(req); !ok {
+		if session, ok := h.resolveServerSession(req); ok {
+			c.Set("sessionSubject", session.Subject)
+			c.Set("sessionUsername", session.Username)
+			c.Set("sessionPicture", session.Picture)
+		} else {
 			c.Set("unauthenticated", true)
 		}
 		return next(c)

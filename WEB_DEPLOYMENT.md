@@ -11,7 +11,7 @@ Seanime, plus an OIDC identity provider (Keycloak, Authelia, Pocket ID, Dex,
 Google, ...).
 
 ```toml
-# seanime.toml
+# <datadir>/config.toml
 [server]
 host = "127.0.0.1"                       # only the proxy reaches the server
 port = 43211
