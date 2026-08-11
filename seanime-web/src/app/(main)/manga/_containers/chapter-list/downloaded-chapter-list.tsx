@@ -8,7 +8,7 @@ import { useListMangaProviderExtensions } from "@/api/hooks/extensions.hooks"
 import { useDeleteMangaDownloadedChapters } from "@/api/hooks/manga_download.hooks"
 
 import { useSetCurrentChapter } from "@/app/(main)/manga/_lib/handle-chapter-reader"
-import { MangaDownloadChapterItem, useMangaEntryDownloadedChapters } from "@/app/(main)/manga/_lib/handle-manga-downloads"
+import { MangaDownloadChapterItem, useMangaEntryArchiveDownload, useMangaEntryDownloadedChapters } from "@/app/(main)/manga/_lib/handle-manga-downloads"
 import { useSelectedMangaProvider } from "@/app/(main)/manga/_lib/handle-manga-selected-provider"
 import { getChapterNumberFromChapter } from "@/app/(main)/manga/_lib/handle-manga-utils"
 import { primaryPillCheckboxClasses } from "@/components/shared/classnames"
@@ -20,7 +20,7 @@ import { RowSelectionState } from "@tanstack/react-table"
 import { atom } from "jotai"
 import { useAtom } from "jotai/react"
 import React from "react"
-import { BiTrash } from "react-icons/bi"
+import { BiDownload, BiTrash } from "react-icons/bi"
 import { GiOpenBook } from "react-icons/gi"
 import { MdOutlineOfflinePin } from "react-icons/md"
 
@@ -54,6 +54,15 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
     const { mutate: deleteChapters, isPending: isDeletingChapter } = useDeleteMangaDownloadedChapters(String(entry.mediaId), selectedProvider)
 
     const downloadedOrQueuedChapters = useMangaEntryDownloadedChapters()
+
+    const { isDownloadingArchive, downloadChapterArchive, downloadMediaArchives } = useMangaEntryArchiveDownload()
+
+    /**
+     * Providers that have at least one downloaded chapter, for the "download all" button
+     */
+    const downloadedProviders = React.useMemo(() => {
+        return [...new Set(downloadedOrQueuedChapters.filter(chapter => chapter.downloaded).map(chapter => chapter.provider))]
+    }, [downloadedOrQueuedChapters])
 
     const providerNameMap = React.useMemo(() => {
         return new Map(providerExtensions?.map(extension => [extension.id, extension.name]) ?? [])
@@ -122,6 +131,21 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
                         {row.original.downloaded && <IconButton
                             intent="gray-subtle"
                             size="md"
+                            disabled={isDownloadingArchive}
+                            onClick={() => {
+                                downloadChapterArchive(
+                                    row.original.provider,
+                                    Number(entry.mediaId),
+                                    row.original.chapterId,
+                                    row.original.chapterNumber,
+                                )
+                            }}
+                            icon={<BiDownload />}
+                        />}
+
+                        {row.original.downloaded && <IconButton
+                            intent="gray-subtle"
+                            size="md"
                             onClick={() => {
                                 /**
                                  * Set the provider to the one of the selected chapter
@@ -152,7 +176,7 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
                 )
             },
         },
-    ]), [entry?.mediaId, chapterIdsToNumber, getProviderLabel])
+    ]), [entry?.mediaId, chapterIdsToNumber, getProviderLabel, downloadChapterArchive, isDownloadingArchive])
 
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
 
@@ -196,6 +220,16 @@ export function DownloadedChapterList(props: DownloadedChapterListProps) {
                         fieldClass="w-fit"
                         {...primaryPillCheckboxClasses}
                     />
+
+                    {!!downloadedProviders.length && <Button
+                        onClick={() => downloadMediaArchives(Number(entry.mediaId), downloadedProviders)}
+                        intent="gray-outline"
+                        size="sm"
+                        leftIcon={<BiDownload />}
+                        loading={isDownloadingArchive}
+                    >
+                        Download CBZ files
+                    </Button>}
                 </div>
 
                 {!!selectedChapters.length && <div

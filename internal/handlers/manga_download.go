@@ -2,9 +2,13 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
+	"path/filepath"
 	"seanime/internal/events"
 	"seanime/internal/manga"
 	chapter_downloader "seanime/internal/manga/downloader"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -212,6 +216,133 @@ func (h *Handler) HandleDeleteMangaDownloadedChapters(c echo.Context) error {
 	}
 
 	return h.RespondWithData(c, true)
+}
+
+// resolveMangaTitleForFilename returns the media's preferred title for use in
+// download filenames, or an empty string if the manga is not in the collection.
+func (h *Handler) resolveMangaTitleForFilename(mediaId int) string {
+	mangaCollection, err := h.App.GetMangaCollection(false)
+	if err != nil {
+		return ""
+	}
+	listEntry, ok := mangaCollection.GetListEntryFromMangaId(mediaId)
+	if !ok {
+		return ""
+	}
+	media := listEntry.GetMedia()
+	if media == nil {
+		return ""
+	}
+	return sanitizeArchiveFilename(media.GetPreferredTitle())
+}
+
+// sanitizeArchiveFilename strips characters that are invalid in filenames on
+// common filesystems (and quotes, which would break the Content-Disposition header).
+func sanitizeArchiveFilename(name string) string {
+	name = strings.Map(func(r rune) rune {
+		switch r {
+		case '/', '\\', ':', '*', '?', '"', '<', '>', '|':
+			return ' '
+		}
+		if r < 0x20 {
+			return -1
+		}
+		return r
+	}, name)
+	return strings.Join(strings.Fields(name), " ")
+}
+
+// HandleDownloadMangaChapterArchive
+//
+//	@summary downloads a chapter's CBZ archive file.
+//	@desc This serves the chapter's CBZ archive as a file attachment.
+//	@desc Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly.
+//	@route /api/v1/manga/downloads/chapter-archive [GET]
+//	@returns nil
+func (h *Handler) HandleDownloadMangaChapterArchive(c echo.Context) error {
+
+	provider := c.QueryParam("provider")
+	chapterId := c.QueryParam("chapterId")
+	mediaId, err := strconv.Atoi(c.QueryParam("mediaId"))
+	if provider == "" || chapterId == "" || err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "provider, mediaId and chapterId are required")
+	}
+
+	downloadDir := h.App.Config.Manga.DownloadDir
+
+	var id chapter_downloader.DownloadID
+	relPath := ""
+	for downloadId, p := range chapter_downloader.ScanDownloadDir(downloadDir) {
+		if downloadId.Provider == provider && downloadId.MediaId == mediaId && downloadId.ChapterId == chapterId {
+			id, relPath = downloadId, p
+			break
+		}
+	}
+	if relPath == "" {
+		return echo.NewHTTPError(http.StatusNotFound, "chapter is not downloaded")
+	}
+
+	title := h.resolveMangaTitleForFilename(mediaId)
+	if title == "" {
+		title = chapter_downloader.FormatSeriesDirName(provider, mediaId)
+	}
+	filename := fmt.Sprintf("%s - Chapter %s.cbz", title, sanitizeArchiveFilename(id.ChapterNumber))
+
+	if strings.HasSuffix(relPath, ".cbz") {
+		return c.Attachment(filepath.Join(downloadDir, filepath.FromSlash(relPath)), filename)
+	}
+
+	// Legacy loose-image directory: wrap the pages into a CBZ on the fly
+	c.Response().Header().Set(echo.HeaderContentDisposition, fmt.Sprintf("attachment; filename=%q", filename))
+	c.Response().Header().Set(echo.HeaderContentType, "application/vnd.comicbook+zip")
+	c.Response().WriteHeader(http.StatusOK)
+	return chapter_downloader.WriteLegacyDirAsCBZ(c.Response(), filepath.Join(downloadDir, filepath.FromSlash(relPath)))
+}
+
+// HandleDownloadMangaMediaArchive
+//
+//	@summary downloads all downloaded chapters of a media as a zip of CBZ files.
+//	@desc This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media.
+//	@route /api/v1/manga/downloads/media-archive [GET]
+//	@returns nil
+func (h *Handler) HandleDownloadMangaMediaArchive(c echo.Context) error {
+
+	provider := c.QueryParam("provider")
+	mediaId, err := strconv.Atoi(c.QueryParam("mediaId"))
+	if provider == "" || err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "provider and mediaId are required")
+	}
+
+	downloadDir := h.App.Config.Manga.DownloadDir
+
+	// Verify there is something to archive before committing to a 200 response
+	found := false
+	for downloadId := range chapter_downloader.ScanDownloadDir(downloadDir) {
+		if downloadId.Provider == provider && downloadId.MediaId == mediaId {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return echo.NewHTTPError(http.StatusNotFound, "no downloaded chapters found")
+	}
+
+	title := h.resolveMangaTitleForFilename(mediaId)
+	if title == "" {
+		title = chapter_downloader.FormatSeriesDirName(provider, mediaId)
+	}
+	filename := fmt.Sprintf("%s (%s).zip", title, sanitizeArchiveFilename(provider))
+
+	c.Response().Header().Set(echo.HeaderContentDisposition, fmt.Sprintf("attachment; filename=%q", filename))
+	c.Response().Header().Set(echo.HeaderContentType, "application/zip")
+	c.Response().WriteHeader(http.StatusOK)
+
+	if _, err := chapter_downloader.WriteMediaArchive(c.Response(), downloadDir, provider, mediaId); err != nil {
+		// Headers are already sent; log and abort the stream
+		h.App.Logger.Error().Err(err).Str("provider", provider).Int("mediaId", mediaId).Msg("manga: Failed to stream media archive")
+		return err
+	}
+	return nil
 }
 
 // HandleGetMangaDownloadsList

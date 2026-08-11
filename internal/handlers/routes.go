@@ -450,6 +450,8 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 
 	v1Manga.GET("/downloaded-chapters/:id", h.HandleGetMangaEntryDownloadedChapters)
 	v1Manga.GET("/downloads", h.HandleGetMangaDownloadsList)
+	v1Manga.GET("/downloads/chapter-archive", h.HandleDownloadMangaChapterArchive)
+	v1Manga.GET("/downloads/media-archive", h.HandleDownloadMangaMediaArchive)
 	v1Manga.POST("/download-chapters", h.HandleDownloadMangaChapters)
 	v1Manga.POST("/download-data", h.HandleGetMangaDownloadData)
 	v1Manga.DELETE("/download-chapter", h.HandleDeleteMangaDownloadedChapters)

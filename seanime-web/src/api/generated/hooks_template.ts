@@ -1879,6 +1879,24 @@
 //     })
 // }
 
+// export function useDownloadMangaChapterArchive() {
+//     return useServerQuery<null>({
+//         endpoint: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaChapterArchive.endpoint,
+//         method: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaChapterArchive.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaChapterArchive.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useDownloadMangaMediaArchive() {
+//     return useServerQuery<null>({
+//         endpoint: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaMediaArchive.endpoint,
+//         method: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaMediaArchive.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaMediaArchive.key],
+//         enabled: true,
+//     })
+// }
+
 // export function useGetMangaDownloadsList() {
 //     return useServerQuery<Array<Manga_DownloadListItem>>({
 //         endpoint: API_ENDPOINTS.MANGA_DOWNLOAD.GetMangaDownloadsList.endpoint,

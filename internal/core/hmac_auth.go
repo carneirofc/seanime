@@ -17,6 +17,8 @@ var mediaTokenEndpointPrefixes = []string{
 	"/api/v1/nakama/stream",
 	"/api/v1/image-proxy",
 	"/api/v1/manga/local-page",
+	"/api/v1/manga/downloads/chapter-archive",
+	"/api/v1/manga/downloads/media-archive",
 	"/api/v1/proxy",
 	"/api/v1/report/issue/download",
 	"/assets/",

@@ -1487,6 +1487,27 @@ export const API_ENDPOINTS = {
         },
         /**
          *  @description
+         *  Route downloads a chapter's CBZ archive file.
+         *  This serves the chapter's CBZ archive as a file attachment.
+         *  Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly.
+         */
+        DownloadMangaChapterArchive: {
+            key: "MANGA-DOWNLOAD-download-manga-chapter-archive",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/downloads/chapter-archive",
+        },
+        /**
+         *  @description
+         *  Route downloads all downloaded chapters of a media as a zip of CBZ files.
+         *  This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media.
+         */
+        DownloadMangaMediaArchive: {
+            key: "MANGA-DOWNLOAD-download-manga-media-archive",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/downloads/media-archive",
+        },
+        /**
+         *  @description
          *  Route displays the list of downloaded manga.
          *  This analyzes the download folder and returns a well-formatted structure for displaying downloaded manga.
          *  It returns a list of manga.DownloadListItem where the media data might be nil if it's not in the AniList collection.

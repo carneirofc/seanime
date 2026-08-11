@@ -7799,6 +7799,112 @@
     }
   },
   {
+    "name": "resolveMangaTitleForFilename",
+    "trimmedName": "resolveMangaTitleForFilename",
+    "comments": [
+      "resolveMangaTitleForFilename returns the media's preferred title for use in",
+      "download filenames, or an empty string if the manga is not in the collection.",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "sanitizeArchiveFilename",
+    "trimmedName": "sanitizeArchiveFilename",
+    "comments": [
+      "sanitizeArchiveFilename strips characters that are invalid in filenames on",
+      "common filesystems (and quotes, which would break the Content-Disposition header).",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleDownloadMangaChapterArchive",
+    "trimmedName": "DownloadMangaChapterArchive",
+    "comments": [
+      "HandleDownloadMangaChapterArchive",
+      "",
+      "\t@summary downloads a chapter's CBZ archive file.",
+      "\t@desc This serves the chapter's CBZ archive as a file attachment.",
+      "\t@desc Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly.",
+      "\t@route /api/v1/manga/downloads/chapter-archive [GET]",
+      "\t@returns nil",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "downloads a chapter's CBZ archive file.",
+      "descriptions": [
+        "This serves the chapter's CBZ archive as a file attachment.",
+        "Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly."
+      ],
+      "endpoint": "/api/v1/manga/downloads/chapter-archive",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "nil",
+      "returnGoType": "nil",
+      "returnTypescriptType": "null"
+    }
+  },
+  {
+    "name": "HandleDownloadMangaMediaArchive",
+    "trimmedName": "DownloadMangaMediaArchive",
+    "comments": [
+      "HandleDownloadMangaMediaArchive",
+      "",
+      "\t@summary downloads all downloaded chapters of a media as a zip of CBZ files.",
+      "\t@desc This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media.",
+      "\t@route /api/v1/manga/downloads/media-archive [GET]",
+      "\t@returns nil",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "downloads all downloaded chapters of a media as a zip of CBZ files.",
+      "descriptions": [
+        "This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media."
+      ],
+      "endpoint": "/api/v1/manga/downloads/media-archive",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "nil",
+      "returnGoType": "nil",
+      "returnTypescriptType": "null"
+    }
+  },
+  {
     "name": "HandleGetMangaDownloadsList",
     "trimmedName": "GetMangaDownloadsList",
     "comments": [
