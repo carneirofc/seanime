@@ -31,6 +31,17 @@ func (h *Handler) HandleDownloadMangaChapters(c echo.Context) error {
 
 	h.App.WSEventManager.SendEvent(events.InfoToast, "Adding chapters to download queue...")
 
+	// Resolve the media title once for the ComicInfo.xml metadata.
+	// Empty if the manga is not in the user's collection.
+	mediaTitle := ""
+	if mangaCollection, err := h.App.GetMangaCollection(false); err == nil {
+		if listEntry, ok := mangaCollection.GetListEntryFromMangaId(b.MediaId); ok {
+			if media := listEntry.GetMedia(); media != nil {
+				mediaTitle = media.GetPreferredTitle()
+			}
+		}
+	}
+
 	// Queueing fetches the page list from the provider for every chapter, which is
 	// slow and network-bound. Do it in the background so the request returns promptly,
 	// and keep going if a single chapter fails instead of aborting the whole batch.
@@ -39,10 +50,11 @@ func (h *Handler) HandleDownloadMangaChapters(c echo.Context) error {
 		var failed int
 		for _, chapterId := range chapterIds {
 			err := h.App.MangaDownloader.DownloadChapter(manga.DownloadChapterOptions{
-				Provider:  b.Provider,
-				MediaId:   b.MediaId,
-				ChapterId: chapterId,
-				StartNow:  b.StartNow,
+				Provider:   b.Provider,
+				MediaId:    b.MediaId,
+				ChapterId:  chapterId,
+				MediaTitle: mediaTitle,
+				StartNow:   b.StartNow,
 			})
 			if err != nil {
 				failed++

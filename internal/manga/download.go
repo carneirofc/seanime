@@ -74,7 +74,9 @@ type (
 		Provider  string
 		MediaId   int
 		ChapterId string
-		StartNow  bool
+		// MediaTitle feeds the ComicInfo.xml metadata of the CBZ archive. May be empty.
+		MediaTitle string
+		StartNow   bool
 	}
 )
 
@@ -100,7 +102,11 @@ func NewDownloader(opts *NewDownloaderOptions) *Downloader {
 		DownloadDir:    opts.DownloadDir,
 	})
 
-	go d.hydrateMediaMap()
+	go func() {
+		// Convert legacy loose-image chapter directories to CBZ before the first scan
+		chapter_downloader.MigrateLegacyChapterDirs(opts.DownloadDir, opts.Logger)
+		d.hydrateMediaMap()
+	}()
 
 	return d
 }
@@ -215,7 +221,10 @@ func (d *Downloader) DownloadChapter(opts DownloadChapterOptions) error {
 			ChapterId:     opts.ChapterId,
 			ChapterNumber: manga_providers.GetNormalizedChapter(chapter.Chapter),
 		},
-		Pages: pageContainer.Pages,
+		Pages:        pageContainer.Pages,
+		MediaTitle:   opts.MediaTitle,
+		ChapterTitle: chapter.Title,
+		StartNow:     opts.StartNow,
 	})
 }
 
@@ -404,47 +413,18 @@ func (d *Downloader) hydrateMediaMap() {
 
 	ret := make(MediaMap)
 
-	files, err := os.ReadDir(d.downloadDir)
-	if err != nil {
-		d.logger.Error().Err(err).Msg("manga downloader: Failed to read download directory")
+	// Hydrate MediaMap from all downloaded chapters (CBZ archives and legacy directories)
+	for id := range chapter_downloader.ScanDownloadDir(d.downloadDir) {
+		newMapInfo := ProviderDownloadMapChapterInfo{
+			ChapterID:     id.ChapterId,
+			ChapterNumber: id.ChapterNumber,
+		}
+
+		if _, ok := ret[id.MediaId]; !ok {
+			ret[id.MediaId] = make(map[string][]ProviderDownloadMapChapterInfo)
+		}
+		ret[id.MediaId][id.Provider] = append(ret[id.MediaId][id.Provider], newMapInfo)
 	}
-
-	// Hydrate MediaMap by going through all chapter directories
-	mu := sync.Mutex{}
-	wg := sync.WaitGroup{}
-	for _, file := range files {
-		wg.Add(1)
-		go func(file os.DirEntry) {
-			defer wg.Done()
-
-			if file.IsDir() {
-				// e.g. comick_1234_abc_13.5
-				id, ok := chapter_downloader.ParseChapterDirName(file.Name())
-				if !ok {
-					return
-				}
-
-				mu.Lock()
-				newMapInfo := ProviderDownloadMapChapterInfo{
-					ChapterID:     id.ChapterId,
-					ChapterNumber: id.ChapterNumber,
-				}
-
-				if _, ok := ret[id.MediaId]; !ok {
-					ret[id.MediaId] = make(map[string][]ProviderDownloadMapChapterInfo)
-					ret[id.MediaId][id.Provider] = []ProviderDownloadMapChapterInfo{newMapInfo}
-				} else {
-					if _, ok := ret[id.MediaId][id.Provider]; !ok {
-						ret[id.MediaId][id.Provider] = []ProviderDownloadMapChapterInfo{newMapInfo}
-					} else {
-						ret[id.MediaId][id.Provider] = append(ret[id.MediaId][id.Provider], newMapInfo)
-					}
-				}
-				mu.Unlock()
-			}
-		}(file)
-	}
-	wg.Wait()
 
 	// Trigger hook event
 	ev := &MangaDownloadMapEvent{

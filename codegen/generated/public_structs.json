@@ -32944,6 +32944,24 @@
         "comments": []
       },
       {
+        "name": "MediaTitle",
+        "jsonName": "mediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterTitle",
+        "jsonName": "chapterTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "PageData",
         "jsonName": "pageData",
         "goType": "string",
@@ -61555,6 +61573,15 @@
         "comments": []
       },
       {
+        "name": "MediaTitle",
+        "jsonName": "MediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "StartNow",
         "jsonName": "StartNow",
         "goType": "bool",
@@ -61627,6 +61654,45 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/manga/downloader/cbz.go",
+    "filename": "cbz.go",
+    "name": "CBZEntry",
+    "formattedName": "ChapterDownloader_CBZEntry",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "Name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Width",
+        "jsonName": "Width",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Height",
+        "jsonName": "Height",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " CBZEntry describes one page image inside a CBZ archive."
+    ]
   },
   {
     "filepath": "../internal/manga/downloader/chapter_downloader.go",
@@ -61953,6 +62019,24 @@
         "comments": []
       },
       {
+        "name": "MediaTitle",
+        "jsonName": "MediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterTitle",
+        "jsonName": "ChapterTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "StartNow",
         "jsonName": "StartNow",
         "goType": "bool",
@@ -61965,6 +62049,171 @@
     "comments": [],
     "embeddedStructNames": [
       "chapter_downloader.DownloadID"
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ComicInfo",
+    "formattedName": "ChapterDownloader_ComicInfo",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "XMLName",
+        "jsonName": "XMLName",
+        "goType": "xml.Name",
+        "typescriptType": "Name",
+        "usedTypescriptType": "Name",
+        "usedStructName": "xml.Name",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "XsiNs",
+        "jsonName": "XsiNs",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "XsdNs",
+        "jsonName": "XsdNs",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "Title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Series",
+        "jsonName": "Series",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Number",
+        "jsonName": "Number",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PageCount",
+        "jsonName": "PageCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Pages",
+        "jsonName": "Pages",
+        "goType": "ComicInfoPages",
+        "typescriptType": "ChapterDownloader_ComicInfoPages",
+        "usedTypescriptType": "ChapterDownloader_ComicInfoPages",
+        "usedStructName": "chapter_downloader.ComicInfoPages",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
+      " are modeled; unknown elements are ignored when parsing foreign archives."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ComicInfoPages",
+    "formattedName": "ChapterDownloader_ComicInfoPages",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Pages",
+        "jsonName": "Pages",
+        "goType": "[]ComicInfoPage",
+        "typescriptType": "Array\u003cChapterDownloader_ComicInfoPage\u003e",
+        "usedTypescriptType": "ChapterDownloader_ComicInfoPage",
+        "usedStructName": "chapter_downloader.ComicInfoPage",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
+      " are modeled; unknown elements are ignored when parsing foreign archives."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ComicInfoPage",
+    "formattedName": "ChapterDownloader_ComicInfoPage",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Image",
+        "jsonName": "Image",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ImageSize",
+        "jsonName": "ImageSize",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ImageWidth",
+        "jsonName": "ImageWidth",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ImageHeight",
+        "jsonName": "ImageHeight",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
+      " are modeled; unknown elements are ignored when parsing foreign archives."
     ]
   },
   {
@@ -62104,6 +62353,24 @@
         "typescriptType": "ChapterDownloader_QueueStatus",
         "usedTypescriptType": "ChapterDownloader_QueueStatus",
         "usedStructName": "chapter_downloader.QueueStatus",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaTitle",
+        "jsonName": "MediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterTitle",
+        "jsonName": "ChapterTitle",
+        "goType": "string",
+        "typescriptType": "string",
         "required": true,
         "public": true,
         "comments": []

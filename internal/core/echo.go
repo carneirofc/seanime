@@ -102,10 +102,10 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 	app.Logger.Info().Msgf("app: Web assets path: %s", app.Config.Web.AssetDir)
 	e.Static("/assets", app.Config.Web.AssetDir)
 
-	// Serve manga downloads
+	// Serve manga downloads (streams pages out of CBZ archives)
 	if app.Config.Manga.DownloadDir != "" {
 		app.Logger.Info().Msgf("app: Manga downloads path: %s", app.Config.Manga.DownloadDir)
-		e.Static("/manga-downloads", app.Config.Manga.DownloadDir)
+		registerMangaDownloadsRoute(e, app.Config.Manga.DownloadDir)
 	}
 
 	// Serve offline assets

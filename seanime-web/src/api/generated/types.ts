@@ -4065,6 +4065,8 @@ export type Models_ChapterDownloadQueueItem = {
     mediaId: number
     chapterId: string
     chapterNumber: string
+    mediaTitle: string
+    chapterTitle: string
     /**
      * Contains map of page index to page details
      */
