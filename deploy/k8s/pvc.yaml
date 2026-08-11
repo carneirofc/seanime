@@ -1,0 +1,44 @@
+# Persistent state: the SQLite database, logs, cache, transcode scratch,
+# extensions, assets and the runtime config.toml.
+#
+# ReadWriteOnce and a single replica are not a limitation to work around: the
+# database is SQLite on a local file, and a second replica writing the same file
+# would corrupt it. The Deployment uses strategy Recreate for the same reason.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: seanime-data
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # Transcoding scratch and manga downloads dominate this; size it for your
+      # library, not for the database.
+      storage: 20Gi
+  # storageClassName: your-storage-class
+---
+# The media library. Mounted read-only: Seanime scans and streams from it and has
+# no reason to write to it, and a read-only mount means a filesystem-write bug or
+# a granted "filesystem" capability cannot damage the library.
+#
+# Replace with whatever fits your setup — an NFS/CIFS PV, a CSI volume, or a
+# hostPath on a single-node cluster. If your media already lives on an existing
+# PV, drop this claim and point the Deployment's volume at it instead.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: seanime-media
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 500Gi
+  # storageClassName: your-nfs-storage-class

@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: seanime
+
+# Every object here is also valid on its own, so `kubectl apply -f deploy/k8s/`
+# works without kustomize. This file exists to pin the image tag in one place and
+# to give you a base to overlay per environment.
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - configmap.yaml
+  - service.yaml
+  - deployment.yaml
+  - ingress.yaml
+  - networkpolicy.yaml
+  # secret.example.yaml is deliberately NOT listed. Create the seanime-oidc
+  # Secret out of band — see the file's header.
+
+images:
+  - name: ghcr.io/carneirofc/seanime
+    newTag: latest
+
+# The Deployment carries a checksum/config annotation that must be updated by hand
+# when configmap.yaml changes, otherwise the edit sits unapplied until the pod
+# restarts for some other reason. To have that handled for you, move the TOML into
+# its own file and generate the ConfigMap instead — kustomize then appends a
+# content hash to the name and the Deployment rolls on every change:
+#
+#   configMapGenerator:
+#     - name: seanime-config
+#       files:
+#         - config.toml
+#
+# and drop configmap.yaml from resources above.

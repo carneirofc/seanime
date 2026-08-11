@@ -1,0 +1,47 @@
+# TLS termination and the public hostname. The host here MUST match
+# server.externalurl in the ConfigMap: the OIDC redirect URI, the secure cookie
+# scope and the CORS origin are all derived from it, and a mismatch shows up as a
+# login loop rather than an error.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: seanime
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+  annotations:
+    # cert-manager issuer; drop if you manage the certificate yourself.
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+    # Media streams are large and long-lived. The defaults (60s, 1MB) cut
+    # transcoded playback off mid-stream and reject subtitle/extension uploads.
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # Streaming responses must not be buffered to disk before they are forwarded.
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+
+    # Belt and braces: the server sends these itself, but setting them at the edge
+    # means they are present on responses the app never sees (error pages, static
+    # files served by the controller).
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - seanime.example.com
+      secretName: seanime-tls
+  rules:
+    - host: seanime.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: seanime
+                port:
+                  name: http

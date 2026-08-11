@@ -1,0 +1,19 @@
+# ClusterIP only. Never expose this as NodePort or LoadBalancer: the pod speaks
+# plain HTTP and expects TLS and the OIDC redirect flow to be handled upstream by
+# the ingress controller.
+apiVersion: v1
+kind: Service
+metadata:
+  name: seanime
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: seanime
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
