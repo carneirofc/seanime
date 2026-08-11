@@ -508,10 +508,14 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 			logger.Warn().Msg("app: OIDC login is configured; the server password is IGNORED while OIDC is active")
 		}
 		// The passwordless request-boundary heuristics are no substitute for the
-		// session gate once the server is meant to face the internet.
+		// session gate once the server is meant to face the internet. Strict mode
+		// additionally keeps filesystem/exec/config-path actions and outbound
+		// fetches local-only, so a compromised session cannot browse the host or
+		// reach internal services. An operator managing the box remotely can opt
+		// back down by setting server.secureMode = "hardened" explicitly.
 		if cfg.Server.SecureMode == "" || cfg.Server.SecureMode == "lax" {
-			app.SetSecureMode("hardened", false)
-			logger.Warn().Msg("app: OIDC login active, forcing secure mode to \"hardened\"")
+			app.SetSecureMode("strict", false)
+			logger.Warn().Msg("app: OIDC login active, forcing secure mode to \"strict\" (set server.secureMode to override)")
 		}
 		if len(cfg.Server.TrustedProxies) == 0 && cfg.Server.Oidc.AllowInsecure == false {
 			logger.Warn().Msg("app: OIDC login active but no trusted proxies configured; if the server runs behind a reverse proxy, set server.trustedProxies so client IPs and rate limits work correctly")

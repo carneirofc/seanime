@@ -11,7 +11,11 @@ import (
 )
 
 func ValidateOutboundUrl(rawURL string) error {
-	if !IsStrict() {
+	// SSRF protection is a network-boundary concern, so it applies in hardened
+	// mode as well as strict (IsHardened covers both). Outbound targets here are
+	// user-content image/stream/marketplace URLs, which are public, so denying
+	// private/loopback destinations does not impede legitimate use.
+	if !IsHardened() {
 		return nil
 	}
 

@@ -41,4 +41,32 @@ func TestValidateOutboundURL(t *testing.T) {
 			t.Fatalf("expected public ip to be allowed in strict mode: %v", err)
 		}
 	})
+
+	t.Run("blocks loopback ip in hardened mode", func(t *testing.T) {
+		SetSecureMode(SecureModeHardened)
+		if err := ValidateOutboundUrl("http://127.0.0.1:8080"); err == nil {
+			t.Fatal("expected loopback ip to be blocked in hardened mode")
+		}
+	})
+
+	t.Run("blocks private ip in hardened mode", func(t *testing.T) {
+		SetSecureMode(SecureModeHardened)
+		if err := ValidateOutboundUrl("http://192.168.1.10:8080"); err == nil {
+			t.Fatal("expected private ip to be blocked in hardened mode")
+		}
+	})
+
+	t.Run("allows public ip in hardened mode", func(t *testing.T) {
+		SetSecureMode(SecureModeHardened)
+		if err := ValidateOutboundUrl("https://1.1.1.1"); err != nil {
+			t.Fatalf("expected public ip to be allowed in hardened mode: %v", err)
+		}
+	})
+
+	t.Run("allows loopback in lax mode", func(t *testing.T) {
+		SetSecureMode(SecureModeLax)
+		if err := ValidateOutboundUrl("http://127.0.0.1:8080"); err != nil {
+			t.Fatalf("expected loopback to be allowed in lax mode: %v", err)
+		}
+	})
 }

@@ -48,7 +48,10 @@ func (a *App) GetServerHMACAuth() *util.HMACAuth {
 	case a.Config != nil && a.Config.Server.Password != "":
 		secret = a.ServerPasswordHash
 	default:
-		secret = "seanime-default-secret"
+		// Passwordless, non-OIDC mode: fall back to the per-boot random secret
+		// rather than a fixed constant, so query-token signatures are never
+		// predictable. Tokens die on restart, which is acceptable in this mode.
+		secret = a.MediaTokenSecret
 	}
 
 	return util.NewHMACAuth(secret, 24*time.Hour)

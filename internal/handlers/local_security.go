@@ -421,7 +421,18 @@ func (h *Handler) guardPrivilegedMediaPlayer(c echo.Context, settings *models.Se
 		return nil
 	}
 
-	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedMediaPlayer(settings) {
+	if !isPrivilegedMediaPlayer(settings) {
+		return nil
+	}
+
+	// Launching an external player spawns a local process; in strict mode this is
+	// local-only even for authenticated sessions, matching the other privileged
+	// execution guards.
+	if security.IsStrict() && !isRequestFromTrustedLocal(c.Request()) {
+		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
+	}
+
+	if isTrustedRequest(c.Request(), h.hasServerAuth()) {
 		return nil
 	}
 

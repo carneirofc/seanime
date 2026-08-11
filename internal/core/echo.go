@@ -131,6 +131,16 @@ func RunEchoServer(app *App, e *echo.Echo) {
 	serverAddr := app.Config.GetServerAddr()
 	app.Logger.Info().Msgf("app: Server Address: %s", serverAddr)
 
+	// Bound the time a client may take to send request headers and how long an
+	// idle keep-alive connection is held open. These mitigate slow-header
+	// (Slowloris) and idle-socket exhaustion without a global ReadTimeout or
+	// WriteTimeout, which would sever long-lived media streams, range downloads,
+	// and the /events websocket.
+	e.Server.ReadHeaderTimeout = 20 * time.Second
+	e.Server.IdleTimeout = 120 * time.Second
+	e.TLSServer.ReadHeaderTimeout = 20 * time.Second
+	e.TLSServer.IdleTimeout = 120 * time.Second
+
 	// Start the server
 	go func() {
 		if app.Config.Server.Tls.Enabled {

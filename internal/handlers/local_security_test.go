@@ -900,8 +900,10 @@ func TestGuardPrivilegedMediaPlayer(t *testing.T) {
 	e := echo.New()
 	h := &Handler{App: &core.App{Config: &core.Config{}}}
 
-	t.Run("allows authenticated public playback in strict mode", func(t *testing.T) {
-		// hosted playback should still work once the normal request boundary is satisfied.
+	t.Run("rejects authenticated remote external-player launch in strict mode", func(t *testing.T) {
+		// Launching an external player spawns a local process with a configurable
+		// executable path; in strict mode that stays local-only even for an
+		// authenticated session, so a remote (hosted) request is denied.
 		security.SetSecureMode(security.SecureModeStrict)
 		h.App.Config.Server.Password = "configured"
 
@@ -917,6 +919,55 @@ func TestGuardPrivilegedMediaPlayer(t *testing.T) {
 				Default: "mpv",
 				MpvPath: "/tmp/mpv-wrapper",
 				MpvArgs: "--no-config",
+			},
+		}
+
+		err := h.guardPrivilegedMediaPlayer(c, settings)
+		assert.ErrorIs(t, err, errGuardResponseWritten)
+		assert.Equal(t, http.StatusForbidden, rec.Code)
+	})
+
+	t.Run("allows external-player launch from a trusted local request in strict mode", func(t *testing.T) {
+		// A local admin (e.g. loopback / SSH tunnel) can still drive the external
+		// player under strict mode.
+		security.SetSecureMode(security.SecureModeStrict)
+		h.App.Config.Server.Password = "configured"
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/playback-manager/play", nil)
+		req.Host = "127.0.0.1:43211"
+		req.RemoteAddr = "127.0.0.1:51111"
+		req.Header.Set("Origin", "http://127.0.0.1:43211")
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		settings := &models.Settings{
+			MediaPlayer: &models.MediaPlayerSettings{
+				Default: "mpv",
+				MpvPath: "/tmp/mpv-wrapper",
+				MpvArgs: "--no-config",
+			},
+		}
+
+		err := h.guardPrivilegedMediaPlayer(c, settings)
+		assert.NoError(t, err)
+	})
+
+	t.Run("allows non-privileged hosted playback for authenticated remote requests in strict mode", func(t *testing.T) {
+		// The built-in web player is not a privileged external player, so hosted
+		// playback keeps working remotely.
+		security.SetSecureMode(security.SecureModeStrict)
+		h.App.Config.Server.Password = "configured"
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/playback-manager/play", nil)
+		req.Host = "demo.example"
+		req.RemoteAddr = "203.0.113.10:51111"
+		req.Header.Set("Origin", "https://demo.example")
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		settings := &models.Settings{
+			MediaPlayer: &models.MediaPlayerSettings{
+				Default: "",
 			},
 		}
 

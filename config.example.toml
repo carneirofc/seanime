@@ -1,0 +1,49 @@
+# Example config.toml for an internet-facing, OIDC-protected Seanime server
+# fronted by a TLS-terminating reverse proxy. Place at <datadir>/config.toml
+# (with the docker-compose example that is ./data/config.toml).
+#
+# Keys are case-insensitive. Secrets should come from the environment, not this
+# file — see clientsecret below.
+
+[server]
+# Bind address. Behind a reverse proxy, bind loopback on bare metal ("127.0.0.1")
+# or 0.0.0.0 inside a container whose port is NOT published to the host. Never
+# publish this port directly to the internet.
+host = "0.0.0.0"
+port = 43211
+
+# The reverse proxy address(es) allowed to supply X-Forwarded-* headers, so
+# client IPs and rate limits are accurate. Set this to your proxy's address; in
+# Docker use the proxy container's IP or the internal network subnet.
+trustedproxies = ["127.0.0.1"]
+
+# Canonical public URL. Required for OIDC redirects and proxy-aware secure cookies.
+externalurl = "https://seanime.example.com"
+
+# With OIDC active, secure mode defaults to "strict": filesystem/exec/config-path
+# actions and outbound fetches are local-only, so a compromised session cannot
+# browse the host or reach internal services. Set "hardened" instead only if you
+# administer the server through the web UI from a remote machine.
+# securemode = "strict"
+
+[server.oidc]
+issuerurl = "https://idp.example.com"       # discovery at <issuer>/.well-known/openid-configuration
+clientid = "seanime"
+# Prefer the SEANIME_OIDC_CLIENT_SECRET environment variable over storing the
+# secret here. Leave this unset when using the env var.
+# clientsecret = ""
+
+# At least one of allowedsubjects / allowedusernames MUST be set — the server
+# refuses to start with an empty allowlist. Prefer subjects (stable across renames).
+allowedsubjects = ["248289761001"]
+allowedusernames = ["your-username"]
+
+# usernameclaim = "preferred_username"      # default; falls back to "email"
+# providername = "SSO"                      # login button label
+# sessionttldays = 30                       # sliding expiry
+# sessionmaxdays = 90                       # absolute cap
+
+# TLS is terminated at the reverse proxy, so the built-in server runs plain HTTP
+# on the internal network. The self-signed [server.tls] block is a fallback only.
+# [server.tls]
+# enabled = false

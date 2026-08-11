@@ -792,7 +792,7 @@ func (a *App) InitOrRefreshTorrentstreamSettings() {
 			AddToLibrary:              false,
 			TorrentClientHost:         "",
 			TorrentClientPort:         43213,
-			StreamingServerHost:       "0.0.0.0",
+			StreamingServerHost:       "127.0.0.1",
 			StreamingServerPort:       43214,
 			IncludeInLibrary:          false,
 			StreamUrlAddress:          "",
