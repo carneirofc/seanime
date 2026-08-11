@@ -97,19 +97,20 @@ See [DEVELOPMENT_AND_BUILD.md](DEVELOPMENT_AND_BUILD.md) for setup, backend, fro
 > [!IMPORTANT]
 > To avoid merge conflicts, always make changes against the most active branch! It's not always `main`.
 
+This repository is a fork of [5rahim/seanime](https://github.com/5rahim/seanime), but it is where the work happens: branch from and open pull requests against **this** repository. Releases from the original project are merged in periodically by the maintainer, through a remote named `fork-source`; contributors do not need it.
+
 Recommended workflow:
 
 ```bash
-git remote add upstream https://github.com/5rahim/seanime.git
 git checkout main
-git pull upstream main
+git pull origin main
 git checkout -b <feature-or-fix-name>
 ```
 
 Before opening a PR:
 
 ```bash
-git pull --rebase upstream main
+git pull --rebase origin main
 ```
 
 Then push your branch and open a PR against `main`.
