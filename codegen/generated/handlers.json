@@ -4637,6 +4637,119 @@
     }
   },
   {
+    "name": "HandleListExtensionGitTokens",
+    "trimmedName": "ListExtensionGitTokens",
+    "comments": [
+      "HandleListExtensionGitTokens",
+      "",
+      "\t@summary returns the configured git repository tokens with masked values.",
+      "\t@route /api/v1/extensions/git-tokens [GET]",
+      "\t@returns []extension_repo.GitTokenInfo",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "returns the configured git repository tokens with masked values.",
+      "descriptions": [],
+      "endpoint": "/api/v1/extensions/git-tokens",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "[]extension_repo.GitTokenInfo",
+      "returnGoType": "extension_repo.GitTokenInfo",
+      "returnTypescriptType": "Array\u003cExtensionRepo_GitTokenInfo\u003e"
+    }
+  },
+  {
+    "name": "HandleSetExtensionGitToken",
+    "trimmedName": "SetExtensionGitToken",
+    "comments": [
+      "HandleSetExtensionGitToken",
+      "",
+      "\t@summary stores a git access token for a repository pattern, enabling private repositories as extension sources.",
+      "\t@desc The repository can be a full URL, \"host/owner/repo\", \"host/owner\" or a bare host.",
+      "\t@route /api/v1/extensions/git-tokens [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "stores a git access token for a repository pattern, enabling private repositories as extension sources.",
+      "descriptions": [
+        "The repository can be a full URL, \"host/owner/repo\", \"host/owner\" or a bare host."
+      ],
+      "endpoint": "/api/v1/extensions/git-tokens",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Token",
+          "jsonName": "token",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleRemoveExtensionGitToken",
+    "trimmedName": "RemoveExtensionGitToken",
+    "comments": [
+      "HandleRemoveExtensionGitToken",
+      "",
+      "\t@summary removes the git access token stored for a repository pattern.",
+      "\t@route /api/v1/extensions/git-tokens/remove [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "removes the git access token stored for a repository pattern.",
+      "descriptions": [],
+      "endpoint": "/api/v1/extensions/git-tokens/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleFileSelector",
     "trimmedName": "FileSelector",
     "comments": [

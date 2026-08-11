@@ -918,6 +918,26 @@ export const API_ENDPOINTS = {
             methods: ["GET"],
             endpoint: "/api/v1/extensions/marketplace",
         },
+        ListExtensionGitTokens: {
+            key: "EXTENSIONS-list-extension-git-tokens",
+            methods: ["GET"],
+            endpoint: "/api/v1/extensions/git-tokens",
+        },
+        /**
+         *  @description
+         *  Route stores a git access token for a repository pattern, enabling private repositories as extension sources.
+         *  The repository can be a full URL, "host/owner/repo", "host/owner" or a bare host.
+         */
+        SetExtensionGitToken: {
+            key: "EXTENSIONS-set-extension-git-token",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/git-tokens",
+        },
+        RemoveExtensionGitToken: {
+            key: "EXTENSIONS-remove-extension-git-token",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/git-tokens/remove",
+        },
     },
     FILE_SELECTOR: {
         /**

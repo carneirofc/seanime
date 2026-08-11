@@ -136,10 +136,15 @@ func TestRefetchExternalExtensionReloadsFromSourceWithoutVersionBump(t *testing.
 	editedPayload := "// EDITED\n" + asyncAnimeTorrentProviderPayload
 	require.NoError(t, os.WriteFile(filepath.Join(srcDir, "payload.js"), []byte(editedPayload), 0600))
 
-	// checkForUpdates must NOT report anything (version is unchanged)...
-	require.Empty(t, repo.checkForUpdates())
+	// checkForUpdates reports the change via the payload hash even though the
+	// version is unchanged.
+	updates := repo.checkForUpdates()
+	require.Len(t, updates, 1)
+	require.Equal(t, "local-torrent-provider", updates[0].ExtensionID)
+	require.Equal(t, "1.0.0", updates[0].Version)
+	require.True(t, updates[0].PayloadChanged)
 
-	// ...but reload-from-source must pick up the new payload.
+	// Reload-from-source must pick up the new payload.
 	res, err := repo.RefetchExternalExtension("local-torrent-provider")
 	require.NoError(t, err)
 	require.NotNil(t, res)

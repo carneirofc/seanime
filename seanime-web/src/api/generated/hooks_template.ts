@@ -1163,6 +1163,37 @@
 //     })
 // }
 
+// export function useListExtensionGitTokens() {
+//     return useServerQuery<Array<ExtensionRepo_GitTokenInfo>>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.methods[0],
+//         queryKey: [API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useSetExtensionGitToken() {
+//     return useServerMutation<boolean, SetExtensionGitToken_Variables>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useRemoveExtensionGitToken() {
+//     return useServerMutation<boolean, RemoveExtensionGitToken_Variables>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // file_selector
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -2629,6 +2629,18 @@ export type ExtensionRepo_ExtensionUserConfig = {
 }
 
 /**
+ * - Filepath: internal/extension_repo/external_settings.go
+ * - Filename: external_settings.go
+ * - Package: extension_repo
+ * @description
+ *  GitTokenInfo describes a configured git repository token with the token value masked.
+ */
+export type ExtensionRepo_GitTokenInfo = {
+    repository: string
+    maskedToken: string
+}
+
+/**
  * - Filepath: internal/extension_repo/repository.go
  * - Filename: repository.go
  * - Package: extension_repo
@@ -2715,6 +2727,7 @@ export type ExtensionRepo_UpdateData = {
     manifestURI: string
     version: string
     payload: string
+    payloadChanged?: boolean
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

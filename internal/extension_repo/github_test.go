@@ -12,7 +12,7 @@ import (
 )
 
 func TestNewExtensionRequestTokenOnlyUserinfo(t *testing.T) {
-	req, err := newExtensionRequest(context.Background(), "https://ghp_secret@raw.githubusercontent.com/owner/private/main/marketplace.json")
+	req, err := newExtensionRequest(context.Background(), "https://ghp_secret@raw.githubusercontent.com/owner/private/main/marketplace.json", nil)
 	require.NoError(t, err)
 
 	require.Equal(t, "Bearer ghp_secret", req.Header.Get("Authorization"))
@@ -21,7 +21,7 @@ func TestNewExtensionRequestTokenOnlyUserinfo(t *testing.T) {
 }
 
 func TestNewExtensionRequestBasicAuthUserinfoIsPreserved(t *testing.T) {
-	req, err := newExtensionRequest(context.Background(), "https://user:ghp_secret@raw.githubusercontent.com/owner/private/main/marketplace.json")
+	req, err := newExtensionRequest(context.Background(), "https://user:ghp_secret@raw.githubusercontent.com/owner/private/main/marketplace.json", nil)
 	require.NoError(t, err)
 
 	// net/http applies basic auth from the URL userinfo when sending the request
@@ -35,7 +35,7 @@ func TestNewExtensionRequestBasicAuthUserinfoIsPreserved(t *testing.T) {
 func TestNewExtensionRequestEnvTokenForGitHubHost(t *testing.T) {
 	t.Setenv("SEANIME_GITHUB_TOKEN", "ghp_env_token")
 
-	req, err := newExtensionRequest(context.Background(), "https://raw.githubusercontent.com/owner/private/main/marketplace.json")
+	req, err := newExtensionRequest(context.Background(), "https://raw.githubusercontent.com/owner/private/main/marketplace.json", nil)
 	require.NoError(t, err)
 	require.Equal(t, "Bearer ghp_env_token", req.Header.Get("Authorization"))
 }
@@ -44,7 +44,7 @@ func TestNewExtensionRequestEnvTokenFallback(t *testing.T) {
 	t.Setenv("SEANIME_GITHUB_TOKEN", "")
 	t.Setenv("GITHUB_TOKEN", "ghp_fallback")
 
-	req, err := newExtensionRequest(context.Background(), "https://api.github.com/repos/owner/private/contents/marketplace.json")
+	req, err := newExtensionRequest(context.Background(), "https://api.github.com/repos/owner/private/contents/marketplace.json", nil)
 	require.NoError(t, err)
 	require.Equal(t, "Bearer ghp_fallback", req.Header.Get("Authorization"))
 }
@@ -52,17 +52,17 @@ func TestNewExtensionRequestEnvTokenFallback(t *testing.T) {
 func TestNewExtensionRequestEnvTokenNotSentToOtherHosts(t *testing.T) {
 	t.Setenv("SEANIME_GITHUB_TOKEN", "ghp_env_token")
 
-	req, err := newExtensionRequest(context.Background(), "https://example.com/marketplace.json")
+	req, err := newExtensionRequest(context.Background(), "https://example.com/marketplace.json", nil)
 	require.NoError(t, err)
 	require.Empty(t, req.Header.Get("Authorization"))
 }
 
 func TestNewExtensionRequestGitHubContentsAPIAcceptHeader(t *testing.T) {
-	req, err := newExtensionRequest(context.Background(), "https://api.github.com/repos/owner/private/contents/marketplace.json?ref=main")
+	req, err := newExtensionRequest(context.Background(), "https://api.github.com/repos/owner/private/contents/marketplace.json?ref=main", nil)
 	require.NoError(t, err)
 	require.Equal(t, "application/vnd.github.raw+json", req.Header.Get("Accept"))
 
-	req, err = newExtensionRequest(context.Background(), "https://raw.githubusercontent.com/owner/private/main/marketplace.json")
+	req, err = newExtensionRequest(context.Background(), "https://raw.githubusercontent.com/owner/private/main/marketplace.json", nil)
 	require.NoError(t, err)
 	require.Empty(t, req.Header.Get("Accept"))
 }
@@ -134,4 +134,117 @@ func TestFetchExternalExtensionDataWithToken(t *testing.T) {
 	fetched, err := repo.FetchExternalExtensionData(authedURL)
 	require.NoError(t, err)
 	require.Equal(t, ext.ID, fetched.ID)
+}
+
+func TestNormalizeGitRepoPattern(t *testing.T) {
+	cases := map[string]string{
+		"https://github.com/Owner/Repo":  "github.com/owner/repo",
+		"github.com/owner/repo":          "github.com/owner/repo",
+		"github.com/owner/repo.git":      "github.com/owner/repo",
+		"git@github.com:owner/repo.git":  "github.com/owner/repo",
+		"GitHub.com/Owner":               "github.com/owner",
+		"https://gitea.example.com":      "gitea.example.com",
+		"https://gitea.example.com/o/r/": "gitea.example.com/o/r",
+	}
+	for in, want := range cases {
+		got, err := normalizeGitRepoPattern(in)
+		require.NoError(t, err, in)
+		require.Equal(t, want, got, in)
+	}
+
+	_, err := normalizeGitRepoPattern("")
+	require.Error(t, err)
+	_, err = normalizeGitRepoPattern("   ")
+	require.Error(t, err)
+}
+
+func TestGitTokenForURLMatchesGitHubContentHosts(t *testing.T) {
+	tokens := map[string]string{"github.com/owner/private": "tok_repo"}
+
+	for _, rawURL := range []string{
+		"https://github.com/owner/private/raw/main/manifest.json",
+		"https://raw.githubusercontent.com/owner/private/main/manifest.json",
+		"https://api.github.com/repos/owner/private/contents/manifest.json",
+		"https://codeload.github.com/owner/private/tar.gz/main",
+	} {
+		req, err := newExtensionRequest(context.Background(), rawURL, tokens)
+		require.NoError(t, err, rawURL)
+		require.Equal(t, "Bearer tok_repo", req.Header.Get("Authorization"), rawURL)
+	}
+
+	// Other repositories from the same owner are not matched
+	req, err := newExtensionRequest(context.Background(), "https://raw.githubusercontent.com/owner/other/main/manifest.json", tokens)
+	require.NoError(t, err)
+	require.Empty(t, req.Header.Get("Authorization"))
+}
+
+func TestGitTokenForURLMostSpecificPatternWins(t *testing.T) {
+	tokens := map[string]string{
+		"gitea.example.com":            "tok_host",
+		"gitea.example.com/owner":      "tok_owner",
+		"gitea.example.com/owner/repo": "tok_repo",
+	}
+
+	req, err := newExtensionRequest(context.Background(), "https://gitea.example.com/owner/repo/raw/branch/main/manifest.json", tokens)
+	require.NoError(t, err)
+	require.Equal(t, "Bearer tok_repo", req.Header.Get("Authorization"))
+
+	req, err = newExtensionRequest(context.Background(), "https://gitea.example.com/owner/other/raw/x.json", tokens)
+	require.NoError(t, err)
+	require.Equal(t, "Bearer tok_owner", req.Header.Get("Authorization"))
+
+	req, err = newExtensionRequest(context.Background(), "https://gitea.example.com/someone/else.json", tokens)
+	require.NoError(t, err)
+	require.Equal(t, "Bearer tok_host", req.Header.Get("Authorization"))
+}
+
+func TestGitTokenForURLUserinfoTakesPrecedence(t *testing.T) {
+	tokens := map[string]string{"example.com": "tok_stored"}
+
+	req, err := newExtensionRequest(context.Background(), "https://tok_url@example.com/manifest.json", tokens)
+	require.NoError(t, err)
+	require.Equal(t, "Bearer tok_url", req.Header.Get("Authorization"))
+}
+
+func TestStoredGitTokenUsedForFetch(t *testing.T) {
+	repo, _ := newExternalExtensionTestRepository(t)
+	ext := testExternalExtension()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bearer secret-token" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = fmt.Fprintf(w, `{
+			"id": %q, "name": %q, "version": %q, "manifestURI": %q,
+			"language": %q, "type": %q, "description": %q, "author": %q,
+			"lang": %q, "payload": %q
+		}`, ext.ID, ext.Name, ext.Version, ext.ManifestURI,
+			ext.Language, ext.Type, ext.Description, ext.Author,
+			ext.Lang, ext.Payload)
+	}))
+	defer server.Close()
+
+	// Without a stored token the fetch fails
+	_, err := repo.FetchExternalExtensionData(server.URL + "/manifest.json")
+	require.Error(t, err)
+
+	// Store a token for the server's host and the fetch succeeds
+	host := strings.TrimPrefix(server.URL, "http://")
+	require.NoError(t, repo.SetGitToken(host, "secret-token"))
+
+	fetched, err := repo.FetchExternalExtensionData(server.URL + "/manifest.json")
+	require.NoError(t, err)
+	require.Equal(t, ext.ID, fetched.ID)
+
+	// Masked listing never exposes the full token
+	list := repo.ListGitTokens()
+	require.Len(t, list, 1)
+	require.NotContains(t, list[0].MaskedToken, "secret-tok")
+	require.Contains(t, list[0].MaskedToken, "oken")
+
+	// Removing the token disables access again
+	require.NoError(t, repo.RemoveGitToken(host))
+	_, err = repo.FetchExternalExtensionData(server.URL + "/manifest.json")
+	require.Error(t, err)
 }

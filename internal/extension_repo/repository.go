@@ -85,6 +85,9 @@ type (
 		ManifestURI string `json:"manifestURI"`
 		Version     string `json:"version"`
 		Payload     string `json:"payload"`
+		// PayloadChanged is true when the upstream payload hash differs from the
+		// installed payload, allowing updates even without a version bump.
+		PayloadChanged bool `json:"payloadChanged,omitempty"`
 	}
 
 	MangaProviderExtensionItem struct {

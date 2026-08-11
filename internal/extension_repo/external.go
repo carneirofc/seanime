@@ -2,6 +2,8 @@ package extension_repo
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -428,6 +430,12 @@ func (r *Repository) RefetchAllExternalExtensions() *ReloadFromSourceResult {
 // Check for updates
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// payloadHash returns the SHA-256 hex digest of an extension payload.
+func payloadHash(payload string) string {
+	h := sha256.Sum256([]byte(payload))
+	return hex.EncodeToString(h[:])
+}
+
 // checkForUpdates checks all extensions for updates by querying their respective repositories.
 // It returns a list of extension update data containing IDs and versions.
 func (r *Repository) checkForUpdates() (ret []UpdateData) {
@@ -467,14 +475,20 @@ func (r *Repository) checkForUpdates() (ret []UpdateData) {
 				return
 			}
 
+			// Compare the payload hashes so upstream changes are picked up even
+			// when the version was not bumped.
+			payloadChanged := extFromRepo.Payload != "" && ext.GetPayload() != "" &&
+				payloadHash(extFromRepo.Payload) != payloadHash(ext.GetPayload())
+
 			// If there's an update, send the update data to the channel
-			if extFromRepo.Version != ext.GetVersion() {
+			if extFromRepo.Version != ext.GetVersion() || payloadChanged {
 				mu.Lock()
 				ret = append(ret, UpdateData{
-					ExtensionID: extFromRepo.ID,
-					Version:     extFromRepo.Version,
-					ManifestURI: extFromRepo.ManifestURI,
-					Payload:     extFromRepo.Payload,
+					ExtensionID:    extFromRepo.ID,
+					Version:        extFromRepo.Version,
+					ManifestURI:    extFromRepo.ManifestURI,
+					Payload:        extFromRepo.Payload,
+					PayloadChanged: payloadChanged,
 				})
 				mu.Unlock()
 			}

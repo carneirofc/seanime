@@ -622,3 +622,72 @@ func (h *Handler) HandleGetMarketplaceExtensions(c echo.Context) error {
 
 	return h.RespondWithData(c, extensions)
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// HandleListExtensionGitTokens
+//
+//	@summary returns the configured git repository tokens with masked values.
+//	@route /api/v1/extensions/git-tokens [GET]
+//	@returns []extension_repo.GitTokenInfo
+func (h *Handler) HandleListExtensionGitTokens(c echo.Context) error {
+	if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+		return err
+	}
+
+	return h.RespondWithData(c, h.App.ExtensionRepository.ListGitTokens())
+}
+
+// HandleSetExtensionGitToken
+//
+//	@summary stores a git access token for a repository pattern, enabling private repositories as extension sources.
+//	@desc The repository can be a full URL, "host/owner/repo", "host/owner" or a bare host.
+//	@route /api/v1/extensions/git-tokens [POST]
+//	@returns bool
+func (h *Handler) HandleSetExtensionGitToken(c echo.Context) error {
+	type body struct {
+		Repository string `json:"repository"`
+		Token      string `json:"token"`
+	}
+
+	var b body
+	if err := c.Bind(&b); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+		return err
+	}
+
+	if err := h.App.ExtensionRepository.SetGitToken(b.Repository, b.Token); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	return h.RespondWithData(c, true)
+}
+
+// HandleRemoveExtensionGitToken
+//
+//	@summary removes the git access token stored for a repository pattern.
+//	@route /api/v1/extensions/git-tokens/remove [POST]
+//	@returns bool
+func (h *Handler) HandleRemoveExtensionGitToken(c echo.Context) error {
+	type body struct {
+		Repository string `json:"repository"`
+	}
+
+	var b body
+	if err := c.Bind(&b); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+		return err
+	}
+
+	if err := h.App.ExtensionRepository.RemoveGitToken(b.Repository); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	return h.RespondWithData(c, true)
+}

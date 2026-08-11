@@ -44321,6 +44321,15 @@
         "comments": []
       },
       {
+        "name": "GitTokens",
+        "jsonName": "gitTokens",
+        "goType": "map[string]string",
+        "typescriptType": "Record\u003cstring, string\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "mu",
         "jsonName": "",
         "goType": "sync.Mutex",
@@ -44333,6 +44342,36 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/extension_repo/external_settings.go",
+    "filename": "external_settings.go",
+    "name": "GitTokenInfo",
+    "formattedName": "ExtensionRepo_GitTokenInfo",
+    "package": "extension_repo",
+    "fields": [
+      {
+        "name": "Repository",
+        "jsonName": "repository",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MaskedToken",
+        "jsonName": "maskedToken",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " GitTokenInfo describes a configured git repository token with the token value masked."
+    ]
   },
   {
     "filepath": "../internal/extension_repo/goja_anime_torrent_provider.go",
@@ -45326,6 +45365,15 @@
         "goType": "string",
         "typescriptType": "string",
         "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PayloadChanged",
+        "jsonName": "payloadChanged",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
         "public": true,
         "comments": []
       }
