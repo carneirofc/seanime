@@ -339,7 +339,7 @@ func (h *Handler) HandleOidcLogout(c echo.Context) error {
 //	@returns string
 func (h *Handler) HandleGetMediaToken(c echo.Context) error {
 	endpoint := c.QueryParam("endpoint")
-	if endpoint == "" || !strings.HasPrefix(endpoint, "/") || strings.HasPrefix(endpoint, "//") {
+	if endpoint == "" || !strings.HasPrefix(endpoint, "/") || strings.HasPrefix(endpoint, "//") || !core.IsMediaTokenEndpoint(endpoint) {
 		return h.RespondWithStatusError(c, http.StatusBadRequest, errors.New("invalid endpoint"))
 	}
 

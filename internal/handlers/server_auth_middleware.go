@@ -1,14 +1,21 @@
 package handlers
 
 import (
+	"crypto/subtle"
 	"errors"
 	"net/http"
+	"seanime/internal/core"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 var errUnauthenticated = errors.New("UNAUTHENTICATED")
+
+// secureCompare is a constant-time string equality check for credentials.
+func secureCompare(a, b string) bool {
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
+}
 
 func (h *Handler) OptionalAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -33,7 +40,7 @@ func (h *Handler) OptionalAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc
 
 			if path == "/api/v1/status" {
 				// allow status requests by all clients but mark as unauthenticated
-				if passwordHash != h.App.ServerPasswordHash {
+				if !secureCompare(passwordHash, h.App.ServerPasswordHash) {
 					c.Set("unauthenticated", true)
 				}
 			}
@@ -41,14 +48,14 @@ func (h *Handler) OptionalAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc
 			return next(c)
 		}
 
-		if passwordHash == h.App.ServerPasswordHash {
+		if secureCompare(passwordHash, h.App.ServerPasswordHash) {
 			authFailureRateLimits.reset(authKey)
 			return next(c)
 		}
 
-		// Check HMAC token in query parameter
+		// Check HMAC token in query parameter (media endpoints only)
 		token := req.URL.Query().Get("token")
-		if token != "" {
+		if token != "" && core.IsMediaTokenEndpoint(path) {
 			hmacAuth := h.App.GetServerHMACAuth()
 			_, err := hmacAuth.ValidateToken(token, path)
 			if err == nil {
@@ -103,8 +110,9 @@ func (h *Handler) oidcSessionAuth(next echo.HandlerFunc, c echo.Context) error {
 	}
 
 	// Media/query HMAC tokens (signed with the per-boot secret) keep working for
-	// external players that cannot send cookies
-	if token := req.URL.Query().Get("token"); token != "" {
+	// external players that cannot send cookies; they are only honored on the
+	// media endpoints they are minted for
+	if token := req.URL.Query().Get("token"); token != "" && core.IsMediaTokenEndpoint(path) {
 		hmacAuth := h.App.GetServerHMACAuth()
 		if _, err := hmacAuth.ValidateToken(token, path); err == nil {
 			return next(c)
@@ -141,7 +149,7 @@ func (h *Handler) tryNakamaAuth(c echo.Context) bool {
 		return false
 	}
 
-	if req.Header.Get("X-Seanime-Nakama-Token") != h.App.Settings.GetNakama().HostPassword {
+	if !secureCompare(req.Header.Get("X-Seanime-Nakama-Token"), h.App.Settings.GetNakama().HostPassword) {
 		return false
 	}
 

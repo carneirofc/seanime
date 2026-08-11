@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"seanime/internal/core"
 	"seanime/internal/mcp"
 	util "seanime/internal/util/proxies"
@@ -20,6 +21,10 @@ import (
 type Handler struct {
 	App *core.App
 }
+
+// sensitiveQueryValuePattern matches query parameters whose values are
+// credentials or single-use auth material and must never be logged.
+var sensitiveQueryValuePattern = regexp.MustCompile(`(?i)([?&](?:token|code|state|password|secret|client_id)=)[^&\s]*`)
 
 func InitRoutes(app *core.App, e *echo.Echo) {
 	h := &Handler{App: app}
@@ -41,6 +46,20 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 		ExposeHeaders:    []string{clientIdHeaderName, clientIdProofHeaderName},
 		AllowCredentials: true,
 	}))
+
+	// Credentials ride in query strings on some endpoints (media HMAC "?token=",
+	// the OIDC callback's "?code=&state="). The access logger below records
+	// req.RequestURI verbatim, so scrub those values first; handlers read the
+	// parsed req.URL and are unaffected.
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			req := c.Request()
+			if strings.ContainsRune(req.RequestURI, '=') {
+				req.RequestURI = sensitiveQueryValuePattern.ReplaceAllString(req.RequestURI, "${1}[REDACTED]")
+			}
+			return next(c)
+		}
+	})
 
 	lechoLogger := lecho.From(*app.Logger)
 

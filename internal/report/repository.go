@@ -136,7 +136,7 @@ type AnonymizeOptions struct {
 func (r *Repository) Anonymize(opts AnonymizeOptions) string {
 	userPathPattern := regexp.MustCompile(`(?i)(/home/|/Users/|C:\\Users\\)([^/\\]+)`)
 
-	urlSensitivePattern := regexp.MustCompile(`(?i)(\b(?:client_id|token|secret|password)=)([^&\s"']+)`)
+	urlSensitivePattern := regexp.MustCompile(`(?i)(\b(?:client_id|token|secret|password|code|state)=)([^&\s"']+)`)
 
 	var toRedact []string
 	if opts.Settings != nil {

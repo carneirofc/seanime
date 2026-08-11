@@ -2,8 +2,37 @@ package core
 
 import (
 	"seanime/internal/util"
+	"strings"
 	"time"
 )
+
+// mediaTokenEndpointPrefixes lists the only path prefixes on which server HMAC
+// query tokens ("?token=") are minted and accepted. Tokens are meant for media
+// URLs handed to external players and image loaders; scoping them here keeps a
+// leaked URL from doubling as a general-purpose API credential.
+var mediaTokenEndpointPrefixes = []string{
+	"/api/v1/mediastream/",
+	"/api/v1/directstream/",
+	"/api/v1/torrentstream/",
+	"/api/v1/nakama/stream",
+	"/api/v1/image-proxy",
+	"/api/v1/manga/local-page",
+	"/api/v1/proxy",
+	"/api/v1/report/issue/download",
+	"/assets/",
+	"/manga-downloads/",
+	"/offline-assets/",
+}
+
+// IsMediaTokenEndpoint reports whether HMAC query-token auth applies to the path.
+func IsMediaTokenEndpoint(path string) bool {
+	for _, prefix := range mediaTokenEndpointPrefixes {
+		if strings.HasPrefix(path, prefix) {
+			return true
+		}
+	}
+	return false
+}
 
 // GetServerHMACAuth returns the HMAC authenticator used for server-minted query
 // tokens (media URLs for external players, proxied streams, ...).

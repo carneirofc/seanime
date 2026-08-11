@@ -38,7 +38,7 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 	} else if h.App.Config.Server.Password != "" {
 		// When a server password is set, require auth via query param
 		token := c.QueryParam("token")
-		if token != h.App.ServerPasswordHash {
+		if !secureCompare(token, h.App.ServerPasswordHash) {
 			authKey := authFailureRateLimitKey(req)
 			if !authFailureRateLimits.allow(authKey, maxAuthFailuresPerWindow, authFailureWindow) {
 				return c.JSON(http.StatusTooManyRequests, NewErrorResponse(errTooManyAuthenticationAttempts))
