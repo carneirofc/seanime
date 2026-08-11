@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"seanime/internal/core"
 	"seanime/internal/database/models"
 	"seanime/internal/security"
@@ -72,68 +74,6 @@ func TestRequestHasTrustedLocalOrigin(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, isRequestFromTrustedOrigin(req))
-		})
-	}
-}
-
-func TestRequestHasStrictTrustedLocalBoundary(t *testing.T) {
-	t.Cleanup(func() {
-		security.SetRequestBoundaryConfig(nil, "")
-	})
-
-	tests := []struct {
-		name       string
-		origin     string
-		reqHost    string
-		remoteAddr string
-		headers    map[string]string
-		want       bool
-	}{
-		{
-			name:       "allows direct loopback browser request",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "127.0.0.1:51111",
-			want:       true,
-		},
-		{
-			name:       "rejects public client spoofing loopback headers",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "203.0.113.10:51111",
-			want:       false,
-		},
-		{
-			name:       "rejects public host through local proxy",
-			origin:     "https://seanime.example",
-			reqHost:    "seanime.example",
-			remoteAddr: "127.0.0.1:51111",
-			want:       false,
-		},
-		{
-			name:       "rejects untrusted forwarded headers",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "127.0.0.1:51111",
-			headers: map[string]string{
-				"X-Forwarded-For": "203.0.113.10",
-			},
-			want: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// strict local-only actions should not trust spoofable headers without a local client boundary.
-			req := httptest.NewRequest(http.MethodPost, "/api/v1/download-torrent-file", nil)
-			req.Host = tt.reqHost
-			req.RemoteAddr = tt.remoteAddr
-			req.Header.Set("Origin", tt.origin)
-			for key, value := range tt.headers {
-				req.Header.Set(key, value)
-			}
-
-			assert.Equal(t, tt.want, isRequestFromTrustedLocal(req))
 		})
 	}
 }
@@ -402,436 +342,6 @@ func TestTrustedCORSOrigin(t *testing.T) {
 	}
 }
 
-func TestCanMutatePrivilegedSettings(t *testing.T) {
-	prev := &models.Settings{
-		MediaPlayer: &models.MediaPlayerSettings{
-			Default: "vlc",
-			VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-			MpvArgs: "--no-config",
-		},
-		Torrent: &models.TorrentSettings{
-			Default:         "qbittorrent",
-			QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-		},
-	}
-
-	tests := []struct {
-		name          string
-		origin        string
-		reqHost       string
-		remoteAddr    string
-		secureMode    string
-		hasServerAuth bool
-		nextMedia     *models.MediaPlayerSettings
-		nextTorrent   *models.TorrentSettings
-		want          bool
-	}{
-		{
-			name:    "allows unrelated settings changes without trusted origin",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "vlc",
-				Host:    "127.0.0.1",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: true,
-		},
-		{
-			name:       "allows trusted local origin when passwordless",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "127.0.0.1:51111",
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "mpv",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvPath: "/Applications/mpv.app/Contents/MacOS/mpv",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: true,
-		},
-		{
-			name:       "allows spoofed trusted local origin by default",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "203.0.113.10:51111",
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "mpv",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: true,
-		},
-		{
-			name:       "rejects spoofed trusted local origin in hardened mode",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "203.0.113.10:51111",
-			secureMode: security.SecureModeHardened,
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "mpv",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: false,
-		},
-		{
-			name:    "rejects untrusted origin when command sinks change",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "mpv",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: false,
-		},
-		{
-			name:    "rejects untrusted origin when compatible translation endpoint changes",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			nextMedia: &models.MediaPlayerSettings{
-				Default:             "vlc",
-				VlcPath:             "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvArgs:             "--no-config",
-				VcTranslate:         true,
-				VcTranslateProvider: "openai-compatible",
-				VcTranslateBaseUrl:  "http://localhost:1234/v1",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: false,
-		},
-		{
-			name:          "allows authenticated writes even without trusted origin",
-			origin:        "https://evil.example",
-			reqHost:       "192.168.1.10:43211",
-			hasServerAuth: true,
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "mpv",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: true,
-		},
-		{
-			name:    "rejects missing origin when command sinks change and no password is set",
-			reqHost: "192.168.1.10:43211",
-			nextMedia: &models.MediaPlayerSettings{
-				Default: "mpv",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-			nextTorrent: &models.TorrentSettings{
-				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qBittorrent.app/Contents/MacOS/qbittorrent",
-			},
-			want: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// random websites should not be able to flip command sinks on passwordless servers.
-			security.SetSecureMode(tt.secureMode)
-			t.Cleanup(func() {
-				security.SetSecureMode("")
-			})
-
-			req := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", nil)
-			req.Host = tt.reqHost
-			if tt.remoteAddr != "" {
-				req.RemoteAddr = tt.remoteAddr
-			}
-			if tt.origin != "" {
-				req.Header.Set("Origin", tt.origin)
-			}
-
-			assert.Equal(t, tt.want, canMutatePrivilegedSettings(req, tt.hasServerAuth, prev, tt.nextMedia, tt.nextTorrent))
-		})
-	}
-
-	t.Run("rejects authenticated public clients in strict mode", func(t *testing.T) {
-		security.SetSecureMode(security.SecureModeStrict)
-		t.Cleanup(func() {
-			security.SetSecureMode("")
-		})
-
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", nil)
-		req.Host = "127.0.0.1:43211"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "http://127.0.0.1:43211")
-
-		nextMedia := &models.MediaPlayerSettings{
-			Default: "mpv",
-			MpvPath: "/tmp/mpv-wrapper",
-			MpvArgs: "--no-config",
-		}
-
-		assert.False(t, canMutatePrivilegedSettings(req, true, prev, nextMedia, nil))
-	})
-}
-
-func TestCanMutatePrivilegedMediastreamSettings(t *testing.T) {
-	prev := &models.MediastreamSettings{
-		FfmpegPath:  "ffmpeg",
-		FfprobePath: "ffprobe",
-	}
-
-	tests := []struct {
-		name          string
-		origin        string
-		reqHost       string
-		remoteAddr    string
-		secureMode    string
-		hasServerAuth bool
-		next          *models.MediastreamSettings
-		want          bool
-	}{
-		{
-			name:    "allows unrelated mediastream changes without trusted origin",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			next: &models.MediastreamSettings{
-				TranscodeEnabled: true,
-				FfmpegPath:       "ffmpeg",
-				FfprobePath:      "ffprobe",
-			},
-			want: true,
-		},
-		{
-			name:       "allows trusted local origin when ffmpeg path changes",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "127.0.0.1:51111",
-			next: &models.MediastreamSettings{
-				FfmpegPath:  "/tmp/ffmpeg-wrapper",
-				FfprobePath: "ffprobe",
-			},
-			want: true,
-		},
-		{
-			name:       "allows spoofed trusted local origin when ffmpeg path changes by default",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "203.0.113.10:51111",
-			next: &models.MediastreamSettings{
-				FfmpegPath:  "/tmp/ffmpeg-wrapper",
-				FfprobePath: "ffprobe",
-			},
-			want: true,
-		},
-		{
-			name:       "rejects spoofed trusted local origin when ffmpeg path changes in hardened mode",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			remoteAddr: "203.0.113.10:51111",
-			secureMode: security.SecureModeHardened,
-			next: &models.MediastreamSettings{
-				FfmpegPath:  "/tmp/ffmpeg-wrapper",
-				FfprobePath: "ffprobe",
-			},
-			want: false,
-		},
-		{
-			name:    "rejects untrusted origin when ffprobe path changes",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			next: &models.MediastreamSettings{
-				FfmpegPath:  "ffmpeg",
-				FfprobePath: "/tmp/ffprobe-wrapper",
-			},
-			want: false,
-		},
-		{
-			name:          "allows authenticated mediastream writes without trusted origin",
-			origin:        "https://evil.example",
-			reqHost:       "192.168.1.10:43211",
-			hasServerAuth: true,
-			next: &models.MediastreamSettings{
-				FfmpegPath:  "/tmp/ffmpeg-wrapper",
-				FfprobePath: "/tmp/ffprobe-wrapper",
-			},
-			want: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// remote sites should not be able to repoint ffmpeg or ffprobe on passwordless servers.
-			security.SetSecureMode(tt.secureMode)
-			t.Cleanup(func() {
-				security.SetSecureMode("")
-			})
-
-			req := httptest.NewRequest(http.MethodPatch, "/api/v1/mediastream/settings", nil)
-			req.Host = tt.reqHost
-			if tt.remoteAddr != "" {
-				req.RemoteAddr = tt.remoteAddr
-			}
-			if tt.origin != "" {
-				req.Header.Set("Origin", tt.origin)
-			}
-
-			assert.Equal(t, tt.want, canMutatePrivilegedMediastreamSettings(req, tt.hasServerAuth, prev, tt.next))
-		})
-	}
-
-	t.Run("rejects authenticated public clients in strict mode", func(t *testing.T) {
-		security.SetSecureMode(security.SecureModeStrict)
-		t.Cleanup(func() {
-			security.SetSecureMode("")
-		})
-
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/mediastream/settings", nil)
-		req.Host = "127.0.0.1:43211"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "http://127.0.0.1:43211")
-
-		next := &models.MediastreamSettings{
-			FfmpegPath:  "/tmp/ffmpeg-wrapper",
-			FfprobePath: "ffprobe",
-		}
-
-		assert.False(t, canMutatePrivilegedMediastreamSettings(req, true, prev, next))
-	})
-}
-
-func TestCanUsePrivilegedExtensionManagement(t *testing.T) {
-	tests := []struct {
-		name          string
-		origin        string
-		reqHost       string
-		path          string
-		remoteAddr    string
-		secureMode    string
-		hasServerAuth bool
-		want          bool
-	}{
-		{
-			name:       "allows trusted local origin when passwordless",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			path:       "/api/v1/extensions/external/install",
-			remoteAddr: "127.0.0.1:51111",
-			want:       true,
-		},
-		{
-			name:    "rejects untrusted origin when passwordless",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			path:    "/api/v1/extensions/external/install",
-			want:    false,
-		},
-		{
-			name:       "allows spoofed trusted local origin when passwordless by default",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			path:       "/api/v1/extensions/external/install",
-			remoteAddr: "203.0.113.10:51111",
-			want:       true,
-		},
-		{
-			name:       "rejects spoofed trusted local origin when passwordless in hardened mode",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			path:       "/api/v1/extensions/external/install",
-			remoteAddr: "203.0.113.10:51111",
-			secureMode: security.SecureModeHardened,
-			want:       false,
-		},
-		{
-			name:          "allows authenticated extension management without trusted origin",
-			origin:        "https://evil.example",
-			reqHost:       "192.168.1.10:43211",
-			path:          "/api/v1/extensions/external/install",
-			hasServerAuth: true,
-			want:          true,
-		},
-		{
-			name:    "rejects untrusted origin for playground execution when passwordless",
-			origin:  "https://evil.example",
-			reqHost: "192.168.1.10:43211",
-			path:    "/api/v1/extensions/playground/run",
-			want:    false,
-		},
-		{
-			name:       "allows trusted local origin for playground execution when passwordless",
-			origin:     "http://127.0.0.1:43211",
-			reqHost:    "127.0.0.1:43211",
-			path:       "/api/v1/extensions/playground/run",
-			remoteAddr: "127.0.0.1:51111",
-			want:       true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			security.SetSecureMode(tt.secureMode)
-			t.Cleanup(func() {
-				security.SetSecureMode("")
-			})
-
-			req := httptest.NewRequest(http.MethodPost, tt.path, nil)
-			req.Host = tt.reqHost
-			if tt.remoteAddr != "" {
-				req.RemoteAddr = tt.remoteAddr
-			}
-			if tt.origin != "" {
-				req.Header.Set("Origin", tt.origin)
-			}
-
-			assert.Equal(t, tt.want, canUsePrivilegedExtensionManagement(req, tt.hasServerAuth))
-		})
-	}
-
-	t.Run("rejects authenticated public clients in strict mode", func(t *testing.T) {
-		security.SetSecureMode(security.SecureModeStrict)
-		t.Cleanup(func() {
-			security.SetSecureMode("")
-		})
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/extensions/external/install", nil)
-		req.Host = "127.0.0.1:43211"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "http://127.0.0.1:43211")
-
-		assert.False(t, canUsePrivilegedExtensionManagement(req, true))
-	})
-}
-
 func TestCanConsumeMedia(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -892,115 +402,6 @@ func TestCanConsumeMedia(t *testing.T) {
 	}
 }
 
-func TestGuardPrivilegedMediaPlayer(t *testing.T) {
-	t.Cleanup(func() {
-		security.SetSecureMode("")
-	})
-
-	e := echo.New()
-	h := &Handler{App: &core.App{Config: &core.Config{}}}
-
-	t.Run("rejects authenticated remote external-player launch in strict mode", func(t *testing.T) {
-		// Launching an external player spawns a local process with a configurable
-		// executable path; in strict mode that stays local-only even for an
-		// authenticated session, so a remote (hosted) request is denied.
-		security.SetSecureMode(security.SecureModeStrict)
-		h.App.Config.Server.Password = "configured"
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/playback-manager/play", nil)
-		req.Host = "demo.example"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "https://demo.example")
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		settings := &models.Settings{
-			MediaPlayer: &models.MediaPlayerSettings{
-				Default: "mpv",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-		}
-
-		err := h.guardPrivilegedMediaPlayer(c, settings)
-		assert.ErrorIs(t, err, errGuardResponseWritten)
-		assert.Equal(t, http.StatusForbidden, rec.Code)
-	})
-
-	t.Run("allows external-player launch from a trusted local request in strict mode", func(t *testing.T) {
-		// A local admin (e.g. loopback / SSH tunnel) can still drive the external
-		// player under strict mode.
-		security.SetSecureMode(security.SecureModeStrict)
-		h.App.Config.Server.Password = "configured"
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/playback-manager/play", nil)
-		req.Host = "127.0.0.1:43211"
-		req.RemoteAddr = "127.0.0.1:51111"
-		req.Header.Set("Origin", "http://127.0.0.1:43211")
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		settings := &models.Settings{
-			MediaPlayer: &models.MediaPlayerSettings{
-				Default: "mpv",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-		}
-
-		err := h.guardPrivilegedMediaPlayer(c, settings)
-		assert.NoError(t, err)
-	})
-
-	t.Run("allows non-privileged hosted playback for authenticated remote requests in strict mode", func(t *testing.T) {
-		// The built-in web player is not a privileged external player, so hosted
-		// playback keeps working remotely.
-		security.SetSecureMode(security.SecureModeStrict)
-		h.App.Config.Server.Password = "configured"
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/playback-manager/play", nil)
-		req.Host = "demo.example"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "https://demo.example")
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		settings := &models.Settings{
-			MediaPlayer: &models.MediaPlayerSettings{
-				Default: "",
-			},
-		}
-
-		err := h.guardPrivilegedMediaPlayer(c, settings)
-		assert.NoError(t, err)
-	})
-
-	t.Run("rejects passwordless public playback with privileged media-player settings", func(t *testing.T) {
-		// custom executables should still stay behind the normal privileged request check.
-		security.SetSecureMode(security.SecureModeStrict)
-		h.App.Config.Server.Password = ""
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/playback-manager/play", nil)
-		req.Host = "demo.example"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "https://demo.example")
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		settings := &models.Settings{
-			MediaPlayer: &models.MediaPlayerSettings{
-				Default: "mpv",
-				MpvPath: "/tmp/mpv-wrapper",
-				MpvArgs: "--no-config",
-			},
-		}
-
-		err := h.guardPrivilegedMediaPlayer(c, settings)
-		assert.ErrorIs(t, err, errGuardResponseWritten)
-		assert.Equal(t, http.StatusForbidden, rec.Code)
-	})
-}
-
 func TestMediaConsumptionHandlersDoNotUseStrictLocalOnlyBoundary(t *testing.T) {
 	t.Cleanup(func() {
 		security.SetSecureMode("")
@@ -1040,107 +441,6 @@ func TestMediaConsumptionHandlersDoNotUseStrictLocalOnlyBoundary(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
-}
-
-func TestShouldRestrictSensitiveLocalInfo(t *testing.T) {
-	t.Cleanup(func() {
-		security.SetSecureMode("")
-	})
-
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/status", nil)
-	req.Host = "192.168.1.10:43211"
-	req.RemoteAddr = "203.0.113.10:51111"
-	req.Header.Set("Origin", "https://evil.example")
-
-	security.SetSecureMode("")
-	assert.False(t, isStrictModeSensitive(req, false))
-
-	security.SetSecureMode(security.SecureModeStrict)
-	assert.True(t, isStrictModeSensitive(req, false))
-	assert.False(t, isStrictModeSensitive(req, true))
-
-	security.SetSecureMode(security.SecureModeLax)
-	assert.False(t, isStrictModeSensitive(req, false))
-
-	req.Host = "127.0.0.1:43211"
-	req.RemoteAddr = "127.0.0.1:51111"
-	req.Header.Set("Origin", "http://127.0.0.1:43211")
-	assert.False(t, isStrictModeSensitive(req, false))
-}
-
-func TestGuardStrictLocalOnlyAction(t *testing.T) {
-	t.Cleanup(func() {
-		security.SetSecureMode("")
-	})
-
-	h := &Handler{App: &core.App{Config: &core.Config{}}}
-	e := echo.New()
-
-	t.Run("rejects requests without a trusted local origin in strict mode", func(t *testing.T) {
-		security.SetSecureMode(security.SecureModeStrict)
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/download-torrent-file", nil)
-		req.Host = "127.0.0.1:43211"
-		req.RemoteAddr = "203.0.113.10:51111"
-		req.Header.Set("Origin", "http://127.0.0.1:43211")
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		err := h.guardStrictLocalOnlyAction(c)
-		assert.ErrorIs(t, err, errGuardResponseWritten)
-		assert.Equal(t, http.StatusForbidden, rec.Code)
-	})
-
-	t.Run("allows trusted local origins in strict mode", func(t *testing.T) {
-		security.SetSecureMode(security.SecureModeStrict)
-
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/download-torrent-file", nil)
-		req.Host = "127.0.0.1:43211"
-		req.RemoteAddr = "127.0.0.1:51111"
-		req.Header.Set("Origin", "http://127.0.0.1:43211")
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		err := h.guardStrictLocalOnlyAction(c)
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, rec.Code)
-	})
-}
-
-func TestHandleDirectorySelectorStrictMode(t *testing.T) {
-	t.Cleanup(func() {
-		security.SetSecureMode("")
-	})
-
-	security.SetSecureMode(security.SecureModeStrict)
-	h := &Handler{App: &core.App{Config: &core.Config{}}}
-	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/directory-selector", strings.NewReader(`{"input":"/tmp"}`))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
-	err := h.HandleDirectorySelector(c)
-	assert.ErrorIs(t, err, errGuardResponseWritten)
-	assert.Equal(t, http.StatusForbidden, rec.Code)
-}
-
-func TestHandleTestDumpStrictMode(t *testing.T) {
-	t.Cleanup(func() {
-		security.SetSecureMode("")
-	})
-
-	security.SetSecureMode(security.SecureModeStrict)
-	h := &Handler{App: &core.App{Config: &core.Config{}}}
-	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/test-dump", strings.NewReader(`{"dir":"/tmp","userName":"test"}`))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
-	err := h.HandleTestDump(c)
-	assert.ErrorIs(t, err, errGuardResponseWritten)
-	assert.Equal(t, http.StatusForbidden, rec.Code)
 }
 
 func TestRequestMatchescontextClientId(t *testing.T) {
@@ -1224,4 +524,281 @@ func TestUsesPrivilegedCommandSettings(t *testing.T) {
 		assert.True(t, isPrivilegedTorrentClient(settings))
 		assert.True(t, isPrivilegedMediastream(mediastreamSettings))
 	})
+}
+
+// withCapabilities installs a capability set for the duration of a test.
+func withCapabilities(t *testing.T, capabilities ...string) {
+	t.Helper()
+	security.SetCapabilities(capabilities, true)
+	t.Cleanup(func() {
+		security.SetCapabilities(nil, true)
+	})
+}
+
+// forgedLocalRequest is the shape an attacker uses to look like a local admin: a
+// private source address (every in-cluster peer has one), a loopback Host, a
+// matching Origin, and no forwarding headers. Every input here is chosen by the
+// caller, which is exactly why none of them may grant anything.
+func forgedLocalRequest(method string, target string) *http.Request {
+	req := httptest.NewRequest(method, target, nil)
+	req.Host = "127.0.0.1:43211"
+	req.RemoteAddr = "10.42.0.7:51111"
+	req.Header.Set("Origin", "http://127.0.0.1:43211")
+	return req
+}
+
+func TestPrivilegedGuardsIgnoreRequestShape(t *testing.T) {
+	e := echo.New()
+	h := &Handler{App: &core.App{Config: &core.Config{}}}
+
+	// A server password used to make isTrustedRequest short-circuit to "allowed".
+	h.App.Config.Server.Password = "configured"
+
+	guards := map[string]func(c echo.Context) error{
+		"exec":       h.guardPrivilegedLocalExecution,
+		"extensions": h.guardPrivilegedExtensionManagement,
+		"selfupdate": h.guardSelfUpdate,
+		"filesystem": h.guardStrictLocalOnlyAction,
+	}
+
+	requests := map[string]func() *http.Request{
+		"forged loopback from a private peer": func() *http.Request {
+			return forgedLocalRequest(http.MethodPost, "/api/v1/open-in-explorer")
+		},
+		"genuine loopback": func() *http.Request {
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/open-in-explorer", nil)
+			req.Host = "127.0.0.1:43211"
+			req.RemoteAddr = "127.0.0.1:51111"
+			req.Header.Set("Origin", "http://127.0.0.1:43211")
+			return req
+		},
+		"public origin": func() *http.Request {
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/open-in-explorer", nil)
+			req.Host = "demo.example"
+			req.RemoteAddr = "203.0.113.10:51111"
+			req.Header.Set("Origin", "https://demo.example")
+			return req
+		},
+	}
+
+	for _, secureMode := range []string{"", security.SecureModeLax, security.SecureModeHardened, security.SecureModeStrict} {
+		for capability, guard := range guards {
+			for shape, build := range requests {
+				t.Run(capability+"/denied/"+shape+"/mode="+secureMode, func(t *testing.T) {
+					security.SetSecureMode(secureMode)
+					t.Cleanup(func() { security.SetSecureMode("") })
+					withCapabilities(t)
+
+					rec := httptest.NewRecorder()
+					err := guard(e.NewContext(build(), rec))
+
+					assert.ErrorIs(t, err, errGuardResponseWritten)
+					assert.Equal(t, http.StatusForbidden, rec.Code)
+				})
+
+				t.Run(capability+"/granted/"+shape+"/mode="+secureMode, func(t *testing.T) {
+					security.SetSecureMode(secureMode)
+					t.Cleanup(func() { security.SetSecureMode("") })
+					withCapabilities(t, capability)
+
+					rec := httptest.NewRecorder()
+					assert.NoError(t, guard(e.NewContext(build(), rec)))
+				})
+			}
+		}
+	}
+}
+
+func TestCapabilitiesAreIndependent(t *testing.T) {
+	e := echo.New()
+	h := &Handler{App: &core.App{Config: &core.Config{}}}
+
+	// Granting exec must not hand over extension installation or self-update.
+	withCapabilities(t, security.CapabilityExec)
+
+	rec := httptest.NewRecorder()
+	assert.NoError(t, h.guardPrivilegedLocalExecution(e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/open-in-explorer"), rec)))
+
+	for _, guard := range []func(echo.Context) error{h.guardPrivilegedExtensionManagement, h.guardSelfUpdate, h.guardStrictLocalOnlyAction} {
+		rec := httptest.NewRecorder()
+		err := guard(e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/extensions/external/install"), rec))
+		assert.ErrorIs(t, err, errGuardResponseWritten)
+		assert.Equal(t, http.StatusForbidden, rec.Code)
+	}
+}
+
+func TestGuardStrictFilesystemPathContainsEveryCaller(t *testing.T) {
+	e := echo.New()
+	libraryRoot := t.TempDir()
+	h := &Handler{App: &core.App{
+		Config:   &core.Config{},
+		Settings: &models.Settings{Library: &models.LibrarySettings{LibraryPaths: []string{libraryRoot}}},
+	}}
+
+	t.Run("denies a path outside the roots even for a forged local request", func(t *testing.T) {
+		withCapabilities(t)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/download-torrent-file"), rec)
+
+		err := h.guardStrictFilesystemPath(c, "/etc")
+		assert.ErrorIs(t, err, errGuardResponseWritten)
+		assert.Equal(t, http.StatusForbidden, rec.Code)
+	})
+
+	t.Run("allows a path inside the roots without any capability", func(t *testing.T) {
+		withCapabilities(t)
+
+		// The containment check resolves paths, so the subdirectory has to exist.
+		showDir := filepath.Join(libraryRoot, "Show")
+		assert.NoError(t, os.MkdirAll(showDir, 0o755))
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/download-torrent-file"), rec)
+
+		assert.NoError(t, h.guardStrictFilesystemPath(c, showDir))
+	})
+
+	t.Run("allows any path once the filesystem capability is granted", func(t *testing.T) {
+		withCapabilities(t, security.CapabilityFilesystem)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/download-torrent-file"), rec)
+
+		assert.NoError(t, h.guardStrictFilesystemPath(c, "/etc"))
+	})
+}
+
+func TestGuardPrivilegedMediaPlayer(t *testing.T) {
+	e := echo.New()
+	h := &Handler{App: &core.App{Config: &core.Config{}}}
+	h.App.Config.Server.Password = "configured"
+
+	customPlayer := &models.Settings{
+		MediaPlayer: &models.MediaPlayerSettings{
+			Default: "mpv",
+			MpvPath: "/tmp/mpv-wrapper",
+			MpvArgs: "--no-config",
+		},
+	}
+
+	t.Run("denies a custom player binary without the exec capability", func(t *testing.T) {
+		withCapabilities(t)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/playback-manager/play"), rec)
+
+		err := h.guardPrivilegedMediaPlayer(c, customPlayer)
+		assert.ErrorIs(t, err, errGuardResponseWritten)
+		assert.Equal(t, http.StatusForbidden, rec.Code)
+	})
+
+	t.Run("allows a custom player binary once exec is granted", func(t *testing.T) {
+		withCapabilities(t, security.CapabilityExec)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/playback-manager/play"), rec)
+
+		assert.NoError(t, h.guardPrivilegedMediaPlayer(c, customPlayer))
+	})
+
+	t.Run("leaves the built-in web player ungated", func(t *testing.T) {
+		withCapabilities(t)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPost, "/api/v1/playback-manager/play"), rec)
+
+		assert.NoError(t, h.guardPrivilegedMediaPlayer(c, &models.Settings{MediaPlayer: &models.MediaPlayerSettings{}}))
+	})
+}
+
+func TestGuardPrivilegedSettingsMutation(t *testing.T) {
+	e := echo.New()
+	h := &Handler{App: &core.App{Config: &core.Config{}}}
+
+	prev := &models.Settings{
+		MediaPlayer: &models.MediaPlayerSettings{Default: "mpv", MpvPath: "mpv"},
+		Torrent:     &models.TorrentSettings{Default: "qbittorrent"},
+	}
+
+	t.Run("allows unrelated settings changes with no capability", func(t *testing.T) {
+		withCapabilities(t)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPatch, "/api/v1/settings"), rec)
+
+		assert.NoError(t, h.guardPrivilegedSettingsMutation(c, prev,
+			&models.MediaPlayerSettings{Default: "mpv", MpvPath: "mpv", Host: "127.0.0.1"},
+			&models.TorrentSettings{Default: "qbittorrent"}))
+	})
+
+	t.Run("denies repointing the player binary without exec", func(t *testing.T) {
+		withCapabilities(t)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPatch, "/api/v1/settings"), rec)
+
+		err := h.guardPrivilegedSettingsMutation(c, prev,
+			&models.MediaPlayerSettings{Default: "mpv", MpvPath: "/data/payload"},
+			&models.TorrentSettings{Default: "qbittorrent"})
+		assert.ErrorIs(t, err, errGuardResponseWritten)
+		assert.Equal(t, http.StatusForbidden, rec.Code)
+	})
+
+	t.Run("allows repointing the player binary once exec is granted", func(t *testing.T) {
+		withCapabilities(t, security.CapabilityExec)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(forgedLocalRequest(http.MethodPatch, "/api/v1/settings"), rec)
+
+		assert.NoError(t, h.guardPrivilegedSettingsMutation(c, prev,
+			&models.MediaPlayerSettings{Default: "mpv", MpvPath: "/usr/bin/mpv"},
+			&models.TorrentSettings{Default: "qbittorrent"}))
+	})
+}
+
+func TestShouldRestrictSensitiveLocalInfo(t *testing.T) {
+	t.Cleanup(func() {
+		security.SetSecureMode("")
+	})
+
+	security.SetSecureMode("")
+	assert.False(t, isStrictModeSensitive(false))
+
+	// Strict mode redacts for every passwordless caller now: the old exemption for
+	// callers that "looked local" was forgeable.
+	security.SetSecureMode(security.SecureModeStrict)
+	assert.True(t, isStrictModeSensitive(false))
+	assert.False(t, isStrictModeSensitive(true))
+
+	security.SetSecureMode(security.SecureModeLax)
+	assert.False(t, isStrictModeSensitive(false))
+}
+
+func TestHandleDirectorySelectorRequiresFilesystemCapability(t *testing.T) {
+	withCapabilities(t)
+
+	h := &Handler{App: &core.App{Config: &core.Config{}}}
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/directory-selector", strings.NewReader(`{"input":"/tmp"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	err := h.HandleDirectorySelector(e.NewContext(req, rec))
+	assert.ErrorIs(t, err, errGuardResponseWritten)
+	assert.Equal(t, http.StatusForbidden, rec.Code)
+}
+
+func TestHandleTestDumpRequiresFilesystemCapability(t *testing.T) {
+	withCapabilities(t)
+
+	h := &Handler{App: &core.App{Config: &core.Config{}}}
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/test-dump", strings.NewReader(`{"dir":"/tmp","userName":"test"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	err := h.HandleTestDump(e.NewContext(req, rec))
+	assert.ErrorIs(t, err, errGuardResponseWritten)
+	assert.Equal(t, http.StatusForbidden, rec.Code)
 }

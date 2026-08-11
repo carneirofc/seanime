@@ -343,7 +343,16 @@ func (h *Handler) HandleGetMediaToken(c echo.Context) error {
 		return h.RespondWithStatusError(c, http.StatusBadRequest, errors.New("invalid endpoint"))
 	}
 
-	token, err := h.App.GetServerHMACAuth().GenerateToken(endpoint)
+	// Bind the token to the session asking for it, so signing out revokes every
+	// media URL minted under that session instead of leaving them live for the rest
+	// of their TTL. A caller without a session (password mode) gets an unbound token;
+	// there is nothing to bind to, and it holds the signing secret anyway.
+	subject := ""
+	if session, ok := h.resolveServerSession(c.Request()); ok {
+		subject = core.MediaTokenSessionSubject(session.ID)
+	}
+
+	token, err := h.App.GetServerHMACAuth().GenerateTokenForSubject(endpoint, subject)
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}

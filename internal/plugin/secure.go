@@ -4,11 +4,20 @@ import (
 	"fmt"
 	"seanime/internal/extension"
 	"seanime/internal/extension_repo/prompt"
+	"seanime/internal/security"
 	"seanime/internal/util/result"
 	"strings"
 )
 
 func (a *AppContextImpl) secureOn() bool {
+	// A server posture always prompts. The database flag defaults to false, and
+	// leaving the decision there would mean a fresh server install runs extension
+	// filesystem and download actions with no confirmation at all — the flag is a
+	// local-install preference, not a security boundary.
+	if security.IsHardened() {
+		return true
+	}
+
 	database, ok := a.database.Get()
 	if !ok {
 		return false

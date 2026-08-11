@@ -34,6 +34,7 @@ import (
 	"seanime/internal/player"
 	"seanime/internal/playlist"
 	"seanime/internal/plugin"
+	"seanime/internal/security"
 	seanime_torrent "seanime/internal/torrent_clients/builtin_client"
 	"seanime/internal/torrent_clients/qbittorrent"
 	"seanime/internal/torrent_clients/torrent_client"
@@ -475,6 +476,12 @@ func (a *App) InitOrRefreshModules() {
 	}
 
 	a.Settings = settings // Store settings instance in app
+
+	// Library and download roots are part of the writable-directory set that no
+	// configured executable may live in, so they have to be re-registered whenever
+	// settings change — not only at boot.
+	security.SetUntrustedExecutableRoots(a.writableRoots())
+
 	if settings.Library != nil {
 		a.LibraryDir = settings.GetLibrary().LibraryPath
 

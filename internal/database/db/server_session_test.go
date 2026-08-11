@@ -65,6 +65,62 @@ func TestServerSessionLifecycle(t *testing.T) {
 	}
 }
 
+// Media tokens are bound to a session by id, and the binding is only worth
+// anything if the lookup honours expiry and deletion the same way the cookie path
+// does — otherwise signing out leaves every minted media URL live.
+func TestGetValidServerSessionByID(t *testing.T) {
+	database := newSessionTestDatabase(t)
+
+	hash := util.HashSHA256Hex("raw-token")
+	created, err := database.CreateServerSession(&models.ServerSession{
+		TokenHash:  hash,
+		Subject:    "sub-1",
+		Username:   "alice",
+		ExpiresAt:  time.Now().Add(time.Hour),
+		LastSeenAt: time.Now(),
+	})
+	if err != nil {
+		t.Fatalf("CreateServerSession: %v", err)
+	}
+
+	session, err := database.GetValidServerSessionByID(created.ID)
+	if err != nil {
+		t.Fatalf("GetValidServerSessionByID: %v", err)
+	}
+	if session.Username != "alice" {
+		t.Errorf("unexpected session data: %+v", session)
+	}
+
+	if _, err := database.GetValidServerSessionByID(created.ID + 1000); err == nil {
+		t.Error("expected error for an unknown session id")
+	}
+
+	if err := database.DeleteServerSession(hash); err != nil {
+		t.Fatalf("DeleteServerSession: %v", err)
+	}
+	if _, err := database.GetValidServerSessionByID(created.ID); err == nil {
+		t.Error("a logged-out session must not resolve by id")
+	}
+}
+
+func TestGetValidServerSessionByIDRejectsExpired(t *testing.T) {
+	database := newSessionTestDatabase(t)
+
+	created, err := database.CreateServerSession(&models.ServerSession{
+		TokenHash:  util.HashSHA256Hex("expired"),
+		Subject:    "sub-2",
+		ExpiresAt:  time.Now().Add(-time.Minute),
+		LastSeenAt: time.Now().Add(-time.Hour),
+	})
+	if err != nil {
+		t.Fatalf("CreateServerSession: %v", err)
+	}
+
+	if _, err := database.GetValidServerSessionByID(created.ID); err == nil {
+		t.Error("expected an expired session to be rejected by id")
+	}
+}
+
 func TestServerSessionExpiry(t *testing.T) {
 	database := newSessionTestDatabase(t)
 

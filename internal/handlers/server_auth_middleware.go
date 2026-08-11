@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"seanime/internal/core"
+	"seanime/internal/security"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -56,14 +57,11 @@ func (h *Handler) OptionalAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc
 		// Check HMAC token in query parameter (media endpoints only)
 		token := req.URL.Query().Get("token")
 		if token != "" && core.IsMediaTokenEndpoint(path) {
-			hmacAuth := h.App.GetServerHMACAuth()
-			_, err := hmacAuth.ValidateToken(token, path)
-			if err == nil {
+			if h.App.ValidateMediaToken(token, path) {
 				authFailureRateLimits.reset(authKey)
 				return next(c)
-			} else {
-				h.App.Logger.Debug().Err(err).Str("path", path).Msg("server auth: HMAC token validation failed")
 			}
+			h.App.Logger.Debug().Str("path", path).Msg("server auth: HMAC token validation failed")
 		}
 
 		if h.tryNakamaAuth(c) {
@@ -113,8 +111,7 @@ func (h *Handler) oidcSessionAuth(next echo.HandlerFunc, c echo.Context) error {
 	// external players that cannot send cookies; they are only honored on the
 	// media endpoints they are minted for
 	if token := req.URL.Query().Get("token"); token != "" && core.IsMediaTokenEndpoint(path) {
-		hmacAuth := h.App.GetServerHMACAuth()
-		if _, err := hmacAuth.ValidateToken(token, path); err == nil {
+		if h.App.ValidateMediaToken(token, path) {
 			return next(c)
 		}
 	}
@@ -138,8 +135,27 @@ func (h *Handler) oidcSessionAuth(next echo.HandlerFunc, c echo.Context) error {
 
 // tryNakamaAuth authenticates Nakama peer connections on their dedicated paths
 // using the Nakama host password header. Works in both password and OIDC modes.
+//
+// This is a second, independent way into the API: it accepts a shared static
+// password instead of the session, and it runs before the 401. Everything it opens
+// (library listings, file streaming, debrid URLs) is therefore reachable without an
+// OIDC session, so it needs both an operator opt-in and a real password.
 func (h *Handler) tryNakamaAuth(c echo.Context) bool {
-	if !h.App.Settings.GetNakama().Enabled || !h.App.Settings.GetNakama().IsHost {
+	nakama := h.App.Settings.GetNakama()
+	if !nakama.Enabled || !nakama.IsHost {
+		return false
+	}
+
+	// Peer-to-peer library sharing bypasses the session gate by design; it stays off
+	// unless the operator asked for it.
+	if !security.Allows(security.CapabilityNakamaHost) {
+		return false
+	}
+
+	// An empty host password would otherwise authenticate an empty (or absent)
+	// header: subtle.ConstantTimeCompare reports two zero-length inputs as equal, so
+	// the comparison below is not a gate at all when no password is set.
+	if nakama.HostPassword == "" {
 		return false
 	}
 
@@ -149,7 +165,7 @@ func (h *Handler) tryNakamaAuth(c echo.Context) bool {
 		return false
 	}
 
-	if !secureCompare(req.Header.Get("X-Seanime-Nakama-Token"), h.App.Settings.GetNakama().HostPassword) {
+	if !secureCompare(req.Header.Get("X-Seanime-Nakama-Token"), nakama.HostPassword) {
 		return false
 	}
 

@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"runtime"
 	"seanime/internal/extension"
+	"seanime/internal/security"
 	"seanime/internal/util"
 	gojautil "seanime/internal/util/goja"
 	"strings"
@@ -92,7 +93,14 @@ func (a *AppContextImpl) BindSystem(vm *goja.Runtime, logger *zerolog.Logger, ex
 			return nil, err
 		}
 
-		return util.NewCmdCtx(context.Background(), name, arg...), nil
+		// The command name comes from the extension manifest, so it must not be
+		// something the extension could have written to disk itself.
+		resolved, err := security.ValidateExecutablePath(name)
+		if err != nil {
+			return nil, fmt.Errorf("command (%s) refused: %w", name, err)
+		}
+
+		return util.NewCmdCtx(context.Background(), resolved, arg...), nil
 	})
 
 	_ = osObj.Set("Interrupt", os.Interrupt)
@@ -660,6 +668,15 @@ func (a *AppContextImpl) isAllowedPath(ext *extension.Extension, path string, mo
 		return false
 	}
 
+	// The manifest allowlist below is written by whoever authored the extension, so
+	// it bounds mistakes rather than malice. Writing to the host is gated on operator
+	// configuration as well, which the extension cannot influence. Reads stay on the
+	// manifest allowlist alone: extensions have to read their own data to work, and
+	// installing one already needs CapabilityExtensions.
+	if mode == AllowPathWrite && !security.Allows(security.CapabilityFilesystem) {
+		return false
+	}
+
 	// Get the appropriate patterns based on the mode
 	var patterns []string
 	if mode == AllowPathRead {
@@ -853,6 +870,15 @@ func (a *AppContextImpl) resolvePattern(pattern string) []string {
 func (a *AppContextImpl) isAllowedCommand(ext *extension.Extension, name string, arg ...string) bool {
 	// If the extension doesn't have a plugin manifest or system allowlist, deny access
 	if ext == nil || ext.Plugin == nil {
+		return false
+	}
+
+	// The CommandScopes checked below come from the extension's own manifest, so on
+	// their own they are self-authorization: a manifest can declare `sh` with a
+	// wildcard argument list and be, by construction, unrestricted code execution.
+	// Operator configuration is what actually decides whether extensions may spawn
+	// processes at all.
+	if !security.Allows(security.CapabilityExec) {
 		return false
 	}
 

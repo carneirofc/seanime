@@ -116,7 +116,7 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 		return status
 	}
 
-	if isStrictModeSensitive(c.Request(), h.hasServerAuth()) {
+	if isStrictModeSensitive(h.hasServerAuth()) {
 		return h.newRestrictedStatus()
 	}
 
@@ -153,14 +153,14 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 		DataDir:               h.App.Config.Data.AppDataDir,
 		ClientUserAgent:       c.Request().UserAgent(),
 		User:                  currentUser,
-		Settings:              settings,
+		Settings:              models.RedactedSettings(settings),
 		Version:               h.App.Version,
 		VersionName:           constants.VersionName,
 		ThemeSettings:         theme,
 		IsOffline:             h.App.Config.Server.Offline,
 		MediastreamSettings:   h.App.SecondarySettings.Mediastream,
 		TorrentstreamSettings: h.App.SecondarySettings.Torrentstream,
-		DebridSettings:        h.App.SecondarySettings.Debrid,
+		DebridSettings:        models.RedactedDebridSettings(h.App.SecondarySettings.Debrid),
 		AnilistClientID:       h.App.Config.Anilist.ClientID,
 		Updating:              false,
 		FeatureFlags:          h.App.FeatureFlags,

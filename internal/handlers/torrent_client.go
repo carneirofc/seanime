@@ -285,10 +285,6 @@ func (h *Handler) HandleTorrentClientDownload(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	if err := h.guardStrictLocalOnlyAction(c); err != nil {
-		return err
-	}
-
 	if err := h.guardStrictFilesystemPath(c, b.Destination); err != nil {
 		return err
 	}

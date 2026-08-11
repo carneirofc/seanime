@@ -10,6 +10,7 @@ import (
 	"seanime/internal/events"
 	"seanime/internal/extension"
 	"seanime/internal/extension_repo/prompt"
+	"seanime/internal/security"
 	"seanime/internal/testutil"
 	"seanime/internal/util"
 	gojautil "seanime/internal/util/goja"
@@ -23,6 +24,10 @@ import (
 
 func newSecureTestCtx(t *testing.T) (*AppContextImpl, *events.MockWSEventManager) {
 	t.Helper()
+
+	// The prompt flow only comes into play once the action itself is permitted, so
+	// these tests need the capabilities that the bindings under test consume.
+	grantCapabilities(t, security.CapabilityExec, security.CapabilityFilesystem)
 
 	database.CurrSettings = nil
 	t.Cleanup(func() {

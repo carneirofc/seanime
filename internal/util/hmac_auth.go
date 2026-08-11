@@ -14,12 +14,23 @@ type TokenClaims struct {
 	Endpoint  string `json:"endpoint"` // The endpoint this token is valid for
 	IssuedAt  int64  `json:"iat"`
 	ExpiresAt int64  `json:"exp"`
+	// Subject optionally binds the token to the login session that minted it, so
+	// logging out or letting the session lapse revokes it. Empty means unbound —
+	// tokens minted without a request context, and tokens minted client-side in
+	// password mode, where the client holds the signing secret anyway.
+	Subject string `json:"sub,omitempty"`
 }
 
 type HMACAuth struct {
 	secret []byte
 	ttl    time.Duration
 }
+
+// maxClockSkew is how far ahead of the server a minter's clock may be. Tokens are
+// also minted in the browser (password mode), so some tolerance is needed; without
+// an upper bound, a future-dated "iat" would slide the server-enforced lifetime
+// forward indefinitely.
+const maxClockSkew = 5 * time.Minute
 
 // base64URLEncode encodes to base64url without padding (to match frontend)
 func base64URLEncode(data []byte) string {
@@ -45,11 +56,19 @@ func NewHMACAuth(secret string, ttl time.Duration) *HMACAuth {
 
 // GenerateToken generates an HMAC-signed token for the given endpoint
 func (h *HMACAuth) GenerateToken(endpoint string) (string, error) {
+	return h.GenerateTokenForSubject(endpoint, "")
+}
+
+// GenerateTokenForSubject generates a token bound to a subject. Validation of the
+// subject is the caller's job — ValidateToken only carries it through — because
+// only the caller knows what the subject names and whether it is still live.
+func (h *HMACAuth) GenerateTokenForSubject(endpoint string, subject string) (string, error) {
 	now := time.Now().Unix()
 	claims := TokenClaims{
 		Endpoint:  endpoint,
 		IssuedAt:  now,
 		ExpiresAt: now + int64(h.ttl.Seconds()),
+		Subject:   subject,
 	}
 
 	// Serialize claims to JSON
@@ -100,10 +119,28 @@ func (h *HMACAuth) ValidateToken(token string, endpoint string) (*TokenClaims, e
 		return nil, fmt.Errorf("failed to unmarshal claims: %w", err)
 	}
 
-	// Validate expiration
+	// Validate expiration.
+	//
+	// The claimed expiry alone is not enough: in password mode the token is minted
+	// in the browser, which holds the signing secret and therefore picks its own
+	// "exp". The server's TTL is the authority, so the effective expiry is the
+	// earlier of what was claimed and issue time plus the TTL. That in turn makes
+	// "iat" load-bearing — a missing or future-dated one would slide the window
+	// forward, so both are rejected.
 	now := time.Now().Unix()
-	if claims.ExpiresAt < now {
-		return nil, fmt.Errorf("token expired - expires at %d, current time %d", claims.ExpiresAt, now)
+	if claims.IssuedAt <= 0 {
+		return nil, fmt.Errorf("token has no issue time")
+	}
+	if claims.IssuedAt > now+int64(maxClockSkew.Seconds()) {
+		return nil, fmt.Errorf("token issued in the future - issued at %d, current time %d", claims.IssuedAt, now)
+	}
+
+	expiresAt := claims.ExpiresAt
+	if maxExpiry := claims.IssuedAt + int64(h.ttl.Seconds()); maxExpiry < expiresAt {
+		expiresAt = maxExpiry
+	}
+	if expiresAt < now {
+		return nil, fmt.Errorf("token expired - expires at %d, current time %d", expiresAt, now)
 	}
 
 	// Validate endpoint (optional, can be wildcard *)

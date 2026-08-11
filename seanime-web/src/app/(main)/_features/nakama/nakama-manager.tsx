@@ -31,6 +31,7 @@ import { Modal } from "@/components/ui/modal"
 import { TextInput } from "@/components/ui/text-input"
 import { Tooltip } from "@/components/ui/tooltip"
 import { copyToClipboard } from "@/lib/helpers/browser"
+import { isRedactedSecret } from "@/lib/server/secrets"
 import { WSEvents } from "@/lib/server/ws-events"
 import { useThemeSettings } from "@/lib/theme/theme-hooks"
 import { useQueryClient } from "@tanstack/react-query"
@@ -438,23 +439,17 @@ export function NakamaManager() {
                                                     />
                                                 </div>
                                                 <div className="flex items-center gap-2">
+                                                    {/* The host password is a credential for this server's peer
+                                                     endpoints, so it is withheld from the settings payload and
+                                                     cannot be read back here — only re-set. */}
                                                     <TextInput
                                                         readOnly
                                                         leftAddon="Passcode"
-                                                        value={serverStatus?.settings?.nakama?.hostPassword || "No password set"}
+                                                        value={isRedactedSecret(serverStatus?.settings?.nakama?.hostPassword)
+                                                            ? "Set — not shown, change it in Settings"
+                                                            : "No password set"}
                                                         onClick={(e) => e.currentTarget.select()}
                                                         addonClass="font-bold tracking-wide text-sm pr-2"
-                                                        rightAddon={<>
-                                                            <IconButton
-                                                                size="sm"
-                                                                intent="gray-basic"
-                                                                onClick={() => {
-                                                                    copyToClipboard(serverStatus?.settings?.nakama?.hostPassword || "")
-                                                                        .then(() => toast.success("Copied to clipboard"))
-                                                                }}
-                                                                icon={<LuClipboard />}
-                                                            />
-                                                        </>}
                                                     />
                                                 </div>
                                             </div>

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"seanime/internal/security"
 	"seanime/internal/util"
 	"slices"
 	"strings"
@@ -489,7 +490,14 @@ func (ts *Stream) run(start int32) error {
 		streamLogger.Trace().Msg("transcoder: Hardware transcoding not enabled")
 	}
 
-	cmd := util.NewCmdCtx(context.Background(), ts.settings.FfmpegPath, args...)
+	// The ffmpeg path is a setting, so it is attacker-influenced input rather than a
+	// constant; validate what is about to be spawned and spawn exactly that.
+	ffmpegPath, err := security.ValidateExecutablePath(ts.settings.FfmpegPath)
+	if err != nil {
+		return fmt.Errorf("transcoder: refusing to run ffmpeg: %w", err)
+	}
+
+	cmd := util.NewCmdCtx(context.Background(), ffmpegPath, args...)
 	streamLogger.Trace().Msgf("transcoder: Executing ffmpeg for segments %d-%d of %s", start, end, ts.kind)
 
 	stdout, err := cmd.StdoutPipe()

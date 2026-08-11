@@ -2,6 +2,7 @@ package core
 
 import (
 	"seanime/internal/util"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -36,6 +37,64 @@ func IsMediaTokenEndpoint(path string) bool {
 	return false
 }
 
+// MediaTokenTTL bounds how long a server query token stays usable.
+//
+// These tokens travel in URLs, so they end up in player logs, proxy access logs
+// and Referer headers, and unlike the session cookie they cannot be signed out.
+// The window therefore needs to be long enough to cover a single viewing session
+// and no longer. It is enforced on validation as well as on minting, so a token
+// minted client-side in password mode cannot claim a longer life than this.
+const MediaTokenTTL = 6 * time.Hour
+
+// mediaTokenSessionSubjectPrefix marks a media token as bound to a login session.
+const mediaTokenSessionSubjectPrefix = "session:"
+
+// MediaTokenSessionSubject is the claim that binds a media token to the session
+// that requested it. The session's numeric id is enough to look it up and is not
+// itself a credential, so putting it in a URL leaks nothing the token does not.
+func MediaTokenSessionSubject(sessionID uint) string {
+	return mediaTokenSessionSubjectPrefix + strconv.FormatUint(uint64(sessionID), 10)
+}
+
+// ValidateMediaToken checks a server-minted query token against the requested path
+// and, when the token names a login session, that the session is still live.
+//
+// Binding is what gives these tokens a revocation story: signing out, or letting a
+// session lapse, kills every media URL minted under it instead of leaving them
+// usable for the rest of their TTL.
+func (a *App) ValidateMediaToken(token string, path string) bool {
+	claims, err := a.GetServerHMACAuth().ValidateToken(token, path)
+	if err != nil {
+		return false
+	}
+
+	return a.isMediaTokenSubjectLive(claims.Subject)
+}
+
+func (a *App) isMediaTokenSubjectLive(subject string) bool {
+	if subject == "" {
+		// Unbound: minted without a request context (media URLs handed to external
+		// players) or client-side in password mode, where there is no session to
+		// bind to and the client holds the signing secret regardless.
+		return true
+	}
+
+	rawID, found := strings.CutPrefix(subject, mediaTokenSessionSubjectPrefix)
+	if !found {
+		// An unrecognised binding is a binding we cannot check.
+		return false
+	}
+
+	// 32 bits, not 64: uint is platform-sized, so parsing wider than the narrowest
+	// uint would let a forged id truncate onto a real session on a 32-bit build.
+	sessionID, err := strconv.ParseUint(rawID, 10, 32)
+	if err != nil {
+		return false
+	}
+
+	return a.IsServerSessionLive(uint(sessionID))
+}
+
 // GetServerHMACAuth returns the HMAC authenticator used for server-minted query
 // tokens (media URLs for external players, proxied streams, ...).
 //   - OIDC mode: derived from the per-boot random MediaTokenSecret. The password
@@ -56,7 +115,7 @@ func (a *App) GetServerHMACAuth() *util.HMACAuth {
 		secret = a.MediaTokenSecret
 	}
 
-	return util.NewHMACAuth(secret, 24*time.Hour)
+	return util.NewHMACAuth(secret, MediaTokenTTL)
 }
 
 func (a *App) GetClientIdentityHMACAuth() *util.HMACAuth {

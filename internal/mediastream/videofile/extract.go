@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"seanime/internal/security"
 	"seanime/internal/util"
 	"seanime/internal/util/crashlog"
 	"time"
@@ -86,7 +87,12 @@ func ExtractAttachment(ffmpegPath string, path string, hash string, mediaInfo *M
 		return nil
 	}
 
-	cmd := util.NewCmdCtx(ctx, ffmpegPath, args...)
+	validatedFfmpegPath, err := security.ValidateExecutablePath(ffmpegPath)
+	if err != nil {
+		return fmt.Errorf("videofile: refusing to run ffmpeg: %w", err)
+	}
+
+	cmd := util.NewCmdCtx(ctx, validatedFfmpegPath, args...)
 	cmd.Dir = attachmentPath
 
 	cmd.Stdout = crashLogger.Stdout()

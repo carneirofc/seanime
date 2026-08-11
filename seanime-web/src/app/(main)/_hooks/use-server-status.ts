@@ -1,6 +1,7 @@
 import { INTERNAL_FeatureKey } from "@/api/generated/types"
 import { serverAuthTokenAtom, serverStatusAtom } from "@/app/(main)/_atoms/server-status.atoms"
 import { createNakamaHMACAuth, createServerPasswordHMACAuth } from "@/lib/server/hmac-auth"
+import { isRedactedSecret } from "@/lib/server/secrets"
 import { TORRENT_PROVIDER } from "@/lib/server/settings"
 import { useAtomValue } from "jotai"
 import { useAtom } from "jotai"
@@ -145,9 +146,12 @@ export function useServerHMACAuth() {
 export function useNakamaHMACAuth() {
     const serverStatus = useServerStatus()
 
-    const nakamaPassword = serverStatus?.settings?.nakama?.isHost
+    // The server withholds stored credentials from the settings payload, so this is
+    // the placeholder rather than the shared secret whenever one is configured.
+    const storedNakamaPassword = serverStatus?.settings?.nakama?.isHost
         ? serverStatus?.settings?.nakama?.hostPassword
         : serverStatus?.settings?.nakama?.remoteServerPassword
+    const nakamaPassword = isRedactedSecret(storedNakamaPassword) ? "" : storedNakamaPassword
 
     return {
         getHMACTokenQueryParam: async (endpoint: string, symbol?: string) => {

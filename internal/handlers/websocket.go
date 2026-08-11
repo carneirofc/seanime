@@ -53,7 +53,7 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 
 	if !h.hasServerAuth() {
 		if !security.IsLax() && reqHasOriginMetadata(req) && !isRequestFromTrustedOrigin(req) && !isRequestFromAllowlistedOrigin(req, h.App.Config.Server.AccessAllowlist) {
-			return c.JSON(http.StatusForbidden, NewErrorResponse(errPrivilegedExecutionDenied))
+			return c.JSON(http.StatusForbidden, NewErrorResponse(errRequestBoundaryDenied))
 		}
 	}
 

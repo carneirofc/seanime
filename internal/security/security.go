@@ -17,9 +17,31 @@ type SecurityContext struct {
 	SecureMode     string
 	TrustedProxies []string
 	ExternalURL    string
+	// Capabilities is the set of privileged actions the operator has granted.
+	// See capability.go — it is never derived from a request.
+	Capabilities []string
+	// CapabilitiesConfigured distinguishes "operator wrote an empty list" (deny
+	// everything) from "operator wrote nothing" (fall back to the posture default).
+	CapabilitiesConfigured bool
 }
 
 var GlobalSecurityContext = util.NewRef(&SecurityContext{})
+
+// cloneSecurityContext copies the context so the setters below can replace a
+// single field without racing readers of the others.
+func cloneSecurityContext(current *SecurityContext) *SecurityContext {
+	if current == nil {
+		return &SecurityContext{}
+	}
+
+	return &SecurityContext{
+		SecureMode:             current.SecureMode,
+		TrustedProxies:         slices.Clone(current.TrustedProxies),
+		ExternalURL:            current.ExternalURL,
+		Capabilities:           slices.Clone(current.Capabilities),
+		CapabilitiesConfigured: current.CapabilitiesConfigured,
+	}
+}
 
 func NormalizeMode(mode string) string {
 	switch strings.ToLower(strings.TrimSpace(mode)) {
@@ -35,12 +57,9 @@ func NormalizeMode(mode string) string {
 }
 
 func SetSecureMode(mode string) {
-	current := GlobalSecurityContext.Get()
-	GlobalSecurityContext.Set(&SecurityContext{
-		SecureMode:     NormalizeMode(mode),
-		TrustedProxies: slices.Clone(current.TrustedProxies),
-		ExternalURL:    current.ExternalURL,
-	})
+	next := cloneSecurityContext(GlobalSecurityContext.Get())
+	next.SecureMode = NormalizeMode(mode)
+	GlobalSecurityContext.Set(next)
 }
 
 func IsStrict() bool {
@@ -57,12 +76,10 @@ func IsHardened() bool {
 }
 
 func SetRequestBoundaryConfig(trustedProxies []string, externalURL string) {
-	current := GlobalSecurityContext.Get()
-	GlobalSecurityContext.Set(&SecurityContext{
-		SecureMode:     current.SecureMode,
-		TrustedProxies: slices.Clone(trustedProxies),
-		ExternalURL:    strings.TrimSpace(externalURL),
-	})
+	next := cloneSecurityContext(GlobalSecurityContext.Get())
+	next.TrustedProxies = slices.Clone(trustedProxies)
+	next.ExternalURL = strings.TrimSpace(externalURL)
+	GlobalSecurityContext.Set(next)
 }
 
 func GetTrustedProxies() []string {

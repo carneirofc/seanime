@@ -174,7 +174,7 @@ type (
 		// MediaTokenSecret signs media/query HMAC tokens while OIDC login is active.
 		// Regenerated each boot so leaked query tokens die with the process.
 		MediaTokenSecret string
-		logoutInProgress     atomic.Bool
+		logoutInProgress atomic.Bool
 
 		// Plugin system
 		HookManager hook.Manager
@@ -473,7 +473,7 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 		},
 		Settings: plugin.SettingsActions{
 			OnSaved: func(settings *models.Settings) {
-				app.WSEventManager.SendEvent("settings", settings)
+				app.WSEventManager.SendEvent("settings", models.RedactedSettings(settings))
 				app.InitOrRefreshModules()
 				app.WSEventManager.SendEvent(events.SettingsChanged, nil)
 			},
@@ -518,7 +518,12 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 			logger.Warn().Msg("app: OIDC login active, forcing secure mode to \"strict\" (set server.secureMode to override)")
 		}
 		if len(cfg.Server.TrustedProxies) == 0 && cfg.Server.Oidc.AllowInsecure == false {
-			logger.Warn().Msg("app: OIDC login active but no trusted proxies configured; if the server runs behind a reverse proxy, set server.trustedProxies so client IPs and rate limits work correctly")
+			// Without this, every X-Forwarded-* header is either ignored or believed
+			// depending on nothing at all, and client IPs (hence rate limiting and
+			// audit logging) are whatever the caller says they are. An OIDC server is
+			// by definition proxy-fronted, so an empty list is a misconfiguration
+			// rather than a preference.
+			logger.Fatal().Msg("app: OIDC login is active but server.trustedProxies is empty; set it to your reverse proxy's address or CIDR (or set server.oidc.allowInsecure = true for local development)")
 		}
 		logger.Info().Str("issuer", cfg.Server.Oidc.IssuerURL).Msg("app: OIDC login enabled")
 
