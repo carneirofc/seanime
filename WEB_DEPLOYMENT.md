@@ -18,13 +18,14 @@ port = 43211
 trustedproxies = ["127.0.0.1"]           # the reverse proxy's address(es)
 externalurl = "https://seanime.example.com"
 # securemode defaults to "strict" while OIDC is active; set "hardened" to opt out
+# capabilities = []                      # privileged actions, all denied by default here
 
 [server.oidc]
 issuerurl = "https://idp.example.com"    # discovery at <issuer>/.well-known/openid-configuration
 clientid = "seanime"
 clientsecret = "..."                     # or env SEANIME_OIDC_CLIENT_SECRET
 allowedsubjects = ["248289761001"]       # `sub` claims (recommended: stable across renames)
-allowedusernames = ["carneirofc"]        # matched case-insensitively against usernameclaim
+allowedusernames = ["your-username"]     # matched case-insensitively against usernameclaim
 # usernameclaim = "preferred_username"   # default; falls back to "email"
 # providername = "SSO"                   # login button label
 # sessionttldays = 30                    # sliding expiry
@@ -48,17 +49,48 @@ server logs the account's `sub` so you can pin it.
   app bundle and static/media directories are session-gated.
 - Sessions are server-side; the browser holds a `__Host-` HttpOnly cookie.
   Restarting the server keeps sessions (SQLite) but rotates media query tokens.
-- Secure mode defaults to **`strict`** (was `hardened`). In strict mode,
-  filesystem browsing, external process/player launch, extension installation,
-  and library/source path changes are restricted to a **trusted local origin**,
-  and outbound fetches (image/stream proxy) cannot reach private/loopback
-  addresses. A remote authenticated (or compromised) session therefore cannot
-  browse the host or pivot into your internal network. Manage those actions from
-  a local session (e.g. an SSH tunnel to `127.0.0.1`), or set
-  `securemode = "hardened"` to allow them remotely.
+- Privileged actions — filesystem browsing, process/player launch, extension
+  installation, self-update, Nakama host mode — are **denied**, because
+  configuring OIDC opts the server out of the local-install default. They are
+  granted only by `server.capabilities` (see below), never by a session, a source
+  address, or an `Origin` header. A remote authenticated (or compromised) session
+  therefore cannot browse the host or run anything on it.
+- Secure mode defaults to **`strict`** (was `hardened`), which confines outbound
+  fetches (image/stream proxy, extension `fetch`) to publicly routable addresses,
+  so a compromised session cannot pivot into your internal network. It no longer
+  has any say over privileged actions — that is `capabilities` alone.
 - Nakama peers keep authenticating with the Nakama host password header.
 - Non-browser clients (e.g. the mobile build) cannot perform the cookie flow;
   point them at a password-mode server instead.
+
+## Capabilities
+
+Anything that reaches past the media library and touches the host is granted in
+`config.toml` and nowhere else. The server cannot grant one to itself, and no
+request can argue its way into one:
+
+```toml
+[server]
+capabilities = ["filesystem"]   # "all" / "none" are shorthands
+```
+
+| Capability | Grants |
+| --- | --- |
+| `exec` | spawning processes: media players, torrent clients, a custom `ffmpeg`/`ffprobe`, "open in file explorer", plugin `$os.cmd` |
+| `filesystem` | browsing and managing the host filesystem outside the media roots, and repointing the library/download roots |
+| `extensions` | installing, updating and reloading third-party extensions — equivalent to code execution, since extension code runs in-process |
+| `selfupdate` | downloading a release and replacing the running binary |
+| `nakama-host` | serving the peer endpoints, which authenticate with their own shared password instead of the session |
+
+A local install with no reverse proxy, no external URL and no OIDC defaults to
+`"all"`; **any** proxy-fronted or OIDC deployment defaults to `"none"`. So on the
+topology above you start with everything denied and add back only what you need —
+expect a `403` naming the missing capability until you do.
+
+Grant as little as the deployment actually uses. `extensions` and `exec` are each
+enough to run arbitrary code as the server user; if you need them, prefer granting
+them briefly, installing what you need, and taking them away again. See
+`config.example.toml` for the annotated version.
 
 ## Hardening checklist
 
@@ -69,8 +101,10 @@ For an internet-facing deployment:
 - [ ] **Do not expose the app port to the host/internet.** Bind loopback on bare
       metal, or in Docker keep the port on an internal-only network reachable
       solely by the proxy (the compose example does this).
-- [ ] **Keep `securemode = "strict"`** (the OIDC default) unless you need remote
-      admin of filesystem/exec actions.
+- [ ] **Keep `securemode = "strict"`** (the OIDC default) so outbound fetches
+      cannot reach your internal network.
+- [ ] **Leave `capabilities` unset**, and if you must grant one, grant the single
+      capability the deployment needs — not `"all"`.
 - [ ] **Set `externalurl`** to your canonical `https://` URL and **`trustedproxies`**
       to the proxy's address, so secure cookies and client-IP rate limits work.
 - [ ] **Supply the OIDC client secret via `SEANIME_OIDC_CLIENT_SECRET`**, not in
@@ -81,7 +115,8 @@ For an internet-facing deployment:
 - [ ] **Restrict data-dir permissions** (`0700`, owned by the service user). It
       holds the SQLite DB, sessions, logs, and installed extensions.
 - [ ] **Treat installed extensions as trusted code.** They run JavaScript with
-      network access; strict mode limits installation to local origins.
+      network access, which is why installing one needs the `extensions`
+      capability.
 - [ ] **Keep the media library read-only** to the server if it never writes there.
 
 ## Signing in with GitHub
@@ -110,8 +145,8 @@ A quick local IdP: run Dex or Pocket ID in Docker with redirect URI
   503 until discovery succeeds (retried on demand).
 - All allowlisted accounts share the single Seanime identity (library, AniList
   account, settings). Do not allowlist accounts you would not hand the server to.
-  Extension installation and other privileged local actions are already
-  restricted by the default `securemode = "strict"`.
+  Extension installation and other privileged actions stay denied unless you
+  grant the matching capability.
 - The built-in self-signed TLS (`[server.tls]`) remains available as a fallback,
   but a reverse proxy with real certificates is the recommended setup.
 
