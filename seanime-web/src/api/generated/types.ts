@@ -5863,7 +5863,6 @@ export type Updater_Update = {
  */
 export type User = {
     viewer?: AL_GetViewer_Viewer
-    token: string
     isSimulated: boolean
 }
 

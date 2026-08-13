@@ -195,6 +195,7 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1.GET("/auth/oidc/callback", h.HandleOidcCallback)
 	v1.POST("/auth/oidc/logout", h.HandleOidcLogout)
 	v1.GET("/auth/media-token", h.HandleGetMediaToken)
+	v1.GET("/auth/ws-ticket", h.HandleGetWebsocketTicket)
 
 	// Settings
 	v1.GET("/settings", h.HandleGetSettings)

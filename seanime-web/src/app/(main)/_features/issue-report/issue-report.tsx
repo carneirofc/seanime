@@ -173,9 +173,13 @@ export function IssueReport() {
                 // take a full DOM snapshot every 200 events to allow
                 // "checkout" for long sessions (only need last 200-400 events)
                 checkoutEveryNth: 200,
-                // mask sensitive inputs (passwords etc)
+                // Mask by input type: `password` covers every credential field in the
+                // app, and `textarea` covers the AniList access-token entry, which
+                // cannot be a password input. Recordings are attached to public bug
+                // reports, so a field that holds a secret must never be recorded
+                // verbatim — mask the whole tag rather than a list of known fields.
                 maskAllInputs: false,
-                maskInputOptions: { password: true },
+                maskInputOptions: { password: true, textarea: true },
                 // block the issue reporter UI itself from being recorded
                 blockSelector: ".issue-reporter-ui",
                 inlineStylesheet: true,

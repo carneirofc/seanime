@@ -37,6 +37,24 @@ func IsMediaTokenEndpoint(path string) bool {
 	return false
 }
 
+// websocketTicketEndpoint is the endpoint claim carried by a websocket ticket.
+//
+// It is deliberately not one of the mediaTokenEndpointPrefixes: ValidateToken
+// matches the claim against the path being requested, so a media URL token cannot
+// be replayed to open an event stream, and a ticket cannot be replayed at a media
+// endpoint.
+const websocketTicketEndpoint = "/events"
+
+// WebsocketTicketTTL bounds how long a websocket ticket stays usable.
+//
+// A ticket only has to survive the gap between being minted and the upgrade
+// request that spends it, so it expires far sooner than a media token. That is
+// the point of it: browsers cannot set headers on a websocket upgrade, so
+// something has to travel in the URL, and a URL is logged by every proxy in
+// front of us. A minute-old signed ticket is worth much less there than the
+// credential it replaces.
+const WebsocketTicketTTL = 60 * time.Second
+
 // MediaTokenTTL bounds how long a server query token stays usable.
 //
 // These tokens travel in URLs, so they end up in player logs, proxy access logs
@@ -95,27 +113,69 @@ func (a *App) isMediaTokenSubjectLive(subject string) bool {
 	return a.IsServerSessionLive(uint(sessionID))
 }
 
-// GetServerHMACAuth returns the HMAC authenticator used for server-minted query
-// tokens (media URLs for external players, proxied streams, ...).
-//   - OIDC mode: derived from the per-boot random MediaTokenSecret. The password
-//     is ignored entirely and leaked tokens die on restart.
-//   - Password mode: derived from the hashed server password (legacy behavior,
-//     tokens survive restarts).
-func (a *App) GetServerHMACAuth() *util.HMACAuth {
-	var secret string
+// serverHMACSecret is the signing secret behind every server query token (media
+// URLs, websocket tickets).
+//   - OIDC mode: the per-boot random MediaTokenSecret. The password is ignored
+//     entirely and leaked tokens die on restart.
+//   - Password mode: the hashed server password (legacy behavior, tokens survive
+//     restarts).
+//   - Passwordless, non-OIDC mode: the per-boot random secret rather than a fixed
+//     constant, so signatures are never predictable. Tokens die on restart, which
+//     is acceptable in this mode.
+func (a *App) serverHMACSecret() string {
 	switch {
 	case a.IsOidcMode():
-		secret = a.MediaTokenSecret
+		return a.MediaTokenSecret
 	case a.Config != nil && a.Config.Server.Password != "":
-		secret = a.ServerPasswordHash
+		return a.ServerPasswordHash
 	default:
-		// Passwordless, non-OIDC mode: fall back to the per-boot random secret
-		// rather than a fixed constant, so query-token signatures are never
-		// predictable. Tokens die on restart, which is acceptable in this mode.
-		secret = a.MediaTokenSecret
+		return a.MediaTokenSecret
+	}
+}
+
+// GetServerHMACAuth returns the HMAC authenticator used for server-minted query
+// tokens (media URLs for external players, proxied streams, ...).
+func (a *App) GetServerHMACAuth() *util.HMACAuth {
+	return util.NewHMACAuth(a.serverHMACSecret(), MediaTokenTTL)
+}
+
+// GetWebsocketTicketAuth returns the authenticator for websocket tickets: the same
+// signing secret as media tokens, a much shorter lifetime.
+//
+// The TTL lives on the validating instance, not just the claim, so it is the
+// server that decides how long a ticket lasts. That matters in password mode,
+// where the client holds the signing secret and picks its own "exp" — validating
+// through this instance caps the effective expiry at issue time plus the TTL.
+func (a *App) GetWebsocketTicketAuth() *util.HMACAuth {
+	return util.NewHMACAuth(a.serverHMACSecret(), WebsocketTicketTTL)
+}
+
+// GenerateWebsocketTicket mints a ticket for opening the /events stream, bound to
+// the given subject (empty for an unbound ticket).
+func (a *App) GenerateWebsocketTicket(subject string) (string, error) {
+	return a.GetWebsocketTicketAuth().GenerateTokenForSubject(websocketTicketEndpoint, subject)
+}
+
+// ValidateWebsocketTicket checks a ticket presented at the websocket upgrade and,
+// when it names a login session, that the session is still live.
+func (a *App) ValidateWebsocketTicket(ticket string) bool {
+	if ticket == "" {
+		return false
 	}
 
-	return util.NewHMACAuth(secret, MediaTokenTTL)
+	claims, err := a.GetWebsocketTicketAuth().ValidateToken(ticket, websocketTicketEndpoint)
+	if err != nil {
+		return false
+	}
+
+	// Exact match, not the prefix/wildcard matching ValidateToken is willing to do.
+	// In password mode the client holds the signing secret, so it could otherwise
+	// mint itself a "*" token and turn a ticket into a general-purpose credential.
+	if claims.Endpoint != websocketTicketEndpoint {
+		return false
+	}
+
+	return a.isMediaTokenSubjectLive(claims.Subject)
 }
 
 func (a *App) GetClientIdentityHMACAuth() *util.HMACAuth {

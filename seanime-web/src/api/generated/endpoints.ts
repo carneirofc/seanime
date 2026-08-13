@@ -1910,6 +1910,19 @@ export const API_ENDPOINTS = {
             methods: ["GET"],
             endpoint: "/api/v1/auth/media-token",
         },
+        /**
+         *  @description
+         *  Route mints a short-lived ticket for opening the /events websocket.
+         *  Browsers cannot set headers on a websocket upgrade, so the credential would
+         *  otherwise have to travel in the URL, where every proxy in front of the server
+         *  logs it. Authenticated clients exchange their credential for a minute-long
+         *  ticket here and put that in the query string instead.
+         */
+        GetWebsocketTicket: {
+            key: "OIDC-AUTH-get-websocket-ticket",
+            methods: ["GET"],
+            endpoint: "/api/v1/auth/ws-ticket",
+        },
     },
     ONLINESTREAM: {
         /**

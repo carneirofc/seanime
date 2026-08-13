@@ -140,6 +140,7 @@ const (
 	GetTorrentstreamSettingsEndpoint                   = "TORRENTSTREAM-get-torrentstream-settings"
 	GetTorrentstreamTorrentFilePreviewsEndpoint        = "TORRENTSTREAM-get-torrentstream-torrent-file-previews"
 	GetUpcomingEpisodesEndpoint                        = "ANIME-ENTRIES-get-upcoming-episodes"
+	GetWebsocketTicketEndpoint                         = "OIDC-AUTH-get-websocket-ticket"
 	GettingStartedEndpoint                             = "SETTINGS-getting-started"
 	GrantPluginPermissionsEndpoint                     = "EXTENSIONS-grant-plugin-permissions"
 	ImportLocalFilesEndpoint                           = "LOCALFILES-import-local-files"

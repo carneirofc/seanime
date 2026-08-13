@@ -29505,9 +29505,9 @@
         "name": "Server",
         "jsonName": "Server",
         "goType": "INTERNAL_Config_Server",
-        "inlineStructType": "struct{\nHost string\nPort int\nOffline bool\nUseBinaryPath bool\nSystray bool\nDoHUrl string\nPassword string\nSecureMode string\nAccessAllowlist []string\nTrustedProxies []string\nExternalURL string\nTls __STRUCT__\nOidc __STRUCT__}",
+        "inlineStructType": "struct{\nHost string\nPort int\nOffline bool\nUseBinaryPath bool\nSystray bool\nDoHUrl string\nPassword string\nSecureMode string\nAccessAllowlist []string\nTrustedProxies []string\nExternalURL string\nCapabilities []string\nTls __STRUCT__\nOidc __STRUCT__}",
         "typescriptType": "INTERNAL_Config_Server",
-        "usedTypescriptType": "{ Host: string; Port: number; Offline: boolean; UseBinaryPath: boolean; Systray: boolean; DoHUrl: string; Password: string; SecureMode: string; AccessAllowlist: Array\u003cstring\u003e; TrustedProxies: Array\u003cstring\u003e; ExternalURL: string; Tls: { Enabled: boolean; CertPath: string; KeyPath: string; }; Oidc: { IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }; }",
+        "usedTypescriptType": "{ Host: string; Port: number; Offline: boolean; UseBinaryPath: boolean; Systray: boolean; DoHUrl: string; Password: string; SecureMode: string; AccessAllowlist: Array\u003cstring\u003e; TrustedProxies: Array\u003cstring\u003e; ExternalURL: string; Capabilities: Array\u003cstring\u003e; Tls: { Enabled: boolean; CertPath: string; KeyPath: string; }; Oidc: { IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }; }",
         "usedStructName": "core.Config_Server",
         "required": true,
         "public": true,
@@ -29763,6 +29763,15 @@
         "comments": [
           " Canonical public URL used for proxy-aware secure cookies and request normalization"
         ]
+      },
+      {
+        "name": "Capabilities",
+        "jsonName": "Capabilities",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
       },
       {
         "name": "Tls",
@@ -91286,6 +91295,28 @@
     "comments": []
   },
   {
+    "filepath": "../internal/security/outbound.go",
+    "filename": "outbound.go",
+    "name": "ErrBlockedOutboundAddress",
+    "formattedName": "ErrBlockedOutboundAddress",
+    "package": "security",
+    "fields": [
+      {
+        "name": "Address",
+        "jsonName": "Address",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ErrBlockedOutboundAddress is returned by the hardened dialer when a connection",
+      " resolves to a non-public address."
+    ]
+  },
+  {
     "filepath": "../internal/security/security.go",
     "filename": "security.go",
     "name": "SecurityContext",
@@ -91315,6 +91346,24 @@
         "jsonName": "ExternalURL",
         "goType": "string",
         "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Capabilities",
+        "jsonName": "Capabilities",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "CapabilitiesConfigured",
+        "jsonName": "CapabilitiesConfigured",
+        "goType": "bool",
+        "typescriptType": "boolean",
         "required": true,
         "public": true,
         "comments": []
@@ -101026,7 +101075,7 @@
       },
       {
         "name": "Token",
-        "jsonName": "token",
+        "jsonName": "",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
@@ -101589,6 +101638,15 @@
         "goType": "int64",
         "typescriptType": "number",
         "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Subject",
+        "jsonName": "sub",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
         "public": true,
         "comments": []
       }

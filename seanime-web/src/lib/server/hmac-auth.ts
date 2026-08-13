@@ -63,13 +63,8 @@ class HMACAuth {
  */
 const MEDIA_TOKEN_TTL_SECONDS = 6 * 60 * 60
 
-// HMAC auth instance using server password (for server endpoints)
+// HMAC auth instance using the stored server credential (for media URLs in password
+// mode). Callers already establish that a credential exists before minting.
 export function createServerPasswordHMACAuth(password: string): HMACAuth {
-    const secret = password !== "" ? password : "seanime-default-secret"
-    return new HMACAuth(secret, MEDIA_TOKEN_TTL_SECONDS)
-}
-
-// HMAC auth instance using Nakama password (for Nakama endpoints)
-export function createNakamaHMACAuth(nakamaPassword: string): HMACAuth {
-    return new HMACAuth(nakamaPassword, MEDIA_TOKEN_TTL_SECONDS)
+    return new HMACAuth(password, MEDIA_TOKEN_TTL_SECONDS)
 }

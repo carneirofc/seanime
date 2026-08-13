@@ -360,6 +360,32 @@ func (h *Handler) HandleGetMediaToken(c echo.Context) error {
 	return h.RespondWithData(c, token)
 }
 
+// HandleGetWebsocketTicket
+//
+//	@summary mints a short-lived ticket for opening the /events websocket.
+//	@desc Browsers cannot set headers on a websocket upgrade, so the credential would
+//	@desc otherwise have to travel in the URL, where every proxy in front of the server
+//	@desc logs it. Authenticated clients exchange their credential for a minute-long
+//	@desc ticket here and put that in the query string instead.
+//	@route /api/v1/auth/ws-ticket [GET]
+//	@returns string
+func (h *Handler) HandleGetWebsocketTicket(c echo.Context) error {
+	// Bind the ticket to the session asking for it, so signing out invalidates any
+	// ticket still in flight. A caller without a session (password mode) gets an
+	// unbound ticket; there is nothing to bind to.
+	subject := ""
+	if session, ok := h.resolveServerSession(c.Request()); ok {
+		subject = core.MediaTokenSessionSubject(session.ID)
+	}
+
+	ticket, err := h.App.GenerateWebsocketTicket(subject)
+	if err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	return h.RespondWithData(c, ticket)
+}
+
 func isOidcIdentityAllowed(subject, username string, allowedSubjects, allowedUsernames []string) bool {
 	if slices.Contains(allowedSubjects, subject) {
 		return true

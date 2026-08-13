@@ -12,7 +12,11 @@ const SimulatedUserToken = "SIMULATED"
 
 type User struct {
 	Viewer *anilist.GetViewer_Viewer `json:"viewer"`
-	Token  string                    `json:"token"`
+	// Token is the AniList access token. It is never serialized: this struct is
+	// what /api/v1/status hands the browser, and the token grants full control of
+	// the user's AniList account, so the client has no business holding it. Server
+	// -side callers read the field directly.
+	Token string `json:"-"`
 	// IsSimulated indicates whether the user is not a real AniList account.
 	IsSimulated bool `json:"isSimulated"`
 }

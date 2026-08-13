@@ -123,9 +123,6 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 	// Get the user from the database (if logged in)
 	if dbAcc, _ = h.App.Database.GetAccount(); dbAcc != nil {
 		currentUser, _ = user.NewUser(dbAcc)
-		if currentUser != nil {
-			currentUser.Token = "HIDDEN"
-		}
 	} else {
 		// If the user is not logged in, create a simulated user
 		currentUser = user.NewSimulatedUser()
