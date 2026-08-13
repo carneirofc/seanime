@@ -482,14 +482,16 @@ func TestResolveRequestClientId(t *testing.T) {
 func TestUsesPrivilegedCommandSettings(t *testing.T) {
 	t.Run("ignores default executable paths", func(t *testing.T) {
 		// default app paths should still behave like the built-in integration.
+		// The defaults are per-GOOS, so read them from the same source the check
+		// does rather than hardcoding one platform's paths.
 		settings := &models.Settings{
 			MediaPlayer: &models.MediaPlayerSettings{
 				Default: "vlc",
-				VlcPath: "/Applications/VLC.app/Contents/MacOS/VLC",
+				VlcPath: defaultVLCPaths()[0],
 			},
 			Torrent: &models.TorrentSettings{
 				Default:         "qbittorrent",
-				QBittorrentPath: "/Applications/qbittorrent.app/Contents/MacOS/qbittorrent",
+				QBittorrentPath: defaultQBittorrentPaths()[0],
 			},
 		}
 		mediastreamSettings := &models.MediastreamSettings{

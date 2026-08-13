@@ -31,8 +31,10 @@ describe("manga preferences", () => {
         })
 
         expect(unpacked.providers).toEqual({ "5": "provider-b" })
+        // sourceProvider is a client-side field with no server counterpart, so hydrating
+        // from the server payload always starts it empty.
         expect(unpacked.filters).toEqual({
-            "5$provider-b": { scanlators: ["Group"], language: "ja" },
+            "5$provider-b": { scanlators: ["Group"], language: "ja", sourceProvider: "" },
         })
     })
 
@@ -52,7 +54,7 @@ describe("manga preferences", () => {
         )
 
         expect(filters).toEqual({
-            "1": { scanlators: ["Active Group"], language: "en" },
+            "1": { scanlators: ["Active Group"], language: "en", sourceProvider: "" },
         })
     })
 })
