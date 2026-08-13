@@ -8,7 +8,7 @@ Go backend powering Seanime API and serving embedded web UI. Covers runtime slic
 | --- | --- | --- | --- | --- |
 | Core Server | Boot, flags, config, logging, updater | `main.go`, `internal/server/`, `internal/core/` | Go 1.24+ | `go run .`, `go test ./...`, `go build -o seanime` |
 | HTTP API + Events | REST endpoints and websocket events | `internal/handlers/`, `internal/core/echo.go` | Echo v4 | `go test ./...` |
-| Embedded Web UI | Serve built Next.js UI | `web/`, `internal/core/echo.go` | Go embed FS | Build web, then copy into `web/` |
+| Embedded Web UI | Serve built React SPA | `web/`, `internal/core/echo.go` | Go embed FS | Build web, then copy into `web/` |
 | Background Jobs | Recurring sync/update loops | `internal/cron/` | Go | Runs with server startup |
 
 ## Core Server
