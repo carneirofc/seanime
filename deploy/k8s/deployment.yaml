@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seanime
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  # Exactly one. The database is SQLite on a ReadWriteOnce volume; a second writer
+  # corrupts it. Recreate rather than RollingUpdate so the old pod releases the
+  # volume before the new one attaches.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seanime
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: seanime
+      annotations:
+        # Restart the pod when the config changes. Without this a ConfigMap edit
+        # sits unapplied until something else happens to restart the pod, and the
+        # running config silently diverges from what is in git.
+        checksum/config: "replace-with-a-hash-of-configmap.yaml"
+    spec:
+      # A compromised Seanime process must not inherit a Kubernetes API credential.
+      # Nothing here talks to the API server, so there is no token to mount.
+      automountServiceAccountToken: false
+      # Suppress the legacy per-Service environment variables; they hand the
+      # process a map of everything else running in the namespace.
+      enableServiceLinks: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        # Makes the mounted volumes group-writable by the runtime user; without it
+        # a freshly provisioned PV is root-owned and the server cannot write.
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        # config.toml lives inside the data directory and the server rewrites it at
+        # runtime, so it cannot be a read-only ConfigMap mount. Copying it in on
+        # every start keeps the ConfigMap authoritative and makes any edit made
+        # inside the pod last only until the next restart.
+        - name: install-config
+          image: ghcr.io/carneirofc/seanime:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "cp /config/config.toml /data/config.toml"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: data
+              mountPath: /data
+
+      containers:
+        - name: seanime
+          image: ghcr.io/carneirofc/seanime:latest
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            # The image ships ffmpeg and a full Debian userland including a shell.
+            # A writable root filesystem would give anything that reaches code
+            # execution somewhere to stage a binary; /data and /tmp are the only
+            # writable paths, and /data is where the executable-path validation in
+            # internal/security/executable.go refuses to spawn from.
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          env:
+            - name: SEANIME_DATA_DIR
+              value: /data
+            - name: SEANIME_SERVER_HOST
+              value: 0.0.0.0
+            - name: SEANIME_SERVER_PORT
+              value: "43211"
+            - name: SEANIME_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: seanime-oidc
+                  key: client-secret
+            # Go writes temporary files here; the root filesystem is read-only.
+            - name: TMPDIR
+              value: /tmp
+
+          ports:
+            - name: http
+              containerPort: 43211
+              protocol: TCP
+
+          # /api/v1/status answers without a session (it returns a restricted
+          # payload to unauthenticated callers), so it is a safe probe target.
+          startupProbe:
+            httpGet:
+              path: /api/v1/status
+              port: http
+            periodSeconds: 5
+            # Generous: the first boot runs migrations and builds caches.
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              # On-the-fly transcoding is CPU-bound; raise this if you transcode
+              # 4K or serve several concurrent streams.
+              cpu: "4"
+              memory: 4Gi
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: media
+              mountPath: /media
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: seanime-data
+        - name: media
+          persistentVolumeClaim:
+            claimName: seanime-media
+        - name: config
+          configMap:
+            name: seanime-config
+        - name: tmp
+          # Node-backed rather than medium: Memory — a tmpfs here would count
+          # against the container's memory limit, so a large temporary file would
+          # show up as an OOM kill instead of a disk-full error.
+          emptyDir:
+            sizeLimit: 1Gi

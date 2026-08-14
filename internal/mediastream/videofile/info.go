@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime"
 	"path/filepath"
+	"seanime/internal/security"
 	"seanime/internal/util/filecache"
 	"strconv"
 	"strings"
@@ -179,9 +180,16 @@ var ffprobeOnce sync.Once
 
 func FfprobeGetInfo(ffprobePath, path, hash string) (*MediaInfo, error) {
 
+	// ffprobePath comes from settings, so it names a binary chosen over HTTP.
+	// Validate before handing it to the probe library, which will spawn it.
 	if ffprobePath != "" {
+		validated, err := security.ValidateExecutablePath(ffprobePath)
+		if err != nil {
+			return nil, fmt.Errorf("videofile: refusing to run ffprobe: %w", err)
+		}
+
 		ffprobeOnce.Do(func() {
-			ffprobe.SetFFProbeBinPath(ffprobePath)
+			ffprobe.SetFFProbeBinPath(validated)
 		})
 	}
 

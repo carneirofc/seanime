@@ -194,7 +194,7 @@ func (c *Context) createAndBindContextObject(vm *goja.Runtime) {
 	}
 	c.anilistToken = anilistToken
 
-	c.bindFetch(obj, c.ext.Plugin.Permissions.GetNetworkAccessAllowedDomains(), c.anilistToken)
+	c.bindFetch(obj, c.ext.Plugin.Permissions.GetNetworkAccessAllowedDomains())
 	c.bindAbortContext()
 	if !security.IsStrict() {
 		c.bindChromeDP(obj)

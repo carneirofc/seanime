@@ -195,6 +195,7 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1.GET("/auth/oidc/callback", h.HandleOidcCallback)
 	v1.POST("/auth/oidc/logout", h.HandleOidcLogout)
 	v1.GET("/auth/media-token", h.HandleGetMediaToken)
+	v1.GET("/auth/ws-ticket", h.HandleGetWebsocketTicket)
 
 	// Settings
 	v1.GET("/settings", h.HandleGetSettings)
@@ -450,6 +451,8 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 
 	v1Manga.GET("/downloaded-chapters/:id", h.HandleGetMangaEntryDownloadedChapters)
 	v1Manga.GET("/downloads", h.HandleGetMangaDownloadsList)
+	v1Manga.GET("/downloads/chapter-archive", h.HandleDownloadMangaChapterArchive)
+	v1Manga.GET("/downloads/media-archive", h.HandleDownloadMangaMediaArchive)
 	v1Manga.POST("/download-chapters", h.HandleDownloadMangaChapters)
 	v1Manga.POST("/download-data", h.HandleGetMangaDownloadData)
 	v1Manga.DELETE("/download-chapter", h.HandleDeleteMangaDownloadedChapters)
@@ -561,6 +564,9 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1Extensions.GET("/user-config/:id", h.HandleGetExtensionUserConfig)
 	v1Extensions.POST("/user-config", h.HandleSaveExtensionUserConfig)
 	v1Extensions.GET("/marketplace", h.HandleGetMarketplaceExtensions)
+	v1Extensions.GET("/git-tokens", h.HandleListExtensionGitTokens)
+	v1Extensions.POST("/git-tokens", h.HandleSetExtensionGitToken)
+	v1Extensions.POST("/git-tokens/remove", h.HandleRemoveExtensionGitToken)
 	v1Extensions.GET("/plugin-settings", h.HandleGetPluginSettings)
 	v1Extensions.POST("/plugin-settings/pinned-trays", h.HandleSetPluginSettingsPinnedTrays)
 	v1Extensions.POST("/plugin-permissions/grant", h.HandleGrantPluginPermissions)

@@ -102,10 +102,10 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 	app.Logger.Info().Msgf("app: Web assets path: %s", app.Config.Web.AssetDir)
 	e.Static("/assets", app.Config.Web.AssetDir)
 
-	// Serve manga downloads
+	// Serve manga downloads (streams pages out of CBZ archives)
 	if app.Config.Manga.DownloadDir != "" {
 		app.Logger.Info().Msgf("app: Manga downloads path: %s", app.Config.Manga.DownloadDir)
-		e.Static("/manga-downloads", app.Config.Manga.DownloadDir)
+		registerMangaDownloadsRoute(e, app.Config.Manga.DownloadDir)
 	}
 
 	// Serve offline assets
@@ -130,6 +130,16 @@ func (j *CustomJSONSerializer) Deserialize(c echo.Context, i interface{}) error 
 func RunEchoServer(app *App, e *echo.Echo) {
 	serverAddr := app.Config.GetServerAddr()
 	app.Logger.Info().Msgf("app: Server Address: %s", serverAddr)
+
+	// Bound the time a client may take to send request headers and how long an
+	// idle keep-alive connection is held open. These mitigate slow-header
+	// (Slowloris) and idle-socket exhaustion without a global ReadTimeout or
+	// WriteTimeout, which would sever long-lived media streams, range downloads,
+	// and the /events websocket.
+	e.Server.ReadHeaderTimeout = 20 * time.Second
+	e.Server.IdleTimeout = 120 * time.Second
+	e.TLSServer.ReadHeaderTimeout = 20 * time.Second
+	e.TLSServer.IdleTimeout = 120 * time.Second
 
 	// Start the server
 	go func() {

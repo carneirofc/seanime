@@ -36,9 +36,16 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 		}
 		authFailureRateLimits.reset(authFailureRateLimitKey(req))
 	} else if h.App.Config.Server.Password != "" {
-		// When a server password is set, require auth via query param
+		// When a server password is set, require auth via query param -- a browser
+		// cannot set headers on an upgrade request, so this is the only channel.
+		//
+		// A query string is logged by the reverse proxy in front of us, so what
+		// travels here should not be the credential itself: clients exchange it for
+		// a short-lived ticket at /api/v1/auth/ws-ticket and send that. The raw
+		// password hash is still accepted, for non-browser clients (the mobile
+		// build) that connect without minting one first.
 		token := c.QueryParam("token")
-		if !secureCompare(token, h.App.ServerPasswordHash) {
+		if !h.App.ValidateWebsocketTicket(token) && !secureCompare(token, h.App.ServerPasswordHash) {
 			authKey := authFailureRateLimitKey(req)
 			if !authFailureRateLimits.allow(authKey, maxAuthFailuresPerWindow, authFailureWindow) {
 				return c.JSON(http.StatusTooManyRequests, NewErrorResponse(errTooManyAuthenticationAttempts))
@@ -53,7 +60,7 @@ func (h *Handler) webSocketEventHandler(c echo.Context) error {
 
 	if !h.hasServerAuth() {
 		if !security.IsLax() && reqHasOriginMetadata(req) && !isRequestFromTrustedOrigin(req) && !isRequestFromAllowlistedOrigin(req, h.App.Config.Server.AccessAllowlist) {
-			return c.JSON(http.StatusForbidden, NewErrorResponse(errPrivilegedExecutionDenied))
+			return c.JSON(http.StatusForbidden, NewErrorResponse(errRequestBoundaryDenied))
 		}
 	}
 

@@ -14,22 +14,33 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// guardStrictLocalOnlyAction ensures an action is restricted to trusted local requests when in strict security mode, returning an error if denied.
+// guardStrictLocalOnlyAction denies actions that browse or manage the host
+// filesystem outside the configured media roots — directory pickers, library
+// scans, cache and log management.
+//
+// The name is historical: this no longer has anything to do with the request being
+// "local", because no request can prove that. It is the filesystem capability.
 func (h *Handler) guardStrictLocalOnlyAction(c echo.Context) error {
-	if !security.IsStrict() || c == nil || isRequestFromTrustedLocal(c.Request()) {
+	if c == nil {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
+	return h.requireCapability(c, security.CapabilityFilesystem)
 }
 
-// guardStrictFilesystemPath validates if a filesystem path is allowed under strict security mode based on origin and root constraints.
+// guardStrictFilesystemPath constrains a caller-supplied path to the configured
+// library, download and manga roots.
+//
+// Containment now applies to every caller rather than only to the ones that failed
+// a provenance heuristic — the heuristic was the bypass, the containment check was
+// always the useful part. Granting the filesystem capability is what opens the rest
+// of the host, and that is an operator decision made in config.
 func (h *Handler) guardStrictFilesystemPath(c echo.Context, rawPath string) error {
-	if !security.IsStrict() || c == nil {
+	if c == nil {
 		return nil
 	}
 
-	if isRequestFromTrustedLocal(c.Request()) {
+	if security.Allows(security.CapabilityFilesystem) {
 		return nil
 	}
 
@@ -40,8 +51,10 @@ func (h *Handler) guardStrictFilesystemPath(c echo.Context, rawPath string) erro
 	return respondWithAbort(c, http.StatusForbidden, errStrictFilesystemPathDenied)
 }
 
+// guardStrictSettingsMutation denies repointing the library or local manga source
+// at a different part of the host filesystem.
 func (h *Handler) guardStrictSettingsMutation(c echo.Context, prev *models.Settings, nextLibrary *models.LibrarySettings, nextManga *models.MangaSettings) error {
-	if !security.IsStrict() || c == nil || isRequestFromTrustedLocal(c.Request()) {
+	if c == nil {
 		return nil
 	}
 
@@ -49,11 +62,11 @@ func (h *Handler) guardStrictSettingsMutation(c echo.Context, prev *models.Setti
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
+	return h.requireCapability(c, security.CapabilityFilesystem)
 }
 
 func (h *Handler) guardStrictMediastreamRootMutation(c echo.Context, prev *models.MediastreamSettings, next *models.MediastreamSettings) error {
-	if !security.IsStrict() || c == nil || isRequestFromTrustedLocal(c.Request()) {
+	if c == nil {
 		return nil
 	}
 
@@ -61,11 +74,11 @@ func (h *Handler) guardStrictMediastreamRootMutation(c echo.Context, prev *model
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
+	return h.requireCapability(c, security.CapabilityFilesystem)
 }
 
 func (h *Handler) guardStrictTorrentstreamRootMutation(c echo.Context, prev *models.TorrentstreamSettings, next *models.TorrentstreamSettings) error {
-	if !security.IsStrict() || c == nil || isRequestFromTrustedLocal(c.Request()) {
+	if c == nil {
 		return nil
 	}
 
@@ -73,7 +86,7 @@ func (h *Handler) guardStrictTorrentstreamRootMutation(c echo.Context, prev *mod
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
+	return h.requireCapability(c, security.CapabilityFilesystem)
 }
 
 func (h *Handler) strictFilesystemRoots() []string {

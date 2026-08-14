@@ -13,8 +13,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
-import { Route as MainErrorTestRouteImport } from './routes/_main/error-test'
-import { Route as MainTestRouteImport } from './routes/_main/test'
 import { Route as SplashscreenIndexRouteImport } from './routes/splashscreen/index'
 import { Route as MainCustomSourcesIndexRouteImport } from './routes/_main/custom-sources/index'
 import { Route as MainDiscoverIndexRouteImport } from './routes/_main/discover/index'
@@ -72,16 +70,6 @@ const MainRoute = MainRouteImport.update({
 const MainIndexRoute = MainIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainErrorTestRoute = MainErrorTestRouteImport.update({
-  id: '/error-test',
-  path: '/error-test',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainTestRoute = MainTestRouteImport.update({
-  id: '/test',
-  path: '/test',
   getParentRoute: () => MainRoute,
 } as any)
 const DocsIndexLazyRoute = DocsIndexLazyRouteImport.update({
@@ -321,8 +309,6 @@ const MainOfflineEntryMangaIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof MainIndexRoute
-  '/error-test': typeof MainErrorTestRoute
-  '/test': typeof MainTestRoute
   '/splashscreen/': typeof SplashscreenIndexRoute
   '/docs/': typeof DocsIndexLazyRoute
   '/issue-report/': typeof IssueReportIndexLazyRoute
@@ -358,8 +344,6 @@ export interface FileRoutesByFullPath {
   '/offline/entry/manga/': typeof MainOfflineEntryMangaIndexRoute
 }
 export interface FileRoutesByTo {
-  '/error-test': typeof MainErrorTestRoute
-  '/test': typeof MainTestRoute
   '/': typeof MainIndexRoute
   '/splashscreen': typeof SplashscreenIndexRoute
   '/docs': typeof DocsIndexLazyRoute
@@ -398,8 +382,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
-  '/_main/error-test': typeof MainErrorTestRoute
-  '/_main/test': typeof MainTestRoute
   '/_main/': typeof MainIndexRoute
   '/splashscreen/': typeof SplashscreenIndexRoute
   '/docs/': typeof DocsIndexLazyRoute
@@ -439,8 +421,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/error-test'
-    | '/test'
     | '/splashscreen/'
     | '/docs/'
     | '/issue-report/'
@@ -476,8 +456,6 @@ export interface FileRouteTypes {
     | '/offline/entry/manga/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/error-test'
-    | '/test'
     | '/'
     | '/splashscreen'
     | '/docs'
@@ -515,8 +493,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_main'
-    | '/_main/error-test'
-    | '/_main/test'
     | '/_main/'
     | '/splashscreen/'
     | '/docs/'
@@ -577,20 +553,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof MainIndexRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/error-test': {
-      id: '/_main/error-test'
-      path: '/error-test'
-      fullPath: '/error-test'
-      preLoaderRoute: typeof MainErrorTestRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/test': {
-      id: '/_main/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof MainTestRouteImport
       parentRoute: typeof MainRoute
     }
     '/docs/': {
@@ -828,8 +790,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface MainRouteChildren {
-  MainErrorTestRoute: typeof MainErrorTestRoute
-  MainTestRoute: typeof MainTestRoute
   MainIndexRoute: typeof MainIndexRoute
   MainCustomSourcesIndexRoute: typeof MainCustomSourcesIndexRoute
   MainDiscoverIndexRoute: typeof MainDiscoverIndexRoute
@@ -861,8 +821,6 @@ interface MainRouteChildren {
 }
 
 const MainRouteChildren: MainRouteChildren = {
-  MainErrorTestRoute: MainErrorTestRoute,
-  MainTestRoute: MainTestRoute,
   MainIndexRoute: MainIndexRoute,
   MainCustomSourcesIndexRoute: MainCustomSourcesIndexRoute,
   MainDiscoverIndexRoute: MainDiscoverIndexRoute,

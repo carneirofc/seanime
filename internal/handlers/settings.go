@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,6 +15,26 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/samber/lo"
 )
+
+// nakamaHostPasswordMinLength is the shortest host password accepted when peer-to-peer
+// hosting is turned on. The password is the only thing standing between the internet
+// and the Nakama host endpoints, which serve library listings and file streams
+// without an OIDC session.
+const nakamaHostPasswordMinLength = 8
+
+// validateNakamaHostSettings refuses to persist a host configuration that would be
+// unauthenticated in practice.
+func validateNakamaHostSettings(next *models.NakamaSettings) error {
+	if next == nil || !next.Enabled || !next.IsHost {
+		return nil
+	}
+
+	if len(strings.TrimSpace(next.HostPassword)) < nakamaHostPasswordMinLength {
+		return fmt.Errorf("nakama host password must be at least %d characters when hosting is enabled", nakamaHostPasswordMinLength)
+	}
+
+	return nil
+}
 
 // HandleGetSettings
 //
@@ -30,7 +51,7 @@ func (h *Handler) HandleGetSettings(c echo.Context) error {
 		return h.RespondWithError(c, errors.New(runtime.GOOS))
 	}
 
-	return h.RespondWithData(c, settings)
+	return h.RespondWithData(c, models.RedactedSettings(settings))
 }
 
 // HandleGettingStarted
@@ -63,11 +84,20 @@ func (h *Handler) HandleGettingStarted(c echo.Context) error {
 	}
 
 	prevSettings, _ := h.App.Database.GetSettings()
+	// Credentials the client was never shown come back as placeholders; resolve them
+	// against what is stored before anything validates or persists them.
+	models.RestoreMediaPlayerSecrets(&b.MediaPlayer, prevSettings.GetMediaPlayer())
+	models.RestoreTorrentSecrets(&b.Torrent, prevSettings.GetTorrent())
+	models.RestoreNakamaSecrets(&b.Nakama, prevSettings.GetNakama())
+
 	if err := h.guardStrictSettingsMutation(c, prevSettings, &b.Library, &b.Manga); err != nil {
 		return err
 	}
 	if err := h.guardPrivilegedSettingsMutation(c, prevSettings, &b.MediaPlayer, &b.Torrent); err != nil {
 		return err
+	}
+	if err := validateNakamaHostSettings(&b.Nakama); err != nil {
+		return h.RespondWithError(c, err)
 	}
 
 	// Check settings
@@ -134,14 +164,16 @@ func (h *Handler) HandleGettingStarted(c echo.Context) error {
 			if found {
 				prev.Enabled = true
 				prev.Provider = b.DebridProvider
-				prev.ApiKey = b.DebridApiKey
+				if !models.IsRedactedSecret(b.DebridApiKey) {
+					prev.ApiKey = b.DebridApiKey
+				}
 				prev.IncludeDebridStreamInLibrary = true
 				_, _ = h.App.Database.UpsertDebridSettings(prev)
 			}
 		}()
 	}
 
-	h.App.WSEventManager.SendEvent("settings", settings)
+	h.App.WSEventManager.SendEvent("settings", models.RedactedSettings(settings))
 
 	status := h.NewStatus(c)
 
@@ -177,11 +209,18 @@ func (h *Handler) HandleSaveSettings(c echo.Context) error {
 	}
 
 	prevSettings, _ := h.App.Database.GetSettings()
+	models.RestoreMediaPlayerSecrets(&b.MediaPlayer, prevSettings.GetMediaPlayer())
+	models.RestoreTorrentSecrets(&b.Torrent, prevSettings.GetTorrent())
+	models.RestoreNakamaSecrets(&b.Nakama, prevSettings.GetNakama())
+
 	if err := h.guardStrictSettingsMutation(c, prevSettings, &b.Library, &b.Manga); err != nil {
 		return err
 	}
 	if err := h.guardPrivilegedSettingsMutation(c, prevSettings, &b.MediaPlayer, &b.Torrent); err != nil {
 		return err
+	}
+	if err := validateNakamaHostSettings(&b.Nakama); err != nil {
+		return h.RespondWithError(c, err)
 	}
 
 	b.MediaPlayer.VlcPath = strings.TrimSpace(strings.Trim(b.MediaPlayer.VlcPath, "\""))
@@ -257,7 +296,7 @@ func (h *Handler) HandleSaveSettings(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	h.App.WSEventManager.SendEvent("settings", settings)
+	h.App.WSEventManager.SendEvent("settings", models.RedactedSettings(settings))
 
 	status := h.NewStatus(c)
 
@@ -299,11 +338,16 @@ func (h *Handler) HandlePatchSetting(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
+	models.RestoreSettingsSecrets(nextSettings, prevSettings)
+
 	if err := h.guardStrictSettingsMutation(c, prevSettings, nextSettings.Library, nextSettings.Manga); err != nil {
 		return err
 	}
 	if err := h.guardPrivilegedSettingsMutation(c, prevSettings, nextSettings.MediaPlayer, nextSettings.Torrent); err != nil {
 		return err
+	}
+	if err := validateNakamaHostSettings(nextSettings.Nakama); err != nil {
+		return h.RespondWithError(c, err)
 	}
 
 	nextSettings.BaseModel = models.BaseModel{
@@ -316,7 +360,7 @@ func (h *Handler) HandlePatchSetting(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	h.App.WSEventManager.SendEvent("settings", settings)
+	h.App.WSEventManager.SendEvent("settings", models.RedactedSettings(settings))
 
 	status := h.NewStatus(c)
 
@@ -406,6 +450,8 @@ func (h *Handler) HandleSaveMediaPlayerSettings(c echo.Context) error {
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
+
+	models.RestoreMediaPlayerSecrets(b.MediaPlayer, currSettings.GetMediaPlayer())
 
 	if err := h.guardPrivilegedSettingsMutation(c, currSettings, b.MediaPlayer, nil); err != nil {
 		return err

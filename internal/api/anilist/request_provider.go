@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"seanime/internal/constants"
+	"seanime/internal/security"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -197,8 +199,14 @@ func (p *customRequestProvider) ApiUrl() string {
 	return p.endpoint
 }
 
+// HttpClient returns a client that refuses non-public addresses.
+//
+// The endpoint here is chosen by an extension, not by Seanime, so this is the one
+// AniList client whose destination is attacker-influenced: without the hardened
+// dialer it would reach loopback, the LAN, or a cloud metadata service, with the
+// user's AniList token attached by PrepareRequest.
 func (p *customRequestProvider) HttpClient() *http.Client {
-	return http.DefaultClient
+	return security.HardenedClient(30 * time.Second)
 }
 
 func (p *customRequestProvider) PrepareRequest(_ context.Context, req *http.Request, token string) error {

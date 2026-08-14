@@ -24,6 +24,10 @@ type sessionCacheEntry struct {
 var (
 	serverSessionCache   = make(map[string]sessionCacheEntry)
 	serverSessionCacheMu sync.Mutex
+
+	// Keyed by session id, for media tokens that carry a binding instead of a cookie.
+	serverSessionIDCache   = make(map[uint]sessionCacheEntry)
+	serverSessionIDCacheMu sync.Mutex
 )
 
 // SessionCookieName is the OIDC login session cookie. The __Host- prefix
@@ -38,8 +42,55 @@ func (a *App) SessionCookieName() string {
 // InvalidateServerSessionCache evicts a session from the lookup cache (e.g. on logout).
 func InvalidateServerSessionCache(tokenHash string) {
 	serverSessionCacheMu.Lock()
+	session, ok := serverSessionCache[tokenHash]
 	delete(serverSessionCache, tokenHash)
 	serverSessionCacheMu.Unlock()
+
+	// Media tokens are bound by session id, so a logout has to drop that entry too
+	// or the token outlives the session for the length of the cache window.
+	if ok && session.session != nil {
+		serverSessionIDCacheMu.Lock()
+		delete(serverSessionIDCache, session.session.ID)
+		serverSessionIDCacheMu.Unlock()
+	}
+}
+
+// IsServerSessionLive reports whether the login session with the given id is still
+// valid. Media tokens carry this binding and are checked on every request — a media
+// stream is many requests — so lookups are cached for the same short window as
+// cookie resolution.
+func (a *App) IsServerSessionLive(id uint) bool {
+	if !a.IsOidcMode() || id == 0 {
+		return false
+	}
+
+	now := time.Now()
+
+	serverSessionIDCacheMu.Lock()
+	entry, cached := serverSessionIDCache[id]
+	serverSessionIDCacheMu.Unlock()
+
+	if cached && now.Sub(entry.fetchedAt) < sessionCacheTTL {
+		return entry.session != nil && now.Before(entry.session.ExpiresAt) && !a.sessionPastAbsoluteCap(entry.session, now)
+	}
+
+	session, err := a.Database.GetValidServerSessionByID(id)
+	if err != nil {
+		session = nil
+	} else if a.sessionPastAbsoluteCap(session, now) {
+		session = nil
+	}
+
+	serverSessionIDCacheMu.Lock()
+	serverSessionIDCache[id] = sessionCacheEntry{session: session, fetchedAt: now}
+	for key, cachedEntry := range serverSessionIDCache {
+		if now.Sub(cachedEntry.fetchedAt) >= sessionCacheTTL {
+			delete(serverSessionIDCache, key)
+		}
+	}
+	serverSessionIDCacheMu.Unlock()
+
+	return session != nil
 }
 
 // ResolveServerSession validates the OIDC session cookie on the request.

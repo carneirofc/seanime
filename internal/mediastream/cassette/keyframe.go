@@ -2,8 +2,10 @@ package cassette
 
 import (
 	"bufio"
+	"fmt"
 	"path/filepath"
 	"seanime/internal/mediastream/videofile"
+	"seanime/internal/security"
 	"seanime/internal/util"
 	"strconv"
 	"strings"
@@ -140,6 +142,11 @@ func extractKeyframes(
 	probeBin := ffprobePath
 	if probeBin == "" {
 		probeBin = "ffprobe"
+	}
+
+	probeBin, err := security.ValidateExecutablePath(probeBin)
+	if err != nil {
+		return fmt.Errorf("cassette: refusing to run ffprobe: %w", err)
 	}
 
 	cmd := util.NewCmd(

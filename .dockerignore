@@ -1,0 +1,23 @@
+# Keep the build context small and avoid leaking local state into images.
+.git
+.github
+**/node_modules
+seanime-web/out
+web
+dist
+*.log
+*.db
+*.db-shm
+*.db-wal
+
+# Local data / config that must never be baked into an image
+config.toml
+config.example.toml
+seanime_data_dir
+data
+certs
+
+# Editor / OS noise
+.idea
+.vscode
+.DS_Store

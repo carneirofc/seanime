@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"seanime/internal/extension"
+	"seanime/internal/security"
 	"testing"
 
 	"github.com/samber/mo"
@@ -30,7 +31,19 @@ func newMockAppContext(paths map[string][]string) *mockAppContext {
 	return ctx
 }
 
+// grantCapabilities installs a privileged capability set for the duration of a
+// test. The manifest allowlists exercised below only take effect once the operator
+// has granted the matching capability, since a manifest cannot authorize itself.
+func grantCapabilities(t *testing.T, capabilities ...string) {
+	t.Helper()
+	security.SetCapabilities(capabilities, true)
+	t.Cleanup(func() {
+		security.SetCapabilities(nil, true)
+	})
+}
+
 func TestIsAllowedPath(t *testing.T) {
+	grantCapabilities(t, security.CapabilityFilesystem)
 	// Create mock context with predefined paths
 	mockCtx := newMockAppContext(map[string][]string{
 		"SEANIME_ANIME_LIBRARY": {"/anime/lib1", "/anime/lib2"},
@@ -183,6 +196,10 @@ func TestIsAllowedPath(t *testing.T) {
 }
 
 func TestIsAllowedCommand(t *testing.T) {
+	// Some scopes validate a $PATH argument, which routes through the write-path
+	// check, so both capabilities are needed to exercise the table.
+	grantCapabilities(t, security.CapabilityExec, security.CapabilityFilesystem)
+
 	// Create mock context
 	mockCtx := newMockAppContext(map[string][]string{
 		"HOME":                  {"/home/user"},
@@ -414,6 +431,8 @@ func TestIsAllowedCommand(t *testing.T) {
 }
 
 func TestIsAllowedCommandPathValidatorUsesReadPaths(t *testing.T) {
+	grantCapabilities(t, security.CapabilityExec)
+
 	tempDir := t.TempDir()
 	videoPath := filepath.Join(tempDir, "episode-01.mkv")
 	err := os.WriteFile(videoPath, []byte("test"), 0644)

@@ -1,0 +1,27 @@
+# Minimal Caddy reverse proxy for Seanime.
+# Caddy obtains and renews TLS certificates automatically (ACME) for the domain
+# below and proxies to the Seanime container over the internal Docker network.
+#
+# Replace seanime.example.com with your domain. With docker-compose.example.yml,
+# "seanime" resolves to the app container and 43211 is its internal port.
+
+seanime.example.com {
+	encode zstd gzip
+
+	reverse_proxy seanime:43211 {
+		# Preserve the client's identity so Seanime's trustedproxies logic and
+		# rate limiting see the real address. Caddy sets X-Forwarded-For/-Proto
+		# and Host by default; these make the intent explicit.
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+
+		# Media streaming and transcoding are long-lived; do not impose a short
+		# response timeout on the upstream.
+		flush_interval -1
+	}
+
+	# Allow large uploads (e.g. local assets) if you use them; tune to taste.
+	request_body {
+		max_size 100MB
+	}
+}

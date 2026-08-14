@@ -1,0 +1,81 @@
+# Reverse-proxy-fronted Seanime deployment.
+#
+# Topology: the reverse proxy (Caddy here) terminates TLS on the public network
+# and reaches Seanime over a private, internal-only Docker network. The Seanime
+# container's port is NEVER published to the host — only the proxy is reachable
+# from outside.
+#
+#   1. cp config.example.toml ./data/config.toml   # then edit [server.oidc] etc.
+#   2. export SEANIME_OIDC_CLIENT_SECRET=...        # or use an .env / secret
+#   3. docker compose -f docker-compose.example.yml up -d
+#
+# Copy to docker-compose.yml and adjust to your environment before use.
+
+services:
+  seanime:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    # image: ghcr.io/carneirofc/seanime:latest   # or pull a published image
+    restart: unless-stopped
+    # No `ports:` mapping — the app is only reachable via the internal network.
+    expose:
+      - "43211"
+    environment:
+      # Supply the OIDC client secret out-of-band; never commit it to config.toml.
+      SEANIME_OIDC_CLIENT_SECRET: ${SEANIME_OIDC_CLIENT_SECRET:?set SEANIME_OIDC_CLIENT_SECRET}
+      SEANIME_DATA_DIR: /data
+      SEANIME_SERVER_HOST: 0.0.0.0
+      SEANIME_SERVER_PORT: "43211"
+    volumes:
+      # Persistent state: db, logs, cache, extensions, assets, and config.toml.
+      # The container runs as uid 10001, so the host dir must be writable by it:
+      #   mkdir -p ./data && sudo chown -R 10001:10001 ./data
+      # (A named volume is chowned automatically; a bind mount is not.)
+      - ./data:/data
+      # Your media library (read-only is safest if the server never writes to it).
+      - /srv/media:/media:ro
+    networks:
+      # Internal-only: the app is reachable solely from the proxy, never directly.
+      - internal
+    security_opt:
+      - no-new-privileges:true
+    # The data dir must stay writable; everything else can be read-only.
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:43211/api/v1/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # TLS-terminating reverse proxy. Replace with Traefik/nginx if preferred.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - seanime
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./example.Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      # Bridges the public edge and the app's internal-only network.
+      - edge
+      - internal
+
+networks:
+  # Public-facing network for the proxy only.
+  edge:
+  # Internal-only network between the proxy and the app (no external routing).
+  internal:
+    internal: true
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -16,7 +16,6 @@ import (
 	hibikemanga "seanime/internal/extension/hibike/manga"
 	"seanime/internal/testutil"
 
-	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,9 +63,11 @@ func TestQueueAddsItemToDatabase(t *testing.T) {
 	}
 
 	err := downloader.AddToQueue(DownloadOptions{
-		DownloadID: id,
-		Pages:      pages,
-		StartNow:   false,
+		DownloadID:   id,
+		Pages:        pages,
+		MediaTitle:   "Test Manga",
+		ChapterTitle: "Chapter 1 - Beginnings",
+		StartNow:     false,
 	})
 	require.NoError(t, err)
 
@@ -77,11 +78,13 @@ func TestQueueAddsItemToDatabase(t *testing.T) {
 	require.Equal(t, id.MediaId, next.MediaID)
 	require.Equal(t, id.ChapterId, next.ChapterID)
 	require.Equal(t, id.ChapterNumber, next.ChapterNumber)
+	require.Equal(t, "Test Manga", next.MediaTitle)
+	require.Equal(t, "Chapter 1 - Beginnings", next.ChapterTitle)
 	require.Equal(t, string(QueueStatusNotStarted), next.Status)
 	require.NotEmpty(t, next.PageData)
 }
 
-func TestDownloadChapterImagesWritesRegistry(t *testing.T) {
+func TestDownloadChapterImagesWritesCBZ(t *testing.T) {
 	downloader, database, downloadDir := newTestDownloader(t)
 
 	imageData := newTestPNG(t)
@@ -103,37 +106,43 @@ func TestDownloadChapterImagesWritesRegistry(t *testing.T) {
 	}
 
 	err := downloader.AddToQueue(DownloadOptions{
-		DownloadID: id,
-		Pages:      pages,
-		StartNow:   false,
+		DownloadID:   id,
+		Pages:        pages,
+		MediaTitle:   "Test Manga",
+		ChapterTitle: "Chapter 1",
+		StartNow:     false,
 	})
 	require.NoError(t, err)
 
 	require.NoError(t, database.UpdateChapterDownloadQueueItemStatus(id.Provider, id.MediaId, id.ChapterId, string(QueueStatusDownloading)))
 	downloader.queue.current = &QueueInfo{
-		DownloadID: id,
-		Pages:      pages,
-		Status:     QueueStatusDownloading,
+		DownloadID:   id,
+		Pages:        pages,
+		Status:       QueueStatusDownloading,
+		MediaTitle:   "Test Manga",
+		ChapterTitle: "Chapter 1",
 	}
 
 	err = downloader.downloadChapterImages(downloader.queue.current)
 	require.NoError(t, err)
 
-	chapterDir := filepath.Join(downloadDir, FormatChapterDirName(id.Provider, id.MediaId, id.ChapterId, id.ChapterNumber))
-	registryPath := filepath.Join(chapterDir, "registry.json")
-	registryBytes, err := os.ReadFile(registryPath)
+	cbzPath := filepath.Join(downloadDir, FormatSeriesDirName(id.Provider, id.MediaId), FormatChapterFileName(id.ChapterId, id.ChapterNumber))
+	entries, info, err := ReadCBZ(cbzPath)
 	require.NoError(t, err)
+	require.Len(t, entries, 1)
+	require.Equal(t, "001.png", entries[0].Name)
+	require.Equal(t, 1, entries[0].Width)
+	require.Equal(t, 1, entries[0].Height)
 
-	var registry Registry
-	require.NoError(t, json.Unmarshal(registryBytes, &registry))
-	require.Len(t, registry, 1)
-	pageInfo, ok := registry[0]
-	require.True(t, ok)
-	require.Equal(t, "01.png", pageInfo.Filename)
-	require.Equal(t, server.URL+"/page.png", pageInfo.OriginalURL)
+	require.NotNil(t, info)
+	require.Equal(t, "Test Manga", info.Series)
+	require.Equal(t, "Chapter 1", info.Title)
+	require.Equal(t, id.ChapterNumber, info.Number)
+	require.Equal(t, 1, info.PageCount)
 
-	_, err = os.Stat(filepath.Join(chapterDir, pageInfo.Filename))
-	require.NoError(t, err)
+	// Staging directory must be gone
+	_, err = os.Stat(downloader.getChapterStagingDir(id))
+	require.True(t, os.IsNotExist(err))
 
 	queueItems, err := database.GetChapterDownloadQueue()
 	require.NoError(t, err)

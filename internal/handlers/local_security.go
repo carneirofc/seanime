@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/netip"
 	"net/url"
@@ -14,19 +15,44 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// These helpers add baseline security for unauthenticated servers
-// If the server password is not set, some actions like mutating certain settings will be denied unless the request comes from a trusted local origin (like localhost).
-// This helps prevent some CSRF attacks from websites when running in passwordless mode
+// Request-boundary helpers.
+//
+// Two kinds of control live in this file, and the distinction matters:
+//
+//   - Deny-only controls (isRequestPermitted, the CORS predicates, the cross-site
+//     checks). These may REJECT a request — that is how a passwordless install stays
+//     off the internet, and how a session cookie is kept from being ridden by a
+//     random website. They never grant anything.
+//
+//   - Capability checks (the guard* functions). These authorize privileged actions:
+//     spawning processes, walking the filesystem, loading third-party code, replacing
+//     the binary. They consult operator configuration and nothing else.
+//
+// What used to sit here was a third kind: request provenance as an authorization
+// grant — "your source IP is private and your Origin header says localhost, so you
+// may execute code." Every input to that is forgeable by anyone who can open a
+// socket to the server, and inside a container orchestrator every peer is on a
+// private address to begin with. It is gone. No request proves trustworthiness.
 
-var errPrivilegedExecutionDenied = errors.New("this action requires either a server password or a trusted local origin")
-
-var errStrictModeDenied = errors.New("this action is disabled when secure mode is strict")
-
-var errStrictLocalOnlyDenied = errors.New("this action requires a trusted local origin when secure mode is strict")
-
-var errStrictFilesystemPathDenied = errors.New("this path is not allowed when secure mode is strict")
+var errStrictFilesystemPathDenied = errors.New("this path is outside the configured library and download directories")
 
 var errGuardResponseWritten = errors.New("guard response written")
+
+// errCapabilityDenied explains which capability is missing and where to grant it,
+// so an operator hitting a 403 does not have to guess.
+func errCapabilityDenied(capability string) error {
+	return fmt.Errorf("this action requires the %q capability; add it to server.capabilities in config.toml", capability)
+}
+
+// requireCapability denies a privileged action unless the operator granted the
+// capability. It takes no request-derived input on purpose.
+func (h *Handler) requireCapability(c echo.Context, capability string) error {
+	if security.Allows(capability) {
+		return nil
+	}
+
+	return respondWithAbort(c, http.StatusForbidden, errCapabilityDenied(capability))
+}
 
 func respondWithAbort(c echo.Context, code int, err error) error {
 	if c == nil {
@@ -50,8 +76,12 @@ func (h *Handler) hasServerAuth() bool {
 	return h.App.IsOidcMode() || h.App.Config.Server.Password != ""
 }
 
-func isStrictModeSensitive(req *http.Request, hasServerAuth bool) bool {
-	return !hasServerAuth && security.IsStrict() && !isRequestFromTrustedLocal(req)
+// isStrictModeSensitive reports whether /status must answer with the restricted
+// payload. It used to exempt callers that looked local; since that could be forged,
+// the exemption is gone and a passwordless strict-mode server now redacts for
+// everyone.
+func isStrictModeSensitive(hasServerAuth bool) bool {
+	return !hasServerAuth && security.IsStrict()
 }
 
 func reqHasOriginMetadata(req *http.Request) bool {
@@ -297,106 +327,51 @@ func (h *Handler) trustedLocalRequestMiddleware(next echo.HandlerFunc) echo.Hand
 			return next(c)
 		}
 
-		return h.RespondWithStatusError(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+		return h.RespondWithStatusError(c, http.StatusForbidden, errRequestBoundaryDenied)
 	}
 }
 
-// isTrustedRequest determines whether the request is from a trusted source based on the server auth gate, security mode, or request origin.
-func isTrustedRequest(req *http.Request, hasServerAuth bool) bool {
-	if hasServerAuth || security.IsLax() {
-		return true
-	}
-	if security.IsHardened() {
-		return isRequestFromTrustedHardenedLocal(req)
-	}
+var errRequestBoundaryDenied = errors.New("this server does not accept requests from this origin")
 
-	return isRequestFromTrustedOrigin(req)
-}
-
-// guardPrivilegedSettingsMutation checks and denies unauthorized privileged settings modifications, returning an error if access is forbidden.
+// guardPrivilegedSettingsMutation denies changes to settings that decide which
+// executable gets spawned — player and torrent-client binaries and their argument
+// strings. Changing those is choosing what code runs on the host, so it needs the
+// exec capability even though it arrives as an ordinary settings save.
 func (h *Handler) guardPrivilegedSettingsMutation(c echo.Context, prev *models.Settings, nextMedia *models.MediaPlayerSettings, nextTorrent *models.TorrentSettings) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if canMutatePrivilegedSettings(c.Request(), h.hasServerAuth(), prev, nextMedia, nextTorrent) {
+	if !privilegedSettingsChanged(prev, nextMedia, nextTorrent) {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return h.requireCapability(c, security.CapabilityExec)
 }
 
-// guardPrivilegedExtensionManagement checks if a request meets the criteria for privileged extension management access.
+// guardPrivilegedExtensionManagement denies installing, updating or reloading
+// third-party extensions. Extension code runs in-process with whatever the manifest
+// declares, so installation is equivalent to code execution.
 func (h *Handler) guardPrivilegedExtensionManagement(c echo.Context) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if security.IsStrict() && !isRequestFromTrustedLocal(c.Request()) {
-		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
-	}
-
-	if canUsePrivilegedExtensionManagement(c.Request(), h.hasServerAuth()) {
-		return nil
-	}
-
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return h.requireCapability(c, security.CapabilityExtensions)
 }
 
-// guardPrivilegedMediastreamSettingsMutation ensures that mutations to privileged mediastream settings are only allowed by trusted or authorized sources.
+// guardPrivilegedMediastreamSettingsMutation denies pointing the transcoder at a
+// different ffmpeg/ffprobe binary.
 func (h *Handler) guardPrivilegedMediastreamSettingsMutation(c echo.Context, prev *models.MediastreamSettings, next *models.MediastreamSettings) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if canMutatePrivilegedMediastreamSettings(c.Request(), h.hasServerAuth(), prev, next) {
+	if !privilegedMediastreamSettingsChanged(prev, next) {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
-}
-
-// canMutatePrivilegedSettings determines if privileged settings modifications can proceed based on request origin, server password, and settings changes.
-func canMutatePrivilegedSettings(req *http.Request, hasServerAuth bool, prev *models.Settings, nextMedia *models.MediaPlayerSettings, nextTorrent *models.TorrentSettings) bool {
-	if security.IsStrict() && !isRequestFromTrustedLocal(req) && privilegedSettingsChanged(prev, nextMedia, nextTorrent) {
-		return false
-	}
-
-	if isTrustedRequest(req, hasServerAuth) {
-		return true
-	}
-
-	if !privilegedSettingsChanged(prev, nextMedia, nextTorrent) {
-		return true
-	}
-
-	return false
-}
-
-// canMutatePrivilegedMediastreamSettings determines if privileged mediastream settings can be modified based on request trust and setting changes.
-func canMutatePrivilegedMediastreamSettings(req *http.Request, hasServerAuth bool, prev *models.MediastreamSettings, next *models.MediastreamSettings) bool {
-	if security.IsStrict() && !isRequestFromTrustedLocal(req) && privilegedMediastreamSettingsChanged(prev, next) {
-		return false
-	}
-
-	if isTrustedRequest(req, hasServerAuth) {
-		return true
-	}
-
-	if !privilegedMediastreamSettingsChanged(prev, next) {
-		return true
-	}
-
-	return false
-}
-
-// canUsePrivilegedExtensionManagement determines if the request can access privileged extension management based on security mode, origin, and server password.
-func canUsePrivilegedExtensionManagement(req *http.Request, hasServerAuth bool) bool {
-	if security.IsStrict() && !isRequestFromTrustedLocal(req) {
-		return false
-	}
-
-	return isTrustedRequest(req, hasServerAuth)
+	return h.requireCapability(c, security.CapabilityExec)
 }
 
 func canConsumeMedia(req *http.Request, hasServerAuth bool, accessAllowlist []string) bool {
@@ -412,67 +387,75 @@ func (h *Handler) guardMediaConsumption(c echo.Context) error {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return respondWithAbort(c, http.StatusForbidden, errRequestBoundaryDenied)
 }
 
-// guardPrivilegedMediaPlayer restricts access to privileged media player actions based on security settings and request origin validation.
+// guardPrivilegedMediaPlayer denies launching an external player configured with a
+// custom binary or custom argument string. Spawning the stock player with
+// server-built arguments stays ungated; choosing the binary or the arguments over
+// HTTP is choosing what runs on the host.
 func (h *Handler) guardPrivilegedMediaPlayer(c echo.Context, settings *models.Settings) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedMediaPlayer(settings) {
+	if !isPrivilegedMediaPlayer(settings) {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return h.requireCapability(c, security.CapabilityExec)
 }
 
-// guardPrivilegedTorrentClient ensures that only trusted or authorized requests can execute privileged torrent client actions.
+// guardPrivilegedTorrentClient denies launching a torrent client binary that is not
+// at its stock location.
 func (h *Handler) guardPrivilegedTorrentClient(c echo.Context, settings *models.Settings) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if security.IsStrict() && usesExternalTorrentClient(settings) && !isRequestFromTrustedLocal(c.Request()) {
-		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
-	}
-
-	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedTorrentClient(settings) {
+	if !isPrivilegedTorrentClient(settings) {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return h.requireCapability(c, security.CapabilityExec)
 }
 
-// guardPrivilegedMediastream ensures that privileged mediastream actions are restricted to trusted requests or server password authorization.
+// guardPrivilegedMediastream denies transcoding through a custom ffmpeg/ffprobe
+// binary. Transcoding through the validated system binary is the normal path and is
+// not gated — see validateMediaExecutablePath for what "validated" means.
 func (h *Handler) guardPrivilegedMediastream(c echo.Context, settings *models.MediastreamSettings) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if isTrustedRequest(c.Request(), h.hasServerAuth()) || !isPrivilegedMediastream(settings) {
+	if !isPrivilegedMediastream(settings) {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return h.requireCapability(c, security.CapabilityExec)
 }
 
-// guardPrivilegedLocalExecution enforces security checks for privileged actions, ensuring the request originates from a trusted or authorized source.
+// guardPrivilegedLocalExecution denies actions whose whole purpose is to spawn a
+// process on the host: opening a directory in the desktop file manager, starting a
+// torrent client, launching a player.
 func (h *Handler) guardPrivilegedLocalExecution(c echo.Context) error {
 	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	if security.IsStrict() && !isRequestFromTrustedLocal(c.Request()) {
-		return respondWithAbort(c, http.StatusForbidden, errStrictLocalOnlyDenied)
-	}
+	return h.requireCapability(c, security.CapabilityExec)
+}
 
-	if isTrustedRequest(c.Request(), h.hasServerAuth()) {
+// guardSelfUpdate denies replacing the running binary. It is separate from
+// CapabilityExec because an operator who wants remote playback control has no reason
+// to also hand over the ability to swap out the server itself — and in a container
+// the update is discarded on restart anyway, so the action is all risk and no value.
+func (h *Handler) guardSelfUpdate(c echo.Context) error {
+	if h == nil || h.App == nil || h.App.Config == nil {
 		return nil
 	}
 
-	return respondWithAbort(c, http.StatusForbidden, errPrivilegedExecutionDenied)
+	return h.requireCapability(c, security.CapabilitySelfUpdate)
 }
 
 // getContextClientId retrieves the client ID from the echo.Context by checking a header or a cookie, returning an empty string if not found.
@@ -642,36 +625,6 @@ func isRequestFromTrustedOrigin(req *http.Request) bool {
 	}
 
 	return isReqSameLiteralHost(req, parsed)
-}
-
-// note: this rejects requests from hosted instances
-func isRequestFromTrustedLocal(req *http.Request) bool {
-	if req == nil {
-		return false
-	}
-
-	view := createRequestBoundaryView(req)
-	if !isTrustedLocalClient(view) {
-		return false
-	}
-
-	if hasForwardedHeaders(req) && !view.trustedProxy {
-		return false
-	}
-
-	if !isTrustedRequestHost(req) {
-		return false
-	}
-
-	return isRequestFromTrustedOrigin(req)
-}
-
-func isTrustedLocalClient(view requestBoundaryView) bool {
-	if !view.clientIP.IsValid() {
-		return false
-	}
-
-	return view.clientIP.IsLoopback() || view.clientIP.IsPrivate()
 }
 
 func hasForwardedHeaders(req *http.Request) bool {

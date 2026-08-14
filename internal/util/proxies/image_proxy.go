@@ -20,8 +20,11 @@ const imageRequestTimeout = 60 * time.Second
 type ImageProxy struct{}
 
 func (ip *ImageProxy) GetImage(url string, headers map[string]string) ([]byte, string, error) {
+	// The URL was pre-checked by the caller, but the address it resolves to at
+	// connect time — and after any redirect — is only enforceable here.
 	request := req.C().
 		SetTimeout(imageRequestTimeout).
+		SetDial(security.HardenedDialContext(30*time.Second, 30*time.Second)).
 		DisableAutoReadResponse().
 		NewRequest()
 

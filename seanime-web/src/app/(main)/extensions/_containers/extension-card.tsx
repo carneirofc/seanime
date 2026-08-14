@@ -227,7 +227,9 @@ export function ExtensionCard(props: ExtensionCardProps) {
                     </Badge>}
                     {!!extension.version && updateData && <ExtensionCodeModal extension={extension} diff={updateData?.payload ?? ""} readOnly>
                         <Badge className="cursor-pointer rounded-md tracking-wide" intent={!!updateData ? "success" : "unstyled"}>
-                            {extension.version}{!!updateData ? " → " + updateData.version : ""}
+                            {extension.version}{updateData.version !== extension.version
+                            ? " → " + updateData.version
+                            : " → new code"}
                         </Badge>
                     </ExtensionCodeModal>}
                     {!isBuiltin && <Badge className="rounded-md" intent="unstyled">
@@ -414,7 +416,11 @@ export function ExtensionSettings(props: ExtensionSettingsProps) {
                     {((!!fetchedExtensionData && fetchedExtensionData?.version !== extension.version) || !!updateData) && (
                         <AppLayoutStack>
                             <p className="">
-                                Update available: <span className="font-bold text-white">{fetchedExtensionData?.version || updateData?.version}</span>
+                                Update available: <span className="font-bold text-white">
+                                    {(updateData?.payloadChanged && updateData?.version === extension.version)
+                                        ? "the code changed upstream"
+                                        : (fetchedExtensionData?.version || updateData?.version)}
+                                </span>
                             </p>
                             <div className="flex gap-2">
                                 <ExtensionCodeModal extension={extension} diff={updateData?.payload ?? ""} readOnly>

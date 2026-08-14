@@ -4637,6 +4637,119 @@
     }
   },
   {
+    "name": "HandleListExtensionGitTokens",
+    "trimmedName": "ListExtensionGitTokens",
+    "comments": [
+      "HandleListExtensionGitTokens",
+      "",
+      "\t@summary returns the configured git repository tokens with masked values.",
+      "\t@route /api/v1/extensions/git-tokens [GET]",
+      "\t@returns []extension_repo.GitTokenInfo",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "returns the configured git repository tokens with masked values.",
+      "descriptions": [],
+      "endpoint": "/api/v1/extensions/git-tokens",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "[]extension_repo.GitTokenInfo",
+      "returnGoType": "extension_repo.GitTokenInfo",
+      "returnTypescriptType": "Array\u003cExtensionRepo_GitTokenInfo\u003e"
+    }
+  },
+  {
+    "name": "HandleSetExtensionGitToken",
+    "trimmedName": "SetExtensionGitToken",
+    "comments": [
+      "HandleSetExtensionGitToken",
+      "",
+      "\t@summary stores a git access token for a repository pattern, enabling private repositories as extension sources.",
+      "\t@desc The repository can be a full URL, \"host/owner/repo\", \"host/owner\" or a bare host.",
+      "\t@route /api/v1/extensions/git-tokens [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "stores a git access token for a repository pattern, enabling private repositories as extension sources.",
+      "descriptions": [
+        "The repository can be a full URL, \"host/owner/repo\", \"host/owner\" or a bare host."
+      ],
+      "endpoint": "/api/v1/extensions/git-tokens",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Token",
+          "jsonName": "token",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleRemoveExtensionGitToken",
+    "trimmedName": "RemoveExtensionGitToken",
+    "comments": [
+      "HandleRemoveExtensionGitToken",
+      "",
+      "\t@summary removes the git access token stored for a repository pattern.",
+      "\t@route /api/v1/extensions/git-tokens/remove [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "removes the git access token stored for a repository pattern.",
+      "descriptions": [],
+      "endpoint": "/api/v1/extensions/git-tokens/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Repository",
+          "jsonName": "repository",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleFileSelector",
     "trimmedName": "FileSelector",
     "comments": [
@@ -5360,12 +5473,80 @@
     }
   },
   {
+    "name": "errCapabilityDenied",
+    "trimmedName": "errCapabilityDenied",
+    "comments": [
+      "errCapabilityDenied explains which capability is missing and where to grant it,",
+      "so an operator hitting a 403 does not have to guess.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security.go",
+    "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "requireCapability",
+    "trimmedName": "requireCapability",
+    "comments": [
+      "requireCapability denies a privileged action unless the operator granted the",
+      "capability. It takes no request-derived input on purpose.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security.go",
+    "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "hasServerAuth",
     "trimmedName": "hasServerAuth",
     "comments": [
       "hasServerAuth reports whether the server has an authentication gate (OIDC",
       "login or a server password). Most passwordless request-boundary heuristics",
       "are skipped when an auth gate exists, since the auth middleware enforces it.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security.go",
+    "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "isStrictModeSensitive",
+    "trimmedName": "isStrictModeSensitive",
+    "comments": [
+      "isStrictModeSensitive reports whether /status must answer with the restricted",
+      "payload. It used to exempt callers that looked local; since that could be forged,",
+      "the exemption is gone and a passwordless strict-mode server now redacts for",
+      "everyone.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5472,31 +5653,13 @@
     }
   },
   {
-    "name": "isTrustedRequest",
-    "trimmedName": "isTrustedRequest",
-    "comments": [
-      "isTrustedRequest determines whether the request is from a trusted source based on the server auth gate, security mode, or request origin.",
-      ""
-    ],
-    "filepath": "internal/handlers/local_security.go",
-    "filename": "local_security.go",
-    "api": {
-      "summary": "",
-      "descriptions": [],
-      "endpoint": "",
-      "methods": null,
-      "params": [],
-      "bodyFields": [],
-      "returns": "bool",
-      "returnGoType": "bool",
-      "returnTypescriptType": "boolean"
-    }
-  },
-  {
     "name": "guardPrivilegedSettingsMutation",
     "trimmedName": "guardPrivilegedSettingsMutation",
     "comments": [
-      "guardPrivilegedSettingsMutation checks and denies unauthorized privileged settings modifications, returning an error if access is forbidden.",
+      "guardPrivilegedSettingsMutation denies changes to settings that decide which",
+      "executable gets spawned — player and torrent-client binaries and their argument",
+      "strings. Changing those is choosing what code runs on the host, so it needs the",
+      "exec capability even though it arrives as an ordinary settings save.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5517,7 +5680,9 @@
     "name": "guardPrivilegedExtensionManagement",
     "trimmedName": "guardPrivilegedExtensionManagement",
     "comments": [
-      "guardPrivilegedExtensionManagement checks if a request meets the criteria for privileged extension management access.",
+      "guardPrivilegedExtensionManagement denies installing, updating or reloading",
+      "third-party extensions. Extension code runs in-process with whatever the manifest",
+      "declares, so installation is equivalent to code execution.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5538,70 +5703,8 @@
     "name": "guardPrivilegedMediastreamSettingsMutation",
     "trimmedName": "guardPrivilegedMediastreamSettingsMutation",
     "comments": [
-      "guardPrivilegedMediastreamSettingsMutation ensures that mutations to privileged mediastream settings are only allowed by trusted or authorized sources.",
-      ""
-    ],
-    "filepath": "internal/handlers/local_security.go",
-    "filename": "local_security.go",
-    "api": {
-      "summary": "",
-      "descriptions": [],
-      "endpoint": "",
-      "methods": null,
-      "params": [],
-      "bodyFields": [],
-      "returns": "bool",
-      "returnGoType": "bool",
-      "returnTypescriptType": "boolean"
-    }
-  },
-  {
-    "name": "canMutatePrivilegedSettings",
-    "trimmedName": "canMutatePrivilegedSettings",
-    "comments": [
-      "canMutatePrivilegedSettings determines if privileged settings modifications can proceed based on request origin, server password, and settings changes.",
-      ""
-    ],
-    "filepath": "internal/handlers/local_security.go",
-    "filename": "local_security.go",
-    "api": {
-      "summary": "",
-      "descriptions": [],
-      "endpoint": "",
-      "methods": null,
-      "params": [],
-      "bodyFields": [],
-      "returns": "bool",
-      "returnGoType": "bool",
-      "returnTypescriptType": "boolean"
-    }
-  },
-  {
-    "name": "canMutatePrivilegedMediastreamSettings",
-    "trimmedName": "canMutatePrivilegedMediastreamSettings",
-    "comments": [
-      "canMutatePrivilegedMediastreamSettings determines if privileged mediastream settings can be modified based on request trust and setting changes.",
-      ""
-    ],
-    "filepath": "internal/handlers/local_security.go",
-    "filename": "local_security.go",
-    "api": {
-      "summary": "",
-      "descriptions": [],
-      "endpoint": "",
-      "methods": null,
-      "params": [],
-      "bodyFields": [],
-      "returns": "bool",
-      "returnGoType": "bool",
-      "returnTypescriptType": "boolean"
-    }
-  },
-  {
-    "name": "canUsePrivilegedExtensionManagement",
-    "trimmedName": "canUsePrivilegedExtensionManagement",
-    "comments": [
-      "canUsePrivilegedExtensionManagement determines if the request can access privileged extension management based on security mode, origin, and server password.",
+      "guardPrivilegedMediastreamSettingsMutation denies pointing the transcoder at a",
+      "different ffmpeg/ffprobe binary.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5622,7 +5725,10 @@
     "name": "guardPrivilegedMediaPlayer",
     "trimmedName": "guardPrivilegedMediaPlayer",
     "comments": [
-      "guardPrivilegedMediaPlayer restricts access to privileged media player actions based on security settings and request origin validation.",
+      "guardPrivilegedMediaPlayer denies launching an external player configured with a",
+      "custom binary or custom argument string. Spawning the stock player with",
+      "server-built arguments stays ungated; choosing the binary or the arguments over",
+      "HTTP is choosing what runs on the host.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5643,7 +5749,8 @@
     "name": "guardPrivilegedTorrentClient",
     "trimmedName": "guardPrivilegedTorrentClient",
     "comments": [
-      "guardPrivilegedTorrentClient ensures that only trusted or authorized requests can execute privileged torrent client actions.",
+      "guardPrivilegedTorrentClient denies launching a torrent client binary that is not",
+      "at its stock location.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5664,7 +5771,9 @@
     "name": "guardPrivilegedMediastream",
     "trimmedName": "guardPrivilegedMediastream",
     "comments": [
-      "guardPrivilegedMediastream ensures that privileged mediastream actions are restricted to trusted requests or server password authorization.",
+      "guardPrivilegedMediastream denies transcoding through a custom ffmpeg/ffprobe",
+      "binary. Transcoding through the validated system binary is the normal path and is",
+      "not gated — see validateMediaExecutablePath for what \"validated\" means.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5685,7 +5794,33 @@
     "name": "guardPrivilegedLocalExecution",
     "trimmedName": "guardPrivilegedLocalExecution",
     "comments": [
-      "guardPrivilegedLocalExecution enforces security checks for privileged actions, ensuring the request originates from a trusted or authorized source.",
+      "guardPrivilegedLocalExecution denies actions whose whole purpose is to spawn a",
+      "process on the host: opening a directory in the desktop file manager, starting a",
+      "torrent client, launching a player.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security.go",
+    "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "guardSelfUpdate",
+    "trimmedName": "guardSelfUpdate",
+    "comments": [
+      "guardSelfUpdate denies replacing the running binary. It is separate from",
+      "CapabilityExec because an operator who wants remote playback control has no reason",
+      "to also hand over the ability to swap out the server itself — and in a container",
+      "the update is discarded on restart anyway, so the action is all risk and no value.",
       ""
     ],
     "filepath": "internal/handlers/local_security.go",
@@ -5766,27 +5901,6 @@
     }
   },
   {
-    "name": "isRequestFromTrustedLocal",
-    "trimmedName": "isRequestFromTrustedLocal",
-    "comments": [
-      "note: this rejects requests from hosted instances",
-      ""
-    ],
-    "filepath": "internal/handlers/local_security.go",
-    "filename": "local_security.go",
-    "api": {
-      "summary": "",
-      "descriptions": [],
-      "endpoint": "",
-      "methods": null,
-      "params": [],
-      "bodyFields": [],
-      "returns": "bool",
-      "returnGoType": "bool",
-      "returnTypescriptType": "boolean"
-    }
-  },
-  {
     "name": "privilegedMediastreamSettingsChanged",
     "trimmedName": "privilegedMediastreamSettingsChanged",
     "comments": [
@@ -5816,6 +5930,51 @@
     ],
     "filepath": "internal/handlers/local_security.go",
     "filename": "local_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "withCapabilities",
+    "trimmedName": "withCapabilities",
+    "comments": [
+      "withCapabilities installs a capability set for the duration of a test.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security_test.go",
+    "filename": "local_security_test.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "forgedLocalRequest",
+    "trimmedName": "forgedLocalRequest",
+    "comments": [
+      "forgedLocalRequest is the shape an attacker uses to look like a local admin: a",
+      "private source address (every in-cluster peer has one), a loopback Host, a",
+      "matching Origin, and no forwarding headers. Every input here is chosen by the",
+      "caller, which is exactly why none of them may grant anything.",
+      ""
+    ],
+    "filepath": "internal/handlers/local_security_test.go",
+    "filename": "local_security_test.go",
     "api": {
       "summary": "",
       "descriptions": [],
@@ -7799,6 +7958,112 @@
     }
   },
   {
+    "name": "resolveMangaTitleForFilename",
+    "trimmedName": "resolveMangaTitleForFilename",
+    "comments": [
+      "resolveMangaTitleForFilename returns the media's preferred title for use in",
+      "download filenames, or an empty string if the manga is not in the collection.",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "sanitizeArchiveFilename",
+    "trimmedName": "sanitizeArchiveFilename",
+    "comments": [
+      "sanitizeArchiveFilename strips characters that are invalid in filenames on",
+      "common filesystems (and quotes, which would break the Content-Disposition header).",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleDownloadMangaChapterArchive",
+    "trimmedName": "DownloadMangaChapterArchive",
+    "comments": [
+      "HandleDownloadMangaChapterArchive",
+      "",
+      "\t@summary downloads a chapter's CBZ archive file.",
+      "\t@desc This serves the chapter's CBZ archive as a file attachment.",
+      "\t@desc Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly.",
+      "\t@route /api/v1/manga/downloads/chapter-archive [GET]",
+      "\t@returns nil",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "downloads a chapter's CBZ archive file.",
+      "descriptions": [
+        "This serves the chapter's CBZ archive as a file attachment.",
+        "Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly."
+      ],
+      "endpoint": "/api/v1/manga/downloads/chapter-archive",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "nil",
+      "returnGoType": "nil",
+      "returnTypescriptType": "null"
+    }
+  },
+  {
+    "name": "HandleDownloadMangaMediaArchive",
+    "trimmedName": "DownloadMangaMediaArchive",
+    "comments": [
+      "HandleDownloadMangaMediaArchive",
+      "",
+      "\t@summary downloads all downloaded chapters of a media as a zip of CBZ files.",
+      "\t@desc This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media.",
+      "\t@route /api/v1/manga/downloads/media-archive [GET]",
+      "\t@returns nil",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_download.go",
+    "filename": "manga_download.go",
+    "api": {
+      "summary": "downloads all downloaded chapters of a media as a zip of CBZ files.",
+      "descriptions": [
+        "This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media."
+      ],
+      "endpoint": "/api/v1/manga/downloads/media-archive",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "nil",
+      "returnGoType": "nil",
+      "returnTypescriptType": "null"
+    }
+  },
+  {
     "name": "HandleGetMangaDownloadsList",
     "trimmedName": "GetMangaDownloadsList",
     "comments": [
@@ -9151,6 +9416,30 @@
     }
   },
   {
+    "name": "TestTryNakamaAuth",
+    "trimmedName": "TestTryNakamaAuth",
+    "comments": [
+      "Nakama host endpoints authenticate with a shared static password instead of the",
+      "session, and tryNakamaAuth runs before the 401 in both password and OIDC modes.",
+      "Everything it opens — library listings, file streams, debrid URLs — is therefore",
+      "reachable without a session, so an empty password must never authenticate.",
+      ""
+    ],
+    "filepath": "internal/handlers/nakama_auth_test.go",
+    "filename": "nakama_auth_test.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleOAuthListClients",
     "trimmedName": "OAuthListClients",
     "comments": [
@@ -9578,6 +9867,42 @@
         "(e.g. for external player URLs)."
       ],
       "endpoint": "/api/v1/auth/media-token",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "string",
+      "returnGoType": "string",
+      "returnTypescriptType": "string"
+    }
+  },
+  {
+    "name": "HandleGetWebsocketTicket",
+    "trimmedName": "GetWebsocketTicket",
+    "comments": [
+      "HandleGetWebsocketTicket",
+      "",
+      "\t@summary mints a short-lived ticket for opening the /events websocket.",
+      "\t@desc Browsers cannot set headers on a websocket upgrade, so the credential would",
+      "\t@desc otherwise have to travel in the URL, where every proxy in front of the server",
+      "\t@desc logs it. Authenticated clients exchange their credential for a minute-long",
+      "\t@desc ticket here and put that in the query string instead.",
+      "\t@route /api/v1/auth/ws-ticket [GET]",
+      "\t@returns string",
+      ""
+    ],
+    "filepath": "internal/handlers/oidc_auth.go",
+    "filename": "oidc_auth.go",
+    "api": {
+      "summary": "mints a short-lived ticket for opening the /events websocket.",
+      "descriptions": [
+        "Browsers cannot set headers on a websocket upgrade, so the credential would",
+        "otherwise have to travel in the URL, where every proxy in front of the server",
+        "logs it. Authenticated clients exchange their credential for a minute-long",
+        "ticket here and put that in the query string instead."
+      ],
+      "endpoint": "/api/v1/auth/ws-ticket",
       "methods": [
         "GET"
       ],
@@ -11073,6 +11398,27 @@
     }
   },
   {
+    "name": "secureCompare",
+    "trimmedName": "secureCompare",
+    "comments": [
+      "secureCompare is a constant-time string equality check for credentials.",
+      ""
+    ],
+    "filepath": "internal/handlers/server_auth_middleware.go",
+    "filename": "server_auth_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "oidcSessionAuth",
     "trimmedName": "oidcSessionAuth",
     "comments": [
@@ -11100,6 +11446,11 @@
     "comments": [
       "tryNakamaAuth authenticates Nakama peer connections on their dedicated paths",
       "using the Nakama host password header. Works in both password and OIDC modes.",
+      "",
+      "This is a second, independent way into the API: it accepts a shared static",
+      "password instead of the session, and it runs before the 401. Everything it opens",
+      "(library listings, file streaming, debrid URLs) is therefore reachable without an",
+      "OIDC session, so it needs both an operator opt-in and a real password.",
       ""
     ],
     "filepath": "internal/handlers/server_auth_middleware.go",
@@ -11131,6 +11482,28 @@
     ],
     "filepath": "internal/handlers/server_oauth_middleware.go",
     "filename": "server_oauth_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "validateNakamaHostSettings",
+    "trimmedName": "validateNakamaHostSettings",
+    "comments": [
+      "validateNakamaHostSettings refuses to persist a host configuration that would be",
+      "unauthenticated in practice.",
+      ""
+    ],
+    "filepath": "internal/handlers/settings.go",
+    "filename": "settings.go",
     "api": {
       "summary": "",
       "descriptions": [],
@@ -12034,7 +12407,12 @@
     "name": "guardStrictLocalOnlyAction",
     "trimmedName": "guardStrictLocalOnlyAction",
     "comments": [
-      "guardStrictLocalOnlyAction ensures an action is restricted to trusted local requests when in strict security mode, returning an error if denied.",
+      "guardStrictLocalOnlyAction denies actions that browse or manage the host",
+      "filesystem outside the configured media roots — directory pickers, library",
+      "scans, cache and log management.",
+      "",
+      "The name is historical: this no longer has anything to do with the request being",
+      "\"local\", because no request can prove that. It is the filesystem capability.",
       ""
     ],
     "filepath": "internal/handlers/strict_security.go",
@@ -12055,7 +12433,35 @@
     "name": "guardStrictFilesystemPath",
     "trimmedName": "guardStrictFilesystemPath",
     "comments": [
-      "guardStrictFilesystemPath validates if a filesystem path is allowed under strict security mode based on origin and root constraints.",
+      "guardStrictFilesystemPath constrains a caller-supplied path to the configured",
+      "library, download and manga roots.",
+      "",
+      "Containment now applies to every caller rather than only to the ones that failed",
+      "a provenance heuristic — the heuristic was the bypass, the containment check was",
+      "always the useful part. Granting the filesystem capability is what opens the rest",
+      "of the host, and that is an operator decision made in config.",
+      ""
+    ],
+    "filepath": "internal/handlers/strict_security.go",
+    "filename": "strict_security.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "guardStrictSettingsMutation",
+    "trimmedName": "guardStrictSettingsMutation",
+    "comments": [
+      "guardStrictSettingsMutation denies repointing the library or local manga source",
+      "at a different part of the host filesystem.",
       ""
     ],
     "filepath": "internal/handlers/strict_security.go",

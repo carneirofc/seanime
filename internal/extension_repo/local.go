@@ -113,7 +113,7 @@ func (r *Repository) fetchExtensionBytes(ctx context.Context, uri string) ([]byt
 		return b, nil
 	}
 
-	req, err := newExtensionRequest(ctx, uri)
+	req, err := newExtensionRequest(ctx, uri, r.getGitTokens())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request, %w", err)
 	}

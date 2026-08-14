@@ -12,6 +12,7 @@ import (
 	chapter_downloader "seanime/internal/manga/downloader"
 	manga_providers "seanime/internal/manga/providers"
 	"slices"
+	"strings"
 
 	"github.com/goccy/go-json"
 )
@@ -63,45 +64,19 @@ func (r *Repository) GetDownloadedChapterContainers(mangaCollection *anilist.Man
 		return ret, nil
 	}
 
-	// Read download directory
-	files, err := os.ReadDir(r.downloadDir)
-	if err != nil {
-		r.logger.Error().Err(err).Msg("manga: Failed to read download directory")
-		return nil, err
-	}
+	// Scan the download directory for downloaded chapters (CBZ archives and legacy directories)
+	downloadedIds := chapter_downloader.ScanDownloadDir(r.downloadDir)
 
-	// Get all chapter directories
-	// e.g. manga_comick_123_10010_13
-	chapterDirs := make([]string, 0)
-	for _, file := range files {
-		if file.IsDir() {
-			_, ok := chapter_downloader.ParseChapterDirName(file.Name())
-			if !ok {
-				continue
-			}
-			chapterDirs = append(chapterDirs, file.Name())
-		}
-	}
+	if len(downloadedIds) > 0 {
 
-	if len(chapterDirs) > 0 {
-
-		// Now that we have all the chapter directories, we can get the chapter containers
-
-		keys := make([]*chapter_downloader.DownloadID, 0)
-		for _, dir := range chapterDirs {
-			downloadId, ok := chapter_downloader.ParseChapterDirName(dir)
-			if !ok {
-				continue
-			}
-			keys = append(keys, &downloadId)
-		}
+		// Now that we have all the downloaded chapters, we can get the chapter containers
 
 		providerAndMediaIdPairs := make(map[struct {
 			provider string
 			mediaId  int
 		}]bool)
 
-		for _, key := range keys {
+		for key := range downloadedIds {
 			providerAndMediaIdPairs[struct {
 				provider string
 				mediaId  int
@@ -109,6 +84,17 @@ func (r *Repository) GetDownloadedChapterContainers(mangaCollection *anilist.Man
 				provider: key.Provider,
 				mediaId:  key.MediaId,
 			}] = true
+		}
+
+		// Chapter lookup by identity, ignoring chapter number formatting
+		type chapterKey struct {
+			provider  string
+			mediaId   int
+			chapterId string
+		}
+		downloadedChapterKeys := make(map[chapterKey]bool, len(downloadedIds))
+		for key := range downloadedIds {
+			downloadedChapterKeys[chapterKey{key.Provider, key.MediaId, key.ChapterId}] = true
 		}
 
 		// Get the chapter containers
@@ -169,12 +155,8 @@ func (r *Repository) GetDownloadedChapterContainers(mangaCollection *anilist.Man
 			// Now that we have the container, we'll filter out the chapters that are not downloaded
 			// Go through each chapter and check if it's downloaded
 			for _, chapter := range container.Chapters {
-				// For each chapter, check if the chapter directory exists
-				for _, dir := range chapterDirs {
-					if dir == chapter_downloader.FormatChapterDirName(provider, mediaId, chapter.ID, chapter.Chapter) {
-						downloadedContainer.Chapters = append(downloadedContainer.Chapters, chapter)
-						break
-					}
+				if downloadedChapterKeys[chapterKey{provider, mediaId, chapter.ID}] {
+					downloadedContainer.Chapters = append(downloadedContainer.Chapters, chapter)
 				}
 			}
 
@@ -227,8 +209,10 @@ func (r *Repository) GetDownloadedChapterContainers(mangaCollection *anilist.Man
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // getDownloadedMangaPageContainer retrieves page information for a downloaded manga chapter.
-// It reads the chapter directory and parses the registry file to build a PageContainer
-// with details about each downloaded page including dimensions and file paths.
+// It locates the chapter's CBZ archive (or legacy loose-image directory) to build a
+// PageContainer with details about each downloaded page including dimensions and file paths.
+// Page URLs are relative to the download directory, slash-separated, and resolved by the
+// /manga-downloads/* route (which streams entries out of CBZ archives).
 func (r *Repository) getDownloadedMangaPageContainer(
 	provider string,
 	mediaId int,
@@ -237,30 +221,15 @@ func (r *Repository) getDownloadedMangaPageContainer(
 
 	// Check if the chapter is downloaded
 	found := false
+	relPath := "" // e.g. comick_123/0013_10010.cbz or legacy comick_123_10010_13/
 
-	// Read download directory
-	files, err := os.ReadDir(r.downloadDir)
-	if err != nil {
-		r.logger.Error().Err(err).Msg("manga: Failed to read download directory")
-		return nil, err
-	}
-
-	chapterDir := "" // e.g. manga_comick_123_10010_13
-	for _, file := range files {
-		if file.IsDir() {
-
-			downloadId, ok := chapter_downloader.ParseChapterDirName(file.Name())
-			if !ok {
-				continue
-			}
-
-			if downloadId.Provider == provider &&
-				downloadId.MediaId == mediaId &&
-				downloadId.ChapterId == chapterId {
-				found = true
-				chapterDir = file.Name()
-				break
-			}
+	for downloadId, p := range chapter_downloader.ScanDownloadDir(r.downloadDir) {
+		if downloadId.Provider == provider &&
+			downloadId.MediaId == mediaId &&
+			downloadId.ChapterId == chapterId {
+			found = true
+			relPath = p
+			break
 		}
 	}
 
@@ -268,39 +237,60 @@ func (r *Repository) getDownloadedMangaPageContainer(
 		return nil, ErrChapterNotDownloaded
 	}
 
-	r.logger.Debug().Msg("manga: Found downloaded chapter directory")
-
-	// Open registry file
-	registryFile, err := os.Open(filepath.Join(r.downloadDir, chapterDir, "registry.json"))
-	if err != nil {
-		r.logger.Error().Err(err).Msg("manga: Failed to open registry file")
-		return nil, err
-	}
-	defer registryFile.Close()
-
-	r.logger.Debug().Str("chapterId", chapterId).Msg("manga: Reading registry file")
-
-	// Read registry file
-	var pageRegistry *chapter_downloader.Registry
-	err = json.NewDecoder(registryFile).Decode(&pageRegistry)
-	if err != nil {
-		r.logger.Error().Err(err).Msg("manga: Failed to decode registry file")
-		return nil, err
-	}
+	r.logger.Debug().Str("path", relPath).Msg("manga: Found downloaded chapter")
 
 	pageList := make([]*hibikemanga.ChapterPage, 0)
 	pageDimensions := make(map[int]*PageDimension)
 
-	// Get the downloaded pages
-	for pageIndex, pageInfo := range *pageRegistry {
-		pageList = append(pageList, &hibikemanga.ChapterPage{
-			Index:    pageIndex,
-			URL:      filepath.Join(chapterDir, pageInfo.Filename),
-			Provider: provider,
-		})
-		pageDimensions[pageIndex] = &PageDimension{
-			Width:  pageInfo.Width,
-			Height: pageInfo.Height,
+	if strings.HasSuffix(relPath, ".cbz") {
+
+		entries, _, err := chapter_downloader.ReadCBZ(filepath.Join(r.downloadDir, filepath.FromSlash(relPath)))
+		if err != nil {
+			r.logger.Error().Err(err).Msg("manga: Failed to read chapter archive")
+			return nil, err
+		}
+
+		for i, entry := range entries {
+			pageList = append(pageList, &hibikemanga.ChapterPage{
+				Index:    i,
+				URL:      relPath + "/" + entry.Name,
+				Provider: provider,
+			})
+			pageDimensions[i] = &PageDimension{
+				Width:  entry.Width,
+				Height: entry.Height,
+			}
+		}
+
+	} else {
+
+		// Legacy loose-image directory: read registry.json
+		registryFile, err := os.Open(filepath.Join(r.downloadDir, relPath, "registry.json"))
+		if err != nil {
+			r.logger.Error().Err(err).Msg("manga: Failed to open registry file")
+			return nil, err
+		}
+		defer registryFile.Close()
+
+		r.logger.Debug().Str("chapterId", chapterId).Msg("manga: Reading registry file")
+
+		var pageRegistry *chapter_downloader.Registry
+		err = json.NewDecoder(registryFile).Decode(&pageRegistry)
+		if err != nil {
+			r.logger.Error().Err(err).Msg("manga: Failed to decode registry file")
+			return nil, err
+		}
+
+		for pageIndex, pageInfo := range *pageRegistry {
+			pageList = append(pageList, &hibikemanga.ChapterPage{
+				Index:    pageIndex,
+				URL:      relPath + "/" + pageInfo.Filename,
+				Provider: provider,
+			})
+			pageDimensions[pageIndex] = &PageDimension{
+				Width:  pageInfo.Width,
+				Height: pageInfo.Height,
+			}
 		}
 	}
 

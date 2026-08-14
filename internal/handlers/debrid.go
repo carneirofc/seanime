@@ -27,7 +27,7 @@ func (h *Handler) HandleGetDebridSettings(c echo.Context) error {
 		return h.RespondWithError(c, errors.New("debrid settings not found"))
 	}
 
-	return h.RespondWithData(c, debridSettings)
+	return h.RespondWithData(c, models.RedactedDebridSettings(debridSettings))
 }
 
 // HandleSaveDebridSettings
@@ -48,6 +48,12 @@ func (h *Handler) HandleSaveDebridSettings(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
+	// The API key is withheld on the way out, so a client saving unrelated debrid
+	// settings hands the placeholder back; resolve it against the stored key.
+	if prev, found := h.App.Database.GetDebridSettings(); found {
+		models.RestoreDebridSecrets(&b.Settings, prev)
+	}
+
 	settings, err := h.App.Database.UpsertDebridSettings(&b.Settings)
 	if err != nil {
 		return h.RespondWithError(c, err)
@@ -55,7 +61,7 @@ func (h *Handler) HandleSaveDebridSettings(c echo.Context) error {
 
 	h.App.InitOrRefreshDebridSettings()
 
-	return h.RespondWithData(c, settings)
+	return h.RespondWithData(c, models.RedactedDebridSettings(settings))
 }
 
 // HandleGetDummyDebridSettings
@@ -133,10 +139,6 @@ func (h *Handler) HandleDebridAddTorrents(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	if err := h.guardStrictLocalOnlyAction(c); err != nil {
-		return err
-	}
-
 	if err := h.guardStrictFilesystemPath(c, b.Destination); err != nil {
 		return err
 	}
@@ -197,10 +199,6 @@ func (h *Handler) HandleDebridDownloadTorrent(c echo.Context) error {
 	var b body
 	if err := c.Bind(&b); err != nil {
 		return h.RespondWithError(c, err)
-	}
-
-	if err := h.guardStrictLocalOnlyAction(c); err != nil {
-		return err
 	}
 
 	if err := h.guardStrictFilesystemPath(c, b.Destination); err != nil {

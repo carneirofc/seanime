@@ -28,6 +28,17 @@ export function CallbackPage(props: CallbackPageProps) {
              * Get the AniList token from the URL hash
              */
             const _token = window?.location?.hash?.replace("#access_token=", "")?.replace(/&.*/, "")
+
+            /**
+             * Drop the token from the URL before doing anything with it.
+             *
+             * AniList hands it over in the fragment, and the manual-entry form puts it
+             * there too. Left alone it stays in the address bar and in browser history
+             * for good - surviving logout - and the issue recorder captures page URLs,
+             * so it would ride along into a public bug report.
+             */
+            window.history.replaceState(null, "", window.location.pathname + window.location.search)
+
             if (!!_token && !called.current) {
                 login({ token: _token })
                 called.current = true

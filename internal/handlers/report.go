@@ -62,6 +62,7 @@ func (h *Handler) HandleSaveIssueReport(c echo.Context) error {
 	status := h.NewStatus(c)
 
 	if err := h.App.ReportRepository.SaveIssueReport(report.SaveIssueReportOptions{
+		AnilistToken:        h.App.Database.GetAnilistToken(),
 		LogsDir:             h.App.Config.Logs.Dir,
 		UserAgent:           c.Request().Header.Get("User-Agent"),
 		Description:         b.Description,

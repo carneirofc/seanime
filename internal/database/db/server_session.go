@@ -30,6 +30,21 @@ func (db *Database) GetValidServerSession(tokenHash string) (*models.ServerSessi
 	return &session, nil
 }
 
+// GetValidServerSessionByID returns the session with the given id if it has not
+// expired. Used to check that a media token's binding is still live; the caller
+// never has the raw token, only the id carried in the token claims.
+func (db *Database) GetValidServerSessionByID(id uint) (*models.ServerSession, error) {
+	var session models.ServerSession
+	err := db.gormdb.Where("id = ? AND expires_at > ?", id, time.Now()).First(&session).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("session not found or expired")
+		}
+		return nil, err
+	}
+	return &session, nil
+}
+
 // TouchServerSession updates the session's last-seen time and sliding expiry.
 func (db *Database) TouchServerSession(id uint, lastSeen time.Time, newExpiry time.Time) error {
 	return db.gormdb.Model(&models.ServerSession{}).

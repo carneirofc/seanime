@@ -50,6 +50,9 @@ type SaveIssueReportOptions struct {
 	ViewportHeight      int                    `json:"viewportHeight"`
 	RecordingDurationMs int64                  `json:"recordingDurationMs"`
 	Username            string                 `json:"username"`
+	// AnilistToken is redacted out of everything the report bundles. See
+	// AnonymizeOptions.AnilistToken.
+	AnilistToken string `json:"-"`
 }
 
 func (r *Repository) SaveIssueReport(opts SaveIssueReportOptions) error {
@@ -64,6 +67,7 @@ func (r *Repository) SaveIssueReport(opts SaveIssueReportOptions) error {
 	if opts.Username != "" {
 		toRedact = append(toRedact, opts.Username)
 	}
+	toRedact = append(toRedact, opts.AnilistToken)
 	toRedact = lo.Filter(toRedact, func(s string, _ int) bool {
 		return s != ""
 	})
@@ -131,6 +135,11 @@ type AnonymizeOptions struct {
 	Settings       *models.Settings
 	DebridSettings *models.DebridSettings
 	Username       string
+	// AnilistToken is the stored AniList access token. It lives on the account, not
+	// in settings, so it has to be passed in explicitly - and it must be, because it
+	// grants full control of the user's AniList account and these logs are attached
+	// to public bug reports.
+	AnilistToken string
 }
 
 func (r *Repository) Anonymize(opts AnonymizeOptions) string {
@@ -145,6 +154,7 @@ func (r *Repository) Anonymize(opts AnonymizeOptions) string {
 	if opts.DebridSettings != nil {
 		toRedact = append(toRedact, opts.DebridSettings.GetSensitiveValues()...)
 	}
+	toRedact = append(toRedact, opts.AnilistToken)
 
 	// Remove empty strings to avoid infinite replacements
 	// don't redact "seanime"

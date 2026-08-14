@@ -28,13 +28,19 @@ type Config struct {
 		AccessAllowlist []string // Additional remote hosts/origins allowed through the passwordless API/events boundary
 		TrustedProxies  []string // Explicit reverse proxies allowed to supply forwarded client IP/host/proto headers
 		ExternalURL     string   // Canonical public URL used for proxy-aware secure cookies and request normalization
-		Tls             struct {
+		// Capabilities grants privileged actions that let a caller reach past the
+		// media library and touch the host: "exec", "filesystem", "extensions",
+		// "selfupdate", "nakama-host" (or "all" / "none"). Never derived from a
+		// request and never settable through the API. Absent means "use the posture
+		// default": nothing for a server deployment, everything for a local install.
+		Capabilities []string
+		Tls          struct {
 			Enabled  bool
 			CertPath string
 			KeyPath  string
 		}
 		Oidc struct {
-			IssuerURL        string   // OIDC issuer; discovery happens at <issuer>/.well-known/openid-configuration
+			IssuerURL        string // OIDC issuer; discovery happens at <issuer>/.well-known/openid-configuration
 			ClientID         string
 			ClientSecret     string   // can be supplied via SEANIME_OIDC_CLIENT_SECRET instead of the config file
 			Scopes           []string // defaults to ["openid", "profile", "email"]
@@ -84,7 +90,7 @@ type Config struct {
 	Experimental struct {
 		BuiltinTorrentClient bool
 		// MCP exposes a read-only Model Context Protocol server at /api/v1/mcp.
-		MCP bool
+		MCP         bool
 		DummyDebrid bool
 	}
 }

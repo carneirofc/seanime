@@ -2,6 +2,7 @@ import { Extension_Extension, Extension_InvalidExtension } from "@/api/generated
 import { useGetAllExtensions, useInstallExternalExtension, useReloadAllExternalExtensionsFromSource } from "@/api/hooks/extensions.hooks"
 import { AddExtensionModal } from "@/app/(main)/extensions/_containers/add-extension-modal"
 import { ExtensionCard } from "@/app/(main)/extensions/_containers/extension-card"
+import { GitTokensModal } from "@/app/(main)/extensions/_containers/git-tokens-modal"
 import { InvalidExtensionCard, UnauthorizedExtensionPluginCard } from "@/app/(main)/extensions/_containers/invalid-extension-card"
 import { LuffyError } from "@/components/shared/luffy-error"
 import { SeaLink } from "@/components/shared/sea-link"
@@ -51,6 +52,7 @@ export function ExtensionList(props: ExtensionListProps) {
 
     const [checkForUpdates, setCheckForUpdates] = React.useState(false)
     const [searchTerm, setSearchTerm] = React.useState("")
+    const [gitTokensModalOpen, setGitTokensModalOpen] = React.useState(false)
 
     const { data: allExtensions, isPending: isLoading, refetch } = useGetAllExtensions(checkForUpdates)
 
@@ -231,7 +233,17 @@ export function ExtensionList(props: ExtensionListProps) {
                         >
                             <span>Marketplace</span>
                         </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setGitTokensModalOpen(true)
+                            }}
+                        >
+                            <span>Private repositories</span>
+                        </DropdownMenuItem>
                     </DropdownMenu>
+
+                    <GitTokensModal open={gitTokensModalOpen} onOpenChange={setGitTokensModalOpen} />
                 </div>
             </div>
 

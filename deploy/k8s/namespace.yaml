@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+    # Pod Security Admission. "restricted" is the strictest built-in profile and
+    # the Deployment is written to satisfy it: non-root, no privilege escalation,
+    # all capabilities dropped, seccomp RuntimeDefault. Enforcing it here means a
+    # future edit that loosens the pod's securityContext is rejected at admission
+    # rather than silently deployed.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

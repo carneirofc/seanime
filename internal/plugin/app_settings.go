@@ -478,10 +478,17 @@ func mapToSettings(in map[string]interface{}) (*models.Settings, error) {
 	return &ret, nil
 }
 
+// settingsBundleToMap renders the settings bundle for the JS VM.
+//
+// Extension code is untrusted code running in-process, so it sees the same
+// redacted view of stored credentials that HTTP clients do — the settings prompt
+// asks for permission to read settings, not to harvest the operator's passwords
+// for other systems. Writes travel back through mapToSettingsBundle, which
+// resolves the placeholders against what is stored.
 func settingsBundleToMap(bundle *appSettingsBundle) (map[string]interface{}, error) {
 	ret := map[string]interface{}{}
 	if bundle != nil && bundle.Settings != nil {
-		base, err := toMap(bundle.Settings)
+		base, err := toMap(models.RedactedSettings(bundle.Settings))
 		if err != nil {
 			return nil, err
 		}
@@ -500,8 +507,10 @@ func settingsBundleToMap(bundle *appSettingsBundle) (map[string]interface{}, err
 	if err := setSettingsSection(ret, appSettingsTorrentstreamRoot, bundle.Torrentstream); err != nil {
 		return nil, err
 	}
-	if err := setSettingsSection(ret, appSettingsDebridRoot, bundle.Debrid); err != nil {
-		return nil, err
+	if bundle.Debrid != nil {
+		if err := setSettingsSection(ret, appSettingsDebridRoot, models.RedactedDebridSettings(bundle.Debrid)); err != nil {
+			return nil, err
+		}
 	}
 
 	return ret, nil
@@ -563,6 +572,14 @@ func mapToSettingsBundle(in map[string]interface{}, prev *appSettingsBundle, cha
 	debrid, err := decodeSettingsSection[models.DebridSettings](appSettingsDebridRoot, in[appSettingsDebridRoot], prevDebrid, changes.debrid)
 	if err != nil {
 		return nil, err
+	}
+
+	// Credentials were withheld on the way into the VM, so anything the extension
+	// hands back untouched is a placeholder. Resolve those against what is stored
+	// before they are persisted, or saving any setting would wipe every password.
+	if prev != nil {
+		models.RestoreSettingsSecrets(settings, prev.Settings)
+		models.RestoreDebridSecrets(debrid, prev.Debrid)
 	}
 
 	return &appSettingsBundle{

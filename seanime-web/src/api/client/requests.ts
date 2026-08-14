@@ -79,6 +79,23 @@ function _handleAuthFailure() {
     window.location.replace("/public/auth")
 }
 
+/**
+ * Describes a failed request for the console.
+ *
+ * Never log the AxiosError itself: it carries `config.headers`, and that is where
+ * buildSeaQuery puts the server credential (X-Seanime-Token). Logging the error
+ * object would print that credential to the console on every failed request.
+ */
+function describeSeaError(error: SeaError | AxiosError | null | undefined): string {
+    if (!error) return "unknown error"
+
+    const method = error.config?.method?.toUpperCase() ?? "?"
+    const url = error.config?.url ?? "?"
+    const status = error.response?.status ?? "no response"
+
+    return `${method} ${url} -> ${status}: ${getSeaErrorMessage(error.response?.data) || error.message}`
+}
+
 function checkAuthError(error: SeaError | AxiosError | null | undefined) {
     if (!error) return
 
@@ -199,7 +216,7 @@ export function useServerMutation<R = void, V = void>(
             if (isAuthFailureResponse(error.response?.status, error.response?.data)) {
                 return
             }
-            console.log("Mutation error", error)
+            console.log("Mutation error:", describeSeaError(error))
             const errorMsg = _handleSeaError(error.response?.data)
             if (errorMsg.includes("feature disabled")) {
                 toast.warning("This feature is disabled")
@@ -264,7 +281,7 @@ export function useServerQuery<R, V = any>(
                 _handleAuthFailure()
                 return
             }
-            console.log("Server error", props.error)
+            console.log("Server error:", describeSeaError(props.error))
             const errorMsg = _handleSeaError(props.error?.response?.data)
             if (errorMsg.includes("feature disabled")) {
                 return

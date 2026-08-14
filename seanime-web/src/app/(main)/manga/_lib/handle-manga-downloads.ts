@@ -13,6 +13,8 @@ import {
     useStartMangaDownloadQueue,
     useStopMangaDownloadQueue,
 } from "@/api/hooks/manga_download.hooks"
+import { getServerBaseUrl } from "@/api/client/server-url"
+import { useServerHMACAuth } from "@/app/(main)/_hooks/use-server-status"
 import { useSelectedMangaProvider } from "@/app/(main)/manga/_lib/handle-manga-selected-provider"
 import { atom } from "jotai"
 import { useAtomValue, useSetAtom } from "jotai/react"
@@ -135,6 +137,103 @@ export function useHandleDownloadMangaChapter(mediaId: string | undefined | null
     return {
         downloadChapters,
         isSendingDownloadRequest: isPending,
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Handle saving downloaded chapters to the user's device as CBZ archive files.
+ * The server resolves the archive and names it after the media title, which the
+ * client reads back from the Content-Disposition header.
+ */
+export function useMangaEntryArchiveDownload() {
+    const hmacAuth = useServerHMACAuth()
+    const hmacAuthRef = React.useRef(hmacAuth)
+    React.useEffect(() => {
+        hmacAuthRef.current = hmacAuth
+    })
+
+    const [isDownloadingArchive, setIsDownloadingArchive] = React.useState(false)
+
+    const fetchArchive = React.useCallback(async (endpoint: string, params: Record<string, string>, fallbackFilename: string) => {
+        const { password, getHMACTokenQueryParam } = hmacAuthRef.current
+        const tokenQuery = await getHMACTokenQueryParam(endpoint, "&")
+        if (password && !tokenQuery) {
+            throw new Error("Failed to generate download token")
+        }
+
+        const search = new URLSearchParams(params).toString()
+        const response = await fetch(`${getServerBaseUrl()}${endpoint}?${search}${tokenQuery}`, {
+            credentials: "include",
+        })
+        if (!response.ok) {
+            let message = "Failed to download archive"
+            try {
+                const data: unknown = await response.json()
+                if (typeof data === "object" && data !== null && "error" in data && typeof data.error === "string" && data.error.trim()) {
+                    message = data.error
+                }
+            }
+            catch {
+            }
+            throw new Error(message)
+        }
+
+        const blob = await response.blob()
+        const contentDisposition = response.headers.get("content-disposition")
+        const filename = contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1] ?? fallbackFilename
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        setTimeout(() => URL.revokeObjectURL(url), 0)
+    }, [])
+
+    const downloadChapterArchive = React.useCallback(async (provider: string, mediaId: number, chapterId: string, chapterNumber: string) => {
+        setIsDownloadingArchive(true)
+        try {
+            await fetchArchive("/api/v1/manga/downloads/chapter-archive", {
+                provider,
+                mediaId: String(mediaId),
+                chapterId,
+            }, `${provider}_${mediaId} - Chapter ${chapterNumber}.cbz`)
+        }
+        catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to download chapter archive")
+        }
+        finally {
+            setIsDownloadingArchive(false)
+        }
+    }, [fetchArchive])
+
+    const downloadMediaArchives = React.useCallback(async (mediaId: number, providers: string[]) => {
+        if (providers.length === 0) return
+        setIsDownloadingArchive(true)
+        try {
+            // One zip per provider, sequentially, so concurrent streams don't compete
+            for (const provider of providers) {
+                await fetchArchive("/api/v1/manga/downloads/media-archive", {
+                    provider,
+                    mediaId: String(mediaId),
+                }, `${provider}_${mediaId}.zip`)
+            }
+        }
+        catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to download chapter archives")
+        }
+        finally {
+            setIsDownloadingArchive(false)
+        }
+    }, [fetchArchive])
+
+    return {
+        isDownloadingArchive,
+        downloadChapterArchive,
+        downloadMediaArchives,
     }
 }
 

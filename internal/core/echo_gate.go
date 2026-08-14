@@ -93,7 +93,7 @@ func webBundleGateMiddleware(app *App, shellFS fs.FS) echo.MiddlewareFunc {
 			if isGatedStaticPath(p) {
 				// Server-minted media URLs carry an HMAC query token (external players)
 				if token := req.URL.Query().Get("token"); token != "" {
-					if _, err := app.GetServerHMACAuth().ValidateToken(token, p); err == nil {
+					if app.ValidateMediaToken(token, p) {
 						return next(c)
 					}
 				}

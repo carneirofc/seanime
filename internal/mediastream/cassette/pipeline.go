@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"seanime/internal/security"
 	"seanime/internal/util"
 	"strings"
 	"sync"
@@ -472,7 +473,15 @@ func (p *Pipeline) runHead(start int32) error {
 		Int32("start", start).Int32("end", end).
 		Msgf("cassette: spawning ffmpeg")
 
-	cmd := util.NewCmdCtx(context.Background(), p.settings.FfmpegPath, args...)
+	// See transcoder/stream.go: the ffmpeg path arrives from settings, so it is
+	// validated before it is spawned.
+	ffmpegPath, err := security.ValidateExecutablePath(p.settings.FfmpegPath)
+	if err != nil {
+		release()
+		return fmt.Errorf("cassette: refusing to run ffmpeg: %w", err)
+	}
+
+	cmd := util.NewCmdCtx(context.Background(), ffmpegPath, args...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

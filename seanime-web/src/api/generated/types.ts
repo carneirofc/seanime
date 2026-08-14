@@ -2629,6 +2629,18 @@ export type ExtensionRepo_ExtensionUserConfig = {
 }
 
 /**
+ * - Filepath: internal/extension_repo/external_settings.go
+ * - Filename: external_settings.go
+ * - Package: extension_repo
+ * @description
+ *  GitTokenInfo describes a configured git repository token with the token value masked.
+ */
+export type ExtensionRepo_GitTokenInfo = {
+    repository: string
+    maskedToken: string
+}
+
+/**
  * - Filepath: internal/extension_repo/repository.go
  * - Filename: repository.go
  * - Package: extension_repo
@@ -2715,6 +2727,7 @@ export type ExtensionRepo_UpdateData = {
     manifestURI: string
     version: string
     payload: string
+    payloadChanged?: boolean
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4065,6 +4078,8 @@ export type Models_ChapterDownloadQueueItem = {
     mediaId: number
     chapterId: string
     chapterNumber: string
+    mediaTitle: string
+    chapterTitle: string
     /**
      * Contains map of page index to page details
      */
@@ -5848,7 +5863,6 @@ export type Updater_Update = {
  */
 export type User = {
     viewer?: AL_GetViewer_Viewer
-    token: string
     isSimulated: boolean
 }
 

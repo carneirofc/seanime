@@ -1163,6 +1163,37 @@
 //     })
 // }
 
+// export function useListExtensionGitTokens() {
+//     return useServerQuery<Array<ExtensionRepo_GitTokenInfo>>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.methods[0],
+//         queryKey: [API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useSetExtensionGitToken() {
+//     return useServerMutation<boolean, SetExtensionGitToken_Variables>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useRemoveExtensionGitToken() {
+//     return useServerMutation<boolean, RemoveExtensionGitToken_Variables>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // file_selector
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1879,6 +1910,24 @@
 //     })
 // }
 
+// export function useDownloadMangaChapterArchive() {
+//     return useServerQuery<null>({
+//         endpoint: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaChapterArchive.endpoint,
+//         method: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaChapterArchive.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaChapterArchive.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useDownloadMangaMediaArchive() {
+//     return useServerQuery<null>({
+//         endpoint: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaMediaArchive.endpoint,
+//         method: API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaMediaArchive.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_DOWNLOAD.DownloadMangaMediaArchive.key],
+//         enabled: true,
+//     })
+// }
+
 // export function useGetMangaDownloadsList() {
 //     return useServerQuery<Array<Manga_DownloadListItem>>({
 //         endpoint: API_ENDPOINTS.MANGA_DOWNLOAD.GetMangaDownloadsList.endpoint,
@@ -2341,6 +2390,15 @@
 //         endpoint: API_ENDPOINTS.OIDC_AUTH.GetMediaToken.endpoint,
 //         method: API_ENDPOINTS.OIDC_AUTH.GetMediaToken.methods[0],
 //         queryKey: [API_ENDPOINTS.OIDC_AUTH.GetMediaToken.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useGetWebsocketTicket() {
+//     return useServerQuery<string>({
+//         endpoint: API_ENDPOINTS.OIDC_AUTH.GetWebsocketTicket.endpoint,
+//         method: API_ENDPOINTS.OIDC_AUTH.GetWebsocketTicket.methods[0],
+//         queryKey: [API_ENDPOINTS.OIDC_AUTH.GetWebsocketTicket.key],
 //         enabled: true,
 //     })
 // }

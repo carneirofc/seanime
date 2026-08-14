@@ -884,20 +884,38 @@ func (c *WebviewChannel) jsSend(call goja.FunctionCall) goja.Value {
 	return goja.Undefined()
 }
 
+// scrubAnilistToken keeps the AniList token out of a value on its way to the
+// webview iframe. A string carrying it comes back masked; any other value carrying
+// it is refused with ok=false, because it cannot be edited in place without knowing
+// its shape.
+//
+// An empty token means no account is connected, and every string contains the empty
+// string — so it has to short-circuit, or it would mask or refuse everything.
+func scrubAnilistToken(value interface{}, anilistToken string) (interface{}, bool) {
+	if anilistToken == "" {
+		return value, true
+	}
+
+	if str, ok := value.(string); ok {
+		return strings.ReplaceAll(str, anilistToken, "[TOKEN]"), true
+	}
+
+	encoded, err := json.Marshal(value)
+	if err == nil && strings.Contains(string(encoded), anilistToken) {
+		return nil, false
+	}
+
+	return value, true
+}
+
 // sendStateToWebview sends a state value to the webview iframe
 func (c *WebviewChannel) sendStateToWebview(key string, value interface{}) {
 	webviewId := c.webview.GetID()
 
-	// Security: Iframe won't receive anilist token
-	if str, ok := value.(string); ok {
-		strings.ReplaceAll(str, c.webview.webviewManager.ctx.anilistToken, "[TOKEN]")
-	} else {
-		encoded, err := json.Marshal(value)
-		if err == nil {
-			if strings.Contains(string(encoded), c.webview.webviewManager.ctx.anilistToken) {
-				return
-			}
-		}
+	// Security: the iframe never receives the AniList token.
+	value, ok := scrubAnilistToken(value, c.webview.webviewManager.ctx.anilistToken)
+	if !ok {
+		return
 	}
 
 	// Get the token from the iframe (we'll need to update the iframe creation to store this)

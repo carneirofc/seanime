@@ -27,7 +27,7 @@ func (h *Handler) HandleInstallLatestUpdate(c echo.Context) error {
 		return h.RespondWithError(c, errors.New("self-updating is not supported on mobile platforms"))
 	}
 
-	if err := h.guardPrivilegedLocalExecution(c); err != nil {
+	if err := h.guardSelfUpdate(c); err != nil {
 		return err
 	}
 

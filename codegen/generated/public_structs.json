@@ -29505,9 +29505,9 @@
         "name": "Server",
         "jsonName": "Server",
         "goType": "INTERNAL_Config_Server",
-        "inlineStructType": "struct{\nHost string\nPort int\nOffline bool\nUseBinaryPath bool\nSystray bool\nDoHUrl string\nPassword string\nSecureMode string\nAccessAllowlist []string\nTrustedProxies []string\nExternalURL string\nTls __STRUCT__\nOidc __STRUCT__}",
+        "inlineStructType": "struct{\nHost string\nPort int\nOffline bool\nUseBinaryPath bool\nSystray bool\nDoHUrl string\nPassword string\nSecureMode string\nAccessAllowlist []string\nTrustedProxies []string\nExternalURL string\nCapabilities []string\nTls __STRUCT__\nOidc __STRUCT__}",
         "typescriptType": "INTERNAL_Config_Server",
-        "usedTypescriptType": "{ Host: string; Port: number; Offline: boolean; UseBinaryPath: boolean; Systray: boolean; DoHUrl: string; Password: string; SecureMode: string; AccessAllowlist: Array\u003cstring\u003e; TrustedProxies: Array\u003cstring\u003e; ExternalURL: string; Tls: { Enabled: boolean; CertPath: string; KeyPath: string; }; Oidc: { IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }; }",
+        "usedTypescriptType": "{ Host: string; Port: number; Offline: boolean; UseBinaryPath: boolean; Systray: boolean; DoHUrl: string; Password: string; SecureMode: string; AccessAllowlist: Array\u003cstring\u003e; TrustedProxies: Array\u003cstring\u003e; ExternalURL: string; Capabilities: Array\u003cstring\u003e; Tls: { Enabled: boolean; CertPath: string; KeyPath: string; }; Oidc: { IssuerURL: string; ClientID: string; ClientSecret: string; Scopes: Array\u003cstring\u003e; UsernameClaim: string; AllowedSubjects: Array\u003cstring\u003e; AllowedUsernames: Array\u003cstring\u003e; ProviderName: string; SessionTTLDays: number; SessionMaxDays: number; AllowInsecure: boolean; }; }",
         "usedStructName": "core.Config_Server",
         "required": true,
         "public": true,
@@ -29763,6 +29763,15 @@
         "comments": [
           " Canonical public URL used for proxy-aware secure cookies and request normalization"
         ]
+      },
+      {
+        "name": "Capabilities",
+        "jsonName": "Capabilities",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
       },
       {
         "name": "Tls",
@@ -32937,6 +32946,24 @@
       {
         "name": "ChapterNumber",
         "jsonName": "chapterNumber",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaTitle",
+        "jsonName": "mediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterTitle",
+        "jsonName": "chapterTitle",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
@@ -44303,6 +44330,15 @@
         "comments": []
       },
       {
+        "name": "GitTokens",
+        "jsonName": "gitTokens",
+        "goType": "map[string]string",
+        "typescriptType": "Record\u003cstring, string\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "mu",
         "jsonName": "",
         "goType": "sync.Mutex",
@@ -44315,6 +44351,36 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/extension_repo/external_settings.go",
+    "filename": "external_settings.go",
+    "name": "GitTokenInfo",
+    "formattedName": "ExtensionRepo_GitTokenInfo",
+    "package": "extension_repo",
+    "fields": [
+      {
+        "name": "Repository",
+        "jsonName": "repository",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MaskedToken",
+        "jsonName": "maskedToken",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " GitTokenInfo describes a configured git repository token with the token value masked."
+    ]
   },
   {
     "filepath": "../internal/extension_repo/goja_anime_torrent_provider.go",
@@ -45310,6 +45376,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "PayloadChanged",
+        "jsonName": "payloadChanged",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -45955,15 +46030,6 @@
         "usedTypescriptType": "accessRule",
         "usedStructName": "goja_bindings.accessRule",
         "required": false,
-        "public": false,
-        "comments": []
-      },
-      {
-        "name": "anilistToken",
-        "jsonName": "anilistToken",
-        "goType": "string",
-        "typescriptType": "string",
-        "required": true,
         "public": false,
         "comments": []
       },
@@ -61555,6 +61621,15 @@
         "comments": []
       },
       {
+        "name": "MediaTitle",
+        "jsonName": "MediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "StartNow",
         "jsonName": "StartNow",
         "goType": "bool",
@@ -61627,6 +61702,45 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/manga/downloader/cbz.go",
+    "filename": "cbz.go",
+    "name": "CBZEntry",
+    "formattedName": "ChapterDownloader_CBZEntry",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "Name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Width",
+        "jsonName": "Width",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Height",
+        "jsonName": "Height",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " CBZEntry describes one page image inside a CBZ archive."
+    ]
   },
   {
     "filepath": "../internal/manga/downloader/chapter_downloader.go",
@@ -61953,6 +62067,24 @@
         "comments": []
       },
       {
+        "name": "MediaTitle",
+        "jsonName": "MediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterTitle",
+        "jsonName": "ChapterTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "StartNow",
         "jsonName": "StartNow",
         "goType": "bool",
@@ -61965,6 +62097,171 @@
     "comments": [],
     "embeddedStructNames": [
       "chapter_downloader.DownloadID"
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ComicInfo",
+    "formattedName": "ChapterDownloader_ComicInfo",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "XMLName",
+        "jsonName": "XMLName",
+        "goType": "xml.Name",
+        "typescriptType": "Name",
+        "usedTypescriptType": "Name",
+        "usedStructName": "xml.Name",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "XsiNs",
+        "jsonName": "XsiNs",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "XsdNs",
+        "jsonName": "XsdNs",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "Title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Series",
+        "jsonName": "Series",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Number",
+        "jsonName": "Number",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PageCount",
+        "jsonName": "PageCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Pages",
+        "jsonName": "Pages",
+        "goType": "ComicInfoPages",
+        "typescriptType": "ChapterDownloader_ComicInfoPages",
+        "usedTypescriptType": "ChapterDownloader_ComicInfoPages",
+        "usedStructName": "chapter_downloader.ComicInfoPages",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
+      " are modeled; unknown elements are ignored when parsing foreign archives."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ComicInfoPages",
+    "formattedName": "ChapterDownloader_ComicInfoPages",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Pages",
+        "jsonName": "Pages",
+        "goType": "[]ComicInfoPage",
+        "typescriptType": "Array\u003cChapterDownloader_ComicInfoPage\u003e",
+        "usedTypescriptType": "ChapterDownloader_ComicInfoPage",
+        "usedStructName": "chapter_downloader.ComicInfoPage",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
+      " are modeled; unknown elements are ignored when parsing foreign archives."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ComicInfoPage",
+    "formattedName": "ChapterDownloader_ComicInfoPage",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Image",
+        "jsonName": "Image",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ImageSize",
+        "jsonName": "ImageSize",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ImageWidth",
+        "jsonName": "ImageWidth",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ImageHeight",
+        "jsonName": "ImageHeight",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
+      " are modeled; unknown elements are ignored when parsing foreign archives."
     ]
   },
   {
@@ -62104,6 +62401,24 @@
         "typescriptType": "ChapterDownloader_QueueStatus",
         "usedTypescriptType": "ChapterDownloader_QueueStatus",
         "usedStructName": "chapter_downloader.QueueStatus",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaTitle",
+        "jsonName": "MediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterTitle",
+        "jsonName": "ChapterTitle",
+        "goType": "string",
+        "typescriptType": "string",
         "required": true,
         "public": true,
         "comments": []
@@ -90916,6 +91231,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "AnilistToken",
+        "jsonName": "",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -90966,9 +91290,40 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "AnilistToken",
+        "jsonName": "AnilistToken",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/security/outbound.go",
+    "filename": "outbound.go",
+    "name": "ErrBlockedOutboundAddress",
+    "formattedName": "ErrBlockedOutboundAddress",
+    "package": "security",
+    "fields": [
+      {
+        "name": "Address",
+        "jsonName": "Address",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ErrBlockedOutboundAddress is returned by the hardened dialer when a connection",
+      " resolves to a non-public address."
+    ]
   },
   {
     "filepath": "../internal/security/security.go",
@@ -91000,6 +91355,24 @@
         "jsonName": "ExternalURL",
         "goType": "string",
         "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Capabilities",
+        "jsonName": "Capabilities",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "CapabilitiesConfigured",
+        "jsonName": "CapabilitiesConfigured",
+        "goType": "bool",
+        "typescriptType": "boolean",
         "required": true,
         "public": true,
         "comments": []
@@ -100711,7 +101084,7 @@
       },
       {
         "name": "Token",
-        "jsonName": "token",
+        "jsonName": "",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
@@ -101274,6 +101647,15 @@
         "goType": "int64",
         "typescriptType": "number",
         "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Subject",
+        "jsonName": "sub",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
         "public": true,
         "comments": []
       }

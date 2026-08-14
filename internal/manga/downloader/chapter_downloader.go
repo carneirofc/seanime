@@ -20,7 +20,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/goccy/go-json"
 	"github.com/rs/zerolog"
 	_ "golang.org/x/image/bmp"  // Register BMP format
 	_ "golang.org/x/image/tiff" // Register Tiff format
@@ -32,10 +31,17 @@ import (
 const pageDownloadRetries = 3
 
 // 📁 cache/manga
-// └── 📁 {provider}_{mediaId}_{chapterId}_{chapterNumber}      <- Downloader generates
-//     ├── 📄 registry.json						                <- Contains Registry
+// └── 📁 {provider}_{mediaId}                                  <- Series directory
+//     └── 📄 {chapterNumber}_{chapterId}.cbz                   <- One CBZ archive per chapter
+//         ├── 📄 001.jpg
+//         ├── 📄 002.jpg
+//         ├── 📄 ...
+//         └── 📄 ComicInfo.xml                                 <- Standard CBZ metadata
+//
+// Legacy layout (pre-CBZ), still readable and migrated on startup:
+// └── 📁 {provider}_{mediaId}_{chapterId}_{chapterNumber}
+//     ├── 📄 registry.json
 //     ├── 📄 1.jpg
-//     ├── 📄 2.jpg
 //     └── 📄 ...
 //
 
@@ -92,8 +98,12 @@ type (
 
 	DownloadOptions struct {
 		DownloadID
-		Pages    []*hibikemanga.ChapterPage
-		StartNow bool
+		Pages []*hibikemanga.ChapterPage
+		// MediaTitle and ChapterTitle feed the ComicInfo.xml metadata.
+		// They may be empty.
+		MediaTitle   string
+		ChapterTitle string
+		StartNow     bool
 	}
 )
 
@@ -144,7 +154,7 @@ func (cd *Downloader) ChapterDownloaded() <-chan DownloadID {
 }
 
 // AddToQueue adds a chapter to the download queue.
-// If the chapter is already downloaded (i.e. a folder already exists), it will delete the previous data and re-download it.
+// If the chapter is already downloaded (CBZ archive or legacy folder), it will delete the previous data and re-download it.
 func (cd *Downloader) AddToQueue(opts DownloadOptions) error {
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
@@ -152,27 +162,39 @@ func (cd *Downloader) AddToQueue(opts DownloadOptions) error {
 	downloadId := opts.DownloadID
 
 	// Check if chapter is already downloaded
-	registryPath := cd.getChapterRegistryPath(downloadId)
-	if _, err := os.Stat(registryPath); err == nil {
-		cd.logger.Warn().Msg("chapter downloader: directory already exists, deleting")
-		// Delete folder
-		_ = os.RemoveAll(cd.getChapterDownloadDir(downloadId))
+	cbzPath := cd.getChapterCBZPath(downloadId)
+	if _, err := os.Stat(cbzPath); err == nil {
+		cd.logger.Warn().Msg("chapter downloader: chapter archive already exists, deleting")
+		_ = os.Remove(cbzPath)
+	}
+	legacyDir := cd.getChapterDownloadDir(downloadId)
+	if _, err := os.Stat(legacyDir); err == nil {
+		cd.logger.Warn().Msg("chapter downloader: legacy chapter directory already exists, deleting")
+		_ = os.RemoveAll(legacyDir)
 	}
 
 	// Start download
 	cd.logger.Debug().Msgf("chapter downloader: Adding chapter to download queue: %s", opts.ChapterId)
 	// Add to queue
-	return cd.queue.Add(downloadId, opts.Pages, opts.StartNow)
+	return cd.queue.Add(downloadId, opts.Pages, opts.MediaTitle, opts.ChapterTitle, opts.StartNow)
 }
 
-// DeleteChapter deletes a chapter directory from the download directory.
+// DeleteChapter deletes a downloaded chapter (CBZ archive or legacy folder) from the download directory.
 func (cd *Downloader) DeleteChapter(id DownloadID) error {
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
 
 	cd.logger.Debug().Msgf("chapter downloader: Deleting chapter %s", id.ChapterId)
 
+	_ = os.Remove(cd.getChapterCBZPath(id))
 	_ = os.RemoveAll(cd.getChapterDownloadDir(id))
+
+	// Remove the series directory once its last chapter is gone
+	seriesDir := filepath.Join(cd.downloadDir, FormatSeriesDirName(id.Provider, id.MediaId))
+	if entries, err := os.ReadDir(seriesDir); err == nil && len(entries) == 0 {
+		_ = os.Remove(seriesDir)
+	}
+
 	cd.logger.Debug().Msgf("chapter downloader: Removed chapter %s", id.ChapterId)
 	return nil
 }
@@ -222,22 +244,20 @@ func (cd *Downloader) run(queueInfo *QueueInfo) {
 	cd.chapterDownloadedCh <- queueInfo.DownloadID
 }
 
-// downloadChapterImages creates a directory for the chapter and downloads each image to that directory.
-// It also creates a Registry file that contains information about each image.
+// downloadChapterImages downloads each page image to a hidden staging directory,
+// then packs them into a CBZ archive (pages + ComicInfo.xml).
 //
 //	e.g.,
-//	📁 {provider}_{mediaId}_{chapterId}_{chapterNumber}
-//	   ├── 📄 registry.json
-//	   ├── 📄 1.jpg
-//	   ├── 📄 2.jpg
-//	   └── 📄 ...
+//	📁 {provider}_{mediaId}
+//	   └── 📄 {chapterNumber}_{chapterId}.cbz
 func (cd *Downloader) downloadChapterImages(queueInfo *QueueInfo) (err error) {
 
-	// Create download directory
-	// 📁 {provider}_{mediaId}_{chapterId}
-	destination := cd.getChapterDownloadDir(queueInfo.DownloadID)
+	// Create staging directory
+	// 📁 .downloading_{provider}_{mediaId}_{chapterId}_{chapterNumber}
+	destination := cd.getChapterStagingDir(queueInfo.DownloadID)
+	_ = os.RemoveAll(destination) // clear leftovers from a previous interrupted run
 	if err = os.MkdirAll(destination, os.ModePerm); err != nil {
-		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to create download directory for chapter %s", queueInfo.ChapterId)
+		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to create staging directory for chapter %s", queueInfo.ChapterId)
 		return err
 	}
 
@@ -285,8 +305,8 @@ func (cd *Downloader) downloadChapterImages(queueInfo *QueueInfo) (err error) {
 	}
 	wg.Wait()
 
-	// Write the registry
-	_ = registry.save(queueInfo, destination, cd.logger)
+	// Pack the staged pages into the chapter CBZ archive
+	_ = cd.finalizeChapter(queueInfo, destination, registry)
 
 	cd.queue.HasCompleted(queueInfo)
 
@@ -310,7 +330,7 @@ func (cd *Downloader) downloadPage(page *hibikemanga.ChapterPage, destination st
 
 	// Download image from URL
 
-	imgID := fmt.Sprintf("%02d", page.Index+1)
+	imgID := fmt.Sprintf("%03d", page.Index+1)
 
 	// Retry transient failures so a single network blip doesn't fail the whole chapter.
 	buf, err := manga_providers.GetImageByProxyWithRetry(page.URL, page.Headers, pageDownloadRetries)
@@ -361,45 +381,51 @@ func (cd *Downloader) downloadPage(page *hibikemanga.ChapterPage, destination st
 
 ////////////////////////
 
-// save saves the Registry content to a file in the chapter directory.
-func (r *Registry) save(queueInfo *QueueInfo, destination string, logger *zerolog.Logger) (err error) {
+// finalizeChapter validates that every page was downloaded to the staging
+// directory and packs the pages into the chapter's CBZ archive.
+// The staging directory is always removed; on failure the queue item is marked errored.
+func (cd *Downloader) finalizeChapter(queueInfo *QueueInfo, stagingDir string, registry Registry) (err error) {
 
-	defer util.HandlePanicInModuleThen("manga/downloader/save", func() {
-		err = fmt.Errorf("chapter downloader: Failed to save registry content")
+	defer util.HandlePanicInModuleThen("manga/downloader/finalizeChapter", func() {
+		err = fmt.Errorf("chapter downloader: Failed to create chapter archive")
+		queueInfo.Status = QueueStatusErrored
+		_ = os.RemoveAll(stagingDir)
 	})
 
 	// Verify all images have been downloaded
 	allDownloaded := true
 	for _, page := range queueInfo.Pages {
-		if _, ok := (*r)[page.Index]; !ok {
+		if _, ok := registry[page.Index]; !ok {
 			allDownloaded = false
 			break
 		}
 	}
 
 	if !allDownloaded {
-		// Clean up downloaded images
-		logger.Error().Msg("chapter downloader: Not all images have been downloaded, aborting")
+		cd.logger.Error().Msg("chapter downloader: Not all images have been downloaded, aborting")
 		queueInfo.Status = QueueStatusErrored
-		// Delete directory
-		go os.RemoveAll(destination)
+		_ = os.RemoveAll(stagingDir)
 		return fmt.Errorf("chapter downloader: Not all images have been downloaded, operation aborted")
 	}
 
-	// Create registry file
-	var data []byte
-	data, err = json.Marshal(*r)
-	if err != nil {
+	cbzPath := cd.getChapterCBZPath(queueInfo.DownloadID)
+	if err = os.MkdirAll(filepath.Dir(cbzPath), os.ModePerm); err != nil {
+		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to create series directory for chapter %s", queueInfo.ChapterId)
+		queueInfo.Status = QueueStatusErrored
+		_ = os.RemoveAll(stagingDir)
 		return err
 	}
 
-	registryFilePath := filepath.Join(destination, "registry.json")
-	err = os.WriteFile(registryFilePath, data, 0644)
-	if err != nil {
+	info := buildComicInfo(queueInfo.DownloadID, queueInfo.MediaTitle, queueInfo.ChapterTitle, registry)
+	if err = writeCBZ(cbzPath, stagingDir, registry, info); err != nil {
+		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to write chapter archive for chapter %s", queueInfo.ChapterId)
+		queueInfo.Status = QueueStatusErrored
+		_ = os.RemoveAll(stagingDir)
 		return err
 	}
 
-	return
+	_ = os.RemoveAll(stagingDir)
+	return nil
 }
 
 func (cd *Downloader) getChapterDownloadDir(downloadId DownloadID) string {
@@ -463,6 +489,3 @@ func UnescapeChapterID(id string) string {
 	return id
 }
 
-func (cd *Downloader) getChapterRegistryPath(downloadId DownloadID) string {
-	return filepath.Join(cd.getChapterDownloadDir(downloadId), "registry.json")
-}

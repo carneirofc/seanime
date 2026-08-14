@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	url2 "net/url"
 	"seanime/internal/security"
@@ -84,10 +83,10 @@ func (p *videoProxy) newClient(verifyTLS bool, allowHTTP2 bool) *http.Client {
 
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
+		// Enforced per connection rather than per URL: the redirect check below
+		// inspects the URL it is handed, but only the dialer sees the address that
+		// is actually connected to, which is what a rebinding DNS answer changes.
+		DialContext:           security.HardenedDialContext(30*time.Second, 30*time.Second),
 		MaxIdleConns:          100,
 		MaxIdleConnsPerHost:   10,
 		IdleConnTimeout:       90 * time.Second,

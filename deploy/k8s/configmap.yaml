@@ -1,0 +1,81 @@
+# Seanime's config lives at <datadir>/config.toml and the server writes to it at
+# runtime, so it cannot be a read-only ConfigMap mount. The Deployment's init
+# container copies this file into the data volume on every start, which makes this
+# ConfigMap the source of truth and any in-place edit inside the pod ephemeral.
+#
+# See config.example.toml in the repository root for the full annotated reference.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seanime-config
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+data:
+  config.toml: |
+    [server]
+    # Bind on all interfaces inside the pod. The Service is ClusterIP and the
+    # NetworkPolicy only admits the ingress controller, so this is not exposure.
+    host = "0.0.0.0"
+    port = 43211
+
+    # REQUIRED under OIDC: the server refuses to start without it. Every address
+    # here is trusted to state the real client IP via X-Forwarded-For, so it must
+    # list your ingress controller's pod addresses and nothing else. Widening it
+    # to the whole pod CIDR would let any pod in the cluster forge client IPs and
+    # defeat the auth rate limiter.
+    #
+    # Find them with:
+    #   kubectl -n ingress-nginx get pods -o jsonpath='{.items[*].status.podIP}'
+    #
+    # These change when the controller reschedules; prefer a stable controller
+    # subnet if your CNI gives you one.
+    trustedproxies = ["10.42.0.0/24"]
+
+    # Canonical public URL. Required for OIDC redirects and proxy-aware cookies,
+    # and must match the Ingress host exactly.
+    externalurl = "https://seanime.example.com"
+
+    # Privileged capabilities, granted here and nowhere else — no source address,
+    # header or authenticated session can grant them. Leaving this unset on a
+    # server deployment denies all of them, which is the right default here:
+    #
+    #   "exec"        spawn processes (media players, torrent clients, a custom
+    #                 ffmpeg binary, "open in file explorer", plugin $os.cmd)
+    #   "filesystem"  browse and manage the host filesystem outside the media
+    #                 roots, and repoint the library/download roots
+    #   "extensions"  install and reload third-party extensions — extension code
+    #                 runs in-process, so this is equivalent to code execution
+    #   "selfupdate"  replace the running binary; pointless in a container, where
+    #                 the new binary is discarded on the next restart
+    #   "nakama-host" serve the peer-to-peer host endpoints, which authenticate
+    #                 with a shared password instead of the OIDC session
+    #
+    # Granting any of these to an internet-facing deployment means an attacker who
+    # gets a session gets that capability too. Grant nothing you do not need.
+    capabilities = []
+
+    # Confines outbound fetches to publicly routable addresses, so a compromised
+    # session or extension cannot reach the API server, the kubelet, the cloud
+    # metadata endpoint, or an unauthenticated neighbouring service. The
+    # NetworkPolicy enforces the same boundary from outside the process; keep both.
+    securemode = "strict"
+
+    [server.oidc]
+    issuerurl = "https://idp.example.com"
+    clientid = "seanime"
+    # The secret comes from the SEANIME_OIDC_CLIENT_SECRET environment variable,
+    # sourced from the seanime-oidc Secret. Never put it here.
+
+    # At least one of these MUST be non-empty — the server refuses to start with an
+    # empty allowlist. Prefer subjects: they survive a username change at the IdP.
+    allowedsubjects = ["248289761001"]
+    allowedusernames = []
+
+    # sessionttldays = 30    # sliding expiry
+    # sessionmaxdays = 90    # absolute cap
+
+    [server.tls]
+    # TLS terminates at the ingress controller; the pod speaks plain HTTP on the
+    # cluster network.
+    enabled = false

@@ -478,7 +478,7 @@ function TorrentStep({ form }: { form: any }) {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <Field.Text name="qbittorrentHost" label="Host" />
                                         <Field.Text name="qbittorrentUsername" label="Username" />
-                                        <Field.Text name="qbittorrentPassword" label="Password" />
+                                        <Field.Text name="qbittorrentPassword" label="Password" type="password" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-[200px_1fr]">
                                         <Field.Number name="qbittorrentPort" label="Port" formatOptions={{ useGrouping: false }} />
@@ -496,7 +496,7 @@ function TorrentStep({ form }: { form: any }) {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <Field.Text name="transmissionHost" label="Host" />
                                         <Field.Text name="transmissionUsername" label="Username" />
-                                        <Field.Text name="transmissionPassword" label="Password" />
+                                        <Field.Text name="transmissionPassword" label="Password" type="password" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-[200px_1fr]">
                                         <Field.Number name="transmissionPort" label="Port" formatOptions={{ useGrouping: false }} />
@@ -555,6 +555,7 @@ function DebridStep({ form }: { form: any }) {
                                 <Field.Text
                                     name="debridApiKey"
                                     label="API Key"
+                                    type="password"
                                     help="The API key provided by the debrid service."
                                 />
                             </motion.div>

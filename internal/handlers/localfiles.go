@@ -74,10 +74,6 @@ func (h *Handler) HandleImportLocalFiles(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	if err := h.guardStrictLocalOnlyAction(c); err != nil {
-		return err
-	}
-
 	if err := h.guardStrictFilesystemPath(c, b.DataFilePath); err != nil {
 		return err
 	}

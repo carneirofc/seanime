@@ -7,8 +7,10 @@ import {
     InstallExternalExtensionRepository_Variables,
     ReloadExternalExtension_Variables,
     ReloadExternalExtensionFromSource_Variables,
+    RemoveExtensionGitToken_Variables,
     RunExtensionPlaygroundCode_Variables,
     SaveExtensionUserConfig_Variables,
+    SetExtensionGitToken_Variables,
     SetExternalExtensionDisabled_Variables,
     SetPluginSettingsPinnedTrays_Variables,
     UninstallExternalExtension_Variables,
@@ -22,6 +24,7 @@ import {
     ExtensionRepo_CustomSourceExtensionItem,
     ExtensionRepo_ExtensionInstallResponse,
     ExtensionRepo_ExtensionUserConfig,
+    ExtensionRepo_GitTokenInfo,
     ExtensionRepo_MangaProviderExtensionItem,
     ExtensionRepo_OnlinestreamProviderExtensionItem,
     ExtensionRepo_PluginEpisodeTabExtensionItem,
@@ -340,5 +343,42 @@ export function useGetExtensionUpdateData() {
         method: API_ENDPOINTS.EXTENSIONS.GetExtensionUpdateData.methods[0],
         queryKey: [API_ENDPOINTS.EXTENSIONS.GetExtensionUpdateData.key],
         enabled: true,
+    })
+}
+
+export function useListExtensionGitTokens() {
+    return useServerQuery<Array<ExtensionRepo_GitTokenInfo>>({
+        endpoint: API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.endpoint,
+        method: API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.methods[0],
+        queryKey: [API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.key],
+        enabled: true,
+    })
+}
+
+export function useSetExtensionGitToken() {
+    const queryClient = useQueryClient()
+
+    return useServerMutation<boolean, SetExtensionGitToken_Variables>({
+        endpoint: API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.endpoint,
+        method: API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.methods[0],
+        mutationKey: [API_ENDPOINTS.EXTENSIONS.SetExtensionGitToken.key],
+        onSuccess: async () => {
+            toast.success("Token saved")
+            await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.key] })
+        },
+    })
+}
+
+export function useRemoveExtensionGitToken() {
+    const queryClient = useQueryClient()
+
+    return useServerMutation<boolean, RemoveExtensionGitToken_Variables>({
+        endpoint: API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.endpoint,
+        method: API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.methods[0],
+        mutationKey: [API_ENDPOINTS.EXTENSIONS.RemoveExtensionGitToken.key],
+        onSuccess: async () => {
+            toast.success("Token removed")
+            await queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.EXTENSIONS.ListExtensionGitTokens.key] })
+        },
     })
 }

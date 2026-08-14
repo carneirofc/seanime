@@ -918,6 +918,26 @@ export const API_ENDPOINTS = {
             methods: ["GET"],
             endpoint: "/api/v1/extensions/marketplace",
         },
+        ListExtensionGitTokens: {
+            key: "EXTENSIONS-list-extension-git-tokens",
+            methods: ["GET"],
+            endpoint: "/api/v1/extensions/git-tokens",
+        },
+        /**
+         *  @description
+         *  Route stores a git access token for a repository pattern, enabling private repositories as extension sources.
+         *  The repository can be a full URL, "host/owner/repo", "host/owner" or a bare host.
+         */
+        SetExtensionGitToken: {
+            key: "EXTENSIONS-set-extension-git-token",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/git-tokens",
+        },
+        RemoveExtensionGitToken: {
+            key: "EXTENSIONS-remove-extension-git-token",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/git-tokens/remove",
+        },
     },
     FILE_SELECTOR: {
         /**
@@ -1487,6 +1507,27 @@ export const API_ENDPOINTS = {
         },
         /**
          *  @description
+         *  Route downloads a chapter's CBZ archive file.
+         *  This serves the chapter's CBZ archive as a file attachment.
+         *  Chapters still stored in the legacy loose-image layout are converted to CBZ on the fly.
+         */
+        DownloadMangaChapterArchive: {
+            key: "MANGA-DOWNLOAD-download-manga-chapter-archive",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/downloads/chapter-archive",
+        },
+        /**
+         *  @description
+         *  Route downloads all downloaded chapters of a media as a zip of CBZ files.
+         *  This streams a zip archive containing one CBZ file per downloaded chapter for the given provider and media.
+         */
+        DownloadMangaMediaArchive: {
+            key: "MANGA-DOWNLOAD-download-manga-media-archive",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/downloads/media-archive",
+        },
+        /**
+         *  @description
          *  Route displays the list of downloaded manga.
          *  This analyzes the download folder and returns a well-formatted structure for displaying downloaded manga.
          *  It returns a list of manga.DownloadListItem where the media data might be nil if it's not in the AniList collection.
@@ -1868,6 +1909,19 @@ export const API_ENDPOINTS = {
             key: "OIDC-AUTH-get-media-token",
             methods: ["GET"],
             endpoint: "/api/v1/auth/media-token",
+        },
+        /**
+         *  @description
+         *  Route mints a short-lived ticket for opening the /events websocket.
+         *  Browsers cannot set headers on a websocket upgrade, so the credential would
+         *  otherwise have to travel in the URL, where every proxy in front of the server
+         *  logs it. Authenticated clients exchange their credential for a minute-long
+         *  ticket here and put that in the query string instead.
+         */
+        GetWebsocketTicket: {
+            key: "OIDC-AUTH-get-websocket-ticket",
+            methods: ["GET"],
+            endpoint: "/api/v1/auth/ws-ticket",
         },
     },
     ONLINESTREAM: {

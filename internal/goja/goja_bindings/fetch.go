@@ -28,15 +28,21 @@ const (
 // Fetch
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Both clients dial through the hardened dialer. Extension code chooses the URL and
+// follows redirects, so the pre-flight ValidateOutboundUrl below only covers the
+// first hop and only the name as written; the dialer is what actually keeps an
+// extension from reaching the machine's own network.
 var (
 	clientWithCloudFlareBypass = req.C().
 					SetUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
 					SetTimeout(defaultTimeout).
+					SetDial(security.HardenedDialContext(30*time.Second, 30*time.Second)).
 					EnableInsecureSkipVerify().
 					ImpersonateChrome()
 
 	clientWithoutBypass = req.C().
-				SetTimeout(defaultTimeout)
+				SetTimeout(defaultTimeout).
+				SetDial(security.HardenedDialContext(30*time.Second, 30*time.Second))
 )
 
 type Fetch struct {
@@ -46,12 +52,7 @@ type Fetch struct {
 	closed         atomic.Bool
 	allowedDomains []string // empty = allow all domains
 	rules          []accessRule
-	anilistToken   string
 	extensionId    string
-}
-
-func (f *Fetch) SetAnilistToken(token string) {
-	f.anilistToken = token
 }
 
 // accessRule represents a pre-parsed allowed domain pattern

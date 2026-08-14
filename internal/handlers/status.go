@@ -116,16 +116,13 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 		return status
 	}
 
-	if isStrictModeSensitive(c.Request(), h.hasServerAuth()) {
+	if isStrictModeSensitive(h.hasServerAuth()) {
 		return h.newRestrictedStatus()
 	}
 
 	// Get the user from the database (if logged in)
 	if dbAcc, _ = h.App.Database.GetAccount(); dbAcc != nil {
 		currentUser, _ = user.NewUser(dbAcc)
-		if currentUser != nil {
-			currentUser.Token = "HIDDEN"
-		}
 	} else {
 		// If the user is not logged in, create a simulated user
 		currentUser = user.NewSimulatedUser()
@@ -153,14 +150,14 @@ func (h *Handler) NewStatus(c echo.Context) *Status {
 		DataDir:               h.App.Config.Data.AppDataDir,
 		ClientUserAgent:       c.Request().UserAgent(),
 		User:                  currentUser,
-		Settings:              settings,
+		Settings:              models.RedactedSettings(settings),
 		Version:               h.App.Version,
 		VersionName:           constants.VersionName,
 		ThemeSettings:         theme,
 		IsOffline:             h.App.Config.Server.Offline,
 		MediastreamSettings:   h.App.SecondarySettings.Mediastream,
 		TorrentstreamSettings: h.App.SecondarySettings.Torrentstream,
-		DebridSettings:        h.App.SecondarySettings.Debrid,
+		DebridSettings:        models.RedactedDebridSettings(h.App.SecondarySettings.Debrid),
 		AnilistClientID:       h.App.Config.Anilist.ClientID,
 		Updating:              false,
 		FeatureFlags:          h.App.FeatureFlags,
@@ -231,6 +228,7 @@ func (h *Handler) HandleGetLogContent(c echo.Context) error {
 		Settings:       h.App.Settings,
 		DebridSettings: h.App.SecondarySettings.Debrid,
 		Username:       h.App.GetUsername(),
+		AnilistToken:   h.App.Database.GetAnilistToken(),
 	})
 
 	return h.RespondWithData(c, content)
@@ -414,6 +412,7 @@ func (h *Handler) HandleGetLatestLogContent(c echo.Context) error {
 		Settings:       h.App.Settings,
 		DebridSettings: h.App.SecondarySettings.Debrid,
 		Username:       h.App.GetUsername(),
+		AnilistToken:   h.App.Database.GetAnilistToken(),
 	})
 
 	return h.RespondWithData(c, content)

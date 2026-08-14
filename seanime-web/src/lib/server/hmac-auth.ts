@@ -56,13 +56,15 @@ class HMACAuth {
     }
 }
 
-// HMAC auth instance using server password (for server endpoints)
-export function createServerPasswordHMACAuth(password: string): HMACAuth {
-    const secret = password !== "" ? password : "seanime-default-secret"
-    return new HMACAuth(secret, 24 * 60 * 60)
-}
+/**
+ * How long a client-minted query token claims to be valid for. The server enforces
+ * the same bound on validation (core.MediaTokenTTL), so claiming longer here would
+ * only produce tokens that stop working early — keep the two in sync.
+ */
+const MEDIA_TOKEN_TTL_SECONDS = 6 * 60 * 60
 
-// HMAC auth instance using Nakama password (for Nakama endpoints)
-export function createNakamaHMACAuth(nakamaPassword: string): HMACAuth {
-    return new HMACAuth(nakamaPassword, 24 * 60 * 60)
+// HMAC auth instance using the stored server credential (for media URLs in password
+// mode). Callers already establish that a credential exists before minting.
+export function createServerPasswordHMACAuth(password: string): HMACAuth {
+    return new HMACAuth(password, MEDIA_TOKEN_TTL_SECONDS)
 }

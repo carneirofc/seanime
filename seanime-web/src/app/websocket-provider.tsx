@@ -1,4 +1,6 @@
+import { buildSeaQuery } from "@/api/client/requests"
 import { getServerBaseUrl } from "@/api/client/server-url"
+import { API_ENDPOINTS } from "@/api/generated/endpoints"
 import { serverAuthTokenAtom, serverStatusAtom } from "@/app/(main)/_atoms/server-status.atoms"
 import { websocketAtom, WebSocketContext } from "@/app/(main)/_atoms/websocket.atoms"
 import { ExtensionPrompt } from "@/app/(main)/_features/plugin/extension-prompt"
@@ -19,6 +21,31 @@ export function uuidv4(): string {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
         (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
     )
+}
+
+/**
+ * Exchanges the stored credential for a short-lived ticket to open the event stream.
+ *
+ * A websocket handshake cannot carry headers, so whatever authenticates it has to go
+ * in the URL — and the reverse proxy in front of the server logs URLs. The ticket is
+ * signed, scoped to /events and good for about a minute, so what lands in that log is
+ * close to worthless instead of being the credential itself.
+ *
+ * Returns "" if the ticket cannot be minted; the caller then connects without one and
+ * the normal reconnect loop retries.
+ */
+async function fetchWebsocketTicket(password: string): Promise<string> {
+    try {
+        const ticket = await buildSeaQuery<string>({
+            endpoint: API_ENDPOINTS.OIDC_AUTH.GetWebsocketTicket.endpoint,
+            method: API_ENDPOINTS.OIDC_AUTH.GetWebsocketTicket.methods[0],
+            password,
+        })
+        return ticket ?? ""
+    }
+    catch {
+        return ""
+    }
 }
 
 export const websocketConnectedAtom = atom(false)
@@ -98,6 +125,7 @@ function WebsocketManagement() {
     const socketRef = React.useRef<WebSocket | null>(null)
     const clientIdRef = React.useRef<string>("")
     const clientIdProofRef = React.useRef<string>("")
+    const connectAttemptRef = React.useRef<number>(0)
     const connectWebSocketRef = React.useRef<(() => void) | null>(null)
     const clearAllIntervalsRef = React.useRef<(() => void) | null>(null)
     const wasDisconnected = React.useRef<boolean>(false)
@@ -164,10 +192,15 @@ function WebsocketManagement() {
 
         clearAllIntervalsRef.current = clearAllIntervals
 
-        function connectWebSocket() {
+        async function connectWebSocket() {
             if (shouldPauseForAuthRef.current) {
                 return
             }
+
+            // Minting the ticket below is async, so a reconnect can be scheduled while
+            // we are still awaiting it. Stamp each attempt and let a newer one win,
+            // rather than opening two sockets.
+            const attempt = ++connectAttemptRef.current
 
             // Clear existing connection attempts
             clearAllIntervals()
@@ -185,6 +218,15 @@ function WebsocketManagement() {
             const wsUrl = `${document.location.protocol == "https:" ? "wss" : "ws"}://${getServerBaseUrl(true)}/events`
             const { clientId, clientIdProof } = initClientIdentity()
 
+            // Password mode: trade the credential for a ticket rather than putting the
+            // credential in the URL. OIDC mode authenticates the upgrade with the
+            // session cookie and needs nothing here.
+            let ticket = ""
+            if (serverAuthTokenRef.current) {
+                ticket = await fetchWebsocketTicket(serverAuthTokenRef.current)
+                if (attempt !== connectAttemptRef.current) return
+            }
+
             try {
                 const queryParams = new URLSearchParams()
                 if (clientId) {
@@ -196,8 +238,8 @@ function WebsocketManagement() {
                 if (__clientPlatform__) {
                     queryParams.set("platform", __clientPlatform__)
                 }
-                if (serverAuthTokenRef.current) {
-                    queryParams.set("token", serverAuthTokenRef.current)
+                if (ticket) {
+                    queryParams.set("token", ticket)
                 }
                 const query = queryParams.toString()
                 socketRef.current = new WebSocket(query ? `${wsUrl}?${query}` : wsUrl)

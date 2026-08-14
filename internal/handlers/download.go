@@ -51,10 +51,6 @@ func (h *Handler) HandleDownloadTorrentFile(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	if err := h.guardStrictLocalOnlyAction(c); err != nil {
-		return err
-	}
-
 	if b.Destination == "" {
 		return h.RespondWithError(c, errors.New("destination not found"))
 	}
@@ -63,6 +59,8 @@ func (h *Handler) HandleDownloadTorrentFile(c echo.Context) error {
 		return h.RespondWithError(c, errors.New("destination path must be absolute"))
 	}
 
+	// Containing the destination is the control here; the download itself is an
+	// ordinary library action.
 	if err := h.guardStrictFilesystemPath(c, b.Destination); err != nil {
 		return err
 	}
@@ -250,7 +248,9 @@ func (h *Handler) HandleDownloadRelease(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	if err := h.guardStrictLocalOnlyAction(c); err != nil {
+	// Fetching a release archive and unpacking it onto the host is the first half of
+	// a self-update, so it carries the same capability.
+	if err := h.guardSelfUpdate(c); err != nil {
 		return err
 	}
 

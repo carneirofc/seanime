@@ -43,6 +43,9 @@ type (
 		Pages          []*hibikemanga.ChapterPage
 		DownloadedUrls []string
 		Status         QueueStatus
+		// MediaTitle and ChapterTitle feed the ComicInfo.xml metadata. May be empty.
+		MediaTitle   string
+		ChapterTitle string
 	}
 )
 
@@ -57,7 +60,7 @@ func NewQueue(db *db.Database, logger *zerolog.Logger, wsEventManager events.WSE
 
 // Add adds a chapter to the download queue.
 // It tells the queue to download the next item if possible.
-func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, runNext bool) error {
+func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, mediaTitle string, chapterTitle string, runNext bool) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
@@ -73,6 +76,8 @@ func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, runNext boo
 		MediaID:       id.MediaId,
 		ChapterNumber: id.ChapterNumber,
 		ChapterID:     id.ChapterId,
+		MediaTitle:    mediaTitle,
+		ChapterTitle:  chapterTitle,
 		PageData:      marshalled,
 		Status:        string(QueueStatusNotStarted),
 	})
@@ -222,6 +227,8 @@ func (q *Queue) prepareNext() (current *QueueInfo, id DownloadID, ok bool) {
 		DownloadID:     id,
 		DownloadedUrls: make([]string, 0),
 		Status:         QueueStatusDownloading,
+		MediaTitle:     next.MediaTitle,
+		ChapterTitle:   next.ChapterTitle,
 	}
 
 	// Unmarshal the page data.

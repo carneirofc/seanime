@@ -1,0 +1,123 @@
+# Network containment.
+#
+# This is the layer that actually bounds the residual risk in the image. Seanime
+# fetches URLs chosen by remote content, by extensions, and by the proxy and
+# image-proxy endpoints. The server refuses non-public destinations at dial time
+# (internal/security/outbound.go), but that check lives in the same process as the
+# code it is defending against: an extension with in-process execution, or a bug in
+# the transcoder, is on the wrong side of it. The NetworkPolicy is enforced by the
+# CNI, outside the process, and does not care whether the process is compromised.
+#
+# REQUIRES a CNI that implements NetworkPolicy — Calico, Cilium, Antrea, Weave.
+# Flannel alone ignores these objects entirely, and applying them will appear to
+# succeed while enforcing nothing. Verify before relying on it.
+#
+# Adjust the ingress-controller selector and the DNS selector to your cluster.
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: seanime-default-deny
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  # No rules: everything is denied unless another policy allows it. Rules across
+  # policies are additive, so the two below open exactly what is needed.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: seanime-allow-ingress-controller
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: seanime
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only the ingress controller may reach the app. This is what stops a
+    # neighbouring pod from connecting straight to the pod IP on 43211 and
+    # skipping the proxy — and with it the TLS termination, the forwarded-header
+    # handling, and any WAF or rate limiting you run at the edge.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - port: 43211
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: seanime-allow-egress
+  namespace: seanime
+  labels:
+    app.kubernetes.io/name: seanime
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: seanime
+  policyTypes:
+    - Egress
+  egress:
+    # DNS. Without this every outbound name lookup fails and the app cannot reach
+    # the identity provider, so nothing works.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+    # The public internet, and nothing else: the identity provider's discovery and
+    # token endpoints, AniList, metadata providers, torrent trackers and peers,
+    # debrid services, extension marketplaces.
+    #
+    # The excluded ranges are the ones an SSRF is aimed at. 169.254.0.0/16 covers
+    # the cloud metadata endpoint (169.254.169.254), whose credentials are usually
+    # the most valuable thing reachable from inside a pod. The RFC 1918 ranges
+    # cover the API server, the kubelet, and every unauthenticated in-cluster
+    # service. 100.64.0.0/10 is carrier-grade NAT, which several managed clusters
+    # (EKS pods, Tailscale) use for real infrastructure.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 100.64.0.0/10
+              - 169.254.0.0/16
+              - 127.0.0.0/8
+              - 0.0.0.0/8
+              - 224.0.0.0/4
+
+    # If your media volume is NFS/CIFS on a private address, the mount is made by
+    # the kubelet rather than the pod and needs no rule here. But anything the app
+    # itself must reach on a private address — an in-cluster qBittorrent, a LAN
+    # Jellyfin — needs an explicit rule, because the range above is excluded:
+    #
+    # - to:
+    #     - ipBlock:
+    #         cidr: 10.1.2.3/32
+    #   ports:
+    #     - port: 8080
+    #       protocol: TCP
