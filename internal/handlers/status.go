@@ -228,6 +228,7 @@ func (h *Handler) HandleGetLogContent(c echo.Context) error {
 		Settings:       h.App.Settings,
 		DebridSettings: h.App.SecondarySettings.Debrid,
 		Username:       h.App.GetUsername(),
+		AnilistToken:   h.App.Database.GetAnilistToken(),
 	})
 
 	return h.RespondWithData(c, content)
@@ -411,6 +412,7 @@ func (h *Handler) HandleGetLatestLogContent(c echo.Context) error {
 		Settings:       h.App.Settings,
 		DebridSettings: h.App.SecondarySettings.Debrid,
 		Username:       h.App.GetUsername(),
+		AnilistToken:   h.App.Database.GetAnilistToken(),
 	})
 
 	return h.RespondWithData(c, content)

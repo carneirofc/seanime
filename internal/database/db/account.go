@@ -3,11 +3,30 @@ package db
 import (
 	"errors"
 	"seanime/internal/database/models"
+	"sync"
 
 	"gorm.io/gorm/clause"
 )
 
-var accountCache *models.Account
+// accountCache holds the logged-in account, including the AniList access token.
+// It is written on login/logout and read by request handlers, so it is guarded:
+// without the mutex the login write races every concurrent reader.
+var (
+	accountCacheMu sync.RWMutex
+	accountCache   *models.Account
+)
+
+func setAccountCache(acc *models.Account) {
+	accountCacheMu.Lock()
+	defer accountCacheMu.Unlock()
+	accountCache = acc
+}
+
+func getAccountCache() *models.Account {
+	accountCacheMu.RLock()
+	defer accountCacheMu.RUnlock()
+	return accountCache
+}
 
 func (db *Database) UpsertAccount(acc *models.Account) (*models.Account, error) {
 	err := db.gormdb.Clauses(clause.OnConflict{
@@ -21,9 +40,9 @@ func (db *Database) UpsertAccount(acc *models.Account) (*models.Account, error) 
 	}
 
 	if acc.Username != "" {
-		accountCache = acc
+		setAccountCache(acc)
 	} else {
-		accountCache = nil
+		setAccountCache(nil)
 	}
 
 	return acc, nil
@@ -31,8 +50,8 @@ func (db *Database) UpsertAccount(acc *models.Account) (*models.Account, error) 
 
 func (db *Database) GetAccount() (*models.Account, error) {
 
-	if accountCache != nil {
-		return accountCache, nil
+	if cached := getAccountCache(); cached != nil {
+		return cached, nil
 	}
 
 	var acc models.Account
@@ -44,7 +63,7 @@ func (db *Database) GetAccount() (*models.Account, error) {
 		return nil, errors.New("account not found")
 	}
 
-	accountCache = &acc
+	setAccountCache(&acc)
 
 	return &acc, err
 }

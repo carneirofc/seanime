@@ -43,8 +43,13 @@ func NewDatabase(appDataDir, dbName string, logger *zerolog.Logger) (*Database, 
 				SlowThreshold:             time.Second,
 				LogLevel:                  gormlogger.Error,
 				IgnoreRecordNotFoundError: true,
-				ParameterizedQueries:      false,
-				Colorful:                  true,
+				// Log placeholders, not values. A failing query is logged with its SQL,
+				// and the rows here hold the AniList access token, the media-player and
+				// torrent-client passwords and the Nakama passwords - an error writing
+				// any of them would otherwise print the credential into the log file
+				// that issue reports bundle.
+				ParameterizedQueries: true,
+				Colorful:             true,
 			},
 		),
 	})

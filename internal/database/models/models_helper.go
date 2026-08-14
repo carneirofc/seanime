@@ -78,6 +78,7 @@ func (s *Settings) GetSensitiveValues() []string {
 	}
 	return []string{
 		s.GetMediaPlayer().VlcPassword,
+		s.GetMediaPlayer().VcTranslateApiKey,
 		s.GetTorrent().QBittorrentPassword,
 		s.GetTorrent().TransmissionPassword,
 		s.GetNakama().RemoteServerPassword,

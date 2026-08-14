@@ -46034,15 +46034,6 @@
         "comments": []
       },
       {
-        "name": "anilistToken",
-        "jsonName": "anilistToken",
-        "goType": "string",
-        "typescriptType": "string",
-        "required": true,
-        "public": false,
-        "comments": []
-      },
-      {
         "name": "extensionId",
         "jsonName": "extensionId",
         "goType": "string",
@@ -91240,6 +91231,15 @@
         "required": true,
         "public": true,
         "comments": []
+      },
+      {
+        "name": "AnilistToken",
+        "jsonName": "",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
       }
     ],
     "comments": []
@@ -91285,6 +91285,15 @@
       {
         "name": "Username",
         "jsonName": "Username",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AnilistToken",
+        "jsonName": "AnilistToken",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
