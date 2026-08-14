@@ -52,12 +52,7 @@ type Fetch struct {
 	closed         atomic.Bool
 	allowedDomains []string // empty = allow all domains
 	rules          []accessRule
-	anilistToken   string
 	extensionId    string
-}
-
-func (f *Fetch) SetAnilistToken(token string) {
-	f.anilistToken = token
 }
 
 // accessRule represents a pre-parsed allowed domain pattern

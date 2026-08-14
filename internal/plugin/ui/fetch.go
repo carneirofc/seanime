@@ -6,9 +6,12 @@ import (
 	"github.com/dop251/goja"
 )
 
-func (c *Context) bindFetch(obj *goja.Object, allowedDomains []string, anilistToken string) {
+// bindFetch binds $fetch. It deliberately has no access to the AniList token: a
+// plugin that needs one asks for the anilist-token permission and reads it through
+// $database, rather than having it handed to the binding that talks to arbitrary
+// hosts.
+func (c *Context) bindFetch(obj *goja.Object, allowedDomains []string) {
 	f := goja_bindings.NewFetch(c.ext.ID, c.vm, allowedDomains)
-	f.SetAnilistToken(anilistToken)
 
 	_ = obj.Set("fetch", f.Fetch)
 

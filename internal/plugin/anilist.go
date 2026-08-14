@@ -10,6 +10,7 @@ import (
 	"seanime/internal/library/anime"
 	"seanime/internal/platforms/platform"
 	gojautil "seanime/internal/util/goja"
+	"strings"
 
 	"github.com/dop251/goja"
 	"github.com/rs/zerolog"
@@ -190,8 +191,16 @@ func customClientPromptOptions(ext *extension.Extension, config anilist.CustomCl
 	}
 
 	details := []string{"Endpoint: " + config.Endpoint}
-	if config.Authenticated || config.Token != "" || len(config.Headers) > 0 {
-		details = append(details, "May authenticate requests")
+
+	// Say plainly whose credential travels to that endpoint. The custom provider
+	// falls back to Seanime's stored AniList token whenever the extension supplies
+	// neither a token nor an Authorization header, so passing nothing but an endpoint
+	// is precisely the case that hands over the user's account - and the case the old
+	// wording stayed silent about.
+	if config.Token != "" || hasAuthorizationHeader(config.Headers) {
+		details = append(details, "The extension authenticates with its own credentials")
+	} else {
+		details = append(details, "Your AniList account token will be sent to this endpoint")
 	}
 
 	return prompt.Options{
@@ -202,6 +211,18 @@ func customClientPromptOptions(ext *extension.Extension, config anilist.CustomCl
 		Details:    details,
 		AllowLabel: "Switch",
 	}
+}
+
+// hasAuthorizationHeader reports whether the extension sets its own Authorization
+// header, which overrides the token the provider would otherwise attach.
+func hasAuthorizationHeader(headers map[string]string) bool {
+	for key := range headers {
+		if strings.EqualFold(strings.TrimSpace(key), "Authorization") {
+			return true
+		}
+	}
+
+	return false
 }
 
 func readCustomClientConfig(vm *goja.Runtime, value goja.Value) (anilist.CustomClientConfig, error) {
