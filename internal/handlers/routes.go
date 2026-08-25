@@ -470,6 +470,16 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 
 	v1Manga.GET("/local-page/:path", h.HandleGetLocalMangaPage)
 
+	v1Manga.GET("/local/library", h.HandleGetLocalMangaLibrary)
+	v1Manga.GET("/local/chapters", h.HandleGetLocalMangaChapters)
+	v1Manga.POST("/local/scan", h.HandleScanLocalMangaLibrary)
+	v1Manga.POST("/local/upload", h.HandleUploadLocalMangaArchive)
+	v1Manga.POST("/local/repack", h.HandleRepackLocalMangaSeries)
+	v1Manga.POST("/local/map", h.HandleMapLocalMangaSeries)
+	v1Manga.DELETE("/local/series", h.HandleDeleteLocalMangaSeries)
+	v1Manga.GET("/local/chapter-archive", h.HandleDownloadLocalMangaChapter)
+	v1Manga.GET("/local/series-archive", h.HandleDownloadLocalMangaSeries)
+
 	//
 	// File Cache
 	//
