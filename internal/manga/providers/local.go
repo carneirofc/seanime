@@ -3,6 +3,7 @@ package manga_providers
 import (
 	"archive/zip"
 	"bytes"
+	"cmp"
 	"fmt"
 	// "image/jpeg"
 	"io"
@@ -398,6 +399,24 @@ func (p *Local) FindChapterPages(id string) (ret []*hibikemanga.ChapterPage, err
 
 	ext := filepath.Ext(fullpath)
 
+	// Pages are addressed by filename alone (see ReadPage), so an archive that
+	// keeps its images in folders needs a flat, unique name per page or the
+	// lookup misses and the chapter reads as empty.
+	usedPageNames := make(map[string]struct{})
+	flattenPageName := func(entryName string) string {
+		base := filepath.Base(filepath.ToSlash(entryName))
+		candidate := base
+		for suffix := 2; ; suffix++ {
+			if _, taken := usedPageNames[strings.ToLower(candidate)]; !taken {
+				break
+			}
+			ext := filepath.Ext(base)
+			candidate = fmt.Sprintf("%s_%d%s", strings.TrimSuffix(base, ext), suffix, ext)
+		}
+		usedPageNames[strings.ToLower(candidate)] = struct{}{}
+		return candidate
+	}
+
 	// Close the current pages
 	if p.currentZipCloser != nil {
 		_ = p.currentZipCloser.Close()
@@ -432,11 +451,12 @@ func (p *Local) FindChapterPages(id string) (ret []*hibikemanga.ChapterPage, err
 			if err != nil {
 				return nil, fmt.Errorf("failed to read page: %w", err)
 			}
-			p.currentPages.Set(strings.ToLower(f.Name), &loadedPage{
+			pageName := flattenPageName(f.Name)
+			p.currentPages.Set(strings.ToLower(pageName), &loadedPage{
 				buf: buf,
 				page: &hibikemanga.ChapterPage{
 					Provider: LocalProvider,
-					URL:      formatUrl(f.Name),
+					URL:      formatUrl(pageName),
 					Index:    0, // placeholder, will be set later
 					Buf:      buf,
 				},
@@ -499,11 +519,12 @@ func (p *Local) FindChapterPages(id string) (ret []*hibikemanga.ChapterPage, err
 			if err != nil {
 				return nil, fmt.Errorf("failed to read page: %w", err)
 			}
-			p.currentPages.Set(strings.ToLower(entry.Name()), &loadedPage{
+			pageName := flattenPageName(entry.Name())
+			p.currentPages.Set(strings.ToLower(pageName), &loadedPage{
 				buf: buf,
 				page: &hibikemanga.ChapterPage{
 					Provider: LocalProvider,
-					URL:      formatUrl(entry.Name()),
+					URL:      formatUrl(pageName),
 					Index:    0, // placeholder, will be set later
 					Buf:      buf,
 				},
@@ -531,8 +552,13 @@ func (p *Local) FindChapterPages(id string) (ret []*hibikemanga.ChapterPage, err
 		return true
 	})
 
-	// Sort pages
+	// Sort pages by the number parsed out of their filename. Comparing the names
+	// as strings instead would put page 10 before page 2 in any archive whose
+	// pages are not zero-padded.
 	slices.SortFunc(pages, func(a, b *pageStruct) int {
+		if a.Number != b.Number {
+			return cmp.Compare(a.Number, b.Number)
+		}
 		return strings.Compare(filepath.Base(a.LoadedPage.page.URL), filepath.Base(b.LoadedPage.page.URL))
 	})
 
