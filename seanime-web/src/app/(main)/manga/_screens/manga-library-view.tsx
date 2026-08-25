@@ -11,6 +11,7 @@ import { SeaCommandInjectableItem, useSeaCommandInject } from "@/app/(main)/_fea
 import { seaCommand_compareMediaTitles } from "@/app/(main)/_features/sea-command/utils"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { __mangaLibraryHeaderImageAtom, __mangaLibraryHeaderMangaAtom } from "@/app/(main)/manga/_components/library-header"
+import { LocalMangaLibraryModal } from "@/app/(main)/manga/_components/local-manga-library-modal"
 import { MangaSourceRefreshModal } from "@/app/(main)/manga/_components/manga-source-refresh-modal"
 import { __mangaLibrary_paramsAtom, __mangaLibrary_paramsInputAtom } from "@/app/(main)/manga/_lib/handle-manga-collection"
 import { LuffyError } from "@/components/shared/luffy-error"
@@ -33,7 +34,7 @@ import { useAtom, useAtomValue } from "jotai/react"
 import { AnimatePresence } from "motion/react"
 import React, { memo } from "react"
 import { BiDotsVerticalRounded } from "react-icons/bi"
-import { LuBookOpenCheck, LuEye, LuEyeOff, LuRefreshCcw } from "react-icons/lu"
+import { LuBookOpenCheck, LuEye, LuEyeOff, LuFolderSearch, LuRefreshCcw } from "react-icons/lu"
 import { CommandItemMedia } from "../../_features/sea-command/_components/command-utils"
 
 type MangaLibraryViewProps = {
@@ -271,7 +272,9 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
     const { data: sourceRefreshJob } = useGetMangaSourceRefresh(list.type === "CURRENT")
     const { mutate: updateTheme, isPending: isUpdatingTheme } = useUpdateTheme()
     const [sourceRefreshModalOpen, setSourceRefreshModalOpen] = React.useState(false)
+    const [localLibraryModalOpen, setLocalLibraryModalOpen] = React.useState(false)
     const sourceRefreshTriggerRef = React.useRef<HTMLButtonElement>(null)
+    const localLibraryTriggerRef = React.useRef<HTMLButtonElement>(null)
     const sourceRefreshRunning = sourceRefreshJob?.status === "running" || sourceRefreshJob?.status === "stopping"
 
     const { inject, remove } = useSeaCommandInject()
@@ -361,7 +364,13 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                     {list.type === "CURRENT" && <DropdownMenu
                         trigger={<div className="relative">
                             <IconButton
-                                ref={isMangaPage ? undefined : sourceRefreshTriggerRef}
+                                ref={node => {
+                                    // Both modals return focus to whatever opened them; on this
+                                    // screen that is the dropdown, except for the refresh button
+                                    // that gets its own slot on the manga page.
+                                    localLibraryTriggerRef.current = node
+                                    if (!isMangaPage) sourceRefreshTriggerRef.current = node
+                                }}
                                 data-manga-library-dropdown-menu-trigger
                                 icon={<BiDotsVerticalRounded className="text-2xl" />}
                                 intent="gray-basic"
@@ -379,6 +388,11 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                         >
                             <LuRefreshCcw /> {sourceRefreshRunning ? "View source refresh" : "Refresh sources"}
                         </DropdownMenuItem>}
+                        <DropdownMenuItem
+                            onClick={() => setLocalLibraryModalOpen(true)}
+                        >
+                            <LuFolderSearch /> Local manga library
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => {
                                 setParams(draft => {
@@ -420,12 +434,19 @@ const CollectionListItem = memo(({ list, storedProviders, showStatuses, type, wi
                 </div>
 
                 {list.type === "CURRENT" && (
-                    <MangaSourceRefreshModal
-                        open={sourceRefreshModalOpen}
-                        onOpenChange={setSourceRefreshModalOpen}
-                        job={sourceRefreshJob}
-                        returnFocusRef={sourceRefreshTriggerRef}
-                    />
+                    <>
+                        <MangaSourceRefreshModal
+                            open={sourceRefreshModalOpen}
+                            onOpenChange={setSourceRefreshModalOpen}
+                            job={sourceRefreshJob}
+                            returnFocusRef={sourceRefreshTriggerRef}
+                        />
+                        <LocalMangaLibraryModal
+                            open={localLibraryModalOpen}
+                            onOpenChange={setLocalLibraryModalOpen}
+                            returnFocusRef={localLibraryTriggerRef}
+                        />
+                    </>
                 )}
 
             </div>
