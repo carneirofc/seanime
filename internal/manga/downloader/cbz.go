@@ -125,12 +125,12 @@ func writeCBZ(destPath string, srcDir string, registry Registry, info *ComicInfo
 	}
 
 	if info != nil {
-		data, mErr := info.marshal()
+		data, mErr := info.Marshal()
 		if mErr != nil {
 			err = mErr
 			return err
 		}
-		w, wErr := zw.Create(comicInfoFilename)
+		w, wErr := zw.Create(ComicInfoFilename)
 		if wErr != nil {
 			err = wErr
 			return err
@@ -181,12 +181,12 @@ func ReadCBZ(path string) (entries []CBZEntry, info *ComicInfo, err error) {
 		if f.FileInfo().IsDir() {
 			continue
 		}
-		if f.Name == comicInfoFilename {
+		if f.Name == ComicInfoFilename {
 			rc, oErr := f.Open()
 			if oErr != nil {
 				continue
 			}
-			info, _ = parseComicInfo(rc)
+			info, _ = ParseComicInfo(rc)
 			_ = rc.Close()
 			continue
 		}
