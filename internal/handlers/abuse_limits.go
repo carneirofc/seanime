@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"seanime/internal/manga"
 	"strings"
 	"sync"
 	"time"
@@ -121,12 +122,15 @@ func shouldRateLimitMutation(req *http.Request) bool {
 	}
 }
 
-// getBodyLimit and controlPlaneBodyLimitMiddleware are retained but not yet wired up;
-// their registration is intentionally commented out in routes.go pending re-enable.
-//
-//nolint:unused // wired via the commented-out e.Use in routes.go
+// getBodyLimit is the per-route request body ceiling enforced by
+// controlPlaneBodyLimitMiddleware, which routes.go installs on every request.
 func getBodyLimit(path string) int64 {
 	switch {
+	// A manga archive is the one upload that is legitimately huge — a full volume
+	// of page scans. The repository enforces its own limit on the archive itself;
+	// this only has to leave room for the multipart envelope.
+	case path == "/api/v1/manga/local/upload":
+		return manga.MaxLocalMangaUploadSize + (1 << 20)
 	case path == "/api/v1/report/issue/decompress":
 		return 100 << 20
 	case path == "/api/v1/library/local-files/import":
@@ -140,7 +144,6 @@ func getBodyLimit(path string) int64 {
 	}
 }
 
-//nolint:unused // wired via the commented-out e.Use in routes.go
 func (h *Handler) controlPlaneBodyLimitMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		req := c.Request()
