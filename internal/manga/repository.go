@@ -47,7 +47,10 @@ type (
 		sourceRefresh    *mangaSourceRefreshState
 		sourceRefreshLog map[string]mangaSourceRefreshCompleted
 		downloadDir      string
-		db               *db.Database
+		// localDir is Seanime's own manga directory, used as the local library root
+		// when the user has not configured one of their own.
+		localDir string
+		db       *db.Database
 
 		settings *models.Settings
 	}
@@ -59,6 +62,7 @@ type (
 		ServerURI        string
 		WsEventManager   events.WSEventManagerInterface
 		DownloadDir      string
+		LocalDir         string
 		Database         *db.Database
 		ExtensionBankRef *util.Ref[*extension.UnifiedBank]
 	}
@@ -72,6 +76,7 @@ func NewRepository(opts *NewRepositoryOptions) *Repository {
 		serverUri:        opts.ServerURI,
 		wsEventManager:   opts.WsEventManager,
 		downloadDir:      opts.DownloadDir,
+		localDir:         opts.LocalDir,
 		extensionBankRef: opts.ExtensionBankRef,
 		db:               opts.Database,
 		sourceRefreshLog: make(map[string]mangaSourceRefreshCompleted),

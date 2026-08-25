@@ -316,6 +316,7 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 		ServerURI:        cfg.GetServerURI(),
 		WsEventManager:   wsEventManager,
 		DownloadDir:      cfg.Manga.DownloadDir,
+		LocalDir:         cfg.Manga.LocalDir,
 		Database:         database,
 		ExtensionBankRef: extensionBankRef,
 	})

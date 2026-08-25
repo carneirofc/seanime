@@ -27,6 +27,7 @@ func NewTestRepositoryWithEnv(env *testutil.TestEnv, db *db.Database) *Repositor
 		ServerURI:        "",
 		WsEventManager:   events.NewMockWSEventManager(logger),
 		DownloadDir:      env.MustMkdirData("manga"),
+		LocalDir:         env.MustMkdirData("manga-local"),
 		Database:         db,
 		ExtensionBankRef: util.NewRef(extension.NewUnifiedBank()),
 	})
