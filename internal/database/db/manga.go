@@ -29,6 +29,30 @@ func (db *Database) GetMangaMapping(provider string, mediaId int) (*models.Manga
 	return &res, true
 }
 
+// GetMangaMappingsByProvider returns every mapping recorded for a provider.
+//
+// Unlike [Database.GetMangaMapping] this always hits the database: the cache is
+// keyed per (provider, mediaId) and cannot answer "which media use this
+// provider" on its own.
+func (db *Database) GetMangaMappingsByProvider(provider string) ([]*models.MangaMapping, error) {
+	var res []*models.MangaMapping
+	if err := db.gormdb.Where("provider = ?", provider).Find(&res).Error; err != nil {
+		return nil, err
+	}
+
+	for _, mapping := range res {
+		mangaMappingCache.Set(formatMangaMappingCacheKey(provider, mapping.MediaID), mapping)
+	}
+
+	return res, nil
+}
+
+// InsertMangaMapping records the provider manga a media entry maps to,
+// replacing any mapping the entry already had for that provider.
+//
+// The replacement is what makes re-mapping stick: a plain insert would leave the
+// previous row behind, and after a restart — once the in-memory cache is gone —
+// the lookup would find the stale one first.
 func (db *Database) InsertMangaMapping(provider string, mediaId int, mangaId string) error {
 	mapping := models.MangaMapping{
 		Provider: provider,
@@ -36,9 +60,18 @@ func (db *Database) InsertMangaMapping(provider string, mediaId int, mangaId str
 		MangaID:  mangaId,
 	}
 
-	mangaMappingCache.Set(formatMangaMappingCacheKey(provider, mediaId), &mapping)
+	err := db.gormdb.Where("provider = ? AND media_id = ?", provider, mediaId).Delete(&models.MangaMapping{}).Error
+	if err != nil {
+		return err
+	}
 
-	return db.gormdb.Save(&mapping).Error
+	if err := db.gormdb.Save(&mapping).Error; err != nil {
+		mangaMappingCache.Delete(formatMangaMappingCacheKey(provider, mediaId))
+		return err
+	}
+
+	mangaMappingCache.Set(formatMangaMappingCacheKey(provider, mediaId), &mapping)
+	return nil
 }
 
 func (db *Database) DeleteMangaMapping(provider string, mediaId int) error {
