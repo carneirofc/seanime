@@ -3,28 +3,8 @@
     "name": "getBodyLimit",
     "trimmedName": "getBodyLimit",
     "comments": [
-      "getBodyLimit and controlPlaneBodyLimitMiddleware are retained but not yet wired up;",
-      "their registration is intentionally commented out in routes.go pending re-enable.",
-      ""
-    ],
-    "filepath": "internal/handlers/abuse_limits.go",
-    "filename": "abuse_limits.go",
-    "api": {
-      "summary": "",
-      "descriptions": [],
-      "endpoint": "",
-      "methods": null,
-      "params": [],
-      "bodyFields": [],
-      "returns": "bool",
-      "returnGoType": "bool",
-      "returnTypescriptType": "boolean"
-    }
-  },
-  {
-    "name": "controlPlaneBodyLimitMiddleware",
-    "trimmedName": "controlPlaneBodyLimitMiddleware",
-    "comments": [
+      "getBodyLimit is the per-route request body ceiling enforced by",
+      "controlPlaneBodyLimitMiddleware, which routes.go installs on every request.",
       ""
     ],
     "filepath": "internal/handlers/abuse_limits.go",
@@ -8093,6 +8073,453 @@
       "returns": "[]manga.DownloadListItem",
       "returnGoType": "manga.DownloadListItem",
       "returnTypescriptType": "Array\u003cManga_DownloadListItem\u003e"
+    }
+  },
+  {
+    "name": "HandleGetLocalMangaLibrary",
+    "trimmedName": "GetLocalMangaLibrary",
+    "comments": [
+      "HandleGetLocalMangaLibrary",
+      "",
+      "\t@summary returns the local manga library and the entries its series map to.",
+      "\t@desc Lists every series directory of the local manga source directory along",
+      "\t@desc with its chapter count and the AniList entry currently mapped to it.",
+      "\t@route /api/v1/manga/local/library [GET]",
+      "\t@returns manga.LocalMangaLibrary",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "returns the local manga library and the entries its series map to.",
+      "descriptions": [
+        "Lists every series directory of the local manga source directory along",
+        "with its chapter count and the AniList entry currently mapped to it."
+      ],
+      "endpoint": "/api/v1/manga/local/library",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "manga.LocalMangaLibrary",
+      "returnGoType": "manga.LocalMangaLibrary",
+      "returnTypescriptType": "Manga_LocalMangaLibrary"
+    }
+  },
+  {
+    "name": "HandleScanLocalMangaLibrary",
+    "trimmedName": "ScanLocalMangaLibrary",
+    "comments": [
+      "HandleScanLocalMangaLibrary",
+      "",
+      "\t@summary matches the local manga library against the AniList manga collection.",
+      "\t@desc Maps each series directory to the manga entry it belongs to. Series that",
+      "\t@desc cannot be matched confidently are reported back with candidates so the",
+      "\t@desc user can map them manually.",
+      "\t@route /api/v1/manga/local/scan [POST]",
+      "\t@returns manga.LocalMangaScanResult",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "matches the local manga library against the AniList manga collection.",
+      "descriptions": [
+        "Maps each series directory to the manga entry it belongs to. Series that",
+        "cannot be matched confidently are reported back with candidates so the",
+        "user can map them manually."
+      ],
+      "endpoint": "/api/v1/manga/local/scan",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Remap",
+          "jsonName": "remap",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "SelectAsSource",
+          "jsonName": "selectAsSource",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "manga.LocalMangaScanResult",
+      "returnGoType": "manga.LocalMangaScanResult",
+      "returnTypescriptType": "Manga_LocalMangaScanResult"
+    }
+  },
+  {
+    "name": "HandleUploadLocalMangaArchive",
+    "trimmedName": "UploadLocalMangaArchive",
+    "comments": [
+      "HandleUploadLocalMangaArchive",
+      "",
+      "\t@summary stores an uploaded zip/cbz archive in the local manga library.",
+      "\t@desc Accepts a multipart form with a \"file\" archive plus an optional \"series\"",
+      "\t@desc directory name, \"mediaId\" to map the series to, and \"overwrite\" flag.",
+      "\t@desc An archive holding several chapter folders is split into one chapter each.",
+      "\t@desc Every chapter is stored as a proper CBZ: pages flattened into reading",
+      "\t@desc order plus a ComicInfo.xml built from the AniList entry the series maps to.",
+      "\t@desc The archive is streamed to disk as it arrives, so the \"file\" part must",
+      "\t@desc come last: parts sent after it are read too late to apply. One archive",
+      "\t@desc per request — a second \"file\" part is rejected once the first has landed.",
+      "\t@route /api/v1/manga/local/upload [POST]",
+      "\t@returns manga.LocalMangaUploadResult",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "stores an uploaded zip/cbz archive in the local manga library.",
+      "descriptions": [
+        "Accepts a multipart form with a \"file\" archive plus an optional \"series\"",
+        "directory name, \"mediaId\" to map the series to, and \"overwrite\" flag.",
+        "An archive holding several chapter folders is split into one chapter each.",
+        "Every chapter is stored as a proper CBZ: pages flattened into reading",
+        "order plus a ComicInfo.xml built from the AniList entry the series maps to.",
+        "The archive is streamed to disk as it arrives, so the \"file\" part must",
+        "come last: parts sent after it are read too late to apply. One archive",
+        "per request — a second \"file\" part is rejected once the first has landed."
+      ],
+      "endpoint": "/api/v1/manga/local/upload",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "manga.LocalMangaUploadResult",
+      "returnGoType": "manga.LocalMangaUploadResult",
+      "returnTypescriptType": "Manga_LocalMangaUploadResult"
+    }
+  },
+  {
+    "name": "readLocalMangaUpload",
+    "trimmedName": "readLocalMangaUpload",
+    "comments": [
+      "readLocalMangaUpload walks an upload form, collecting the metadata fields and",
+      "handing the archive part to store as it streams in.",
+      "",
+      "The archive is never buffered, so the fields that describe it have to arrive",
+      "first: a part read after the file is read too late to affect it. Clients append",
+      "the file last, and the doc comment above says so.",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleRepackLocalMangaSeries",
+    "trimmedName": "RepackLocalMangaSeries",
+    "comments": [
+      "HandleRepackLocalMangaSeries",
+      "",
+      "\t@summary rewrites a local series' chapters as proper CBZ archives.",
+      "\t@desc Rebuilds every readable chapter file of the series into a flat CBZ with",
+      "\t@desc pages in reading order and a current ComicInfo.xml built from the AniList",
+      "\t@desc entry the series maps to. Loose \".zip\" files become \".cbz\". Formats",
+      "\t@desc Seanime cannot read (cbr, pdf) and folders of loose images are reported",
+      "\t@desc as skipped rather than touched.",
+      "\t@route /api/v1/manga/local/repack [POST]",
+      "\t@returns manga.LocalMangaRepackResult",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "rewrites a local series' chapters as proper CBZ archives.",
+      "descriptions": [
+        "Rebuilds every readable chapter file of the series into a flat CBZ with",
+        "pages in reading order and a current ComicInfo.xml built from the AniList",
+        "entry the series maps to. Loose \".zip\" files become \".cbz\". Formats",
+        "Seanime cannot read (cbr, pdf) and folders of loose images are reported",
+        "as skipped rather than touched."
+      ],
+      "endpoint": "/api/v1/manga/local/repack",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Series",
+          "jsonName": "series",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "manga.LocalMangaRepackResult",
+      "returnGoType": "manga.LocalMangaRepackResult",
+      "returnTypescriptType": "Manga_LocalMangaRepackResult"
+    }
+  },
+  {
+    "name": "HandleGetLocalMangaChapters",
+    "trimmedName": "GetLocalMangaChapters",
+    "comments": [
+      "HandleGetLocalMangaChapters",
+      "",
+      "\t@summary lists the chapter files of a local manga series.",
+      "\t@route /api/v1/manga/local/chapters [GET]",
+      "\t@param series - string - true - \"Series directory name\"",
+      "\t@returns []manga.LocalMangaChapter",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "lists the chapter files of a local manga series.",
+      "descriptions": [],
+      "endpoint": "/api/v1/manga/local/chapters",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        {
+          "name": "series",
+          "jsonName": "series",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": [
+            "Series directory name"
+          ]
+        }
+      ],
+      "bodyFields": [],
+      "returns": "[]manga.LocalMangaChapter",
+      "returnGoType": "manga.LocalMangaChapter",
+      "returnTypescriptType": "Array\u003cManga_LocalMangaChapter\u003e"
+    }
+  },
+  {
+    "name": "HandleDownloadLocalMangaChapter",
+    "trimmedName": "DownloadLocalMangaChapter",
+    "comments": [
+      "HandleDownloadLocalMangaChapter",
+      "",
+      "\t@summary downloads one chapter of a local series as a CBZ file.",
+      "\t@desc The chapter is normalized on the way out — a loose \".zip\" or a folder of",
+      "\t@desc images is served as a proper CBZ with metadata, and the stored files are",
+      "\t@desc left untouched.",
+      "\t@route /api/v1/manga/local/chapter-archive [GET]",
+      "\t@param series - string - true - \"Series directory name\"",
+      "\t@param chapter - string - true - \"Chapter filename within the series\"",
+      "\t@returns nil",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "downloads one chapter of a local series as a CBZ file.",
+      "descriptions": [
+        "The chapter is normalized on the way out — a loose \".zip\" or a folder of",
+        "images is served as a proper CBZ with metadata, and the stored files are",
+        "left untouched."
+      ],
+      "endpoint": "/api/v1/manga/local/chapter-archive",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        {
+          "name": "series",
+          "jsonName": "series",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": [
+            "Series directory name"
+          ]
+        },
+        {
+          "name": "chapter",
+          "jsonName": "chapter",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": [
+            "Chapter filename within the series"
+          ]
+        }
+      ],
+      "bodyFields": [],
+      "returns": "nil",
+      "returnGoType": "nil",
+      "returnTypescriptType": "null"
+    }
+  },
+  {
+    "name": "HandleDownloadLocalMangaSeries",
+    "trimmedName": "DownloadLocalMangaSeries",
+    "comments": [
+      "HandleDownloadLocalMangaSeries",
+      "",
+      "\t@summary downloads every chapter of a local series as a zip of CBZ files.",
+      "\t@route /api/v1/manga/local/series-archive [GET]",
+      "\t@param series - string - true - \"Series directory name\"",
+      "\t@returns nil",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "downloads every chapter of a local series as a zip of CBZ files.",
+      "descriptions": [],
+      "endpoint": "/api/v1/manga/local/series-archive",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        {
+          "name": "series",
+          "jsonName": "series",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": [
+            "Series directory name"
+          ]
+        }
+      ],
+      "bodyFields": [],
+      "returns": "nil",
+      "returnGoType": "nil",
+      "returnTypescriptType": "null"
+    }
+  },
+  {
+    "name": "HandleMapLocalMangaSeries",
+    "trimmedName": "MapLocalMangaSeries",
+    "comments": [
+      "HandleMapLocalMangaSeries",
+      "",
+      "\t@summary maps a manga entry to a series directory of the local library.",
+      "\t@route /api/v1/manga/local/map [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "maps a manga entry to a series directory of the local library.",
+      "descriptions": [],
+      "endpoint": "/api/v1/manga/local/map",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "MediaId",
+          "jsonName": "mediaId",
+          "goType": "int",
+          "usedStructType": "",
+          "typescriptType": "number",
+          "required": true,
+          "descriptions": []
+        },
+        {
+          "name": "Series",
+          "jsonName": "series",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "HandleDeleteLocalMangaSeries",
+    "trimmedName": "DeleteLocalMangaSeries",
+    "comments": [
+      "HandleDeleteLocalMangaSeries",
+      "",
+      "\t@summary deletes a series directory from the local manga library.",
+      "\t@route /api/v1/manga/local/series [DELETE]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "deletes a series directory from the local manga library.",
+      "descriptions": [],
+      "endpoint": "/api/v1/manga/local/series",
+      "methods": [
+        "DELETE"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Series",
+          "jsonName": "series",
+          "goType": "string",
+          "usedStructType": "",
+          "typescriptType": "string",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "respondWithLocalMangaUploadError",
+    "trimmedName": "respondWithLocalMangaUploadError",
+    "comments": [
+      "respondWithLocalMangaUploadError maps the upload failures the client can act",
+      "on to the status codes that say so, instead of a blanket 500.",
+      ""
+    ],
+    "filepath": "internal/handlers/manga_local.go",
+    "filename": "manga_local.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
     }
   },
   {

@@ -1538,6 +1538,94 @@ export const API_ENDPOINTS = {
             endpoint: "/api/v1/manga/downloads",
         },
     },
+    MANGA_LOCAL: {
+        /**
+         *  @description
+         *  Route returns the local manga library and the entries its series map to.
+         *  Lists every series directory of the local manga source directory along
+         *  with its chapter count and the AniList entry currently mapped to it.
+         */
+        GetLocalMangaLibrary: {
+            key: "MANGA-LOCAL-get-local-manga-library",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/local/library",
+        },
+        /**
+         *  @description
+         *  Route matches the local manga library against the AniList manga collection.
+         *  Maps each series directory to the manga entry it belongs to. Series that
+         *  cannot be matched confidently are reported back with candidates so the
+         *  user can map them manually.
+         */
+        ScanLocalMangaLibrary: {
+            key: "MANGA-LOCAL-scan-local-manga-library",
+            methods: ["POST"],
+            endpoint: "/api/v1/manga/local/scan",
+        },
+        /**
+         *  @description
+         *  Route stores an uploaded zip/cbz archive in the local manga library.
+         *  Accepts a multipart form with a "file" archive plus an optional "series"
+         *  directory name, "mediaId" to map the series to, and "overwrite" flag.
+         *  An archive holding several chapter folders is split into one chapter each.
+         *  Every chapter is stored as a proper CBZ: pages flattened into reading
+         *  order plus a ComicInfo.xml built from the AniList entry the series maps to.
+         *  The archive is streamed to disk as it arrives, so the "file" part must
+         *  come last: parts sent after it are read too late to apply. One archive
+         *  per request — a second "file" part is rejected once the first has landed.
+         */
+        UploadLocalMangaArchive: {
+            key: "MANGA-LOCAL-upload-local-manga-archive",
+            methods: ["POST"],
+            endpoint: "/api/v1/manga/local/upload",
+        },
+        /**
+         *  @description
+         *  Route rewrites a local series' chapters as proper CBZ archives.
+         *  Rebuilds every readable chapter file of the series into a flat CBZ with
+         *  pages in reading order and a current ComicInfo.xml built from the AniList
+         *  entry the series maps to. Loose ".zip" files become ".cbz". Formats
+         *  Seanime cannot read (cbr, pdf) and folders of loose images are reported
+         *  as skipped rather than touched.
+         */
+        RepackLocalMangaSeries: {
+            key: "MANGA-LOCAL-repack-local-manga-series",
+            methods: ["POST"],
+            endpoint: "/api/v1/manga/local/repack",
+        },
+        GetLocalMangaChapters: {
+            key: "MANGA-LOCAL-get-local-manga-chapters",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/local/chapters",
+        },
+        /**
+         *  @description
+         *  Route downloads one chapter of a local series as a CBZ file.
+         *  The chapter is normalized on the way out — a loose ".zip" or a folder of
+         *  images is served as a proper CBZ with metadata, and the stored files are
+         *  left untouched.
+         */
+        DownloadLocalMangaChapter: {
+            key: "MANGA-LOCAL-download-local-manga-chapter",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/local/chapter-archive",
+        },
+        DownloadLocalMangaSeries: {
+            key: "MANGA-LOCAL-download-local-manga-series",
+            methods: ["GET"],
+            endpoint: "/api/v1/manga/local/series-archive",
+        },
+        MapLocalMangaSeries: {
+            key: "MANGA-LOCAL-map-local-manga-series",
+            methods: ["POST"],
+            endpoint: "/api/v1/manga/local/map",
+        },
+        DeleteLocalMangaSeries: {
+            key: "MANGA-LOCAL-delete-local-manga-series",
+            methods: ["DELETE"],
+            endpoint: "/api/v1/manga/local/series",
+        },
+    },
     MANUAL_DUMP: {
         TestDump: {
             key: "MANUAL-DUMP-test-dump",

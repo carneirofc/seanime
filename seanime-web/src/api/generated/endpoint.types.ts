@@ -1462,6 +1462,102 @@ export type DeleteMangaDownloadedChapters_Variables = {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// manga_local
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/scan
+ * @description
+ * Route matches the local manga library against the AniList manga collection.
+ */
+export type ScanLocalMangaLibrary_Variables = {
+    remap: boolean
+    selectAsSource: boolean
+}
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/repack
+ * @description
+ * Route rewrites a local series' chapters as proper CBZ archives.
+ */
+export type RepackLocalMangaSeries_Variables = {
+    series: string
+}
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/chapters
+ * @description
+ * Route lists the chapter files of a local manga series.
+ */
+export type GetLocalMangaChapters_Variables = {
+    /**
+     *  Series directory name
+     */
+    series: string
+}
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/chapter-archive
+ * @description
+ * Route downloads one chapter of a local series as a CBZ file.
+ */
+export type DownloadLocalMangaChapter_Variables = {
+    /**
+     *  Series directory name
+     */
+    series: string
+    /**
+     *  Chapter filename within the series
+     */
+    chapter: string
+}
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/series-archive
+ * @description
+ * Route downloads every chapter of a local series as a zip of CBZ files.
+ */
+export type DownloadLocalMangaSeries_Variables = {
+    /**
+     *  Series directory name
+     */
+    series: string
+}
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/map
+ * @description
+ * Route maps a manga entry to a series directory of the local library.
+ */
+export type MapLocalMangaSeries_Variables = {
+    mediaId: number
+    series: string
+}
+
+/**
+ * - Filepath: internal/handlers/manga_local.go
+ * - Filename: manga_local.go
+ * - Endpoint: /api/v1/manga/local/series
+ * @description
+ * Route deletes a series directory from the local manga library.
+ */
+export type DeleteLocalMangaSeries_Variables = {
+    series: string
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // manual_dump
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

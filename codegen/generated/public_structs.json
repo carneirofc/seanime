@@ -62163,10 +62163,118 @@
         "comments": []
       },
       {
+        "name": "Count",
+        "jsonName": "Count",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Volume",
+        "jsonName": "Volume",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Summary",
+        "jsonName": "Summary",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Notes",
+        "jsonName": "Notes",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Year",
+        "jsonName": "Year",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Month",
+        "jsonName": "Month",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Day",
+        "jsonName": "Day",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Genre",
+        "jsonName": "Genre",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Web",
+        "jsonName": "Web",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "PageCount",
         "jsonName": "PageCount",
         "goType": "int",
         "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LanguageISO",
+        "jsonName": "LanguageISO",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Manga",
+        "jsonName": "Manga",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AgeRating",
+        "jsonName": "AgeRating",
+        "goType": "string",
+        "typescriptType": "string",
         "required": true,
         "public": true,
         "comments": []
@@ -62185,8 +62293,14 @@
     ],
     "comments": [
       " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
-      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
-      " are modeled; unknown elements are ignored when parsing foreign archives."
+      " each chapter archive Seanime writes. Only the fields Seanime produces or",
+      " consumes are modeled; unknown elements are ignored when parsing foreign",
+      " archives.",
+      "",
+      " Field order follows the ComicInfo v2.0 schema sequence, because readers that",
+      " validate against the XSD reject an out-of-order document and Go marshals in",
+      " declaration order. Everything but the identifying fields is optional, so a",
+      " document only carries what the caller actually knows."
     ]
   },
   {
@@ -62210,8 +62324,14 @@
     ],
     "comments": [
       " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
-      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
-      " are modeled; unknown elements are ignored when parsing foreign archives."
+      " each chapter archive Seanime writes. Only the fields Seanime produces or",
+      " consumes are modeled; unknown elements are ignored when parsing foreign",
+      " archives.",
+      "",
+      " Field order follows the ComicInfo v2.0 schema sequence, because readers that",
+      " validate against the XSD reject an out-of-order document and Go marshals in",
+      " declaration order. Everything but the identifying fields is optional, so a",
+      " document only carries what the caller actually knows."
     ]
   },
   {
@@ -62260,8 +62380,14 @@
     ],
     "comments": [
       " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
-      " each downloaded chapter archive. Only the fields Seanime produces or consumes",
-      " are modeled; unknown elements are ignored when parsing foreign archives."
+      " each chapter archive Seanime writes. Only the fields Seanime produces or",
+      " consumes are modeled; unknown elements are ignored when parsing foreign",
+      " archives.",
+      "",
+      " Field order follows the ComicInfo v2.0 schema sequence, because readers that",
+      " validate against the XSD reject an out-of-order document and Go marshals in",
+      " declaration order. Everything but the identifying fields is optional, so a",
+      " document only carries what the caller actually knows."
     ]
   },
   {
@@ -62764,6 +62890,650 @@
     "embeddedStructNames": [
       "hook_resolver.Event"
     ]
+  },
+  {
+    "filepath": "../internal/manga/local_download.go",
+    "filename": "local_download.go",
+    "name": "LocalMangaChapter",
+    "formattedName": "Manga_LocalMangaChapter",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Filename",
+        "jsonName": "filename",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Number",
+        "jsonName": "number",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Volume",
+        "jsonName": "volume",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Format",
+        "jsonName": "format",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Downloadable",
+        "jsonName": "downloadable",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "HasMetadata",
+        "jsonName": "hasMetadata",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " LocalMangaChapter is one chapter file of a local series, as offered to the",
+      " client for download."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/local_library.go",
+    "filename": "local_library.go",
+    "name": "LocalMangaSeries",
+    "formattedName": "Manga_LocalMangaSeries",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "DirName",
+        "jsonName": "dirName",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterCount",
+        "jsonName": "chapterCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaTitle",
+        "jsonName": "mediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_library.go",
+    "filename": "local_library.go",
+    "name": "LocalMangaLibrary",
+    "formattedName": "Manga_LocalMangaLibrary",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Configured",
+        "jsonName": "configured",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Series",
+        "jsonName": "series",
+        "goType": "[]LocalMangaSeries",
+        "typescriptType": "Array\u003cManga_LocalMangaSeries\u003e",
+        "usedTypescriptType": "Manga_LocalMangaSeries",
+        "usedStructName": "manga.LocalMangaSeries",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "UnmappedCount",
+        "jsonName": "unmappedCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_repack.go",
+    "filename": "local_repack.go",
+    "name": "LocalMangaRepackedChapter",
+    "formattedName": "Manga_LocalMangaRepackedChapter",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "From",
+        "jsonName": "from",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "To",
+        "jsonName": "to",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PageCount",
+        "jsonName": "pageCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_repack.go",
+    "filename": "local_repack.go",
+    "name": "LocalMangaRepackSkipped",
+    "formattedName": "Manga_LocalMangaRepackSkipped",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Reason",
+        "jsonName": "reason",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_repack.go",
+    "filename": "local_repack.go",
+    "name": "LocalMangaRepackResult",
+    "formattedName": "Manga_LocalMangaRepackResult",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Series",
+        "jsonName": "series",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Repacked",
+        "jsonName": "repacked",
+        "goType": "[]LocalMangaRepackedChapter",
+        "typescriptType": "Array\u003cManga_LocalMangaRepackedChapter\u003e",
+        "usedTypescriptType": "Manga_LocalMangaRepackedChapter",
+        "usedStructName": "manga.LocalMangaRepackedChapter",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Skipped",
+        "jsonName": "skipped",
+        "goType": "[]LocalMangaRepackSkipped",
+        "typescriptType": "Array\u003cManga_LocalMangaRepackSkipped\u003e",
+        "usedTypescriptType": "Manga_LocalMangaRepackSkipped",
+        "usedStructName": "manga.LocalMangaRepackSkipped",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_scan.go",
+    "filename": "local_scan.go",
+    "name": "LocalMangaScanOptions",
+    "formattedName": "Manga_LocalMangaScanOptions",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Remap",
+        "jsonName": "Remap",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SelectAsSource",
+        "jsonName": "SelectAsSource",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_scan.go",
+    "filename": "local_scan.go",
+    "name": "LocalMangaScanCandidate",
+    "formattedName": "Manga_LocalMangaScanCandidate",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Rating",
+        "jsonName": "rating",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_scan.go",
+    "filename": "local_scan.go",
+    "name": "LocalMangaScanMatch",
+    "formattedName": "Manga_LocalMangaScanMatch",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "DirName",
+        "jsonName": "dirName",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaTitle",
+        "jsonName": "mediaTitle",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Rating",
+        "jsonName": "rating",
+        "goType": "float64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterCount",
+        "jsonName": "chapterCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "SelectedAsSource",
+        "jsonName": "selectedAsSource",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_scan.go",
+    "filename": "local_scan.go",
+    "name": "LocalMangaScanSkipped",
+    "formattedName": "Manga_LocalMangaScanSkipped",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "DirName",
+        "jsonName": "dirName",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Reason",
+        "jsonName": "reason",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Candidates",
+        "jsonName": "candidates",
+        "goType": "[]LocalMangaScanCandidate",
+        "typescriptType": "Array\u003cManga_LocalMangaScanCandidate\u003e",
+        "usedTypescriptType": "Manga_LocalMangaScanCandidate",
+        "usedStructName": "manga.LocalMangaScanCandidate",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_scan.go",
+    "filename": "local_scan.go",
+    "name": "LocalMangaScanResult",
+    "formattedName": "Manga_LocalMangaScanResult",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "SeriesCount",
+        "jsonName": "seriesCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Matched",
+        "jsonName": "matched",
+        "goType": "[]LocalMangaScanMatch",
+        "typescriptType": "Array\u003cManga_LocalMangaScanMatch\u003e",
+        "usedTypescriptType": "Manga_LocalMangaScanMatch",
+        "usedStructName": "manga.LocalMangaScanMatch",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Skipped",
+        "jsonName": "skipped",
+        "goType": "[]LocalMangaScanSkipped",
+        "typescriptType": "Array\u003cManga_LocalMangaScanSkipped\u003e",
+        "usedTypescriptType": "Manga_LocalMangaScanSkipped",
+        "usedStructName": "manga.LocalMangaScanSkipped",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_upload.go",
+    "filename": "local_upload.go",
+    "name": "LocalMangaUploadOptions",
+    "formattedName": "Manga_LocalMangaUploadOptions",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Series",
+        "jsonName": "Series",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Filename",
+        "jsonName": "Filename",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Source",
+        "jsonName": "Source",
+        "goType": "io.Reader",
+        "typescriptType": "Reader",
+        "usedTypescriptType": "Reader",
+        "usedStructName": "io.Reader",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Overwrite",
+        "jsonName": "Overwrite",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaId",
+        "jsonName": "MediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Collection",
+        "jsonName": "Collection",
+        "goType": "anilist.MangaCollection",
+        "typescriptType": "AL_MangaCollection",
+        "usedTypescriptType": "AL_MangaCollection",
+        "usedStructName": "anilist.MangaCollection",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/manga/local_upload.go",
+    "filename": "local_upload.go",
+    "name": "LocalMangaUploadResult",
+    "formattedName": "Manga_LocalMangaUploadResult",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Series",
+        "jsonName": "series",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Chapters",
+        "jsonName": "chapters",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PageCount",
+        "jsonName": "pageCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "MediaId",
+        "jsonName": "mediaId",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
   },
   {
     "filepath": "../internal/manga/manga_entry.go",
@@ -63277,6 +64047,88 @@
     "comments": []
   },
   {
+    "filepath": "../internal/manga/providers/local_library.go",
+    "filename": "local_library.go",
+    "name": "SeriesInfo",
+    "formattedName": "Manga_SeriesInfo",
+    "package": "manga_providers",
+    "fields": [
+      {
+        "name": "DirName",
+        "jsonName": "dirName",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ChapterCount",
+        "jsonName": "chapterCount",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Size",
+        "jsonName": "size",
+        "goType": "int64",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " SeriesInfo describes one series directory of the local manga library.",
+      "",
+      " DirName doubles as the provider's manga ID: it is what [Local.FindChapters]",
+      " takes and what a manga mapping stores, so it is always a single path element",
+      " relative to the library root."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/providers/local_library.go",
+    "filename": "local_library.go",
+    "name": "ChapterNaming",
+    "formattedName": "Manga_ChapterNaming",
+    "package": "manga_providers",
+    "fields": [
+      {
+        "name": "Number",
+        "jsonName": "Number",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Title",
+        "jsonName": "Title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Volume",
+        "jsonName": "Volume",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ChapterNaming is what a local chapter filename says about the chapter."
+    ]
+  },
+  {
     "filepath": "../internal/manga/providers/local_parser.go",
     "filename": "local_parser.go",
     "name": "ScannedChapterFile",
@@ -63665,6 +64517,15 @@
         "comments": []
       },
       {
+        "name": "localDir",
+        "jsonName": "localDir",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "db",
         "jsonName": "db",
         "goType": "db.Database",
@@ -63750,6 +64611,15 @@
       {
         "name": "DownloadDir",
         "jsonName": "DownloadDir",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LocalDir",
+        "jsonName": "LocalDir",
         "goType": "string",
         "typescriptType": "string",
         "required": true,

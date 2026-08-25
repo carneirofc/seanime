@@ -1938,6 +1938,101 @@
 // }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// manga_local
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// export function useGetLocalMangaLibrary() {
+//     return useServerQuery<Manga_LocalMangaLibrary>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.GetLocalMangaLibrary.endpoint,
+//         method: API_ENDPOINTS.MANGA_LOCAL.GetLocalMangaLibrary.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_LOCAL.GetLocalMangaLibrary.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useScanLocalMangaLibrary() {
+//     return useServerMutation<Manga_LocalMangaScanResult, ScanLocalMangaLibrary_Variables>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.ScanLocalMangaLibrary.endpoint,
+//         method: API_ENDPOINTS.MANGA_LOCAL.ScanLocalMangaLibrary.methods[0],
+//         mutationKey: [API_ENDPOINTS.MANGA_LOCAL.ScanLocalMangaLibrary.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useUploadLocalMangaArchive() {
+//     return useServerMutation<Manga_LocalMangaUploadResult>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.UploadLocalMangaArchive.endpoint,
+//         method: API_ENDPOINTS.MANGA_LOCAL.UploadLocalMangaArchive.methods[0],
+//         mutationKey: [API_ENDPOINTS.MANGA_LOCAL.UploadLocalMangaArchive.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useRepackLocalMangaSeries() {
+//     return useServerMutation<Manga_LocalMangaRepackResult, RepackLocalMangaSeries_Variables>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.RepackLocalMangaSeries.endpoint,
+//         method: API_ENDPOINTS.MANGA_LOCAL.RepackLocalMangaSeries.methods[0],
+//         mutationKey: [API_ENDPOINTS.MANGA_LOCAL.RepackLocalMangaSeries.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useGetLocalMangaChapters(series: string) {
+//     return useServerQuery<Array<Manga_LocalMangaChapter>>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.GetLocalMangaChapters.endpoint.replace("{series}", String(series)),
+//         method: API_ENDPOINTS.MANGA_LOCAL.GetLocalMangaChapters.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_LOCAL.GetLocalMangaChapters.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useDownloadLocalMangaChapter(series: string, chapter: string) {
+//     return useServerQuery<null>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.DownloadLocalMangaChapter.endpoint.replace("{series}", String(series)).replace("{chapter}", String(chapter)),
+//         method: API_ENDPOINTS.MANGA_LOCAL.DownloadLocalMangaChapter.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_LOCAL.DownloadLocalMangaChapter.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useDownloadLocalMangaSeries(series: string) {
+//     return useServerQuery<null>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.DownloadLocalMangaSeries.endpoint.replace("{series}", String(series)),
+//         method: API_ENDPOINTS.MANGA_LOCAL.DownloadLocalMangaSeries.methods[0],
+//         queryKey: [API_ENDPOINTS.MANGA_LOCAL.DownloadLocalMangaSeries.key],
+//         enabled: true,
+//     })
+// }
+
+// export function useMapLocalMangaSeries() {
+//     return useServerMutation<boolean, MapLocalMangaSeries_Variables>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.MapLocalMangaSeries.endpoint,
+//         method: API_ENDPOINTS.MANGA_LOCAL.MapLocalMangaSeries.methods[0],
+//         mutationKey: [API_ENDPOINTS.MANGA_LOCAL.MapLocalMangaSeries.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+// export function useDeleteLocalMangaSeries() {
+//     return useServerMutation<boolean, DeleteLocalMangaSeries_Variables>({
+//         endpoint: API_ENDPOINTS.MANGA_LOCAL.DeleteLocalMangaSeries.endpoint,
+//         method: API_ENDPOINTS.MANGA_LOCAL.DeleteLocalMangaSeries.methods[0],
+//         mutationKey: [API_ENDPOINTS.MANGA_LOCAL.DeleteLocalMangaSeries.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // manual_dump
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -3482,6 +3482,144 @@ export type Manga_EntryListData = {
 }
 
 /**
+ * - Filepath: internal/manga/local_download.go
+ * - Filename: local_download.go
+ * - Package: manga
+ * @description
+ *  LocalMangaChapter is one chapter file of a local series, as offered to the
+ *  client for download.
+ */
+export type Manga_LocalMangaChapter = {
+    filename: string
+    number: string
+    title: string
+    volume: string
+    size: number
+    format: string
+    downloadable: boolean
+    hasMetadata: boolean
+}
+
+/**
+ * - Filepath: internal/manga/local_library.go
+ * - Filename: local_library.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaLibrary = {
+    configured: boolean
+    series?: Array<Manga_LocalMangaSeries>
+    unmappedCount: number
+}
+
+/**
+ * - Filepath: internal/manga/local_repack.go
+ * - Filename: local_repack.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaRepackResult = {
+    series: string
+    repacked?: Array<Manga_LocalMangaRepackedChapter>
+    skipped?: Array<Manga_LocalMangaRepackSkipped>
+}
+
+/**
+ * - Filepath: internal/manga/local_repack.go
+ * - Filename: local_repack.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaRepackSkipped = {
+    name: string
+    reason: string
+}
+
+/**
+ * - Filepath: internal/manga/local_repack.go
+ * - Filename: local_repack.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaRepackedChapter = {
+    from: string
+    to?: Array<string>
+    pageCount: number
+}
+
+/**
+ * - Filepath: internal/manga/local_scan.go
+ * - Filename: local_scan.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaScanCandidate = {
+    mediaId: number
+    title: string
+    rating: number
+}
+
+/**
+ * - Filepath: internal/manga/local_scan.go
+ * - Filename: local_scan.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaScanMatch = {
+    dirName: string
+    title: string
+    mediaId: number
+    mediaTitle: string
+    rating: number
+    chapterCount: number
+    selectedAsSource: boolean
+}
+
+/**
+ * - Filepath: internal/manga/local_scan.go
+ * - Filename: local_scan.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaScanResult = {
+    seriesCount: number
+    matched?: Array<Manga_LocalMangaScanMatch>
+    skipped?: Array<Manga_LocalMangaScanSkipped>
+}
+
+/**
+ * - Filepath: internal/manga/local_scan.go
+ * - Filename: local_scan.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaScanSkipped = {
+    dirName: string
+    title: string
+    reason: string
+    mediaId?: number
+    candidates?: Array<Manga_LocalMangaScanCandidate>
+}
+
+/**
+ * - Filepath: internal/manga/local_library.go
+ * - Filename: local_library.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaSeries = {
+    dirName: string
+    title: string
+    chapterCount: number
+    size: number
+    mediaId?: number
+    mediaTitle: string
+}
+
+/**
+ * - Filepath: internal/manga/local_upload.go
+ * - Filename: local_upload.go
+ * - Package: manga
+ */
+export type Manga_LocalMangaUploadResult = {
+    series: string
+    chapters?: Array<string>
+    pageCount: number
+    mediaId?: number
+}
+
+/**
  * - Filepath: internal/manga/preferences.go
  * - Filename: preferences.go
  * - Package: manga
