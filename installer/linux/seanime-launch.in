@@ -1,0 +1,378 @@
+#!/bin/sh
+# Seanime launcher @VERSION@ — installed by install-linux.sh.
+#
+# The server is headless. `seanime` serves the web interface and prints to stdout;
+# it opens no window of its own, so a desktop entry that ran it directly would look
+# like nothing happened. This script is what the desktop entries actually run:
+#
+#   (no argument)   start the server if nothing is answering yet, wait until
+#                   /api/v1/status responds, then open the UI
+#   --terminal      run the server in the foreground inside a terminal emulator
+#   --remote        open a remote Seanime server, starting nothing locally
+#   --stop          stop the server
+#   --status        report whether the server is answering
+#
+# This file is safe to edit, but every knob lives in the settings file below rather
+# than in here, so a reinstall does not overwrite your choices.
+
+set -eu
+
+SEANIME_BIN="@BIN@"
+SEANIME_ENV_FILE="@ENVFILE@"
+SEANIME_MODE="@MODE@" # user | system | remote
+SEANIME_UNIT="seanime.service"
+
+log() {
+	printf 'seanime-launch: %s\n' "$*" >&2
+}
+
+# A desktop entry has no terminal attached, so an error on stderr is an error nobody
+# sees. Put it in front of the user with whatever dialog tool exists.
+die() {
+	log "$*"
+	if command -v kdialog >/dev/null 2>&1; then
+		kdialog --title "Seanime" --error "$*" >/dev/null 2>&1 || true
+	elif command -v zenity >/dev/null 2>&1; then
+		zenity --error --title="Seanime" --text="$*" >/dev/null 2>&1 || true
+	elif command -v notify-send >/dev/null 2>&1; then
+		notify-send --app-name=Seanime "Seanime" "$*" >/dev/null 2>&1 || true
+	fi
+	exit 1
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+if [ -r "$SEANIME_ENV_FILE" ]; then
+	# shellcheck disable=SC1090 # path is substituted at install time
+	. "$SEANIME_ENV_FILE"
+fi
+
+: "${SEANIME_DATA_DIR:=@DATADIR@}"
+: "${SEANIME_LAUNCH_HOST:=127.0.0.1}"
+: "${SEANIME_LAUNCH_PORT:=43211}"
+: "${SEANIME_LAUNCH_TIMEOUT:=90}"
+: "${SEANIME_REMOTE_URL:=}"
+: "${SEANIME_BROWSER_CMD:=}"
+: "${SEANIME_TERMINAL:=}"
+
+CONFIG_FILE="${SEANIME_DATA_DIR}/config.toml"
+
+# Read [server] host/port out of config.toml rather than telling the server what they
+# are. Passing --host/--port (or exporting SEANIME_SERVER_HOST/PORT) makes the server
+# rewrite config.toml whenever the value differs — internal/core/config.go:211 — so a
+# launcher that "helpfully" repeated them would overwrite a hand-edited config on
+# every single launch. The settings file below is only the fallback for the first run,
+# before config.toml exists.
+toml_server_value() {
+	[ -r "$CONFIG_FILE" ] || return 1
+	# Everything between [server] and the next table header. Viper lowercases keys and
+	# writes single-quoted strings, so match case-insensitively and strip both quote
+	# styles.
+	sed -n '/^[[:space:]]*\[server\][[:space:]]*$/,/^[[:space:]]*\[/p' "$CONFIG_FILE" 2>/dev/null |
+		grep -i "^[[:space:]]*$1[[:space:]]*=" |
+		head -n 1 |
+		sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//' -e "s/^['\"]//" -e "s/['\"]$//"
+}
+
+HOST=$(toml_server_value host 2>/dev/null || true)
+PORT=$(toml_server_value port 2>/dev/null || true)
+[ -n "$HOST" ] || HOST=$SEANIME_LAUNCH_HOST
+[ -n "$PORT" ] || PORT=$SEANIME_LAUNCH_PORT
+
+# A wildcard bind address is something to listen on, not something to connect to.
+case "$HOST" in
+"" | 0.0.0.0 | "::" | "[::]") HOST=127.0.0.1 ;;
+esac
+
+URL="http://${HOST}:${PORT}"
+STATUS_URL="${URL}/api/v1/status"
+
+PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/seanime-launch.pid"
+SEANIME_PID=""
+
+# ---------------------------------------------------------------------------
+# Readiness
+# ---------------------------------------------------------------------------
+
+# /api/v1/status is the endpoint server.Dockerfile already uses as its healthcheck.
+# It is public in password mode, but an OIDC-protected instance answers 401 — which
+# still proves the server is up, so the probe accepts *any* HTTP response rather than
+# only a 2xx.
+HTTP_PROBE=""
+if have curl; then
+	HTTP_PROBE=curl
+elif have wget; then
+	HTTP_PROBE=wget
+fi
+
+probe() {
+	case "$HTTP_PROBE" in
+	curl)
+		# curl writes "000" and exits non-zero when it never got a response, so match
+		# the shape of a real status line rather than testing curl's exit status: any
+		# 1xx-5xx means the server answered, 401 from an OIDC instance included.
+		code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "$STATUS_URL" 2>/dev/null) || code=''
+		case "$code" in
+		[1-5][0-9][0-9]) return 0 ;;
+		*) return 1 ;;
+		esac
+		;;
+	wget)
+		# wget exits 8 on an HTTP error status, which still means the server answered.
+		set +e
+		wget -q -O /dev/null -T 2 -t 1 "$STATUS_URL" >/dev/null 2>&1
+		rc=$?
+		set -e
+		[ "$rc" -eq 0 ] || [ "$rc" -eq 8 ]
+		;;
+	*) return 2 ;; # neither is installed: the caller falls back to the pidfile
+	esac
+}
+
+read_pid() {
+	SEANIME_PID=""
+	[ -f "$PIDFILE" ] || return 1
+	SEANIME_PID=$(cat "$PIDFILE" 2>/dev/null) || return 1
+	case "$SEANIME_PID" in
+	'' | *[!0-9]*)
+		SEANIME_PID=""
+		return 1
+		;;
+	esac
+	kill -0 "$SEANIME_PID" 2>/dev/null
+}
+
+unit_managed() {
+	[ "$SEANIME_MODE" = "user" ] || return 1
+	have systemctl || return 1
+	systemctl --user is-enabled --quiet "$SEANIME_UNIT" 2>/dev/null
+}
+
+is_running() {
+	if probe; then
+		return 0
+	elif [ $? -eq 2 ]; then
+		# No HTTP client on this machine; the pidfile is the only signal left.
+		if read_pid; then
+			return 0
+		fi
+	fi
+	return 1
+}
+
+wait_ready() {
+	# POSIX sleep only guarantees whole seconds. The timeout is generous because a
+	# first run builds the database and caches before it starts listening.
+	i=0
+	while [ "$i" -lt "$SEANIME_LAUNCH_TIMEOUT" ]; do
+		if probe; then
+			return 0
+		elif [ $? -eq 2 ]; then
+			log "neither curl nor wget is installed, so readiness cannot be verified; waiting 3s."
+			sleep 3
+			return 0
+		fi
+		i=$((i + 1))
+		sleep 1
+	done
+	return 1
+}
+
+# ---------------------------------------------------------------------------
+# Start / stop
+# ---------------------------------------------------------------------------
+
+start_server() {
+	if unit_managed; then
+		systemctl --user start "$SEANIME_UNIT"
+		return 0
+	fi
+
+	if [ "$SEANIME_MODE" = "system" ]; then
+		die "The Seanime service is not running. Start it with: sudo systemctl start ${SEANIME_UNIT}"
+	fi
+
+	[ -n "$SEANIME_BIN" ] || die "This launcher was installed without a server binary (client-only install)."
+	[ -x "$SEANIME_BIN" ] || die "Seanime binary not found or not executable: ${SEANIME_BIN}"
+
+	mkdir -p "${SEANIME_DATA_DIR}/logs"
+	logfile="${SEANIME_DATA_DIR}/logs/launcher.log"
+
+	# setsid puts the server in its own session, so it is reparented to init and
+	# survives this script — and the browser — exiting. The inner `exec` keeps $$
+	# pointing at the server itself, so the pidfile holds the server's pid rather
+	# than a wrapper's.
+	starter=nohup
+	if have setsid; then starter=setsid; fi
+	"$starter" sh -c 'echo $$ >"$1"; exec "$2" --datadir "$3"' \
+		sh "$PIDFILE" "$SEANIME_BIN" "$SEANIME_DATA_DIR" \
+		>>"$logfile" 2>&1 </dev/null &
+
+	log "started the server in the background; log: ${logfile}"
+}
+
+stop_server() {
+	if unit_managed; then
+		systemctl --user stop "$SEANIME_UNIT"
+		log "stopped ${SEANIME_UNIT}"
+		return 0
+	fi
+	if [ "$SEANIME_MODE" = "system" ]; then
+		die "This is a system-wide install. Stop it with: sudo systemctl stop ${SEANIME_UNIT}"
+	fi
+	if ! read_pid; then
+		log "no server started by this launcher is running."
+		return 0
+	fi
+
+	# Never signal a pid without checking what it is; pidfiles go stale and pids get
+	# reused.
+	comm=''
+	if [ -r "/proc/${SEANIME_PID}/comm" ]; then
+		comm=$(cat "/proc/${SEANIME_PID}/comm" 2>/dev/null || true)
+	elif have ps; then
+		comm=$(ps -p "$SEANIME_PID" -o comm= 2>/dev/null || true)
+	fi
+	case "$comm" in
+	*seanime*) ;;
+	*) die "Refusing to signal pid ${SEANIME_PID}: it is '${comm:-unknown}', not seanime. Remove ${PIDFILE} if it is stale." ;;
+	esac
+
+	kill -TERM "$SEANIME_PID"
+	i=0
+	while [ "$i" -lt 15 ] && kill -0 "$SEANIME_PID" 2>/dev/null; do
+		i=$((i + 1))
+		sleep 1
+	done
+	kill -0 "$SEANIME_PID" 2>/dev/null && kill -KILL "$SEANIME_PID" 2>/dev/null || true
+	rm -f "$PIDFILE"
+	log "stopped the server (pid ${SEANIME_PID})"
+}
+
+# ---------------------------------------------------------------------------
+# Opening things
+# ---------------------------------------------------------------------------
+
+open_url() {
+	url="$1"
+	if [ -n "$SEANIME_BROWSER_CMD" ]; then
+		# The value is a command line, so it is deliberately left unquoted. A "%u"
+		# anywhere in it is replaced by the URL — which is how you get a chromeless
+		# app window: SEANIME_BROWSER_CMD="chromium --app=%u". Otherwise the URL is
+		# appended as a final argument.
+		case "$SEANIME_BROWSER_CMD" in
+		*%u*)
+			expanded=$(printf '%s' "$SEANIME_BROWSER_CMD" | sed "s|%u|${url}|g")
+			# shellcheck disable=SC2086
+			exec $expanded
+			;;
+		*)
+			# shellcheck disable=SC2086
+			exec $SEANIME_BROWSER_CMD "$url"
+			;;
+		esac
+	fi
+	for opener in xdg-open gio kde-open x-www-browser sensible-browser; do
+		have "$opener" || continue
+		if [ "$opener" = gio ]; then
+			exec gio open "$url"
+		fi
+		exec "$opener" "$url"
+	done
+	die "Found no way to open a browser. Open ${url} yourself, or set SEANIME_BROWSER_CMD in ${SEANIME_ENV_FILE}."
+}
+
+# Terminal=true is not a valid key inside a [Desktop Action] group per the XDG Desktop
+# Entry specification (desktop-file-validate rejects it), so the "Start in a terminal"
+# action re-enters here and this function finds a terminal emulator itself. Doing it
+# here rather than through Terminal=true is also more reliable: the argument that
+# introduces a command differs per emulator, and the DE's configured terminal is not
+# necessarily one that accepts a bare "-e".
+run_in_terminal() {
+	self=$0
+	candidates=$SEANIME_TERMINAL
+	if [ -n "${TERMINAL:-}" ]; then
+		candidates="${candidates} ${TERMINAL}"
+	fi
+	candidates="${candidates} xdg-terminal-exec konsole ghostty wezterm alacritty kitty foot kgx gnome-terminal xfce4-terminal terminator x-terminal-emulator xterm"
+
+	for term in $candidates; do
+		have "$term" || continue
+		case "${term##*/}" in
+		xdg-terminal-exec) exec "$term" "$self" --terminal-inner ;;
+		wezterm) exec "$term" start -- "$self" --terminal-inner ;;
+		kitty | foot) exec "$term" "$self" --terminal-inner ;;
+		kgx | gnome-terminal) exec "$term" -- "$self" --terminal-inner ;;
+		xfce4-terminal | terminator) exec "$term" -x "$self" --terminal-inner ;;
+		*) exec "$term" -e "$self" --terminal-inner ;;
+		esac
+	done
+	die "No terminal emulator found. Set SEANIME_TERMINAL in ${SEANIME_ENV_FILE}, or run: ${self} --terminal-inner"
+}
+
+run_foreground() {
+	[ -n "$SEANIME_BIN" ] || die "This launcher was installed without a server binary (client-only install)."
+	if is_running; then
+		printf 'A Seanime server is already answering on %s.\n' "$URL"
+		printf 'Stop it first with: %s --stop\n' "$0"
+	else
+		printf 'Starting Seanime @VERSION@\n'
+		printf '  Data directory : %s\n' "$SEANIME_DATA_DIR"
+		printf '  Web interface  : %s\n\n' "$URL"
+		set +e
+		"$SEANIME_BIN" --datadir "$SEANIME_DATA_DIR"
+		status=$?
+		set -e
+		printf '\nSeanime exited with status %s.\n' "$status"
+	fi
+	# Without this the terminal window vanishes with the message still in it.
+	printf 'Press Enter to close this window.'
+	read -r _ || true
+}
+
+# ---------------------------------------------------------------------------
+
+case "${1:-}" in
+"")
+	if ! is_running; then
+		start_server
+		wait_ready || die "The server did not become ready within ${SEANIME_LAUNCH_TIMEOUT}s. Check ${SEANIME_DATA_DIR}/logs/."
+	fi
+	open_url "$URL"
+	;;
+--terminal) run_in_terminal ;;
+--terminal-inner) run_foreground ;;
+--remote)
+	[ -n "$SEANIME_REMOTE_URL" ] || die "No remote server configured. Set SEANIME_REMOTE_URL in ${SEANIME_ENV_FILE}."
+	open_url "$SEANIME_REMOTE_URL"
+	;;
+--stop) stop_server ;;
+--status)
+	if is_running; then
+		printf 'running: %s\n' "$URL"
+	else
+		printf 'not running (%s)\n' "$URL"
+		exit 1
+	fi
+	;;
+--url) printf '%s\n' "$URL" ;;
+-h | --help)
+	cat <<EOF
+Seanime launcher @VERSION@
+
+Usage: seanime-launch [mode]
+
+  (none)        start the server if needed, wait for it, open the web interface
+  --terminal    run the server in the foreground inside a terminal emulator
+  --remote      open the remote server named by SEANIME_REMOTE_URL
+  --stop        stop the server
+  --status      report whether the server is answering
+  --url         print the web interface URL
+
+Settings : ${SEANIME_ENV_FILE}
+Server   : ${SEANIME_BIN:-(none: client-only install)}
+Data     : ${SEANIME_DATA_DIR}
+EOF
+	;;
+*) die "Unknown option: $1 (try --help)" ;;
+esac

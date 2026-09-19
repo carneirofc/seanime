@@ -1,0 +1,76 @@
+# Seanime as a system service. Installed by install-linux.sh --system.
+#
+# The lockdown below mirrors the posture deploy/k8s/deployment.yaml and
+# server.Dockerfile already set for a server deployment: non-root, no ambient
+# capabilities, a read-only system with the data directory as the only writable path.
+#
+# It is coherent ONLY because --system also seeds `capabilities = []` into
+# <datadir>/config.toml. If you later grant "exec" or "filesystem" there, this unit
+# will fight it — MemoryDenyWriteExecute, ProtectSystem=strict and the system-call
+# filter are precisely what stop the server spawning a player or reaching outside
+# its roots. Relax the unit deliberately if you grant a capability deliberately;
+# do not do one without the other.
+#
+# Transcoding still works with everything denied: ffmpeg/ffprobe resolved from PATH
+# go through internal/security/executable.go, which is a write-root check rather than
+# a capability gate. "exec" governs pointing at a *custom* ffmpeg or launching a
+# media player — neither of which a headless server does.
+#
+# Two consequences worth knowing before you debug them:
+#   - ProtectSystem=strict makes /usr read-only, so the "selfupdate" capability cannot
+#     work here even if you grant it. Update the binary the way you installed it.
+#   - If something fails to start with a bare EPERM, MemoryDenyWriteExecute is the
+#     first line to comment out. The extension engine (goja) is an interpreter with no
+#     JIT, so it should not need it — but a spawned helper might.
+
+[Unit]
+Description=Seanime media server (@VERSION@)
+Documentation=https://seanime.app/docs
+Documentation=file://@DOCDIR@/WEB_DEPLOYMENT.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+EnvironmentFile=@ENVFILE@
+ExecStart=@BIN@ --datadir @DATADIR@
+Restart=on-failure
+RestartSec=5
+
+# --- Sandbox -------------------------------------------------------------------
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectClock=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectProc=invisible
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+# AF_NETLINK stays: Go's net.Interfaces() needs it, and dropping it turns an ordinary
+# startup into an obscure failure for no real gain.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+
+# The data directory holds the database, logs, cache, extensions and assets.
+ReadWritePaths=@DATADIR@
+# Add one line per media root the server must write to (downloads, library), e.g.:
+# ReadWritePaths=/srv/media
+
+[Install]
+WantedBy=multi-user.target

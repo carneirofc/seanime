@@ -84,6 +84,53 @@ By default it installs to `%LOCALAPPDATA%\Programs\Seanime`, uses
 `<InstallDir>\seanime_data_dir` as the data directory, and looks for the binary
 produced by `npm run build` at `dist\seanime-windows-amd64.exe`.
 
+### Installing on Linux
+
+`install-linux.sh` is the counterpart of the Windows script. It copies the binary into
+an install prefix and adds the desktop integration around it: an application menu
+entry with hicolor icons, a launcher that starts the server and opens the web
+interface, and optionally a desktop icon, a `PATH` entry and a systemd service.
+
+Build and install in one step:
+
+```bash
+npm run build:install
+```
+
+Or install an already-built binary:
+
+```bash
+npm run install:linux
+```
+
+Both run the installer with no options. Flags cannot travel through `npm run` — npm
+rejects unrecognised flags before `run-script-os` can forward them, and it consumes
+`--prefix` as its own. Call the script directly to pass options:
+
+```bash
+# Build first, install elsewhere, with a desktop icon and a user service
+./install-linux.sh --build-first --prefix ~/apps/seanime --datadir /data/seanime \
+    --desktop-icon --systemd
+
+# A host service: dedicated user, hardened unit, every capability denied
+sudo ./install-linux.sh --system
+
+# A machine that only consumes a server running elsewhere
+./install-linux.sh --client-only --server-url https://seanime.example.com
+
+# Remove it again; the data directory is kept
+./install-linux.sh --uninstall
+```
+
+By default it installs to `~/.local/bin` with the desktop entry and icons under
+`~/.local/share`, and leaves the data directory where the server itself would put it
+(`~/.config/Seanime`) rather than relocating it next to the binary as the Windows
+installer does. `--system` uses `/usr/local` and `/var/lib/seanime`.
+
+See [`installer/linux/README.md`](installer/linux/README.md) for the full flag list,
+what lands where, how the launcher decides the server is ready, and the difference
+between the two systemd units.
+
 ---
 
 ## Development Guide

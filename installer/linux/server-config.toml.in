@@ -1,0 +1,30 @@
+# Seeded by install-linux.sh --system. Written only when no config.toml exists yet,
+# so your edits survive a reinstall.
+#
+# This is the minimum a headless deployment needs to be safe. For anything
+# internet-facing — reverse proxy, TLS, OIDC — follow WEB_DEPLOYMENT.md and use
+# config.example.toml as the reference; everything they document also applies here.
+
+[server]
+# Loopback by default. Put a TLS-terminating reverse proxy in front of it rather than
+# binding a public interface; see WEB_DEPLOYMENT.md and example.Caddyfile.
+host = "@HOST@"
+port = @PORT@
+
+# Privileged capabilities, granted here and nowhere else — no source address, header
+# or authenticated session can grant them. An empty list denies all of them, which is
+# the right default for a machine with no one sitting at it.
+#
+#   "exec"        spawn processes: media players, torrent clients, a custom
+#                 ffmpeg/ffprobe binary, "open in file explorer", plugin $os.cmd
+#   "filesystem"  browse and manage the host filesystem outside the media roots
+#   "extensions"  install and reload third-party extensions (in-process code)
+#   "selfupdate"  replace the running binary
+#   "nakama-host" serve the peer-to-peer host endpoints
+#
+# This must be written explicitly: with no OIDC, no externalurl and no trustedproxies,
+# the server would otherwise treat itself as a local desktop install and grant all of
+# them (internal/security/capability.go, ResolveDefaultCapabilities).
+#
+# Granting one here means relaxing the matching directive in the systemd unit too.
+capabilities = []

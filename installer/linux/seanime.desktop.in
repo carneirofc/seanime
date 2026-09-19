@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Seanime
+GenericName=Anime and Manga Media Server
+Comment=Manage your local anime library, stream episodes and read manga
+Exec=@LAUNCHER@
+TryExec=@LAUNCHER@
+Icon=seanime
+Terminal=false
+StartupNotify=false
+Categories=AudioVideo;Video;Player;
+Keywords=anime;manga;media;server;anilist;torrent;
+X-AppVersion=@VERSION@
+Actions=terminal;stop;datadir;
+
+[Desktop Action terminal]
+Name=Start in a terminal
+Exec=@LAUNCHER@ --terminal
+
+[Desktop Action stop]
+Name=Stop the server
+Exec=@LAUNCHER@ --stop
+
+[Desktop Action datadir]
+Name=Open data directory
+Exec=xdg-open @DATADIR@

@@ -170,3 +170,35 @@ docker compose -f docker-compose.example.yml up -d
 
 The image runs as a non-root user (uid 10001), so a bind-mounted data dir must
 be writable by it (the `chown` above). Named volumes are chowned automatically.
+
+## systemd (bare metal)
+
+`install-linux.sh --system` is the non-container equivalent of the above. It installs
+the binary to `/usr/local/bin`, creates a `seanime` system user, and writes a unit
+whose sandbox mirrors the pod `securityContext` in `deploy/k8s/deployment.yaml`:
+non-root, `CapabilityBoundingSet=`, `ProtectSystem=strict`, `MemoryDenyWriteExecute`,
+`SystemCallFilter=@system-service`, and `/var/lib/seanime` as the only writable path
+at mode `0700` — which is the "restrict data-dir permissions" item above.
+
+```sh
+sudo ./install-linux.sh --system
+sudo systemctl status seanime
+```
+
+It seeds `/var/lib/seanime/config.toml` with `host = "127.0.0.1"` and
+`capabilities = []` — only if no config exists yet — then leaves the rest to you. That
+seeding is not cosmetic: with no OIDC, no `externalurl` and no `trustedproxies` set,
+`ResolveDefaultCapabilities` classifies the install as a local desktop one and grants
+**every** privileged capability. Configure the reverse proxy, `externalurl`,
+`trustedproxies` and `[server.oidc]` from `config.example.toml` before exposing it.
+
+Two interactions to know about:
+
+- Granting a capability means relaxing the matching unit directive. `filesystem`
+  without a `ReadWritePaths=` line for the target root just makes the path invisible;
+  `selfupdate` cannot work at all while `/usr` is read-only.
+- Each media root the server must reach needs its own `ReadWritePaths=` (or
+  `ReadOnlyPaths=`, per the last checklist item) line in
+  `/etc/systemd/system/seanime.service`.
+
+See [`installer/linux/README.md`](installer/linux/README.md) for the rest.

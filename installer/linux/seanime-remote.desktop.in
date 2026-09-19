@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Seanime (remote)
+GenericName=Anime and Manga Media Server
+Comment=Open the Seanime server at @URL@
+Exec=@LAUNCHER@ --remote
+TryExec=@LAUNCHER@
+Icon=seanime
+Terminal=false
+StartupNotify=false
+Categories=AudioVideo;Video;Player;
+Keywords=anime;manga;media;server;anilist;remote;
+X-AppVersion=@VERSION@

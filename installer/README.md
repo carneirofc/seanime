@@ -1,5 +1,8 @@
 # Windows installer
 
+> For Linux, see [`linux/README.md`](./linux/README.md) — a shell installer that adds an
+> XDG desktop entry, hicolor icons and an optional systemd service.
+
 [`seanime.iss`](./seanime.iss) is an [Inno Setup](https://jrsoftware.org/isinfo.php) 6 script that
 packages the built Seanime server into a double-click `setup.exe` with an uninstaller, Start Menu /
 Desktop shortcuts, optional sign-in autostart, and Add/Remove Programs registration.

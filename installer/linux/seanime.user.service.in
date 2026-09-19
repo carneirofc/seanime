@@ -1,0 +1,33 @@
+# Seanime as a systemd --user service. Installed by install-linux.sh --systemd.
+#
+# Deliberately NOT hardened. A local desktop install resolves to *all* privileged
+# capabilities (internal/security/capability.go, ResolveDefaultCapabilities), because
+# that is what the features the desktop user installed it for need: spawning mpv/VLC,
+# browsing the filesystem, opening a file manager, installing extensions. ProtectHome,
+# a restricted ReadWritePaths or a SystemCallFilter here would break exactly those.
+#
+# The hardened counterpart is seanime.system.service.in, used by --system, where the
+# seeded config.toml denies every capability and the lockdown is therefore coherent.
+#
+#   systemctl --user enable --now seanime.service
+#   loginctl enable-linger $USER    # to also run when you are not logged in
+
+[Unit]
+Description=Seanime media server (@VERSION@)
+Documentation=https://seanime.app/docs
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=@ENVFILE@
+ExecStart=@BIN@ --datadir @DATADIR@
+Restart=on-failure
+RestartSec=5
+# The server writes its own rotating logs under <datadir>/logs; the journal only needs
+# what escapes to stdout.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
