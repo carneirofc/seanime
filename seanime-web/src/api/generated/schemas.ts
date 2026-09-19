@@ -119,11 +119,11 @@ export const AL_MediaListStatusSchema = z.enum(AL_MediaListStatusValues)
 /** anilist.AnimeCollection_MediaListCollection_Lists_Entries — client_gen.go */
 export const AL_AnimeCollection_MediaListCollection_Lists_EntriesSchema = z.looseObject({
     completedAt: AL_AnimeCollection_MediaListCollection_Lists_Entries_CompletedAtSchema.nullish(),
+    hiddenFromStatusLists: z.boolean().nullish(),
     id: z.number(),
     media: AL_BaseAnimeSchema.nullish(),
     notes: z.string().nullish(),
     private: z.boolean().nullish(),
-    hiddenFromStatusLists: z.boolean().nullish(),
     progress: z.number().nullish(),
     repeat: z.number().nullish(),
     score: z.number().nullish(),
@@ -347,17 +347,15 @@ export const AL_AnimeDetailsById_Media_TrailerSchema = z.looseObject({
     thumbnail: z.string().nullish(),
 })
 
-/** anilist.MTags — client_gen.go */
-export const AL_MTagsSchema = z.looseObject({
+/** anilist.MTagsSlim — client_gen.go */
+export const AL_MTagsSlimSchema = z.looseObject({
     id: z.number(),
     name: z.string(),
     category: z.string().nullish(),
-    description: z.string().nullish(),
     isAdult: z.boolean().nullish(),
     isMediaSpoiler: z.boolean().nullish(),
     isGeneralSpoiler: z.boolean().nullish(),
     rank: z.number().nullish(),
-    userId: z.number().nullish(),
 })
 
 /** anilist.AnimeDetailsById_Media — client_gen.go */
@@ -378,7 +376,7 @@ export const AL_AnimeDetailsById_MediaSchema = z.looseObject({
     staff: AL_AnimeDetailsById_Media_StaffSchema.nullish(),
     startDate: AL_AnimeDetailsById_Media_StartDateSchema.nullish(),
     studios: AL_AnimeDetailsById_Media_StudiosSchema.nullish(),
-    tags: z.array(AL_MTagsSchema).nullish(),
+    tags: z.array(AL_MTagsSlimSchema).nullish(),
     trailer: AL_AnimeDetailsById_Media_TrailerSchema.nullish(),
 })
 
@@ -646,11 +644,11 @@ export const AL_MangaCollection_MediaListCollection_Lists_Entries_StartedAtSchem
 /** anilist.MangaCollection_MediaListCollection_Lists_Entries — client_gen.go */
 export const AL_MangaCollection_MediaListCollection_Lists_EntriesSchema = z.looseObject({
     completedAt: AL_MangaCollection_MediaListCollection_Lists_Entries_CompletedAtSchema.nullish(),
+    hiddenFromStatusLists: z.boolean().nullish(),
     id: z.number(),
     media: AL_BaseMangaSchema.nullish(),
     notes: z.string().nullish(),
     private: z.boolean().nullish(),
-    hiddenFromStatusLists: z.boolean().nullish(),
     progress: z.number().nullish(),
     repeat: z.number().nullish(),
     score: z.number().nullish(),
@@ -789,7 +787,7 @@ export const AL_MangaDetailsById_MediaSchema = z.looseObject({
     recommendations: AL_MangaDetailsById_Media_RecommendationsSchema.nullish(),
     relations: AL_MangaDetailsById_Media_RelationsSchema.nullish(),
     siteUrl: z.string().nullish(),
-    tags: z.array(AL_MTagsSchema).nullish(),
+    tags: z.array(AL_MTagsSlimSchema).nullish(),
 })
 
 /** anilist.MangaListEntry — manga.go */

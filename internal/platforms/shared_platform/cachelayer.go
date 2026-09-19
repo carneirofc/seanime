@@ -144,7 +144,9 @@ const (
 	// Anime/manga metadata is effectively immutable, so a generous window avoids
 	// hammering the API — and the 429s that come with it — during library scans,
 	// which fan out a CompleteAnimeByID request for every node of every media tree.
-	// Collections stay network-first, so list/progress data is always fresh.
+	// Collections stay network-first, so list/progress data is always fresh — the one
+	// exception being the collection *tag* maps, which are immutable metadata and ride
+	// this same window rather than being refetched on every read.
 	mediaReadCacheTTL = 24 * time.Hour
 )
 
@@ -705,12 +707,19 @@ func (c *CacheLayer) invalidateCollectionCaches() {
 		return
 	}
 
+	// The tag buckets are deliberately absent. invalidateCollectionCaches runs after
+	// every list-entry mutation, and a progress, score or repeat change cannot alter
+	// any media's tag set — only collection *membership* changes do. Wiping them here
+	// meant an episode-progress tick cost a second whole-collection AniList query on
+	// the next request, which is a large part of why this client saw 429s. Newly
+	// added media are picked up incrementally instead, by the reconcile in
+	// anilist.ReconcileMediaTagMap. A deleted entry leaves a stale key in the map,
+	// which is harmless: the map is only ever indexed by ids taken from the
+	// collection being filtered, so an orphan key is never read.
 	collectionBuckets := []string{
 		AnimeCollectionBucket,
-		AnimeCollectionTagsBucket,
 		AnimeCollectionRelationsBucket,
 		MangaCollectionBucket,
-		MangaCollectionTagsBucket,
 		CustomQueryBucket,
 	}
 
@@ -874,9 +883,18 @@ func (c *CacheLayer) AnimeCollection(ctx context.Context, userName *string, inte
 
 func (c *CacheLayer) AnimeCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionTags, error) {
 	cacheKey := c.generateCacheKey("collection-tags", userName)
-	return networkFirstGet(c, AnimeCollectionTagsBucket, cacheKey, func() (*anilist.AnimeCollectionTags, error) {
+	return cacheFirstGet(c, AnimeCollectionTagsBucket, cacheKey, func() (*anilist.AnimeCollectionTags, error) {
 		return c.anilistClientRef.Get().AnimeCollectionTags(ctx, userName, interceptors...)
 	})
+}
+
+// GetMediaTagsByID is deliberately not cached. Its caller only ever asks for media ids
+// missing from the tag map it is filling, so a cached response would essentially never
+// be reused, while every distinct id set would occupy a permanent bucket entry forever.
+// Availability is handled a level up: when this fails, the handler serves the tag map it
+// already holds rather than failing the request.
+func (c *CacheLayer) GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*anilist.GetMediaTagsByID, error) {
+	return c.anilistClientRef.Get().GetMediaTagsByID(ctx, ids, page, perPage, interceptors...)
 }
 
 func (c *CacheLayer) AnimeCollectionWithRelations(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionWithRelations, error) {
@@ -1115,7 +1133,7 @@ func (c *CacheLayer) MangaCollection(ctx context.Context, userName *string, inte
 
 func (c *CacheLayer) MangaCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.MangaCollectionTags, error) {
 	cacheKey := c.generateCacheKey("collection-tags", userName)
-	return networkFirstGet(c, MangaCollectionTagsBucket, cacheKey, func() (*anilist.MangaCollectionTags, error) {
+	return cacheFirstGet(c, MangaCollectionTagsBucket, cacheKey, func() (*anilist.MangaCollectionTags, error) {
 		return c.anilistClientRef.Get().MangaCollectionTags(ctx, userName, interceptors...)
 	})
 }

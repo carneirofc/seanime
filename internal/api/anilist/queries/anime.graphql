@@ -120,7 +120,7 @@ query AnimeDetailsById ($id: Int) {
     meanScore
     description
     tags {
-      ...mTags
+      ...mTagsSlim
     }
     trailer {
       id

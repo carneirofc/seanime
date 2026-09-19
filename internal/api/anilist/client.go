@@ -45,6 +45,7 @@ type AnilistClient interface {
 	DeleteEntry(ctx context.Context, mediaListEntryID *int, interceptors ...clientv2.RequestInterceptor) (*DeleteEntry, error)
 	MangaCollection(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*MangaCollection, error)
 	MangaCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*MangaCollectionTags, error)
+	GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error)
 	SearchBaseManga(ctx context.Context, page *int, perPage *int, sort []*MediaSort, search *string, status []*MediaStatus, interceptors ...clientv2.RequestInterceptor) (*SearchBaseManga, error)
 	BaseMangaByID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*BaseMangaByID, error)
 	MangaDetailsByID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*MangaDetailsByID, error)
@@ -215,6 +216,18 @@ func (ac *AnilistClientImpl) MangaCollection(ctx context.Context, userName *stri
 	}
 	ac.logger.Debug().Msg("anilist: Fetching manga collection")
 	return ac.Client.MangaCollection(ctx, userName, interceptors...)
+}
+
+// GetMediaTagsByID fetches only the tag names of the given media. It exists so a
+// MediaTagMap can be topped up for media that entered the collection since it was
+// built, instead of re-running a whole-collection tags query. AniList caps a page at
+// MediaTagsPerPage, so callers must chunk ids to that size.
+func (ac *AnilistClientImpl) GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error) {
+	if !ac.IsAuthenticated() {
+		return nil, ErrNotAuthenticated
+	}
+	ac.logger.Debug().Int("count", len(ids)).Msg("anilist: Fetching media tags by id")
+	return ac.Client.GetMediaTagsByID(ctx, ids, page, perPage, interceptors...)
 }
 
 func (ac *AnilistClientImpl) MangaCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*MangaCollectionTags, error) {

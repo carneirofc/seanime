@@ -2041,11 +2041,11 @@ declare namespace $app {
      */
     interface AL_AnimeCollectionWithRelations_MediaListCollection_Lists_Entries {
         completedAt?: AL_AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_CompletedAt;
+        hiddenFromStatusLists?: boolean;
         id: number;
         media?: AL_CompleteAnime;
         notes?: string;
         private?: boolean;
-        hiddenFromStatusLists?: boolean;
         progress?: number;
         repeat?: number;
         score?: number;
@@ -2093,11 +2093,11 @@ declare namespace $app {
      */
     interface AL_AnimeCollection_MediaListCollection_Lists_Entries {
         completedAt?: AL_AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt;
+        hiddenFromStatusLists?: boolean;
         id: number;
         media?: AL_BaseAnime;
         notes?: string;
         private?: boolean;
-        hiddenFromStatusLists?: boolean;
         progress?: number;
         repeat?: number;
         score?: number;
@@ -2143,7 +2143,7 @@ declare namespace $app {
         staff?: AL_AnimeDetailsById_Media_Staff;
         startDate?: AL_AnimeDetailsById_Media_StartDate;
         studios?: AL_AnimeDetailsById_Media_Studios;
-        tags?: Array<AL_MTags>;
+        tags?: Array<AL_MTagsSlim>;
         trailer?: AL_AnimeDetailsById_Media_Trailer;
     }
 
@@ -2750,16 +2750,14 @@ declare namespace $app {
     /**
      * - Filepath: internal/api/anilist/client_gen.go
      */
-    interface AL_MTags {
+    interface AL_MTagsSlim {
         id: number;
         name: string;
         category?: string;
-        description?: string;
         isAdult?: boolean;
         isMediaSpoiler?: boolean;
         isGeneralSpoiler?: boolean;
         rank?: number;
-        userId?: number;
     }
 
     /**
@@ -2791,11 +2789,11 @@ declare namespace $app {
      */
     interface AL_MangaCollection_MediaListCollection_Lists_Entries {
         completedAt?: AL_MangaCollection_MediaListCollection_Lists_Entries_CompletedAt;
+        hiddenFromStatusLists?: boolean;
         id: number;
         media?: AL_BaseManga;
         notes?: string;
         private?: boolean;
-        hiddenFromStatusLists?: boolean;
         progress?: number;
         repeat?: number;
         score?: number;
@@ -2833,7 +2831,7 @@ declare namespace $app {
         recommendations?: AL_MangaDetailsById_Media_Recommendations;
         relations?: AL_MangaDetailsById_Media_Relations;
         siteUrl?: string;
-        tags?: Array<AL_MTags>;
+        tags?: Array<AL_MTagsSlim>;
     }
 
     /**

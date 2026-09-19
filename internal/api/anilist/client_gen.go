@@ -36,7 +36,7 @@ type GithubGraphQLClient interface {
 	ViewerStats(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*ViewerStats, error)
 	StudioDetails(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*StudioDetails, error)
 	MediaTagCollection(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*MediaTagCollection, error)
-	GetMediaTagsByID(ctx context.Context, ids []int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error)
+	GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error)
 	GetViewer(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetViewer, error)
 }
 
@@ -1015,6 +1015,59 @@ func (t *MTags) GetUserID() *int {
 		t = &MTags{}
 	}
 	return t.UserID
+}
+
+type MTagsSlim struct {
+	ID               int     "json:\"id\" graphql:\"id\""
+	Name             string  "json:\"name\" graphql:\"name\""
+	Category         *string "json:\"category,omitempty\" graphql:\"category\""
+	IsAdult          *bool   "json:\"isAdult,omitempty\" graphql:\"isAdult\""
+	IsMediaSpoiler   *bool   "json:\"isMediaSpoiler,omitempty\" graphql:\"isMediaSpoiler\""
+	IsGeneralSpoiler *bool   "json:\"isGeneralSpoiler,omitempty\" graphql:\"isGeneralSpoiler\""
+	Rank             *int    "json:\"rank,omitempty\" graphql:\"rank\""
+}
+
+func (t *MTagsSlim) GetID() int {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.ID
+}
+func (t *MTagsSlim) GetName() string {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.Name
+}
+func (t *MTagsSlim) GetCategory() *string {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.Category
+}
+func (t *MTagsSlim) GetIsAdult() *bool {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.IsAdult
+}
+func (t *MTagsSlim) GetIsMediaSpoiler() *bool {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.IsMediaSpoiler
+}
+func (t *MTagsSlim) GetIsGeneralSpoiler() *bool {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.IsGeneralSpoiler
+}
+func (t *MTagsSlim) GetRank() *int {
+	if t == nil {
+		t = &MTagsSlim{}
+	}
+	return t.Rank
 }
 
 type BaseAnime_Trailer struct {
@@ -2026,16 +2079,16 @@ func (t *AnimeCollection_MediaListCollection_Lists_Entries_Media_BaseAnime_NextA
 
 type AnimeCollection_MediaListCollection_Lists_Entries struct {
 	CompletedAt           *AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
+	HiddenFromStatusLists *bool                                                          "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
 	ID                    int                                                            "json:\"id\" graphql:\"id\""
 	Media                 *BaseAnime                                                     "json:\"media,omitempty\" graphql:\"media\""
 	Notes                 *string                                                        "json:\"notes,omitempty\" graphql:\"notes\""
 	Private               *bool                                                          "json:\"private,omitempty\" graphql:\"private\""
-	HiddenFromStatusLists *bool                                                          "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
 	Progress              *int                                                           "json:\"progress,omitempty\" graphql:\"progress\""
-	Repeat      *int                                                           "json:\"repeat,omitempty\" graphql:\"repeat\""
-	Score       *float64                                                       "json:\"score,omitempty\" graphql:\"score\""
-	StartedAt   *AnimeCollection_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
-	Status      *MediaListStatus                                               "json:\"status,omitempty\" graphql:\"status\""
+	Repeat                *int                                                           "json:\"repeat,omitempty\" graphql:\"repeat\""
+	Score                 *float64                                                       "json:\"score,omitempty\" graphql:\"score\""
+	StartedAt             *AnimeCollection_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
+	Status                *MediaListStatus                                               "json:\"status,omitempty\" graphql:\"status\""
 }
 
 func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetCompletedAt() *AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt {
@@ -2043,6 +2096,12 @@ func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetCompletedAt() *An
 		t = &AnimeCollection_MediaListCollection_Lists_Entries{}
 	}
 	return t.CompletedAt
+}
+func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
+	if t == nil {
+		t = &AnimeCollection_MediaListCollection_Lists_Entries{}
+	}
+	return t.HiddenFromStatusLists
 }
 func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetID() int {
 	if t == nil {
@@ -2067,12 +2126,6 @@ func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetPrivate() *bool {
 		t = &AnimeCollection_MediaListCollection_Lists_Entries{}
 	}
 	return t.Private
-}
-func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
-	if t == nil {
-		t = &AnimeCollection_MediaListCollection_Lists_Entries{}
-	}
-	return t.HiddenFromStatusLists
 }
 func (t *AnimeCollection_MediaListCollection_Lists_Entries) GetProgress() *int {
 	if t == nil {
@@ -2619,16 +2672,16 @@ func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_Media_Co
 
 type AnimeCollectionWithRelations_MediaListCollection_Lists_Entries struct {
 	CompletedAt           *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
+	HiddenFromStatusLists *bool                                                                       "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
 	ID                    int                                                                         "json:\"id\" graphql:\"id\""
 	Media                 *CompleteAnime                                                              "json:\"media,omitempty\" graphql:\"media\""
 	Notes                 *string                                                                     "json:\"notes,omitempty\" graphql:\"notes\""
 	Private               *bool                                                                       "json:\"private,omitempty\" graphql:\"private\""
-	HiddenFromStatusLists *bool                                                                       "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
 	Progress              *int                                                                        "json:\"progress,omitempty\" graphql:\"progress\""
-	Repeat      *int                                                                        "json:\"repeat,omitempty\" graphql:\"repeat\""
-	Score       *float64                                                                    "json:\"score,omitempty\" graphql:\"score\""
-	StartedAt   *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
-	Status      *MediaListStatus                                                            "json:\"status,omitempty\" graphql:\"status\""
+	Repeat                *int                                                                        "json:\"repeat,omitempty\" graphql:\"repeat\""
+	Score                 *float64                                                                    "json:\"score,omitempty\" graphql:\"score\""
+	StartedAt             *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
+	Status                *MediaListStatus                                                            "json:\"status,omitempty\" graphql:\"status\""
 }
 
 func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetCompletedAt() *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries_CompletedAt {
@@ -2636,6 +2689,12 @@ func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetComp
 		t = &AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{}
 	}
 	return t.CompletedAt
+}
+func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
+	if t == nil {
+		t = &AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{}
+	}
+	return t.HiddenFromStatusLists
 }
 func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetID() int {
 	if t == nil {
@@ -2660,12 +2719,6 @@ func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetPriv
 		t = &AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{}
 	}
 	return t.Private
-}
-func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
-	if t == nil {
-		t = &AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{}
-	}
-	return t.HiddenFromStatusLists
 }
 func (t *AnimeCollectionWithRelations_MediaListCollection_Lists_Entries) GetProgress() *int {
 	if t == nil {
@@ -4411,7 +4464,7 @@ type AnimeDetailsById_Media struct {
 	Staff           *AnimeDetailsById_Media_Staff           "json:\"staff,omitempty\" graphql:\"staff\""
 	StartDate       *AnimeDetailsById_Media_StartDate       "json:\"startDate,omitempty\" graphql:\"startDate\""
 	Studios         *AnimeDetailsById_Media_Studios         "json:\"studios,omitempty\" graphql:\"studios\""
-	Tags            []*MTags                                "json:\"tags,omitempty\" graphql:\"tags\""
+	Tags            []*MTagsSlim                            "json:\"tags,omitempty\" graphql:\"tags\""
 	Trailer         *AnimeDetailsById_Media_Trailer         "json:\"trailer,omitempty\" graphql:\"trailer\""
 }
 
@@ -4511,7 +4564,7 @@ func (t *AnimeDetailsById_Media) GetStudios() *AnimeDetailsById_Media_Studios {
 	}
 	return t.Studios
 }
-func (t *AnimeDetailsById_Media) GetTags() []*MTags {
+func (t *AnimeDetailsById_Media) GetTags() []*MTagsSlim {
 	if t == nil {
 		t = &AnimeDetailsById_Media{}
 	}
@@ -5934,16 +5987,16 @@ func (t *MangaCollection_MediaListCollection_Lists_Entries_Media_BaseManga_EndDa
 
 type MangaCollection_MediaListCollection_Lists_Entries struct {
 	CompletedAt           *MangaCollection_MediaListCollection_Lists_Entries_CompletedAt "json:\"completedAt,omitempty\" graphql:\"completedAt\""
+	HiddenFromStatusLists *bool                                                          "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
 	ID                    int                                                            "json:\"id\" graphql:\"id\""
 	Media                 *BaseManga                                                     "json:\"media,omitempty\" graphql:\"media\""
 	Notes                 *string                                                        "json:\"notes,omitempty\" graphql:\"notes\""
 	Private               *bool                                                          "json:\"private,omitempty\" graphql:\"private\""
-	HiddenFromStatusLists *bool                                                          "json:\"hiddenFromStatusLists,omitempty\" graphql:\"hiddenFromStatusLists\""
 	Progress              *int                                                           "json:\"progress,omitempty\" graphql:\"progress\""
-	Repeat      *int                                                           "json:\"repeat,omitempty\" graphql:\"repeat\""
-	Score       *float64                                                       "json:\"score,omitempty\" graphql:\"score\""
-	StartedAt   *MangaCollection_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
-	Status      *MediaListStatus                                               "json:\"status,omitempty\" graphql:\"status\""
+	Repeat                *int                                                           "json:\"repeat,omitempty\" graphql:\"repeat\""
+	Score                 *float64                                                       "json:\"score,omitempty\" graphql:\"score\""
+	StartedAt             *MangaCollection_MediaListCollection_Lists_Entries_StartedAt   "json:\"startedAt,omitempty\" graphql:\"startedAt\""
+	Status                *MediaListStatus                                               "json:\"status,omitempty\" graphql:\"status\""
 }
 
 func (t *MangaCollection_MediaListCollection_Lists_Entries) GetCompletedAt() *MangaCollection_MediaListCollection_Lists_Entries_CompletedAt {
@@ -5951,6 +6004,12 @@ func (t *MangaCollection_MediaListCollection_Lists_Entries) GetCompletedAt() *Ma
 		t = &MangaCollection_MediaListCollection_Lists_Entries{}
 	}
 	return t.CompletedAt
+}
+func (t *MangaCollection_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
+	if t == nil {
+		t = &MangaCollection_MediaListCollection_Lists_Entries{}
+	}
+	return t.HiddenFromStatusLists
 }
 func (t *MangaCollection_MediaListCollection_Lists_Entries) GetID() int {
 	if t == nil {
@@ -5975,12 +6034,6 @@ func (t *MangaCollection_MediaListCollection_Lists_Entries) GetPrivate() *bool {
 		t = &MangaCollection_MediaListCollection_Lists_Entries{}
 	}
 	return t.Private
-}
-func (t *MangaCollection_MediaListCollection_Lists_Entries) GetHiddenFromStatusLists() *bool {
-	if t == nil {
-		t = &MangaCollection_MediaListCollection_Lists_Entries{}
-	}
-	return t.HiddenFromStatusLists
 }
 func (t *MangaCollection_MediaListCollection_Lists_Entries) GetProgress() *int {
 	if t == nil {
@@ -6968,7 +7021,7 @@ type MangaDetailsById_Media struct {
 	Recommendations *MangaDetailsById_Media_Recommendations "json:\"recommendations,omitempty\" graphql:\"recommendations\""
 	Relations       *MangaDetailsById_Media_Relations       "json:\"relations,omitempty\" graphql:\"relations\""
 	SiteURL         *string                                 "json:\"siteUrl,omitempty\" graphql:\"siteUrl\""
-	Tags            []*MTags                                "json:\"tags,omitempty\" graphql:\"tags\""
+	Tags            []*MTagsSlim                            "json:\"tags,omitempty\" graphql:\"tags\""
 }
 
 func (t *MangaDetailsById_Media) GetCharacters() *MangaDetailsById_Media_Characters {
@@ -7019,7 +7072,7 @@ func (t *MangaDetailsById_Media) GetSiteURL() *string {
 	}
 	return t.SiteURL
 }
-func (t *MangaDetailsById_Media) GetTags() []*MTags {
+func (t *MangaDetailsById_Media) GetTags() []*MTagsSlim {
 	if t == nil {
 		t = &MangaDetailsById_Media{}
 	}
@@ -7809,9 +7862,31 @@ func (t *StudioDetails_Studio) GetName() string {
 	return t.Name
 }
 
+type GetMediaTagsById_Page_PageInfo struct {
+	HasNextPage *bool "json:\"hasNextPage,omitempty\" graphql:\"hasNextPage\""
+}
+
+func (t *GetMediaTagsById_Page_PageInfo) GetHasNextPage() *bool {
+	if t == nil {
+		t = &GetMediaTagsById_Page_PageInfo{}
+	}
+	return t.HasNextPage
+}
+
+type GetMediaTagsById_Page_Media_Tags struct {
+	Name string "json:\"name\" graphql:\"name\""
+}
+
+func (t *GetMediaTagsById_Page_Media_Tags) GetName() string {
+	if t == nil {
+		t = &GetMediaTagsById_Page_Media_Tags{}
+	}
+	return t.Name
+}
+
 type GetMediaTagsById_Page_Media struct {
-	ID   int      "json:\"id\" graphql:\"id\""
-	Tags []*MTags "json:\"tags,omitempty\" graphql:\"tags\""
+	ID   int                                 "json:\"id\" graphql:\"id\""
+	Tags []*GetMediaTagsById_Page_Media_Tags "json:\"tags,omitempty\" graphql:\"tags\""
 }
 
 func (t *GetMediaTagsById_Page_Media) GetID() int {
@@ -7820,7 +7895,7 @@ func (t *GetMediaTagsById_Page_Media) GetID() int {
 	}
 	return t.ID
 }
-func (t *GetMediaTagsById_Page_Media) GetTags() []*MTags {
+func (t *GetMediaTagsById_Page_Media) GetTags() []*GetMediaTagsById_Page_Media_Tags {
 	if t == nil {
 		t = &GetMediaTagsById_Page_Media{}
 	}
@@ -7828,7 +7903,8 @@ func (t *GetMediaTagsById_Page_Media) GetTags() []*MTags {
 }
 
 type GetMediaTagsById_Page struct {
-	Media []*GetMediaTagsById_Page_Media "json:\"media,omitempty\" graphql:\"media\""
+	Media    []*GetMediaTagsById_Page_Media  "json:\"media,omitempty\" graphql:\"media\""
+	PageInfo *GetMediaTagsById_Page_PageInfo "json:\"pageInfo,omitempty\" graphql:\"pageInfo\""
 }
 
 func (t *GetMediaTagsById_Page) GetMedia() []*GetMediaTagsById_Page_Media {
@@ -7836,6 +7912,12 @@ func (t *GetMediaTagsById_Page) GetMedia() []*GetMediaTagsById_Page_Media {
 		t = &GetMediaTagsById_Page{}
 	}
 	return t.Media
+}
+func (t *GetMediaTagsById_Page) GetPageInfo() *GetMediaTagsById_Page_PageInfo {
+	if t == nil {
+		t = &GetMediaTagsById_Page{}
+	}
+	return t.PageInfo
 }
 
 type GetViewer_Viewer_Avatar struct {
@@ -8947,7 +9029,7 @@ const AnimeDetailsByIDDocument = `query AnimeDetailsById ($id: Int) {
 		meanScore
 		description
 		tags {
-			... mTags
+			... mTagsSlim
 		}
 		trailer {
 			id
@@ -9052,16 +9134,14 @@ const AnimeDetailsByIDDocument = `query AnimeDetailsById ($id: Int) {
 		}
 	}
 }
-fragment mTags on MediaTag {
+fragment mTagsSlim on MediaTag {
 	id
 	name
 	category
-	description
 	isAdult
 	isMediaSpoiler
 	isGeneralSpoiler
 	rank
-	userId
 }
 fragment baseCharacter on Character {
 	id
@@ -9925,7 +10005,7 @@ const MangaDetailsByIDDocument = `query MangaDetailsById ($id: Int) {
 		duration
 		genres
 		tags {
-			... mTags
+			... mTagsSlim
 		}
 		rankings {
 			context
@@ -10001,16 +10081,14 @@ const MangaDetailsByIDDocument = `query MangaDetailsById ($id: Int) {
 		}
 	}
 }
-fragment mTags on MediaTag {
+fragment mTagsSlim on MediaTag {
 	id
 	name
 	category
-	description
 	isAdult
 	isMediaSpoiler
 	isGeneralSpoiler
 	rank
-	userId
 }
 fragment baseCharacter on Character {
 	id
@@ -10512,32 +10590,26 @@ func (c *Client) MediaTagCollection(ctx context.Context, interceptors ...clientv
 	return &res, nil
 }
 
-const GetMediaTagsByIDDocument = `query GetMediaTagsById ($ids: [Int!]!) {
-	Page {
+const GetMediaTagsByIDDocument = `query GetMediaTagsById ($ids: [Int!]!, $page: Int, $perPage: Int) {
+	Page(page: $page, perPage: $perPage) {
+		pageInfo {
+			hasNextPage
+		}
 		media(id_in: $ids) {
 			id
 			tags {
-				... mTags
+				name
 			}
 		}
 	}
 }
-fragment mTags on MediaTag {
-	id
-	name
-	category
-	description
-	isAdult
-	isMediaSpoiler
-	isGeneralSpoiler
-	rank
-	userId
-}
 `
 
-func (c *Client) GetMediaTagsByID(ctx context.Context, ids []int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error) {
+func (c *Client) GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error) {
 	vars := map[string]any{
-		"ids": ids,
+		"ids":     ids,
+		"page":    page,
+		"perPage": perPage,
 	}
 
 	var res GetMediaTagsByID

@@ -21,6 +21,8 @@ type cacheLayerTestClient struct {
 	mangaCollection     *anilist.MangaCollection
 	updateEntryCalls    []cacheLayerUpdateEntryCall
 	updateProgressCalls []cacheLayerUpdateProgressCall
+
+	animeCollectionTagsCalls int
 }
 
 type cacheLayerUpdateEntryCall struct {
@@ -379,4 +381,83 @@ func mangaListContains(collection *anilist.MangaCollection, status anilist.Media
 		}
 	}
 	return false
+}
+
+// animeCollectionTagsCalls counts how often the tags query actually reached AniList.
+func (c *cacheLayerTestClient) AnimeCollectionTags(_ context.Context, _ *string, _ ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionTags, error) {
+	c.animeCollectionTagsCalls++
+	return &anilist.AnimeCollectionTags{
+		MediaListCollection: &anilist.AnimeCollectionTags_MediaListCollection{
+			Lists: []*anilist.AnimeCollectionTags_MediaListCollection_Lists{
+				{
+					Entries: []*anilist.AnimeCollectionTags_MediaListCollection_Lists_Entries{
+						{
+							Media: &anilist.AnimeCollectionTags_MediaListCollection_Lists_Entries_Media{
+								ID:   101,
+								Tags: []*anilist.AnimeCollectionTags_MediaListCollection_Lists_Entries_Media_Tags{{Name: "Action"}},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+// TestCacheLayerAnimeCollectionTagsIsServedFromCache pins the cache-first behaviour:
+// tags are immutable metadata, so a second read inside the TTL must not cost a request.
+func TestCacheLayerAnimeCollectionTagsIsServedFromCache(t *testing.T) {
+	client := &cacheLayerTestClient{cacheDir: t.TempDir()}
+	cacheLayer := newTestCacheLayer(t, client)
+
+	_, err := cacheLayer.AnimeCollectionTags(context.Background(), new("user"))
+	require.NoError(t, err)
+	require.Equal(t, 1, client.animeCollectionTagsCalls)
+
+	_, err = cacheLayer.AnimeCollectionTags(context.Background(), new("user"))
+	require.NoError(t, err)
+	require.Equal(t, 1, client.animeCollectionTagsCalls, "a second read within the TTL must be served from the file cache")
+}
+
+// TestCacheLayerProgressUpdateKeepsCollectionTags pins the invalidation fix. A progress
+// update cannot change any media's tags, and wiping the bucket here used to cost a
+// whole-collection tags query on the very next request — a large part of the 429s.
+func TestCacheLayerProgressUpdateKeepsCollectionTags(t *testing.T) {
+	client := &cacheLayerTestClient{
+		cacheDir:        t.TempDir(),
+		animeCollection: newTestAnimeCollection(101, 321, anilist.MediaListStatusCurrent, 2),
+	}
+	cacheLayer := newTestCacheLayer(t, client)
+
+	_, err := cacheLayer.AnimeCollectionTags(context.Background(), new("user"))
+	require.NoError(t, err)
+	require.Equal(t, 1, client.animeCollectionTagsCalls)
+
+	_, err = cacheLayer.UpdateMediaListEntryProgress(context.Background(), new(101), new(3), new(anilist.MediaListStatusCurrent))
+	require.NoError(t, err)
+
+	_, err = cacheLayer.AnimeCollectionTags(context.Background(), new("user"))
+	require.NoError(t, err)
+	require.Equal(t, 1, client.animeCollectionTagsCalls, "a progress update must not invalidate the collection tag cache")
+}
+
+// The real collection buckets must still be invalidated, or list and progress data
+// would go stale after an edit.
+func TestCacheLayerProgressUpdateStillInvalidatesCollection(t *testing.T) {
+	client := &cacheLayerTestClient{
+		cacheDir:        t.TempDir(),
+		animeCollection: newTestAnimeCollection(101, 321, anilist.MediaListStatusCurrent, 2),
+	}
+	cacheLayer := newTestCacheLayer(t, client)
+
+	_, err := cacheLayer.AnimeCollection(context.Background(), new("user"))
+	require.NoError(t, err)
+
+	_, err = cacheLayer.UpdateMediaListEntryProgress(context.Background(), new(101), new(3), new(anilist.MediaListStatusCurrent))
+	require.NoError(t, err)
+
+	var cached anilist.AnimeCollection
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheLayer.generateCacheKey("collection", nil), &cached)
+	require.NoError(t, err)
+	require.False(t, found, "the anime collection cache must still be invalidated by a mutation")
 }

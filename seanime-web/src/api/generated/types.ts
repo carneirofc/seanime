@@ -59,11 +59,11 @@ export type AL_AnimeCollection_MediaListCollection_Lists = {
  */
 export type AL_AnimeCollection_MediaListCollection_Lists_Entries = {
     completedAt?: AL_AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt
+    hiddenFromStatusLists?: boolean
     id: number
     media?: AL_BaseAnime
     notes?: string
     private?: boolean
-    hiddenFromStatusLists?: boolean
     progress?: number
     repeat?: number
     score?: number
@@ -115,7 +115,7 @@ export type AL_AnimeDetailsById_Media = {
     staff?: AL_AnimeDetailsById_Media_Staff
     startDate?: AL_AnimeDetailsById_Media_StartDate
     studios?: AL_AnimeDetailsById_Media_Studios
-    tags?: Array<AL_MTags>
+    tags?: Array<AL_MTagsSlim>
     trailer?: AL_AnimeDetailsById_Media_Trailer
 }
 
@@ -778,16 +778,14 @@ export type AL_ListRecentAnime_Page_PageInfo = {
  * - Filename: client_gen.go
  * - Package: anilist
  */
-export type AL_MTags = {
+export type AL_MTagsSlim = {
     id: number
     name: string
     category?: string
-    description?: string
     isAdult?: boolean
     isMediaSpoiler?: boolean
     isGeneralSpoiler?: boolean
     rank?: number
-    userId?: number
 }
 
 /**
@@ -827,11 +825,11 @@ export type AL_MangaCollection_MediaListCollection_Lists = {
  */
 export type AL_MangaCollection_MediaListCollection_Lists_Entries = {
     completedAt?: AL_MangaCollection_MediaListCollection_Lists_Entries_CompletedAt
+    hiddenFromStatusLists?: boolean
     id: number
     media?: AL_BaseManga
     notes?: string
     private?: boolean
-    hiddenFromStatusLists?: boolean
     progress?: number
     repeat?: number
     score?: number
@@ -875,7 +873,7 @@ export type AL_MangaDetailsById_Media = {
     recommendations?: AL_MangaDetailsById_Media_Recommendations
     relations?: AL_MangaDetailsById_Media_Relations
     siteUrl?: string
-    tags?: Array<AL_MTags>
+    tags?: Array<AL_MTagsSlim>
 }
 
 /**

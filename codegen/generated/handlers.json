@@ -118,6 +118,28 @@
     }
   },
   {
+    "name": "animeCollectionMediaIDs",
+    "trimmedName": "animeCollectionMediaIDs",
+    "comments": [
+      "animeCollectionMediaIDs lists every media id in the collection, including duplicates",
+      "across custom lists; MissingIDs de-duplicates.",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist.go",
+    "filename": "anilist.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleEditAnilistListEntry",
     "trimmedName": "EditAnilistListEntry",
     "comments": [
@@ -798,6 +820,38 @@
       "methods": [
         "POST"
       ],
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "respondWithCollectionTags",
+    "trimmedName": "respondWithCollectionTags",
+    "comments": [
+      "respondWithCollectionTags serves a MediaTagMap for the signed-in account, keeping the",
+      "cached map across collection refreshes instead of discarding it.",
+      "",
+      "The map used to be rebuilt from a whole-collection AniList query every time the",
+      "collection refreshed — which happens on a cron and after every list-entry edit — even",
+      "though a progress or score change cannot alter any media's tags. Now the cached map is",
+      "reconciled against the already-in-memory collection: if no media has been added since",
+      "it was built, the request costs no AniList traffic at all, and if some have, only those",
+      "ids are fetched.",
+      "",
+      "collectionIDs must read from the cached collection (bypassCache false) so reconciling",
+      "never itself triggers a fetch.",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist_tags.go",
+    "filename": "anilist_tags.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
       "params": [],
       "bodyFields": [],
       "returns": "bool",
@@ -6742,6 +6796,28 @@
       "returns": "anilist.MediaTagMap",
       "returnGoType": "anilist.MediaTagMap",
       "returnTypescriptType": "AL_MediaTagMap"
+    }
+  },
+  {
+    "name": "mangaCollectionMediaIDs",
+    "trimmedName": "mangaCollectionMediaIDs",
+    "comments": [
+      "mangaCollectionMediaIDs lists every media id in the collection, including duplicates",
+      "across custom lists; MissingIDs de-duplicates.",
+      ""
+    ],
+    "filepath": "internal/handlers/manga.go",
+    "filename": "manga.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
     }
   },
   {

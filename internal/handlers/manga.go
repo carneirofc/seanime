@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/url"
@@ -190,8 +191,6 @@ func (h *Handler) HandleGetRawAnilistMangaCollection(c echo.Context) error {
 	return h.RespondWithData(c, mangaCollection)
 }
 
-var mangaTagsCache *anilist.MediaTagMap
-
 // HandleGetRawAnilistMangaCollectionTags
 //
 //	@summary returns the AniList tags for the user's raw manga collection.
@@ -199,28 +198,46 @@ var mangaTagsCache *anilist.MediaTagMap
 //	@route /api/v1/manga/anilist/collection/raw/tags [GET]
 //	@returns anilist.MediaTagMap
 func (h *Handler) HandleGetRawAnilistMangaCollectionTags(c echo.Context) error {
-	h.App.OnRefreshAnilistCollectionFuncs.Set("HandleGetRawAnilistMangaCollectionTags", func() {
-		mangaTagsCache = nil
-	})
+	return h.respondWithCollectionTags(c,
+		anilist.MangaTagCacheKey,
+		func() ([]int, error) {
+			collection, err := h.App.GetRawMangaCollection(false)
+			if err != nil {
+				return nil, err
+			}
+			return mangaCollectionMediaIDs(collection), nil
+		},
+		func(ctx context.Context, userName string) (anilist.MediaTagMap, error) {
+			ret, err := h.App.AnilistPlatformRef.Get().GetAnilistClient().MangaCollectionTags(ctx, &userName)
+			if err != nil {
+				return nil, err
+			}
+			return anilist.MediaTagMapFromMangaCollectionTags(ret), nil
+		},
+	)
+}
 
-	if mangaTagsCache != nil {
-		return h.RespondWithData(c, *mangaTagsCache)
+// mangaCollectionMediaIDs lists every media id in the collection, including duplicates
+// across custom lists; MissingIDs de-duplicates.
+func mangaCollectionMediaIDs(collection *anilist.MangaCollection) []int {
+	if collection == nil || collection.GetMediaListCollection() == nil {
+		return nil
 	}
 
-	userName := h.App.GetUsername()
-	if userName == "" || h.App.GetUser().IsSimulated {
-		return h.RespondWithData(c, anilist.MediaTagMap{})
+	ids := make([]int, 0)
+	for _, list := range collection.GetMediaListCollection().GetLists() {
+		if list == nil {
+			continue
+		}
+		for _, entry := range list.GetEntries() {
+			if entry == nil || entry.GetMedia() == nil {
+				continue
+			}
+			ids = append(ids, entry.GetMedia().GetID())
+		}
 	}
 
-	ret, err := h.App.AnilistPlatformRef.Get().GetAnilistClient().MangaCollectionTags(c.Request().Context(), &userName)
-	if err != nil {
-		return h.RespondWithError(c, err)
-	}
-
-	tags := anilist.MediaTagMapFromMangaCollectionTags(ret)
-	mangaTagsCache = &tags
-
-	return h.RespondWithData(c, tags)
+	return ids
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

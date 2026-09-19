@@ -43,6 +43,10 @@ export function useGetRawAnimeCollectionTags() {
         method: API_ENDPOINTS.ANILIST.GetRawAnimeCollectionTags.methods[0],
         queryKey: [API_ENDPOINTS.ANILIST.GetRawAnimeCollectionTags.key],
         enabled: true,
+        // Tag maps are immutable metadata and the server reconciles them itself, so a
+        // remount does not need to re-ask. Without this, react-query's default staleTime
+        // of 0 made every visit to the lists and library pages refetch this endpoint.
+        staleTime: 1000 * 60 * 60,
     })
 }
 

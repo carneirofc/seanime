@@ -1,4 +1,4 @@
-import { AL_AnimeDetailsById_Media_Rankings, AL_MangaDetailsById_Media_Rankings, AL_MTags } from "@/api/generated/types"
+import { AL_AnimeDetailsById_Media_Rankings, AL_MangaDetailsById_Media_Rankings, AL_MTagsSlim } from "@/api/generated/types"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { SeaLink } from "@/components/shared/sea-link"
 import { Badge } from "@/components/ui/badge"
@@ -14,7 +14,7 @@ import { BiHeart, BiHide } from "react-icons/bi"
 import { LuTrophy } from "react-icons/lu"
 
 type MediaEntryTagListProps = {
-    tags?: Array<AL_MTags> | null | undefined
+    tags?: Array<AL_MTagsSlim> | null | undefined
     className?: string
 }
 

@@ -773,6 +773,11 @@ func (ac *FixtureAnilistClient) MangaCollectionTags(ctx context.Context, userNam
 	return ac.realAnilistClient.MangaCollectionTags(ctx, userName, interceptors...)
 }
 
+func (ac *FixtureAnilistClient) GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error) {
+	ac.logger.Debug().Int("count", len(ids)).Msg("anilist: Fetching media tags by id")
+	return ac.realAnilistClient.GetMediaTagsByID(ctx, ids, page, perPage, interceptors...)
+}
+
 func (ac *FixtureAnilistClient) SearchBaseManga(ctx context.Context, page *int, perPage *int, sort []*MediaSort, search *string, status []*MediaStatus, interceptors ...clientv2.RequestInterceptor) (*SearchBaseManga, error) {
 	ac.logger.Debug().Msg("anilist: Searching manga")
 	return ac.realAnilistClient.SearchBaseManga(ctx, page, perPage, sort, search, status, interceptors...)

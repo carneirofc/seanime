@@ -10,18 +10,42 @@ fragment mTags on MediaTag {
     userId
 }
 
+# mTagsSlim drops `description` and `userId` from mTags. `description` is a
+# multi-sentence string repeated on each of the 20-40 tags a media carries, and
+# it is rendered nowhere; `userId` identifies the tag's submitter and is
+# meaningless outside AniList's own moderation UI. Everything else is kept
+# because AL_MTags reaches third-party plugins through the GetAnimeDetails hook
+# event, and dropping a field they might branch on would narrow a public API.
+fragment mTagsSlim on MediaTag {
+    id
+    name
+    category
+    isAdult
+    isMediaSpoiler
+    isGeneralSpoiler
+    rank
+}
+
 query MediaTagCollection {
   MediaTagCollection {
     ...mTags
   }
 }
 
-query GetMediaTagsById($ids: [Int!]!) {
-  Page {
+# Tops up a MediaTagMap for media that entered the collection since it was
+# built, so a newly added entry does not force a whole-collection refetch.
+# MediaTagMap only stores tag names, so this selects `name` alone rather than a
+# fragment. Callers must chunk `ids` to perPage (AniList caps it at 50) —
+# hasNextPage is selected so a chunk-size regression is detectable.
+query GetMediaTagsById($ids: [Int!]!, $page: Int, $perPage: Int) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      hasNextPage
+    }
     media(id_in: $ids) {
       id
       tags {
-        ...mTags
+        name
       }
     }
   }

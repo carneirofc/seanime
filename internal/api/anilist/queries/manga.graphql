@@ -72,7 +72,7 @@ query MangaDetailsById ($id: Int) {
     duration
     genres
     tags {
-      ...mTags
+      ...mTagsSlim
     }
     rankings {
       context

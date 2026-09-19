@@ -67,8 +67,6 @@ func (h *Handler) HandleGetRawAnimeCollection(c echo.Context) error {
 	return h.RespondWithData(c, animeCollection)
 }
 
-var tagsCache *anilist.MediaTagMap
-
 // HandleGetRawAnimeCollectionTags
 //
 //	@summary returns the AniList tags for the user's raw anime collection.
@@ -76,28 +74,46 @@ var tagsCache *anilist.MediaTagMap
 //	@returns anilist.MediaTagMap
 //	@route /api/v1/anilist/collection/raw/tags [GET]
 func (h *Handler) HandleGetRawAnimeCollectionTags(c echo.Context) error {
-	h.App.OnRefreshAnilistCollectionFuncs.Set("HandleGetRawAnimeCollectionTags", func() {
-		tagsCache = nil
-	})
+	return h.respondWithCollectionTags(c,
+		anilist.AnimeTagCacheKey,
+		func() ([]int, error) {
+			collection, err := h.App.GetRawAnimeCollection(false)
+			if err != nil {
+				return nil, err
+			}
+			return animeCollectionMediaIDs(collection), nil
+		},
+		func(ctx context.Context, userName string) (anilist.MediaTagMap, error) {
+			ret, err := h.App.AnilistPlatformRef.Get().GetAnilistClient().AnimeCollectionTags(ctx, &userName)
+			if err != nil {
+				return nil, err
+			}
+			return anilist.MediaTagMapFromAnimeCollectionTags(ret), nil
+		},
+	)
+}
 
-	if tagsCache != nil {
-		return h.RespondWithData(c, *tagsCache)
+// animeCollectionMediaIDs lists every media id in the collection, including duplicates
+// across custom lists; MissingIDs de-duplicates.
+func animeCollectionMediaIDs(collection *anilist.AnimeCollection) []int {
+	if collection == nil || collection.GetMediaListCollection() == nil {
+		return nil
 	}
 
-	userName := h.App.GetUsername()
-	if userName == "" || h.App.GetUser().IsSimulated {
-		return h.RespondWithData(c, anilist.MediaTagMap{})
+	ids := make([]int, 0)
+	for _, list := range collection.GetMediaListCollection().GetLists() {
+		if list == nil {
+			continue
+		}
+		for _, entry := range list.GetEntries() {
+			if entry == nil || entry.GetMedia() == nil {
+				continue
+			}
+			ids = append(ids, entry.GetMedia().GetID())
+		}
 	}
 
-	ret, err := h.App.AnilistPlatformRef.Get().GetAnilistClient().AnimeCollectionTags(c.Request().Context(), &userName)
-	if err != nil {
-		return h.RespondWithError(c, err)
-	}
-
-	tags := anilist.MediaTagMapFromAnimeCollectionTags(ret)
-	tagsCache = &tags
-
-	return h.RespondWithData(c, tags)
+	return ids
 }
 
 // HandleEditAnilistListEntry

@@ -1458,6 +1458,79 @@
   {
     "filepath": "../internal/api/anilist/client_gen.go",
     "filename": "client_gen.go",
+    "name": "MTagsSlim",
+    "formattedName": "AL_MTagsSlim",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "ID",
+        "jsonName": "id",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Category",
+        "jsonName": "category",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsAdult",
+        "jsonName": "isAdult",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsMediaSpoiler",
+        "jsonName": "isMediaSpoiler",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "IsGeneralSpoiler",
+        "jsonName": "isGeneralSpoiler",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Rank",
+        "jsonName": "rank",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
     "name": "BaseAnime_Trailer",
     "formattedName": "AL_BaseAnime_Trailer",
     "package": "anilist",
@@ -2973,6 +3046,15 @@
         "comments": []
       },
       {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "ID",
         "jsonName": "id",
         "goType": "int",
@@ -3004,15 +3086,6 @@
       {
         "name": "Private",
         "jsonName": "private",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": false,
-        "public": true,
-        "comments": []
-      },
-      {
-        "name": "HiddenFromStatusLists",
-        "jsonName": "hiddenFromStatusLists",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": false,
@@ -3880,6 +3953,15 @@
         "comments": []
       },
       {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "ID",
         "jsonName": "id",
         "goType": "int",
@@ -3911,15 +3993,6 @@
       {
         "name": "Private",
         "jsonName": "private",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": false,
-        "public": true,
-        "comments": []
-      },
-      {
-        "name": "HiddenFromStatusLists",
-        "jsonName": "hiddenFromStatusLists",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": false,
@@ -6718,10 +6791,10 @@
       {
         "name": "Tags",
         "jsonName": "tags",
-        "goType": "[]MTags",
-        "typescriptType": "Array\u003cAL_MTags\u003e",
-        "usedTypescriptType": "AL_MTags",
-        "usedStructName": "anilist.MTags",
+        "goType": "[]MTagsSlim",
+        "typescriptType": "Array\u003cAL_MTagsSlim\u003e",
+        "usedTypescriptType": "AL_MTagsSlim",
+        "usedStructName": "anilist.MTagsSlim",
         "required": false,
         "public": true,
         "comments": []
@@ -8935,6 +9008,15 @@
         "comments": []
       },
       {
+        "name": "HiddenFromStatusLists",
+        "jsonName": "hiddenFromStatusLists",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "ID",
         "jsonName": "id",
         "goType": "int",
@@ -8966,15 +9048,6 @@
       {
         "name": "Private",
         "jsonName": "private",
-        "goType": "bool",
-        "typescriptType": "boolean",
-        "required": false,
-        "public": true,
-        "comments": []
-      },
-      {
-        "name": "HiddenFromStatusLists",
-        "jsonName": "hiddenFromStatusLists",
         "goType": "bool",
         "typescriptType": "boolean",
         "required": false,
@@ -10577,10 +10650,10 @@
       {
         "name": "Tags",
         "jsonName": "tags",
-        "goType": "[]MTags",
-        "typescriptType": "Array\u003cAL_MTags\u003e",
-        "usedTypescriptType": "AL_MTags",
-        "usedStructName": "anilist.MTags",
+        "goType": "[]MTagsSlim",
+        "typescriptType": "Array\u003cAL_MTagsSlim\u003e",
+        "usedTypescriptType": "AL_MTagsSlim",
+        "usedStructName": "anilist.MTagsSlim",
         "required": false,
         "public": true,
         "comments": []
@@ -11770,6 +11843,44 @@
   {
     "filepath": "../internal/api/anilist/client_gen.go",
     "filename": "client_gen.go",
+    "name": "GetMediaTagsById_Page_PageInfo",
+    "formattedName": "AL_GetMediaTagsById_Page_PageInfo",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "HasNextPage",
+        "jsonName": "hasNextPage",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
+    "name": "GetMediaTagsById_Page_Media_Tags",
+    "formattedName": "AL_GetMediaTagsById_Page_Media_Tags",
+    "package": "anilist",
+    "fields": [
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/api/anilist/client_gen.go",
+    "filename": "client_gen.go",
     "name": "GetMediaTagsById_Page_Media",
     "formattedName": "AL_GetMediaTagsById_Page_Media",
     "package": "anilist",
@@ -11786,10 +11897,10 @@
       {
         "name": "Tags",
         "jsonName": "tags",
-        "goType": "[]MTags",
-        "typescriptType": "Array\u003cAL_MTags\u003e",
-        "usedTypescriptType": "AL_MTags",
-        "usedStructName": "anilist.MTags",
+        "goType": "[]GetMediaTagsById_Page_Media_Tags",
+        "typescriptType": "Array\u003cAL_GetMediaTagsById_Page_Media_Tags\u003e",
+        "usedTypescriptType": "AL_GetMediaTagsById_Page_Media_Tags",
+        "usedStructName": "anilist.GetMediaTagsById_Page_Media_Tags",
         "required": false,
         "public": true,
         "comments": []
@@ -11811,6 +11922,17 @@
         "typescriptType": "Array\u003cAL_GetMediaTagsById_Page_Media\u003e",
         "usedTypescriptType": "AL_GetMediaTagsById_Page_Media",
         "usedStructName": "anilist.GetMediaTagsById_Page_Media",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "PageInfo",
+        "jsonName": "pageInfo",
+        "goType": "GetMediaTagsById_Page_PageInfo",
+        "typescriptType": "AL_GetMediaTagsById_Page_PageInfo",
+        "usedTypescriptType": "AL_GetMediaTagsById_Page_PageInfo",
+        "usedStructName": "anilist.GetMediaTagsById_Page_PageInfo",
         "required": false,
         "public": true,
         "comments": []
