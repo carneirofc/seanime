@@ -10,22 +10,28 @@ import {
 } from "@/api/generated/types"
 import { useListMangaProviderExtensions } from "@/api/hooks/extensions.hooks"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
+import { atomWithValidatedStorage } from "@/lib/validation/storage"
 import { useQueryClient } from "@tanstack/react-query"
 import { atom } from "jotai"
 import { withImmer } from "jotai-immer"
 import { useAtom, useAtomValue } from "jotai/react"
-import { atomWithStorage } from "jotai/utils"
 import sortBy from "lodash/sortBy"
 import React from "react"
 import { toast } from "sonner"
-import { getActiveMangaFilters, MangaEntryFilters } from "./manga-preferences"
+import { z } from "zod"
+import { getActiveMangaFilters, MangaEntryFilters, mangaEntryFiltersRecordSchema } from "./manga-preferences"
 
 export type { MangaEntryFilters } from "./manga-preferences"
 
 /**
  * Stores the selected provider for each manga entry
  */
-export const __manga_entryProviderAtom = atomWithStorage<Record<string, string>>("sea-manga-entry-provider", {}, undefined, { getOnInit: true })
+export const __manga_entryProviderAtom = atomWithValidatedStorage<Record<string, string>>(
+    "sea-manga-entry-provider",
+    z.record(z.string(), z.string()),
+    {},
+    { getOnInit: true },
+)
 export const __manga_preferencesHydratedAtom = atom(false)
 
 type MangaPreferencePatch = {
@@ -66,10 +72,12 @@ function useSaveMangaPreference() {
 
 // Key: "{mediaId}${providerId}"
 // Value: { [filter]: string }
-export const __manga_entryFiltersAtom = atomWithStorage<Record<string, MangaEntryFilters>>("sea-manga-entry-filters",
+export const __manga_entryFiltersAtom = atomWithValidatedStorage<Record<string, MangaEntryFilters>>(
+    "sea-manga-entry-filters",
+    mangaEntryFiltersRecordSchema,
     {},
-    undefined,
-    { getOnInit: true })
+    { getOnInit: true },
+)
 
 /**
  * Helper function to get the default provider from server status or available extensions

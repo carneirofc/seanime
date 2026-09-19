@@ -5,6 +5,8 @@ import { ExtensionPrompt } from "@/app/(main)/_features/plugin/extension-prompt"
 import { __openDrawersAtom } from "@/components/ui/drawer"
 import { useMainTab } from "@/hooks/use-main-tab"
 import { logger } from "@/lib/helpers/debug"
+import { clientIdentityPayloadSchema } from "@/lib/validation/client-identity"
+import { parseWebsocketFrame } from "@/lib/validation/websocket"
 import { getClientId, getClientIdentity, getClientIdProof, setClientIdentity, subscribeToClientIdentity } from "@/lib/server/client-id"
 import { WSEvents } from "@/lib/server/ws-events"
 import { __clientPlatform__ } from "@/types/constants"
@@ -182,7 +184,7 @@ function WebsocketManagement() {
                 }
             }
 
-            const wsUrl = `${document.location.protocol == "https:" ? "wss" : "ws"}://${getServerBaseUrl(true)}/events`
+            const wsUrl = `${document.location.protocol === "https:" ? "wss" : "ws"}://${getServerBaseUrl(true)}/events`
             const { clientId, clientIdProof } = initClientIdentity()
 
             try {
@@ -255,12 +257,13 @@ function WebsocketManagement() {
                 // Add message handler for pong responses
                 socketRef.current?.addEventListener("message", (event) => {
                     try {
-                        const data = JSON.parse(event.data) as { type: string; payload?: any }
+                        const data = parseWebsocketFrame(event.data, "provider")
+                        if (!data) return
+
                         if (data.type === WSEvents.CLIENT_IDENTITY) {
-                            const nextClientId = typeof data.payload?.clientId === "string" ? data.payload.clientId : ""
-                            const nextProof = typeof data.payload?.proof === "string" ? data.payload.proof : ""
-                            if (nextClientId) {
-                                setClientIdentity(nextClientId, nextProof)
+                            const identity = clientIdentityPayloadSchema.safeParse(data.payload)
+                            if (identity.success && identity.data.clientId) {
+                                setClientIdentity(identity.data.clientId, identity.data.proof)
                             }
                             return
                         }

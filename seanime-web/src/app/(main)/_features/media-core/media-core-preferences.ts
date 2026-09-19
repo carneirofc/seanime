@@ -1,4 +1,5 @@
 import { atomWithStorage } from "jotai/utils"
+import { z } from "zod"
 
 export interface MediaCorePreferences {
     version: number
@@ -30,17 +31,39 @@ export const mediaCoreDefaultPreferences: MediaCorePreferences = {
 
 const PREFERENCES_KEY = "sea-media-core-preferences"
 
-function parsePreferences(value: unknown): MediaCorePreferences | null {
-    if (!value || typeof value !== "object") return null
-    const parsed = value as Partial<MediaCorePreferences>
-    if (parsed.version !== 1 && parsed.version !== 2) return null
+/**
+ * Schema for a stored preferences blob.
+ *
+ * Every field falls back to its default individually rather than rejecting the whole
+ * object, which preserves the previous merge-over-defaults behaviour: a preferences file
+ * missing a field written by a newer version still loads. The difference is that a field
+ * present with the *wrong type* - `volume: "loud"`, a `timestampMode` that is no longer a
+ * valid option - now falls back too, instead of being spread through a `Partial` cast
+ * straight into player state.
+ *
+ * `version` is deliberately NOT defaulted: an unrecognised version means "not a preferences
+ * blob we understand", which sends the caller down the legacy-migration path below.
+ */
+const storedPreferencesSchema = z.object({
+    version: z.union([z.literal(1), z.literal(2)]),
+    autoPlay: z.boolean().catch(mediaCoreDefaultPreferences.autoPlay),
+    autoNext: z.boolean().catch(mediaCoreDefaultPreferences.autoNext),
+    volume: z.number().catch(mediaCoreDefaultPreferences.volume),
+    muted: z.boolean().catch(mediaCoreDefaultPreferences.muted),
+    playbackRate: z.number().catch(mediaCoreDefaultPreferences.playbackRate),
+    autoSkip: z.boolean().catch(mediaCoreDefaultPreferences.autoSkip),
+    skipPatterns: z.string().catch(mediaCoreDefaultPreferences.skipPatterns),
+    showStats: z.boolean().catch(mediaCoreDefaultPreferences.showStats),
+    chapterMarkers: z.boolean().catch(mediaCoreDefaultPreferences.chapterMarkers),
+    timestampMode: z.enum(["elapsed", "remaining"]).catch(mediaCoreDefaultPreferences.timestampMode),
+})
 
-    return {
-        ...mediaCoreDefaultPreferences,
-        ...parsed,
-        version: 2,
-        skipPatterns: typeof parsed.skipPatterns === "string" ? parsed.skipPatterns : "",
-    }
+function parsePreferences(value: unknown): MediaCorePreferences | null {
+    const result = storedPreferencesSchema.safeParse(value)
+    if (!result.success) return null
+
+    // Reading always normalises to the current version.
+    return { ...result.data, version: 2 }
 }
 
 const customStorage = {
@@ -48,10 +71,13 @@ const customStorage = {
         try {
             const raw = localStorage.getItem(key)
             if (raw) {
-                const parsed = JSON.parse(raw) as any
+                const parsed: unknown = JSON.parse(raw)
                 const preferences = parsePreferences(parsed)
                 if (preferences) {
-                    if (parsed.version !== 2 || typeof parsed.skipPatterns !== "string") {
+                    // Persist whenever validation changed anything - a version bump, a
+                    // dropped field, or a value that failed its schema - so the repair
+                    // happens once rather than on every read.
+                    if (JSON.stringify(preferences) !== JSON.stringify(parsed)) {
                         localStorage.setItem(key, JSON.stringify(preferences))
                     }
                     return preferences

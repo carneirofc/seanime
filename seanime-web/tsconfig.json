@@ -24,8 +24,27 @@
         "jsx": "react-jsx",
         /* Linting */
         "strict": true,
+        /*
+         * The three flags below are deliberately off, with the cost of turning each one on
+         * measured against the tree (tsgo, 2026-09-18):
+         *
+         *   noUnusedLocals          463 errors
+         *   noUnusedParameters      137 errors
+         *   noUncheckedIndexedAccess 599 errors
+         *
+         * `typecheck` is a required CI gate, so any of these must be driven to zero in the
+         * same change that enables it. They are worth doing - noUncheckedIndexedAccess in
+         * particular catches real array/record access bugs - but each is its own piece of
+         * work, not a flag flip. Note the honest fix for noUncheckedIndexedAccess is a
+         * guard; silencing it with `!` would defeat the point.
+         *
+         * Biome's equivalents (noUnusedVariables, noUnusedImports,
+         * noUnusedFunctionParameters) are disabled in biome.jsonc for the same reason, so
+         * the typechecker stays the single source of truth for unused symbols.
+         */
         "noUnusedLocals": false,
         "noUnusedParameters": false,
+        "noUncheckedIndexedAccess": false,
         "noFallthroughCasesInSwitch": true,
         "paths": {
             "*": [
