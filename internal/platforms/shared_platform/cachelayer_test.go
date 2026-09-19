@@ -85,32 +85,121 @@ func (c *cacheLayerTestClient) UpdateMediaListEntryProgress(_ context.Context, m
 	return &anilist.UpdateMediaListEntryProgress{SaveMediaListEntry: &anilist.UpdateMediaListEntryProgress_SaveMediaListEntry{ID: 999}}, nil
 }
 
-func TestCacheLayerLogsOutOnInvalidToken(t *testing.T) {
+// anilistErrorWithStatus builds the error shape parseResponse produces for a non-2xx AniList reply,
+// so a test can describe what AniList actually answered rather than only what the message reads like.
+func anilistErrorWithStatus(code int, message string) error {
+	return &clientv2.ErrorResponse{
+		NetworkError: &clientv2.HTTPError{
+			Code:    code,
+			Message: message,
+		},
+	}
+}
+
+// newLogoutTestCacheLayer returns a cache layer whose logout is observable.
+// The logger is not optional: checkAndUpdateWorkingState logs the raw error before
+// logging out, so a nil one panics and takes every other test in the package with it.
+func newLogoutTestCacheLayer(t *testing.T) (*CacheLayer, chan struct{}) {
+	t.Helper()
+
 	previousEventManager := events.GlobalWSEventManager
 	events.GlobalWSEventManager = &events.GlobalWSEventManagerWrapper{}
 	t.Cleanup(func() {
 		events.GlobalWSEventManager = previousEventManager
 		clearFailureTracking()
+		consecutiveAuthFailures.Store(0)
 	})
 
 	logoutCalled := make(chan struct{}, 1)
-	// The logger is not optional: checkAndUpdateWorkingState logs the raw error before
-	// logging out, so a nil one panics and takes every other test in the package with it.
-	cacheLayer := &CacheLayer{
+	return &CacheLayer{
 		logger: util.NewLogger(),
 		logoutFunc: func() {
 			logoutCalled <- struct{}{}
 		},
+	}, logoutCalled
+}
+
+func TestCacheLayerLogsOutOnRepeatedInvalidToken(t *testing.T) {
+	cacheLayer, logoutCalled := newLogoutTestCacheLayer(t)
+
+	// Logging out blanks the stored account row, so one auth-shaped reply is not enough.
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(400, "graphql: Invalid token"))
+	select {
+	case <-logoutCalled:
+		t.Fatal("a single invalid token error should not end the session")
+	case <-time.After(50 * time.Millisecond):
 	}
 
-	cacheLayer.checkAndUpdateWorkingState(errors.New("graphql: Invalid token"))
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(400, "graphql: Invalid token"))
+	select {
+	case <-logoutCalled:
+	case <-time.After(time.Second):
+		t.Fatal("expected a second invalid token error to trigger logout")
+	}
+	require.Zero(t, getRecentFailureCount())
+}
+
+func TestCacheLayerLogsOutOnUnauthorized(t *testing.T) {
+	cacheLayer, logoutCalled := newLogoutTestCacheLayer(t)
+
+	// A 401 needs no message match at all, but still needs confirming.
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(401, "unauthorized"))
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(401, "unauthorized"))
 
 	select {
 	case <-logoutCalled:
 	case <-time.After(time.Second):
-		t.Fatal("expected invalid token error to trigger logout")
+		t.Fatal("expected repeated 401s to trigger logout")
 	}
-	require.Zero(t, getRecentFailureCount())
+}
+
+func TestCacheLayerDoesNotLogOutWithoutAnAniListStatus(t *testing.T) {
+	cacheLayer, logoutCalled := newLogoutTestCacheLayer(t)
+
+	// A transport failure carries no HTTP status. Quoting "invalid token" in its message must not
+	// be enough to end the session — that substring match alone used to be the whole test.
+	for range 5 {
+		cacheLayer.checkAndUpdateWorkingState(errors.New("graphql: Invalid token"))
+	}
+
+	select {
+	case <-logoutCalled:
+		t.Fatal("a statusless error should never be treated as an auth failure")
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestCacheLayerAuthFailureCountResetsOnSuccess(t *testing.T) {
+	cacheLayer, logoutCalled := newLogoutTestCacheLayer(t)
+
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(400, "graphql: Invalid token"))
+	cacheLayer.checkAndUpdateWorkingState(nil)
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(400, "graphql: Invalid token"))
+
+	select {
+	case <-logoutCalled:
+		t.Fatal("a successful request between two auth errors should reset the count")
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestCacheLayerIgnoresStatusesInErrorText(t *testing.T) {
+	// A media id or title in the message ("14042", "Room 404") matched the old substring test and
+	// silently excused a real failure. Classification now follows the transported status.
+	t.Cleanup(func() {
+		clearFailureTracking()
+		IsWorking.Store(true)
+	})
+	clearFailureTracking()
+
+	cacheLayer := &CacheLayer{logger: util.NewLogger()}
+	cacheLayer.checkAndUpdateWorkingState(errors.New("failed to fetch media 14042: connection reset"))
+	require.Equal(t, 1, getRecentFailureCount())
+
+	// A status AniList actually replied with is still excused.
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(404, "not found"))
+	cacheLayer.checkAndUpdateWorkingState(anilistErrorWithStatus(429, "rate limited"))
+	require.Equal(t, 1, getRecentFailureCount())
 }
 
 func TestCacheLayerQueuesProgressUpdateAndPatchesAnimeCache(t *testing.T) {
@@ -326,7 +415,7 @@ func newTestMangaEntry(mediaID int, entryID int, status anilist.MediaListStatus,
 func getCachedAnimeCollection(t *testing.T, cacheLayer *CacheLayer) *anilist.AnimeCollection {
 	t.Helper()
 	var cached anilist.AnimeCollection
-	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheLayer.generateCacheKey("collection", nil), &cached)
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheLayer.collectionCacheKey("collection", nil), &cached)
 	require.NoError(t, err)
 	require.True(t, found)
 	return &cached
@@ -335,7 +424,7 @@ func getCachedAnimeCollection(t *testing.T, cacheLayer *CacheLayer) *anilist.Ani
 func getCachedMangaCollection(t *testing.T, cacheLayer *CacheLayer) *anilist.MangaCollection {
 	t.Helper()
 	var cached anilist.MangaCollection
-	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[MangaCollectionBucket], cacheLayer.generateCacheKey("collection", nil), &cached)
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[MangaCollectionBucket], cacheLayer.collectionCacheKey("collection", nil), &cached)
 	require.NoError(t, err)
 	require.True(t, found)
 	return &cached
@@ -460,7 +549,7 @@ func TestCacheLayerProgressUpdateStillInvalidatesCollection(t *testing.T) {
 	require.NoError(t, err)
 
 	var cached anilist.AnimeCollection
-	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheLayer.generateCacheKey("collection", nil), &cached)
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheLayer.collectionCacheKey("collection", nil), &cached)
 	require.NoError(t, err)
 	require.False(t, found, "the anime collection cache must still be invalidated by a mutation")
 }
@@ -513,4 +602,147 @@ func TestShouldQueueMediaListUpdateSkipsValidationErrors(t *testing.T) {
 	// A genuine outage still queues, including while already in cache-only mode.
 	IsWorking.Store(true)
 	require.True(t, shouldQueueMediaListUpdate(errors.New("graphql: server error 503")))
+}
+
+func TestCollectionCacheIsKeyedPerAccount(t *testing.T) {
+	// The file cache lives in one per-install directory. A key that ignored userName meant that
+	// signing in as a second AniList account read — and then overwrote — the first account's
+	// collection at the same key.
+	client := &cacheLayerTestClient{
+		cacheDir:        t.TempDir(),
+		animeCollection: newTestAnimeCollection(101, 321, anilist.MediaListStatusCurrent, 2),
+	}
+	cacheLayer := newTestCacheLayer(t, client)
+
+	_, err := cacheLayer.AnimeCollection(context.Background(), new("first"))
+	require.NoError(t, err)
+
+	client.animeCollection = newTestAnimeCollection(202, 654, anilist.MediaListStatusPlanning, 0)
+	_, err = cacheLayer.AnimeCollection(context.Background(), new("second"))
+	require.NoError(t, err)
+
+	firstKey := cacheLayer.collectionCacheKey("collection", new("first"))
+	secondKey := cacheLayer.collectionCacheKey("collection", new("second"))
+	require.NotEqual(t, firstKey, secondKey)
+
+	var firstCached anilist.AnimeCollection
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], firstKey, &firstCached)
+	require.NoError(t, err)
+	require.True(t, found)
+	_, found = firstCached.GetListEntryFromAnimeId(101)
+	require.True(t, found, "the first account's collection should survive the second account's fetch")
+	_, found = firstCached.GetListEntryFromAnimeId(202)
+	require.False(t, found)
+}
+
+func TestClearAccountCachesEmptiesCollectionBuckets(t *testing.T) {
+	client := &cacheLayerTestClient{
+		cacheDir:        t.TempDir(),
+		animeCollection: newTestAnimeCollection(101, 321, anilist.MediaListStatusCurrent, 2),
+	}
+	cacheLayer := newTestCacheLayer(t, client)
+
+	_, err := cacheLayer.AnimeCollection(context.Background(), new("first"))
+	require.NoError(t, err)
+
+	cacheKey := cacheLayer.collectionCacheKey("collection", new("first"))
+	var cached anilist.AnimeCollection
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheKey, &cached)
+	require.NoError(t, err)
+	require.True(t, found)
+
+	cacheLayer.ClearAccountCaches()
+
+	found, err = cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[AnimeCollectionBucket], cacheKey, &cached)
+	require.NoError(t, err)
+	require.False(t, found, "a previous account's collection should not outlive the logout")
+}
+
+func TestCustomQueryCacheKeyDependsOnToken(t *testing.T) {
+	// The key used to be the raw request body, so a query issued under one account's credentials
+	// could be served a response cached under another's.
+	cacheLayer := newTestCacheLayer(t, &cacheLayerTestClient{cacheDir: t.TempDir()})
+	body := []byte(`{"query":"{ Viewer { id } }"}`)
+
+	first := cacheLayer.customQueryCacheKey(body, []string{"token-a"})
+	second := cacheLayer.customQueryCacheKey(body, []string{"token-b"})
+	require.NotEqual(t, first, second)
+	require.Equal(t, first, cacheLayer.customQueryCacheKey(body, []string{"token-a"}))
+
+	// The key becomes a filename, so it must never carry the token or the query itself.
+	require.NotContains(t, first, "token-a")
+	require.NotContains(t, first, "Viewer")
+}
+
+func TestExtractBaseAnimeFallsBackToTheRelationsCollection(t *testing.T) {
+	// The relations bucket is written under its own key prefix. Reusing the plain collection key
+	// meant this fallback could never hit, leaving it dead code on the offline path.
+	client := &cacheLayerTestClient{cacheDir: t.TempDir()}
+	cacheLayer := newTestCacheLayer(t, client)
+	cacheLayer.rememberCollectionUser(new("first"))
+
+	relCollection := &anilist.AnimeCollectionWithRelations{
+		MediaListCollection: &anilist.AnimeCollectionWithRelations_MediaListCollection{
+			Lists: []*anilist.AnimeCollectionWithRelations_MediaListCollection_Lists{
+				{
+					Status: new(anilist.MediaListStatusCurrent),
+					Entries: []*anilist.AnimeCollectionWithRelations_MediaListCollection_Lists_Entries{
+						{ID: 555, Media: &anilist.CompleteAnime{ID: 909}},
+					},
+				},
+			},
+		},
+	}
+	require.NoError(t, cacheLayer.fileCacher.SetPerm(
+		cacheLayer.buckets[AnimeCollectionRelationsBucket],
+		cacheLayer.collectionCacheKey("collection-relations", nil),
+		relCollection,
+	))
+
+	res := cacheLayer.extractBaseAnimeFromCollection(909)
+	require.NotNil(t, res)
+	require.Equal(t, 909, res.GetMedia().GetID())
+}
+
+func TestQueuedUpdateIsDroppedAfterTooManyAttempts(t *testing.T) {
+	// A queued update AniList will never accept used to retry every five minutes forever, taking
+	// the sync lock on each attempt.
+	previousEventManager := events.GlobalWSEventManager
+	events.GlobalWSEventManager = &events.GlobalWSEventManagerWrapper{}
+	t.Cleanup(func() { events.GlobalWSEventManager = previousEventManager })
+
+	cacheLayer := newTestCacheLayer(t, &cacheLayerTestClient{cacheDir: t.TempDir()})
+	syncErr := errors.New("AniList said no")
+
+	queued, err := cacheLayer.saveQueuedMediaListUpdate(queuedMediaListUpdate{
+		MediaID:  101,
+		Progress: new(3),
+	})
+	require.NoError(t, err)
+
+	for range queueMaxAttempts - 1 {
+		cacheLayer.setQueuedUpdateSyncFailed(queued, syncErr)
+		current := getQueuedUpdate(t, cacheLayer, 101)
+		require.NotNil(t, current.NextAttemptAt)
+		// setQueuedUpdateSyncFailed only acts on the entry it was handed, so carry the stored one
+		// forward the way the sync loop does.
+		queued = current
+	}
+
+	cacheLayer.setQueuedUpdateSyncFailed(queued, syncErr)
+
+	var dropped queuedMediaListUpdate
+	found, err := cacheLayer.fileCacher.GetPerm(cacheLayer.buckets[PendingMediaListUpdatesBucket], "101", &dropped)
+	require.NoError(t, err)
+	require.False(t, found, "the update should have been abandoned rather than retried forever")
+}
+
+func TestShouldQueueMediaListUpdateUsesTheTransportedStatus(t *testing.T) {
+	// A media id in the message ("14042") used to read as a 404 and stop a real failure being
+	// queued; a 404 AniList actually replied with still must not be queued.
+	require.True(t, shouldQueueMediaListUpdate(errors.New("failed to update media 14042: connection reset")))
+	require.False(t, shouldQueueMediaListUpdate(anilistErrorWithStatus(404, "not found")))
+	require.False(t, shouldQueueMediaListUpdate(anilistErrorWithStatus(400, "bad request")))
+	require.True(t, shouldQueueMediaListUpdate(anilistErrorWithStatus(429, "rate limited")))
+	require.True(t, shouldQueueMediaListUpdate(anilistErrorWithStatus(503, "unavailable")))
 }

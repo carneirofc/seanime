@@ -2,6 +2,8 @@ package shared_platform
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -43,7 +45,14 @@ const (
 	failureThreshold  = 4                // number of failures needed to mark as down
 	cleanupInterval   = 5 * time.Minute  // how often to clean up old failure records
 	maxFailureRecords = 50               // maximum number of failure records to keep
+
+	// authFailureLogoutThreshold is how many consecutive auth-shaped failures it takes to end the
+	// session. Logging out blanks the stored account row, so it should not hinge on a single reply.
+	authFailureLogoutThreshold = 2
 )
+
+// consecutiveAuthFailures counts auth-shaped failures since the last successful request.
+var consecutiveAuthFailures atomic.Int64
 
 func init() {
 	ShouldCache.Store(true)
@@ -104,9 +113,12 @@ type (
 		buckets                map[string]filecache.PermanentBucket
 		logger                 *zerolog.Logger
 		collectionMediaIDs     *result.Map[int, struct{}] // Track which media IDs are in collections
-		lastCollectionUpdate   time.Time                  // When collections were last fetched
+		collectionUserName     atomic.Value               // Last account a collection was fetched for (string)
+		lastCollectionUpdate   atomic.Int64               // When collections were last fetched (unix nanos)
+		collectionRefreshing   atomic.Bool                // Whether a collection-tracking refresh is in flight
 		logoutFunc             func()                     // called when an invalid token is detected
 		pendingUpdateSyncMutex sync.Mutex
+		queueSyncInProgress    atomic.Bool // Whether a queued-update sync tick is running
 	}
 )
 
@@ -140,7 +152,7 @@ const (
 	// Collection update interval (refresh collection tracking every 30 minutes)
 	collectionUpdateInterval = 30 * time.Minute
 
-	// mediaReadCacheTTL bounds how long per-media reads (base anime/manga, details,
+	// defaultMediaReadCacheTTL bounds how long per-media reads (base anime/manga, details,
 	// relations) are served straight from the file cache without contacting AniList.
 	// Anime/manga metadata is effectively immutable, so a generous window avoids
 	// hammering the API — and the 429s that come with it — during library scans,
@@ -148,8 +160,30 @@ const (
 	// Collections stay network-first, so list/progress data is always fresh — the one
 	// exception being the collection *tag* maps, which are immutable metadata and ride
 	// this same window rather than being refetched on every read.
-	mediaReadCacheTTL = 24 * time.Hour
+	defaultMediaReadCacheTTL = 24 * time.Hour
 )
+
+// mediaReadCacheTTL holds the configured window in nanoseconds. It is the main lever against
+// AniList's rate limit, so it is a setting rather than a constant; zero means the default.
+var mediaReadCacheTTL atomic.Int64
+
+// SetMediaReadCacheTTL applies the configured per-media cache window. A ttl of zero or less
+// restores the default.
+func SetMediaReadCacheTTL(ttl time.Duration) {
+	if ttl <= 0 {
+		mediaReadCacheTTL.Store(0)
+		return
+	}
+	mediaReadCacheTTL.Store(int64(ttl))
+}
+
+// MediaReadCacheTTL returns the window currently in effect.
+func MediaReadCacheTTL() time.Duration {
+	if ttl := mediaReadCacheTTL.Load(); ttl > 0 {
+		return time.Duration(ttl)
+	}
+	return defaultMediaReadCacheTTL
+}
 
 // addFailureRecord adds a new failure record to the tracking
 func addFailureRecord(err error) {
@@ -277,8 +311,7 @@ func (c *CacheLayer) GetCacheDir() string {
 }
 
 func (c *CacheLayer) CustomQuery(body []byte, logger *zerolog.Logger, token ...string) (interface{}, error) {
-	// Use the stringified body as cache key
-	cacheKey := string(body)
+	cacheKey := c.customQueryCacheKey(body, token)
 	bucket := c.buckets[CustomQueryBucket]
 
 	// Try network first if API is working
@@ -343,32 +376,35 @@ func (c *CacheLayer) checkAndUpdateWorkingState(err error) {
 			return
 		}
 
-		// skip 404 errors
-		if strings.Contains(err.Error(), "404") {
-			return
-		}
-		// skip 429 errors
-		if strings.Contains(err.Error(), "429") {
-			return
-		}
-		// skip 400 errors: AniList rejected the request as malformed, which says nothing about whether
-		// the API is reachable. Counting them would let a client-side bug repeated across a batch of
-		// entries trip the failure threshold and drop the whole integration into cache-only mode.
-		if code, ok := anilistHTTPStatus(err); ok && code == http.StatusBadRequest {
-			return
-		}
-
-		// handle invalid token
+		// The auth check comes first: AniList answers a dead token with a 400, which the skip
+		// below would otherwise swallow before the session ever gets ended.
 		if isAnilistAuthError(err) {
-			// devnote: isAnilistAuthError is a substring match, so a transient AniList error whose body happens
-			// to contain "invalid token"/"user not found" will also trigger a logout. Log the raw error so a
-			// false logout can be told apart from a genuinely expired token when diagnosing "auth lost on
-			// startup" reports.
+			// One auth-shaped error is not enough to end a session. AniList returns 400 with an
+			// "Invalid token" body for a genuinely dead token, which is indistinguishable from a
+			// transient server-side rejection, so a logout waits for a second consecutive one.
+			// Any successful request in between resets the count.
+			failures := consecutiveAuthFailures.Add(1)
+			if failures < authFailureLogoutThreshold {
+				c.logger.Warn().Err(err).Int64("consecutive", failures).
+					Msg("anilist cache: AniList reported an auth error, waiting for confirmation before logging out")
+				return
+			}
+
 			c.logger.Warn().Err(err).Msg("anilist cache: AniList reported an auth error, treating token as invalid and logging out")
 			events.GlobalWSEventManager.SendEvent(events.ServerLoggedOutAnilist, "Your AniList session has expired. Please log in again.")
 			if c.logoutFunc != nil {
 				go c.logoutFunc()
 			}
+			return
+		}
+
+		// A reply AniList actually sent says nothing about whether the API is reachable:
+		// 404 is a missing media, 429 is the rate limiter doing its job, and 400 is a malformed
+		// request — counting the latter would let one client-side bug repeated across a batch of
+		// entries trip the failure threshold and drop the whole integration into cache-only mode.
+		// These are matched on the transported status rather than on the error text, because a
+		// media id or title in the message ("14042", "Room 404") matched the old substring test.
+		if anilistStatusIn(err, http.StatusNotFound, http.StatusTooManyRequests, http.StatusBadRequest) {
 			return
 		}
 
@@ -397,13 +433,21 @@ func (c *CacheLayer) checkAndUpdateWorkingState(err error) {
 			}
 		}
 	} else {
+		consecutiveAuthFailures.Store(0)
+
 		// clear failure tracking and mark as working if not already
 		if !IsWorking.Load() {
 			c.logger.Info().Msg("anilist cache: API client is working again, switching back to network-first mode.")
 			events.GlobalWSEventManager.SendEvent(events.InfoToast, "The AniList API is back online")
 			IsWorking.Store(true)
+			clearFailureTracking()
+			return
 		}
-		clearFailureTracking()
+
+		// Only records that have aged out of the window are dropped. Clearing the whole window on
+		// every success meant that under partial degradation — the case the breaker exists for —
+		// any interleaved success reset the count and the threshold was never reached.
+		cleanupOldFailures()
 	}
 }
 
@@ -418,8 +462,34 @@ func anilistHTTPStatus(err error) (int, bool) {
 	return 0, false
 }
 
+// anilistStatusIn reports whether err carries an HTTP status AniList actually replied with and
+// that status is one of the given codes. It is exact where matching on the error text is not.
+func anilistStatusIn(err error, codes ...int) bool {
+	code, ok := anilistHTTPStatus(err)
+	if !ok {
+		return false
+	}
+	return slices.Contains(codes, code)
+}
+
+// isAnilistAuthError reports whether AniList rejected the request because the token is no longer
+// good. The message match alone is not enough — a transient error whose body happens to quote
+// "invalid token" would end the session — so it must be paired with a status AniList itself sent:
+// 401, or the 400 AniList returns for a dead token. An error carrying no HTTP status is a transport
+// failure and never an auth failure.
 func isAnilistAuthError(err error) bool {
 	if err == nil {
+		return false
+	}
+
+	code, ok := anilistHTTPStatus(err)
+	if !ok {
+		return false
+	}
+	if code == http.StatusUnauthorized {
+		return true
+	}
+	if code != http.StatusBadRequest && code != http.StatusForbidden {
 		return false
 	}
 
@@ -486,6 +556,87 @@ func (c *CacheLayer) generateCacheKey(params ...interface{}) string {
 	}, "")
 }
 
+// setLastCollectionUpdate / lastCollectionUpdateTime guard the collection-tracking timestamp.
+// It is read on the request path and written from the refresh goroutine, which was a plain data
+// race on a time.Time field before.
+func (c *CacheLayer) setLastCollectionUpdate(at time.Time) {
+	if at.IsZero() {
+		c.lastCollectionUpdate.Store(0)
+		return
+	}
+	c.lastCollectionUpdate.Store(at.UnixNano())
+}
+
+func (c *CacheLayer) lastCollectionUpdateTime() time.Time {
+	nanos := c.lastCollectionUpdate.Load()
+	if nanos == 0 {
+		return time.Time{}
+	}
+	return time.Unix(0, nanos)
+}
+
+// rememberCollectionUser records which account the collections belong to, so the offline
+// extract-from-collection fallbacks can rebuild the same cache key from a media id alone.
+func (c *CacheLayer) rememberCollectionUser(userName *string) {
+	if userName != nil && *userName != "" {
+		c.collectionUserName.Store(*userName)
+	}
+}
+
+// collectionCacheKey builds the key for a whole-collection bucket. The account has to be part of
+// it: the file cache lives in one per-install directory, so a key that ignored userName let a
+// second AniList account read and overwrite the first account's collection at the same key.
+// A nil userName falls back to the last account a collection was fetched for.
+func (c *CacheLayer) collectionCacheKey(prefix string, userName *string) string {
+	if userName != nil && *userName != "" {
+		return c.generateCacheKey(prefix, userName)
+	}
+	if remembered, ok := c.collectionUserName.Load().(string); ok && remembered != "" {
+		return c.generateCacheKey(prefix, &remembered)
+	}
+	return c.generateCacheKey(prefix, nil)
+}
+
+// customQueryCacheKey keys a custom query on the token it is sent with as well as its body.
+// The token is hashed, never stored: the key becomes a filename. Without the token in the key a
+// query issued under one account's credentials could be served a response cached under another's.
+func (c *CacheLayer) customQueryCacheKey(body []byte, token []string) string {
+	hash := sha256.New()
+	if len(token) > 0 && token[0] != "" {
+		hash.Write([]byte(token[0]))
+	} else if remembered, ok := c.collectionUserName.Load().(string); ok {
+		hash.Write([]byte(remembered))
+	}
+	hash.Write([]byte{0})
+	hash.Write(body)
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+// ClearAccountCaches empties every bucket holding account-scoped data. It is called on login and
+// logout: the cache keys are per-account, so a switch is already correct without this, but a
+// previous account's whole collection would otherwise sit on disk forever.
+func (c *CacheLayer) ClearAccountCaches() {
+	c.collectionUserName.Store("")
+
+	for _, bucketName := range []string{
+		AnimeCollectionBucket,
+		AnimeCollectionTagsBucket,
+		AnimeCollectionRelationsBucket,
+		MangaCollectionBucket,
+		MangaCollectionTagsBucket,
+		ViewerBucket,
+		ViewerStatsBucket,
+		CustomQueryBucket,
+	} {
+		if err := c.fileCacher.EmptyPerm(c.buckets[bucketName]); err != nil {
+			c.logger.Warn().Err(err).Str("bucket", bucketName).Msg("anilist cache: Failed to clear account cache")
+		}
+	}
+
+	c.collectionMediaIDs.Clear()
+	c.setLastCollectionUpdate(time.Time{})
+}
+
 // isInCollection checks if a media ID is in the user's collection
 func (c *CacheLayer) isInCollection(mediaID int) bool {
 	// Update collection tracking if needed
@@ -494,16 +645,24 @@ func (c *CacheLayer) isInCollection(mediaID int) bool {
 	return ok
 }
 
-// updateCollectionTracking updates the collection media IDs tracking
+// updateCollectionTracking updates the collection media IDs tracking.
+//
+// The timestamp is stamped before the fetch starts, not after it finishes, and a refresh is
+// single-flighted. Stamping afterwards meant every caller arriving during the fetch also passed
+// the interval check and launched its own full anime + manga collection request — a stampede that
+// landed precisely during a library scan, which calls isInCollection once per media.
 func (c *CacheLayer) updateCollectionTracking() {
-	if time.Since(c.lastCollectionUpdate) < collectionUpdateInterval {
+	if time.Since(c.lastCollectionUpdateTime()) < collectionUpdateInterval {
 		return
 	}
 
+	if !c.collectionRefreshing.CompareAndSwap(false, true) {
+		return
+	}
+	c.setLastCollectionUpdate(time.Now())
+
 	go func() {
-		defer func() {
-			c.lastCollectionUpdate = time.Now()
-		}()
+		defer c.collectionRefreshing.Store(false)
 
 		// Try to fetch anime collection
 		if animeCollection, err := c.anilistClientRef.Get().AnimeCollection(context.Background(), nil); err == nil && animeCollection != nil {
@@ -541,7 +700,7 @@ func (c *CacheLayer) updateCollectionTracking() {
 func cacheFirstGet[T any](c *CacheLayer, bucketName string, cacheKey string, networkFn func() (*T, error)) (*T, error) {
 	if ShouldCache.Load() {
 		var cached T
-		found, err := c.fileCacher.GetPermFresh(c.buckets[bucketName], cacheKey, &cached, mediaReadCacheTTL)
+		found, err := c.fileCacher.GetPermFresh(c.buckets[bucketName], cacheKey, &cached, MediaReadCacheTTL())
 		if err == nil && found {
 			c.logger.Trace().Str("bucket", bucketName).Str("key", cacheKey).Msg("anilist cache: Serving fresh entry from cache (cache-first)")
 			return &cached, nil
@@ -611,19 +770,23 @@ func (c *CacheLayer) boundedCacheSet(bucketName string, cacheKey string, data in
 		return c.fileCacher.SetPerm(bucket, cacheKey, data)
 	}
 
-	// For non-collection media, enforce the limit
-	allData, err := filecache.GetAll[interface{}](c.fileCacher, filecache.NewBucket(bucket.Name(), 0))
+	// For non-collection media, enforce the limit. Overwriting a key the bucket already holds
+	// does not grow it, so the count only needs checking when the key is new.
+	var existing interface{}
+	if found, err := c.fileCacher.GetPerm(bucket, cacheKey, &existing); err == nil && found {
+		return c.fileCacher.SetPerm(bucket, cacheKey, data)
+	}
+
+	count, err := c.fileCacher.CountPerm(bucket)
 	if err != nil {
 		return err
 	}
 
-	// If we're at the limit, remove the oldest entry (simple FIFO for now)
-	if len(allData) >= maxNonCollectionMediaCacheEntries {
-		// Remove the first key we find (this is a simple implementation)
-		for key := range allData {
-			if err := c.fileCacher.DeletePerm(bucket, key); err == nil {
-				break
-			}
+	// Evict by age rather than by whichever key a map range happened to yield first — Go
+	// randomizes that order, so the "FIFO" this replaces dropped an arbitrary entry.
+	if count >= maxNonCollectionMediaCacheEntries {
+		if err := c.fileCacher.DeletePermOldest(bucket); err != nil {
+			c.logger.Debug().Err(err).Str("bucket", bucketName).Msg("anilist cache: Failed to evict the oldest bounded cache entry")
 		}
 	}
 
@@ -649,7 +812,7 @@ func (c *CacheLayer) updateCollectionTrackingFromAnimeCollection(collection *ani
 			}
 		}
 	}
-	c.lastCollectionUpdate = time.Now()
+	c.setLastCollectionUpdate(time.Now())
 }
 
 func (c *CacheLayer) updateCollectionTrackingFromAnimeCollectionWithRelations(collection *anilist.AnimeCollectionWithRelations) {
@@ -670,7 +833,7 @@ func (c *CacheLayer) updateCollectionTrackingFromAnimeCollectionWithRelations(co
 			}
 		}
 	}
-	c.lastCollectionUpdate = time.Now()
+	c.setLastCollectionUpdate(time.Now())
 }
 
 func (c *CacheLayer) updateCollectionTrackingFromMangaCollection(collection *anilist.MangaCollection) {
@@ -691,7 +854,7 @@ func (c *CacheLayer) updateCollectionTrackingFromMangaCollection(collection *ani
 			}
 		}
 	}
-	c.lastCollectionUpdate = time.Now()
+	c.setLastCollectionUpdate(time.Now())
 }
 
 // invalidateMediaCaches invalidates caches for a specific media ID
@@ -750,14 +913,14 @@ func (c *CacheLayer) invalidateCollectionCaches() {
 
 	// Reset collection tracking
 	c.collectionMediaIDs.Clear()
-	c.lastCollectionUpdate = time.Time{}
+	c.setLastCollectionUpdate(time.Time{})
 }
 
 // extractBaseAnimeFromCollection attempts to extract BaseAnime data from cached anime collection
 func (c *CacheLayer) extractBaseAnimeFromCollection(mediaID int) *anilist.BaseAnimeByID {
 	// Try anime collection
 	bucket := c.buckets[AnimeCollectionBucket]
-	cacheKey := c.generateCacheKey("collection", nil)
+	cacheKey := c.collectionCacheKey("collection", nil)
 	var animeCollection anilist.AnimeCollection
 	found, err := c.fileCacher.GetPerm(bucket, cacheKey, &animeCollection)
 	if err == nil && found && animeCollection.MediaListCollection != nil {
@@ -774,10 +937,12 @@ func (c *CacheLayer) extractBaseAnimeFromCollection(mediaID int) *anilist.BaseAn
 		}
 	}
 
-	// Try anime collection with relations
+	// Try anime collection with relations. Its bucket is written under its own prefix, so reusing
+	// the key built above meant this lookup could never hit and the fallback was dead code.
 	relBucket := c.buckets[AnimeCollectionRelationsBucket]
+	relCacheKey := c.collectionCacheKey("collection-relations", nil)
 	var animeCollectionRel anilist.AnimeCollectionWithRelations
-	found, err = c.fileCacher.GetPerm(relBucket, cacheKey, &animeCollectionRel)
+	found, err = c.fileCacher.GetPerm(relBucket, relCacheKey, &animeCollectionRel)
 	if err == nil && found && animeCollectionRel.MediaListCollection != nil {
 		for _, list := range animeCollectionRel.MediaListCollection.Lists {
 			if list != nil {
@@ -802,7 +967,7 @@ func (c *CacheLayer) extractBaseMangaFromCollection(mediaID int) *anilist.BaseMa
 	}
 
 	bucket := c.buckets[MangaCollectionBucket]
-	cacheKey := c.generateCacheKey("collection", nil)
+	cacheKey := c.collectionCacheKey("collection", nil)
 	var mangaCollection anilist.MangaCollection
 	found, err := c.fileCacher.GetPerm(bucket, cacheKey, &mangaCollection)
 	if err == nil && found && mangaCollection.MediaListCollection != nil {
@@ -880,7 +1045,8 @@ func networkFirstGetWithBoundedCache[T any](c *CacheLayer, bucketName string, ca
 }
 
 func (c *CacheLayer) AnimeCollection(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeCollection, error) {
-	cacheKey := c.generateCacheKey("collection", nil)
+	c.rememberCollectionUser(userName)
+	cacheKey := c.collectionCacheKey("collection", userName)
 	res, err := networkFirstGet(c, AnimeCollectionBucket, cacheKey, func() (*anilist.AnimeCollection, error) {
 		return c.anilistClientRef.Get().AnimeCollection(ctx, userName, interceptors...)
 	})
@@ -900,7 +1066,7 @@ func (c *CacheLayer) AnimeCollection(ctx context.Context, userName *string, inte
 }
 
 func (c *CacheLayer) AnimeCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionTags, error) {
-	cacheKey := c.generateCacheKey("collection-tags", userName)
+	cacheKey := c.collectionCacheKey("collection-tags", userName)
 	return cacheFirstGet(c, AnimeCollectionTagsBucket, cacheKey, func() (*anilist.AnimeCollectionTags, error) {
 		return c.anilistClientRef.Get().AnimeCollectionTags(ctx, userName, interceptors...)
 	})
@@ -916,7 +1082,8 @@ func (c *CacheLayer) GetMediaTagsByID(ctx context.Context, ids []int, page *int,
 }
 
 func (c *CacheLayer) AnimeCollectionWithRelations(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionWithRelations, error) {
-	cacheKey := c.generateCacheKey("collection-relations", nil)
+	c.rememberCollectionUser(userName)
+	cacheKey := c.collectionCacheKey("collection-relations", userName)
 	res, err := networkFirstGet(c, AnimeCollectionRelationsBucket, cacheKey, func() (*anilist.AnimeCollectionWithRelations, error) {
 		return c.anilistClientRef.Get().AnimeCollectionWithRelations(ctx, userName, interceptors...)
 	})
@@ -1130,7 +1297,8 @@ func (c *CacheLayer) DeleteEntry(ctx context.Context, mediaListEntryID *int, int
 }
 
 func (c *CacheLayer) MangaCollection(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.MangaCollection, error) {
-	cacheKey := c.generateCacheKey("collection", nil)
+	c.rememberCollectionUser(userName)
+	cacheKey := c.collectionCacheKey("collection", userName)
 	res, err := networkFirstGet(c, MangaCollectionBucket, cacheKey, func() (*anilist.MangaCollection, error) {
 		return c.anilistClientRef.Get().MangaCollection(ctx, userName, interceptors...)
 	})
@@ -1150,7 +1318,7 @@ func (c *CacheLayer) MangaCollection(ctx context.Context, userName *string, inte
 }
 
 func (c *CacheLayer) MangaCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.MangaCollectionTags, error) {
-	cacheKey := c.generateCacheKey("collection-tags", userName)
+	cacheKey := c.collectionCacheKey("collection-tags", userName)
 	return cacheFirstGet(c, MangaCollectionTagsBucket, cacheKey, func() (*anilist.MangaCollectionTags, error) {
 		return c.anilistClientRef.Get().MangaCollectionTags(ctx, userName, interceptors...)
 	})

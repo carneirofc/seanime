@@ -334,6 +334,9 @@ func (a *App) LoginToAnilist(token string) error {
 
 	a.Logger.Info().Msg("app: Authenticated to AniList")
 
+	// Whoever was signed in before is gone; their cached collection should not outlive them.
+	a.clearAnilistAccountCaches()
+
 	anilistPlatform := anilist_platform.NewAnilistPlatform(a.AnilistClientRef, a.ExtensionBankRef, a.Logger, a.Database, a.LogoutFromAnilist)
 	a.UpdatePlatform(anilistPlatform)
 
@@ -359,6 +362,10 @@ func (a *App) LogoutFromAnilist() {
 	}
 	defer a.logoutInProgress.Store(false)
 
+	// Clear while the AniList platform is still current — UpdatePlatform below swaps in the
+	// simulated one, whose cache layer is a different instance over a different client.
+	a.clearAnilistAccountCaches()
+
 	a.UpdateAnilistClientToken("")
 
 	simulatedPlatform, err := simulated_platform.NewSimulatedPlatform(a.LocalManager, a.AnilistClientRef, a.ExtensionBankRef, a.Logger, a.Database)
@@ -383,6 +390,24 @@ func (a *App) LogoutFromAnilist() {
 
 	a.InitOrRefreshModules()
 	a.InitOrRefreshAnilistData()
+}
+
+// accountCacheClearer is implemented by the AniList cache layer. The platform's client is an
+// anilist.AnilistClient, so the capability is discovered rather than declared on that interface.
+type accountCacheClearer interface {
+	ClearAccountCaches()
+}
+
+// clearAnilistAccountCaches drops the cached data belonging to whichever account was signed in.
+// The cache keys are per-account, so a switch is already correct without this — but a previous
+// account's whole collection would otherwise sit in the cache directory indefinitely.
+func (a *App) clearAnilistAccountCaches() {
+	if !a.AnilistPlatformRef.IsPresent() {
+		return
+	}
+	if clearer, ok := a.AnilistPlatformRef.Get().GetAnilistClient().(accountCacheClearer); ok {
+		clearer.ClearAccountCaches()
+	}
 }
 
 // GetAnimeCollection returns the user's Anilist collection if it in the cache, otherwise it queries Anilist for the user's collection.
