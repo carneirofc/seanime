@@ -395,7 +395,7 @@ func (capturingRequestProvider) PrepareRequest(context.Context, *http.Request, s
 }
 func (capturingRequestProvider) IsAuthenticated(token string) bool { return token != "" }
 
-func captureUpdateMediaListEntryVariables(t *testing.T, call func(AnilistClient) error) map[string]any {
+func captureMutationVariables(t *testing.T, responseBody string, call func(AnilistClient) error) map[string]any {
 	t.Helper()
 
 	prevProvider := CurrentRequestProvider()
@@ -414,13 +414,18 @@ func captureUpdateMediaListEntryVariables(t *testing.T, call func(AnilistClient)
 		require.NoError(t, json.Unmarshal(body, &payload))
 		captured = payload.Variables
 
-		return newAniListTestResponse(http.StatusOK, `{"data":{"SaveMediaListEntry":{"id":1}}}`, nil), nil
+		return newAniListTestResponse(http.StatusOK, responseBody, nil), nil
 	})}}
 	require.NoError(t, SetRequestProvider(provider))
 
 	require.NoError(t, call(NewAnilistClient("test-token", t.TempDir())))
 	require.NotNil(t, captured)
 	return captured
+}
+
+func captureUpdateMediaListEntryVariables(t *testing.T, call func(AnilistClient) error) map[string]any {
+	t.Helper()
+	return captureMutationVariables(t, `{"data":{"SaveMediaListEntry":{"id":1}}}`, call)
 }
 
 func TestUpdateMediaListEntryOmitsNilVariables(t *testing.T) {
@@ -461,4 +466,79 @@ func TestUpdateMediaListEntrySendsEveryProvidedVariable(t *testing.T) {
 	}, keys)
 	assert.Equal(t, float64(0), captured["progress"])
 	assert.Equal(t, float64(85), captured["scoreRaw"])
+}
+
+func TestUpdateMediaListEntryProgressOmitsNilStatus(t *testing.T) {
+	// A queued progress update carries no status (shared_platform.syncQueuedUpdate replays one),
+	// and sending `status: null` made AniList reject the whole mutation with a 400. The replay is
+	// unattended, so this failed silently and forever.
+	captured := captureUpdateMediaListEntryVariables(t, func(client AnilistClient) error {
+		_, err := client.UpdateMediaListEntryProgress(context.Background(), new(320), new(4), nil)
+		return err
+	})
+
+	keys := slices.Sorted(maps.Keys(captured))
+	assert.Equal(t, []string{"mediaId", "progress"}, keys)
+	assert.Equal(t, float64(320), captured["mediaId"])
+	assert.Equal(t, float64(4), captured["progress"])
+}
+
+func TestUpdateMediaListEntryProgressSendsEveryProvidedVariable(t *testing.T) {
+	// The normal path is unchanged, and a zero progress is a real value rather than an absent one.
+	captured := captureUpdateMediaListEntryVariables(t, func(client AnilistClient) error {
+		_, err := client.UpdateMediaListEntryProgress(context.Background(), new(320), new(0), new(MediaListStatusCurrent))
+		return err
+	})
+
+	keys := slices.Sorted(maps.Keys(captured))
+	assert.Equal(t, []string{"mediaId", "progress", "status"}, keys)
+	assert.Equal(t, float64(0), captured["progress"])
+	assert.Equal(t, string(MediaListStatusCurrent), captured["status"])
+}
+
+func TestUpdateMediaListEntryRepeatOmitsNilVariables(t *testing.T) {
+	captured := captureUpdateMediaListEntryVariables(t, func(client AnilistClient) error {
+		_, err := client.UpdateMediaListEntryRepeat(context.Background(), new(320), nil)
+		return err
+	})
+
+	keys := slices.Sorted(maps.Keys(captured))
+	assert.Equal(t, []string{"mediaId"}, keys)
+}
+
+func TestDeleteEntrySendsEntryID(t *testing.T) {
+	captured := captureMutationVariables(t, `{"data":{"DeleteMediaListEntry":{"deleted":true}}}`, func(client AnilistClient) error {
+		_, err := client.DeleteEntry(context.Background(), new(99))
+		return err
+	})
+
+	assert.Equal(t, []string{"mediaListEntryId"}, slices.Sorted(maps.Keys(captured)))
+	assert.Equal(t, float64(99), captured["mediaListEntryId"])
+}
+
+func TestMutationsDoNotPanicOnNilArguments(t *testing.T) {
+	// The mutation arguments come from plugin-visible hook events, so a plugin nulling one must not
+	// take the server down on a log line.
+	prevProvider := CurrentRequestProvider()
+	t.Cleanup(func() {
+		require.NoError(t, SetRequestProvider(prevProvider))
+	})
+
+	provider := capturingRequestProvider{client: &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return newAniListTestResponse(http.StatusOK, `{"data":{"SaveMediaListEntry":{"id":1}}}`, nil), nil
+	})}}
+	require.NoError(t, SetRequestProvider(provider))
+
+	client := NewAnilistClient("test-token", t.TempDir())
+
+	assert.NotPanics(t, func() {
+		_, _ = client.UpdateMediaListEntryProgress(context.Background(), nil, nil, nil)
+	})
+	assert.NotPanics(t, func() {
+		_, _ = client.UpdateMediaListEntryRepeat(context.Background(), nil, nil)
+	})
+	assert.NotPanics(t, func() {
+		_, err := client.DeleteEntry(context.Background(), nil)
+		assert.Error(t, err)
+	})
 }

@@ -146,6 +146,18 @@ func setAnilistReqUrl(req *http.Request, rawURL string) error {
 // Authenticated
 ////////////////////////////////
 
+// debugMediaEvent starts a debug log event carrying an int field only when the caller actually
+// supplied one. The mutation arguments reach these methods through plugin-visible hook events
+// (see anilist_platform.UpdateEntryProgress and friends), so a plugin nulling a field must not
+// take the server down on a log line.
+func (ac *AnilistClientImpl) debugMediaEvent(key string, value *int) *zerolog.Event {
+	event := ac.logger.Debug()
+	if value != nil {
+		event = event.Int(key, *value)
+	}
+	return event
+}
+
 // UpdateMediaListEntry sends a partial update: a nil argument is left out of the GraphQL variables
 // rather than sent as null. AniList validates `scoreRaw` and `progress` with an integer rule whenever
 // the keys are present, so sending them as null (which the generated client's fixed variables map
@@ -156,11 +168,7 @@ func (ac *AnilistClientImpl) UpdateMediaListEntry(ctx context.Context, mediaID *
 		return nil, ErrNotAuthenticated
 	}
 
-	event := ac.logger.Debug()
-	if mediaID != nil {
-		event = event.Int("mediaId", *mediaID)
-	}
-	event.Msg("anilist: Updating media list entry")
+	ac.debugMediaEvent("mediaId", mediaID).Msg("anilist: Updating media list entry")
 
 	vars := make(map[string]any, 8)
 	if mediaID != nil {
@@ -195,28 +203,75 @@ func (ac *AnilistClientImpl) UpdateMediaListEntry(ctx context.Context, mediaID *
 	return &res, nil
 }
 
+// UpdateMediaListEntryProgress omits nil arguments for the same reason UpdateMediaListEntry does.
+// The generated client's fixed variables map always sends `progress` and `status`, so a progress-only
+// update went out as `status: null` and AniList rejected the whole mutation with a 400. The queued
+// replay path is the one that actually hits this: a queued progress update carries no status
+// (see shared_platform.syncQueuedUpdate), and it retries unattended.
 func (ac *AnilistClientImpl) UpdateMediaListEntryProgress(ctx context.Context, mediaID *int, progress *int, status *MediaListStatus, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntryProgress, error) {
 	if !ac.IsAuthenticated() {
 		return nil, ErrNotAuthenticated
 	}
-	ac.logger.Debug().Int("mediaId", *mediaID).Msg("anilist: Updating media list entry progress")
-	return ac.Client.UpdateMediaListEntryProgress(ctx, mediaID, progress, status, interceptors...)
+
+	ac.debugMediaEvent("mediaId", mediaID).Msg("anilist: Updating media list entry progress")
+
+	vars := make(map[string]any, 3)
+	if mediaID != nil {
+		vars["mediaId"] = mediaID
+	}
+	if progress != nil {
+		vars["progress"] = progress
+	}
+	if status != nil {
+		vars["status"] = status
+	}
+
+	var res UpdateMediaListEntryProgress
+	if err := ac.Client.Client.Post(ctx, "UpdateMediaListEntryProgress", UpdateMediaListEntryProgressDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
 
 func (ac *AnilistClientImpl) UpdateMediaListEntryRepeat(ctx context.Context, mediaID *int, repeat *int, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntryRepeat, error) {
 	if !ac.IsAuthenticated() {
 		return nil, ErrNotAuthenticated
 	}
-	ac.logger.Debug().Int("mediaId", *mediaID).Msg("anilist: Updating media list entry repeat")
-	return ac.Client.UpdateMediaListEntryRepeat(ctx, mediaID, repeat, interceptors...)
+
+	ac.debugMediaEvent("mediaId", mediaID).Msg("anilist: Updating media list entry repeat")
+
+	vars := make(map[string]any, 2)
+	if mediaID != nil {
+		vars["mediaId"] = mediaID
+	}
+	if repeat != nil {
+		vars["repeat"] = repeat
+	}
+
+	var res UpdateMediaListEntryRepeat
+	if err := ac.Client.Client.Post(ctx, "UpdateMediaListEntryRepeat", UpdateMediaListEntryRepeatDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
 
 func (ac *AnilistClientImpl) DeleteEntry(ctx context.Context, mediaListEntryID *int, interceptors ...clientv2.RequestInterceptor) (*DeleteEntry, error) {
 	if !ac.IsAuthenticated() {
 		return nil, ErrNotAuthenticated
 	}
-	ac.logger.Debug().Int("entryId", *mediaListEntryID).Msg("anilist: Deleting media list entry")
-	return ac.Client.DeleteEntry(ctx, mediaListEntryID, interceptors...)
+	if mediaListEntryID == nil {
+		return nil, errors.New("anilist: media list entry ID is required to delete an entry")
+	}
+
+	ac.debugMediaEvent("entryId", mediaListEntryID).Msg("anilist: Deleting media list entry")
+
+	vars := map[string]any{"mediaListEntryId": mediaListEntryID}
+
+	var res DeleteEntry
+	if err := ac.Client.Client.Post(ctx, "DeleteEntry", DeleteEntryDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
 
 func (ac *AnilistClientImpl) AnimeCollection(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*AnimeCollection, error) {
