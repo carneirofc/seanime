@@ -11073,6 +11073,27 @@
     }
   },
   {
+    "name": "secureCompare",
+    "trimmedName": "secureCompare",
+    "comments": [
+      "secureCompare is a constant-time string equality check for credentials.",
+      ""
+    ],
+    "filepath": "internal/handlers/server_auth_middleware.go",
+    "filename": "server_auth_middleware.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "oidcSessionAuth",
     "trimmedName": "oidcSessionAuth",
     "comments": [
