@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"seanime/internal/api/anilist"
 	"seanime/internal/events"
 	"seanime/internal/util"
@@ -350,6 +351,12 @@ func (c *CacheLayer) checkAndUpdateWorkingState(err error) {
 		if strings.Contains(err.Error(), "429") {
 			return
 		}
+		// skip 400 errors: AniList rejected the request as malformed, which says nothing about whether
+		// the API is reachable. Counting them would let a client-side bug repeated across a batch of
+		// entries trip the failure threshold and drop the whole integration into cache-only mode.
+		if code, ok := anilistHTTPStatus(err); ok && code == http.StatusBadRequest {
+			return
+		}
 
 		// handle invalid token
 		if isAnilistAuthError(err) {
@@ -398,6 +405,17 @@ func (c *CacheLayer) checkAndUpdateWorkingState(err error) {
 		}
 		clearFailureTracking()
 	}
+}
+
+// anilistHTTPStatus reports the HTTP status AniList replied with, when the error carries one.
+// parseResponse wraps every non-2xx reply in a *clientv2.ErrorResponse, so this is exact where
+// matching on the error text is not.
+func anilistHTTPStatus(err error) (int, bool) {
+	var resp *clientv2.ErrorResponse
+	if errors.As(err, &resp) && resp.NetworkError != nil {
+		return resp.NetworkError.Code, true
+	}
+	return 0, false
 }
 
 func isAnilistAuthError(err error) bool {

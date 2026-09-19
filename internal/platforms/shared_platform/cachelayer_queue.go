@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"seanime/internal/api/anilist"
 	"seanime/internal/util/filecache"
 	"slices"
@@ -63,6 +64,11 @@ func shouldQueueMediaListUpdate(err error) bool {
 		return false
 	}
 	if strings.Contains(errStr, "401") || strings.Contains(errStr, "403") || strings.Contains(errStr, "404") {
+		return false
+	}
+	// A 400 means AniList rejected the request itself. Replaying it on every sync tick would fail
+	// forever, so it must be excluded before the cache-only branch below queues everything.
+	if code, ok := anilistHTTPStatus(err); ok && code == http.StatusBadRequest {
 		return false
 	}
 

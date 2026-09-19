@@ -146,12 +146,53 @@ func setAnilistReqUrl(req *http.Request, rawURL string) error {
 // Authenticated
 ////////////////////////////////
 
+// UpdateMediaListEntry sends a partial update: a nil argument is left out of the GraphQL variables
+// rather than sent as null. AniList validates `scoreRaw` and `progress` with an integer rule whenever
+// the keys are present, so sending them as null (which the generated client's fixed variables map
+// always did) fails the whole mutation with a 400 — breaking any caller that only wants to change,
+// say, the privacy flags.
 func (ac *AnilistClientImpl) UpdateMediaListEntry(ctx context.Context, mediaID *int, status *MediaListStatus, scoreRaw *int, progress *int, startedAt *FuzzyDateInput, completedAt *FuzzyDateInput, private *bool, hiddenFromStatusLists *bool, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntry, error) {
 	if !ac.IsAuthenticated() {
 		return nil, ErrNotAuthenticated
 	}
-	ac.logger.Debug().Int("mediaId", *mediaID).Msg("anilist: Updating media list entry")
-	return ac.Client.UpdateMediaListEntry(ctx, mediaID, status, scoreRaw, progress, startedAt, completedAt, private, hiddenFromStatusLists, interceptors...)
+
+	event := ac.logger.Debug()
+	if mediaID != nil {
+		event = event.Int("mediaId", *mediaID)
+	}
+	event.Msg("anilist: Updating media list entry")
+
+	vars := make(map[string]any, 8)
+	if mediaID != nil {
+		vars["mediaId"] = mediaID
+	}
+	if status != nil {
+		vars["status"] = status
+	}
+	if scoreRaw != nil {
+		vars["scoreRaw"] = scoreRaw
+	}
+	if progress != nil {
+		vars["progress"] = progress
+	}
+	if startedAt != nil {
+		vars["startedAt"] = startedAt
+	}
+	if completedAt != nil {
+		vars["completedAt"] = completedAt
+	}
+	if private != nil {
+		vars["private"] = private
+	}
+	if hiddenFromStatusLists != nil {
+		vars["hiddenFromStatusLists"] = hiddenFromStatusLists
+	}
+
+	var res UpdateMediaListEntry
+	if err := ac.Client.Client.Post(ctx, "UpdateMediaListEntry", UpdateMediaListEntryDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
 
 func (ac *AnilistClientImpl) UpdateMediaListEntryProgress(ctx context.Context, mediaID *int, progress *int, status *MediaListStatus, interceptors ...clientv2.RequestInterceptor) (*UpdateMediaListEntryProgress, error) {

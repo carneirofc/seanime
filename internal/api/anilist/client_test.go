@@ -3,9 +3,12 @@ package anilist
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"seanime/internal/util"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
@@ -376,4 +379,86 @@ func TestAniListRateBlockerIgnoresDuplicateOrShorterBlocks(t *testing.T) {
 	assert.False(t, rateBlocker.BlockUntil(blockedUntil))
 	assert.False(t, rateBlocker.BlockUntil(clock.Now().Add(5*time.Second)))
 	assert.True(t, rateBlocker.BlockUntil(clock.Now().Add(25*time.Second)))
+}
+
+// capturingRequestProvider routes every AniList request to a caller-supplied transport so a test can
+// read the GraphQL payload the client actually put on the wire.
+type capturingRequestProvider struct {
+	client *http.Client
+}
+
+func (capturingRequestProvider) Name() string               { return "capturing" }
+func (capturingRequestProvider) ApiUrl() string             { return "https://anilist.test/graphql" }
+func (p capturingRequestProvider) HttpClient() *http.Client { return p.client }
+func (capturingRequestProvider) PrepareRequest(context.Context, *http.Request, string) error {
+	return nil
+}
+func (capturingRequestProvider) IsAuthenticated(token string) bool { return token != "" }
+
+func captureUpdateMediaListEntryVariables(t *testing.T, call func(AnilistClient) error) map[string]any {
+	t.Helper()
+
+	prevProvider := CurrentRequestProvider()
+	t.Cleanup(func() {
+		require.NoError(t, SetRequestProvider(prevProvider))
+	})
+
+	var captured map[string]any
+	provider := capturingRequestProvider{client: &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		body, err := io.ReadAll(req.Body)
+		require.NoError(t, err)
+
+		var payload struct {
+			Variables map[string]any `json:"variables"`
+		}
+		require.NoError(t, json.Unmarshal(body, &payload))
+		captured = payload.Variables
+
+		return newAniListTestResponse(http.StatusOK, `{"data":{"SaveMediaListEntry":{"id":1}}}`, nil), nil
+	})}}
+	require.NoError(t, SetRequestProvider(provider))
+
+	require.NoError(t, call(NewAnilistClient("test-token", t.TempDir())))
+	require.NotNil(t, captured)
+	return captured
+}
+
+func TestUpdateMediaListEntryOmitsNilVariables(t *testing.T) {
+	// AniList validates scoreRaw and progress with an integer rule whenever the keys are present, so a
+	// privacy-only update must leave them out entirely rather than send them as null.
+	captured := captureUpdateMediaListEntryVariables(t, func(client AnilistClient) error {
+		_, err := client.UpdateMediaListEntry(context.Background(), new(320), nil, nil, nil, nil, nil, new(true), new(true))
+		return err
+	})
+
+	keys := slices.Sorted(maps.Keys(captured))
+	assert.Equal(t, []string{"hiddenFromStatusLists", "mediaId", "private"}, keys)
+	assert.Equal(t, float64(320), captured["mediaId"])
+	assert.Equal(t, true, captured["private"])
+	assert.Equal(t, true, captured["hiddenFromStatusLists"])
+}
+
+func TestUpdateMediaListEntrySendsEveryProvidedVariable(t *testing.T) {
+	// The full edit path must be unchanged: nothing is dropped when the caller provides it.
+	captured := captureUpdateMediaListEntryVariables(t, func(client AnilistClient) error {
+		_, err := client.UpdateMediaListEntry(
+			context.Background(),
+			new(320),
+			new(MediaListStatusCurrent),
+			new(85),
+			new(0), // a zero progress is a real value, not an absent one
+			&FuzzyDateInput{Year: new(2026), Month: new(4), Day: new(7)},
+			nil,
+			new(false),
+			new(false),
+		)
+		return err
+	})
+
+	keys := slices.Sorted(maps.Keys(captured))
+	assert.Equal(t, []string{
+		"hiddenFromStatusLists", "mediaId", "private", "progress", "scoreRaw", "startedAt", "status",
+	}, keys)
+	assert.Equal(t, float64(0), captured["progress"])
+	assert.Equal(t, float64(85), captured["scoreRaw"])
 }

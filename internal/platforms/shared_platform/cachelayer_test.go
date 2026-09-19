@@ -464,3 +464,53 @@ func TestCacheLayerProgressUpdateStillInvalidatesCollection(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, found, "the anime collection cache must still be invalidated by a mutation")
 }
+
+func anilistBadRequestError() error {
+	return &clientv2.ErrorResponse{
+		NetworkError: &clientv2.HTTPError{
+			Code:    400,
+			Message: `Response body {"errors":[{"message":"validation","status":400}]}`,
+		},
+	}
+}
+
+func TestCacheLayerIgnoresValidationErrorsForApiHealth(t *testing.T) {
+	// A 400 means Seanime sent a malformed request, not that AniList is down. Privatizing a batch of
+	// entries used to produce one per entry, which tripped the failure threshold and dropped the whole
+	// integration into cache-only mode.
+	previousEventManager := events.GlobalWSEventManager
+	events.GlobalWSEventManager = &events.GlobalWSEventManagerWrapper{}
+	wasWorking := IsWorking.Load()
+	t.Cleanup(func() {
+		events.GlobalWSEventManager = previousEventManager
+		IsWorking.Store(wasWorking)
+		clearFailureTracking()
+	})
+
+	clearFailureTracking()
+	IsWorking.Store(true)
+
+	cacheLayer := &CacheLayer{logger: util.NewLogger()}
+	for range failureThreshold + 1 {
+		cacheLayer.checkAndUpdateWorkingState(anilistBadRequestError())
+	}
+
+	require.Zero(t, getRecentFailureCount())
+	require.True(t, IsWorking.Load())
+}
+
+func TestShouldQueueMediaListUpdateSkipsValidationErrors(t *testing.T) {
+	// Queueing a 400 would replay the same rejected mutation on every sync tick, forever.
+	wasWorking := IsWorking.Load()
+	t.Cleanup(func() { IsWorking.Store(wasWorking) })
+
+	for _, working := range []bool{true, false} {
+		IsWorking.Store(working)
+		require.Falsef(t, shouldQueueMediaListUpdate(anilistBadRequestError()),
+			"a 400 must not be queued (IsWorking=%v)", working)
+	}
+
+	// A genuine outage still queues, including while already in cache-only mode.
+	IsWorking.Store(true)
+	require.True(t, shouldQueueMediaListUpdate(errors.New("graphql: server error 503")))
+}
