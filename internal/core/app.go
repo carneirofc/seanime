@@ -568,6 +568,13 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 	// Initialize Anilist data if not in offline mode
 	if !app.IsOffline() {
 		app.InitOrRefreshAnilistData()
+		// Off the boot path: the viewer query can block for as long as a 429 reset window.
+		// Not inside InitOrRefreshAnilistData, which login (just fetched it) and logout (just
+		// blanked it) also call.
+		go func() {
+			defer util.HandlePanicThen(func() {})
+			_ = app.RefreshViewer(true)
+		}()
 	} else {
 		app.ServerReady = true
 	}

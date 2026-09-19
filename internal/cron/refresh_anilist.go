@@ -14,6 +14,9 @@ func RefreshAnilistDataJob(c *JobCtx) {
 		return
 	}
 
+	// Throttled app-side, so most of these ten-minute ticks make no AniList request.
+	_ = c.App.RefreshViewer(false)
+
 	// Refresh the Anilist Collection
 	animeCollection, _ := c.App.RefreshAnimeCollection()
 	c.App.WSEventManager.SendEvent(events.RefreshedAnilistAnimeCollection, animeCollection)

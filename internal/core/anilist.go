@@ -11,6 +11,7 @@ import (
 	"seanime/internal/platforms/simulated_platform"
 	"seanime/internal/user"
 	"seanime/internal/util"
+	"slices"
 	"time"
 
 	"github.com/goccy/go-json"
@@ -173,6 +174,127 @@ func fetchRuntimeViewer(provider string, getViewer func() (*anilist.GetViewer, e
 	return nil, err
 }
 
+// viewerRefreshInterval bounds how often the stored viewer is re-fetched from AniList.
+// The account row is written at login and read back by every /api/v1/status call, so without
+// a refresh an avatar, banner or username changed on AniList never reaches the client. The
+// interval is deliberate: the collection cron driving this runs every ten minutes, and cutting
+// AniList requests to stay under the rate limit is a recurring concern in this client.
+const viewerRefreshInterval = time.Hour
+
+// shouldRefreshViewer reports whether a viewer stored at lastUpdated is stale enough to refetch.
+// A nil lastUpdated means the viewer was stored before the timestamp was recorded, so it is
+// always considered stale. A timestamp in the future is left alone rather than trusted.
+func shouldRefreshViewer(lastUpdated *time.Time, now time.Time, interval time.Duration) bool {
+	if lastUpdated == nil {
+		return true
+	}
+	if lastUpdated.After(now) {
+		return false
+	}
+	return now.Sub(*lastUpdated) >= interval
+}
+
+// RefreshViewer refetches the AniList viewer and persists it, so a profile picture, banner or
+// username changed on AniList appears without the user signing out and back in. Unless force is
+// set, it does nothing until viewerRefreshInterval has passed since the last fetch.
+func (a *App) RefreshViewer(force bool) error {
+	if a.IsOffline() || a.GetUser().IsSimulated {
+		return nil
+	}
+
+	// A custom AniList API serves a viewer that belongs to a different service, while the
+	// stored token is still the official one. applyRuntimeAnilistClient keeps that viewer in
+	// memory only, so persisting it here would mislabel the account row.
+	if anilist.CurrentRequestProviderName() != anilist.OfficialRequestProviderName {
+		return nil
+	}
+
+	// Advisory: a logout starting right after this passes would be undone by the upsert below.
+	// The window needs a whole AniList round-trip to land inside it, and the next logout blanks
+	// the row again. Taking the flag instead would make a refresh swallow a user's logout.
+	if a.logoutInProgress.Load() {
+		return nil
+	}
+
+	if !a.AnilistClientRef.IsPresent() || !a.AnilistClientRef.Get().IsAuthenticated() {
+		return nil
+	}
+
+	acc, err := a.Database.GetAccount()
+	if err != nil || acc == nil || acc.Token == "" {
+		return nil
+	}
+
+	if !force && !shouldRefreshViewer(acc.ViewerUpdatedAt, time.Now(), viewerRefreshInterval) {
+		return nil
+	}
+
+	// The raw client rather than the platform's cache layer: that layer serves the viewer from
+	// an unkeyed cache entry, and logs the user out on any error whose text resembles an auth
+	// failure. A background refresh must not be able to end the session.
+	getViewer, err := a.AnilistClientRef.Get().GetViewer(context.Background())
+	if err != nil {
+		a.Logger.Warn().Err(err).Msg("app: Could not refresh the AniList viewer")
+		return err
+	}
+
+	if getViewer == nil || getViewer.Viewer == nil || len(getViewer.Viewer.Name) == 0 {
+		return errors.New("could not find user")
+	}
+
+	_, err = a.persistRefreshedViewer(acc, getViewer.Viewer)
+	return err
+}
+
+// persistRefreshedViewer stores a freshly fetched viewer under the account's existing token and
+// propagates it, reporting whether it differed from the stored one. It is separate from
+// RefreshViewer so the persistence can be exercised without an AniList client.
+func (a *App) persistRefreshedViewer(acc *models.Account, viewer *anilist.GetViewer_Viewer) (bool, error) {
+	viewerBytes, err := json.Marshal(viewer)
+	if err != nil {
+		a.Logger.Warn().Err(err).Msg("app: Could not marshal the AniList viewer")
+		return false, err
+	}
+
+	changed := !slices.Equal(viewerBytes, acc.Viewer)
+	previousName := acc.Username
+	now := time.Now()
+
+	// UpsertAccount overwrites every column, so the stored token has to be carried forward.
+	// acc is the shared account cache entry, so build a new row rather than mutating it.
+	if _, err = a.Database.UpsertAccount(&models.Account{
+		BaseModel: models.BaseModel{
+			ID:        1,
+			UpdatedAt: now,
+		},
+		Username:        viewer.Name,
+		Token:           acc.Token,
+		Viewer:          viewerBytes,
+		ViewerUpdatedAt: &now,
+	}); err != nil {
+		return false, err
+	}
+
+	// The timestamp is bumped either way, so an unchanged profile still resets the interval.
+	if !changed {
+		return false, nil
+	}
+
+	a.user = &user.User{Viewer: viewer, Token: acc.Token}
+
+	if previousName != viewer.Name {
+		a.AnilistPlatformRef.Get().SetUsername(viewer.Name)
+		if a.DiscordPresence != nil {
+			a.DiscordPresence.SetUsername(viewer.Name)
+		}
+	}
+
+	a.Logger.Info().Msg("app: Refreshed the AniList viewer")
+	a.WSEventManager.SendEvent(events.InvalidateQueries, []string{events.GetStatusEndpoint})
+
+	return true, nil
+}
+
 func (a *App) LoginToAnilist(token string) error {
 	if token == "" {
 		return errors.New("token is empty")
@@ -195,14 +317,16 @@ func (a *App) LoginToAnilist(token string) error {
 		a.Logger.Err(err).Msg("scan: could not save local files")
 	}
 
+	loggedInAt := time.Now()
 	_, err = a.Database.UpsertAccount(&models.Account{
 		BaseModel: models.BaseModel{
 			ID:        1,
-			UpdatedAt: time.Now(),
+			UpdatedAt: loggedInAt,
 		},
-		Username: getViewer.Viewer.Name,
-		Token:    token,
-		Viewer:   bytes,
+		Username:        getViewer.Viewer.Name,
+		Token:           token,
+		Viewer:          bytes,
+		ViewerUpdatedAt: &loggedInAt,
 	})
 	if err != nil {
 		return err
@@ -249,9 +373,10 @@ func (a *App) LogoutFromAnilist() {
 			ID:        1,
 			UpdatedAt: time.Now(),
 		},
-		Username: "",
-		Token:    "",
-		Viewer:   nil,
+		Username:        "",
+		Token:           "",
+		Viewer:          nil,
+		ViewerUpdatedAt: nil,
 	})
 
 	a.Logger.Debug().Msg("app: Logged out from AniList, switched to simulated platform")

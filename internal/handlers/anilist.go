@@ -659,7 +659,9 @@ func (h *Handler) HandleAnilistListMissedSequels(c echo.Context) error {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var anilistStatsCache = result.NewCache[int, *anilist.Stats]()
+// Keyed by username: the cache outlives a logout, so an unkeyed entry served the previous
+// account's stats for up to an hour after signing in as someone else.
+var anilistStatsCache = result.NewCache[string, *anilist.Stats]()
 
 // HandleGetAniListStats
 //
@@ -668,7 +670,9 @@ var anilistStatsCache = result.NewCache[int, *anilist.Stats]()
 //	@route /api/v1/anilist/stats [GET]
 //	@returns anilist.Stats
 func (h *Handler) HandleGetAniListStats(c echo.Context) error {
-	cached, ok := anilistStatsCache.Get(0)
+	userName := h.App.GetUsername()
+
+	cached, ok := anilistStatsCache.Get(userName)
 	if ok {
 		return h.RespondWithData(c, cached)
 	}
@@ -686,7 +690,7 @@ func (h *Handler) HandleGetAniListStats(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	anilistStatsCache.SetT(0, ret, time.Hour*1)
+	anilistStatsCache.SetT(userName, ret, time.Hour*1)
 
 	return h.RespondWithData(c, ret)
 }
