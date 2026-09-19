@@ -94,7 +94,10 @@ func TestCacheLayerLogsOutOnInvalidToken(t *testing.T) {
 	})
 
 	logoutCalled := make(chan struct{}, 1)
+	// The logger is not optional: checkAndUpdateWorkingState logs the raw error before
+	// logging out, so a nil one panics and takes every other test in the package with it.
 	cacheLayer := &CacheLayer{
+		logger: util.NewLogger(),
 		logoutFunc: func() {
 			logoutCalled <- struct{}{}
 		},
