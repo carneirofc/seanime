@@ -342,6 +342,20 @@ func (c *Cacher) DeletePerm(bucket PermanentBucket, key string) error {
 	return store.saveToFile()
 }
 
+// CountPerm returns how many entries the permanent bucket holds.
+//
+// Callers enforcing a size limit used to load and unmarshal the whole bucket with GetAll just to
+// take its length, on every write.
+func (c *Cacher) CountPerm(bucket PermanentBucket) (int, error) {
+	store, err := c.getStore(bucket.name)
+	if err != nil {
+		return 0, err
+	}
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	return len(store.data), nil
+}
+
 // DeletePermOldest deletes the oldest value from the permanent bucket.
 func (c *Cacher) DeletePermOldest(bucket PermanentBucket) error {
 	store, err := c.getStore(bucket.name)
