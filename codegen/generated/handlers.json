@@ -860,6 +860,74 @@
     }
   },
   {
+    "name": "decodeTagMapResponse",
+    "trimmedName": "decodeTagMapResponse",
+    "comments": [
+      "decodeTagMapResponse reads the MediaTagMap out of the SeaResponse envelope.",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist_tags_test.go",
+    "filename": "anilist_tags_test.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "TestRespondWithCollectionTagsServesAnEmptyMapWhenSignedOut",
+    "trimmedName": "TestRespondWithCollectionTagsServesAnEmptyMapWhenSignedOut",
+    "comments": [
+      "TestRespondWithCollectionTagsServesAnEmptyMapWhenSignedOut pins the short-circuit: a",
+      "simulated (offline) user has no AniList collection, so neither the collection read nor",
+      "the tags query may run. The response is still a map rather than an error, because the",
+      "filter UI renders it unconditionally.",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist_tags_test.go",
+    "filename": "anilist_tags_test.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
+    "name": "TestRespondWithCollectionTagsDoesNotCacheTheSignedOutMap",
+    "trimmedName": "TestRespondWithCollectionTagsDoesNotCacheTheSignedOutMap",
+    "comments": [
+      "TestRespondWithCollectionTagsDoesNotCacheTheSignedOutMap guards against the empty map",
+      "being written under a cache key: the key would be built from an empty username, and the",
+      "next signed-in request would be served an empty tag map.",
+      ""
+    ],
+    "filepath": "internal/handlers/anilist_tags_test.go",
+    "filename": "anilist_tags_test.go",
+    "api": {
+      "summary": "",
+      "descriptions": [],
+      "endpoint": "",
+      "methods": null,
+      "params": [],
+      "bodyFields": [],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleGetAnimeEpisodeCollection",
     "trimmedName": "GetAnimeEpisodeCollection",
     "comments": [
