@@ -1,0 +1,78 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+
+    // Keep in sync with the installed @biomejs/biome version; `biome migrate` updates it.
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        // No .gitignore lives in seanime-web/ (the repo's is at the root), and Biome errors
+        // out when it cannot find one. Exclusions are listed explicitly below instead.
+        "useIgnoreFile": false,
+        "defaultBranch": "main"
+    },
+
+    "files": {
+        "includes": [
+            "src/**",
+            // Generated output - never hand-edited, so never linted.
+            "!src/api/generated/**",
+            "!src/routeTree.gen.ts",
+            "!src/app/(main)/_features/plugin/generated/**",
+            // Biome's CSS parser does not understand Tailwind 4 at-rules and reports 25
+            // parse errors on src/app/globals.css.
+            "!**/*.css"
+        ]
+    },
+
+    // Configured to match house style (4-space, double quotes, no semicolons) so that
+    // running `biome format` by hand is safe, but deliberately NOT a CI gate: this fork
+    // tracks upstream, and reformatting 760 files would conflict with every upstream merge.
+    "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 150
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "double",
+            "semicolons": "asNeeded",
+            "trailingCommas": "all",
+            "arrowParentheses": "asNeeded"
+        }
+    },
+
+    // Import sorting would reorder nearly every file; same merge-conflict argument.
+    "assist": { "enabled": false },
+
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "preset": "recommended",
+
+            // ---- Backlog exemptions -------------------------------------------------
+            // Rules below are switched off because the inherited upstream tree violates
+            // them at a scale this fork is not going to fix in one pass. Counts are from
+            // the first full run over 755 files. Re-enable one at a time as it is cleared.
+            "correctness": {
+                // 967 findings. The app builds with the React Compiler, which changes the
+                // calculus on manual dependency arrays.
+                "useExhaustiveDependencies": "off",
+                // Covered by tsconfig's noUnusedLocals / noUnusedParameters instead, so
+                // the typechecker is the single source of truth for unused symbols.
+                "noUnusedVariables": "off",
+                "noUnusedFunctionParameters": "off",
+                "noUnusedImports": "off"
+            },
+            "style": {
+                "noNonNullAssertion": "off", // 323 findings
+                "useImportType": "off" // 671 findings
+            },
+            "suspicious": {
+                "noExplicitAny": "off" // 477 findings
+            },
+            // ~230 findings across the group; a deliberate follow-up, not a merge blocker.
+            "a11y": { "preset": "none" }
+        }
+    }
+}
