@@ -241,30 +241,32 @@ func HandleThing(c *RouteCtx) error {
 	})
 }
 
-// TestParseHandlerDocDuplicatesFieldDescriptions pins a known bug so that fixing
-// it is a deliberate act with a visible generated diff.
+// TestParseBodyFieldsDoesNotDuplicateFieldDescriptions guards a fixed bug.
 //
-// parseBodyFields appends to fieldComments while ranging over it, so every
-// non-empty comment line ends up in the slice twice, with the blank trailing line
-// that Doc.Text() produces sitting between them. Committed output shows it:
-// HandleSearchTorrent's Type field carries
-//
-//	["\"smart\" or \"simple\"", "", "\"smart\" or \"simple\""]
-//
-// and that becomes a duplicated JSDoc block in endpoint.types.ts.
-func TestParseBodyFieldsDuplicatesFieldDescriptions(t *testing.T) {
+// parseBodyFields used to append to fieldComments while ranging over it, so every
+// comment line appeared twice with the blank line that Doc.Text() leaves behind
+// sitting between them. Committed output carried it: HandleSearchTorrent's Type
+// field read ["\"smart\" or \"simple\"", "", "\"smart\" or \"simple\""], which became a
+// duplicated JSDoc block in endpoint.types.ts.
+func TestParseBodyFieldsDoesNotDuplicateFieldDescriptions(t *testing.T) {
 	fn := parseFuncDecl(t, `
 func HandleThing(c *RouteCtx) error {
 	type body struct {
 		// The thing type.
-		Type string `+"`json:\"type\"`"+`
+		Type string `+"`"+`json:"type"`+"`"+`
+		// First line.
+		// Second line.
+		Multi string `+"`"+`json:"multi"`+"`"+`
+		Plain string `+"`"+`json:"plain"`+"`"+`
 	}
 	return nil
 }`)
 	got := parseBodyFields(fn)
-	require.Len(t, got, 1)
-	require.Equal(t, []string{"The thing type.", "", "The thing type."}, got[0].Descriptions,
-		"known bug: the comment is duplicated; see the doc comment on this test")
+	require.Len(t, got, 3)
+
+	require.Equal(t, []string{"The thing type."}, got[0].Descriptions)
+	require.Equal(t, []string{"First line.", "Second line."}, got[1].Descriptions)
+	require.Empty(t, got[2].Descriptions, "a field with no comment has no descriptions")
 }
 
 // TestGenerateHandlersOverFixtures exercises the whole file-walking entrypoint.

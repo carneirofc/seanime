@@ -13386,8 +13386,6 @@
           "typescriptType": "string",
           "required": false,
           "descriptions": [
-            "\"smart\" or \"simple\"",
-            "",
             "\"smart\" or \"simple\""
           ]
         },
@@ -13819,8 +13817,6 @@
           "typescriptType": "boolean",
           "required": false,
           "descriptions": [
-            "Preload is true if the stream should only be prepared.",
-            "",
             "Preload is true if the stream should only be prepared."
           ]
         }

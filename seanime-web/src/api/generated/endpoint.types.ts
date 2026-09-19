@@ -2283,8 +2283,6 @@ export type TorrentClientAddMagnetFromRule_Variables = {
 export type SearchTorrent_Variables = {
     /**
      *  "smart" or "simple"
-     *
-     *  "smart" or "simple"
      */
     type?: string
     provider?: string
@@ -2355,8 +2353,6 @@ export type TorrentstreamStartStream_Variables = {
     clientId: string
     batchEpisodeFiles?: HibikeTorrent_BatchEpisodeFiles
     /**
-     *  Preload is true if the stream should only be prepared.
-     *
      *  Preload is true if the stream should only be prepared.
      */
     preload?: boolean

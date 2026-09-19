@@ -127,16 +127,15 @@ func parseBodyFields(fn *ast.FuncDecl) []*RouteHandlerParam {
 				jsonName = jsonField
 			}
 
-			// Get field comments
+			// Get field comments.
+			//
+			// Doc.Text() returns the comment with a trailing newline, so a split
+			// yields a final empty element that must not be emitted.
 			fieldComments := make([]string, 0)
-			cmtsTxt := field.Doc.Text()
-			if cmtsTxt != "" {
-				fieldComments = strings.Split(cmtsTxt, "\n")
-			}
-			for _, cmt := range fieldComments {
-				cmt = strings.TrimSpace(strings.TrimPrefix(cmt, "//"))
-				if cmt != "" {
-					fieldComments = append(fieldComments, cmt)
+			for _, line := range strings.Split(field.Doc.Text(), "\n") {
+				line = strings.TrimSpace(strings.TrimPrefix(line, "//"))
+				if line != "" {
+					fieldComments = append(fieldComments, line)
 				}
 			}
 
