@@ -17,6 +17,14 @@ All notable changes to this project will be documented in this file.
 - ✨ anilist: Added an adult-exposure alert — an inline warning in the entry editor and a session-dismissible collection banner ("N adult titles are publicly visible") on the anime and manga libraries, with a one-click "Make all private" bulk action (`/api/v1/anilist/privatize-adult-entries`); the alert is independent of the setting and reflects real exposure
 - 🔀 Merged upstream 5rahim/seanime v3.10.2 into the fork (41 upstream commits); the fork version is now `3.10.2-fork.1`
 - ✨ manga: Adopted upstream's server-synced manga preferences and source-refresh job, while keeping the fork's manual source-match flow; provider auto-search stays opt-in, so UI-driven loads still ask you to pick a source (`ErrMangaMatchRequired`)
+- 📝 docs: Rewrote the `AGENTS.md` files to describe the actual stack — the frontend docs still described Next.js 15 / React 18 / the App Router after the migration to Rsbuild + TanStack Router, and both subproject files printed a codegen command (`go run ./codegen`) that resolves its relative paths outside the repository
+- 👷 ci: Added a `Test` workflow — `go test` (with a documented exclusion list for packages needing gitignored AniList fixtures or a local config), Vitest, and a codegen-freshness check that fails when `go generate ./codegen` changes the tree
+- 👷 ci: Added Biome linting for the web, scoped to files changed in a PR; rules with a large inherited backlog are disabled with their counts recorded in `seanime-web/biome.jsonc`. The formatter is configured to match house style but deliberately not enforced
+- 🦺 manga: Filters persisted in `localStorage` are now validated on read — `sourceProvider` was added to a persisted type, so entries written before it existed had `undefined` where the type promised a `string`
+- 🦺 player: Media-core preferences stored by an older version are now validated field by field instead of being spread through a `Partial` cast, so a value of the wrong type falls back to its default rather than reaching player state
+- 🦺 plugins: Websocket frames and third-party plugin batch payloads are now schema-checked at the boundary (`seanime-web/src/lib/validation/`); malformed frames are dropped and a bad event in a batch no longer throws inside the listener loop, taking every other listener on that frame with it
+- 🦺 codegen: Regenerated stale handler metadata and removed a dead `--skipHandlerHookEvents` flag whose generator call had been commented out
+- 🦺 tests: Fixed two `manga-preferences` tests left failing by the v3.10.2 upstream merge, and taught Vitest the `@/` path alias so tests can import modules with runtime `@/` imports
 
 ## v3.10.2
 
