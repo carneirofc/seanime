@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"strings"
@@ -33,8 +34,37 @@ const (
 
 // Stores logs from all loggers. Used to write logs to a file when WriteGlobalLogBufferToFile is called.
 // It is reset after writing to a file.
-var logBuffer bytes.Buffer
-var logBufferMutex = &sync.Mutex{}
+//
+// Every logger NewLogger hands out writes here, from whichever goroutine is logging, so the buffer
+// guards itself. The mutex below used to be taken only by the drain, leaving the writes themselves
+// racing — which the race detector reports against any two goroutines that log at the same time.
+var logBuffer syncBuffer
+
+// syncBuffer is a bytes.Buffer that is safe for concurrent writers.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+// WriteTo drains the buffer into w.
+func (b *syncBuffer) WriteTo(w io.Writer) (int64, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.WriteTo(w)
+}
+
+// Reset empties the buffer.
+func (b *syncBuffer) Reset() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.buf.Reset()
+}
 
 func NewLogger() *zerolog.Logger {
 
@@ -73,8 +103,6 @@ func WriteGlobalLogBufferToFile(file *os.File) {
 	if file == nil {
 		return
 	}
-	logBufferMutex.Lock()
-	defer logBufferMutex.Unlock()
 	if _, err := logBuffer.WriteTo(file); err != nil {
 		fmt.Print("Failed to write log buffer to file")
 	}
