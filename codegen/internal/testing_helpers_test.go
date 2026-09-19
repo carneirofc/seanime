@@ -82,3 +82,12 @@ type failingWriter struct{}
 func (failingWriter) Write([]byte) (int, error) { return 0, errAlwaysFails }
 
 var errAlwaysFails = errors.New("write failed")
+
+// readFileString reads a generated file produced into a temp dir by a test.
+func readFileString(t *testing.T, path string) string {
+	t.Helper()
+
+	b, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return string(b)
+}

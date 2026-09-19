@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -201,4 +202,90 @@ func TestGenerateEventFileProducesFormattedGoSource(t *testing.T) {
 func TestGenerateEventFileFailsOnAnUnwritableDirectory(t *testing.T) {
 	err := generateEventFile(filepath.Join(t.TempDir(), "does-not-exist"), map[string]string{"A": "a"})
 	require.Error(t, err, "an unwritable output path must fail the run")
+}
+
+// TestZodSchemaGenerationIsDeterministic covers the new emitters.
+//
+// Schema emission order comes from a topological sort over a dependency graph built by
+// walking maps, so without the sorting inside zodEmissionOrder and selectReferencedStructs
+// the declaration order would differ per run and the codegen freshness job would fail at
+// random.
+func TestZodSchemaGenerationIsDeterministic(t *testing.T) {
+	run := func(t *testing.T) map[string]string {
+		t.Helper()
+
+		jsonDir := t.TempDir()
+		require.NoError(t, GenerateHandlers(filepath.Join("testdata", "handlers"), jsonDir))
+		require.NoError(t, ExtractStructs(filepath.Join("testdata", "structs"), jsonDir))
+
+		handlersJson := filepath.Join(jsonDir, "handlers.json")
+		structsJson := filepath.Join(jsonDir, "public_structs.json")
+
+		webDir := t.TempDir()
+		goStructStrs, err := GenerateTypescriptEndpointsFile(handlersJson, structsJson, webDir, t.TempDir())
+		require.NoError(t, err)
+		require.NoError(t, GenerateZodSchemasFile(handlersJson, structsJson, webDir, goStructStrs))
+
+		return readAll(t, webDir)
+	}
+
+	baseline := run(t)
+	for i := 0; i < 8; i++ {
+		require.Equal(t, baseline, run(t), "run %d differed from the first", i+2)
+	}
+}
+
+// TestZodSchemasCoverTheSameTypesAsTypescript is the invariant schemas.assert.ts rests on.
+//
+// Both files are generated from selectReferencedStructs, so they describe the same types by
+// construction. If that ever stops being true, the generated assertions reference a schema
+// or a type that does not exist and the frontend stops compiling — so it is worth catching
+// here, where the failure names the cause.
+func TestZodSchemasCoverTheSameTypesAsTypescript(t *testing.T) {
+	jsonDir := t.TempDir()
+	require.NoError(t, GenerateHandlers(filepath.Join("testdata", "handlers"), jsonDir))
+	require.NoError(t, ExtractStructs(filepath.Join("testdata", "structs"), jsonDir))
+
+	handlersJson := filepath.Join(jsonDir, "handlers.json")
+	structsJson := filepath.Join(jsonDir, "public_structs.json")
+
+	webDir := t.TempDir()
+	goStructStrs, err := GenerateTypescriptEndpointsFile(handlersJson, structsJson, webDir, t.TempDir())
+	require.NoError(t, err)
+	require.NoError(t, GenerateTypescriptFile(handlersJson, structsJson, webDir, goStructStrs))
+	require.NoError(t, GenerateZodSchemasFile(handlersJson, structsJson, webDir, goStructStrs))
+
+	types := declaredNames(t, filepath.Join(webDir, typescriptFileName), "export type ")
+	schemas := declaredNames(t, filepath.Join(webDir, zodSchemasFileName), "export const ")
+
+	require.NotEmpty(t, types)
+	for name := range types {
+		if name == "Nullish" {
+			// A helper types.ts declares for hand-written code, not a generated type.
+			continue
+		}
+		require.Contains(t, schemas, name+zodSchemaSuffix, "type %s has no schema", name)
+	}
+}
+
+// declaredNames collects the identifiers a generated file declares with the given prefix.
+func declaredNames(t *testing.T, path string, prefix string) map[string]bool {
+	t.Helper()
+
+	b, err := os.ReadFile(path)
+	require.NoError(t, err)
+
+	names := make(map[string]bool)
+	for _, line := range strings.Split(string(b), "\n") {
+		if !strings.HasPrefix(line, prefix) {
+			continue
+		}
+		rest := strings.TrimPrefix(line, prefix)
+		name, _, _ := strings.Cut(rest, " ")
+		name, _, _ = strings.Cut(name, "<")
+		if name != "" {
+			names[name] = true
+		}
+	}
+	return names
 }

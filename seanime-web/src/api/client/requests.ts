@@ -1,4 +1,5 @@
 import { getServerBaseUrl } from "@/api/client/server-url"
+import { probeResponseContract } from "@/lib/validation/api-contract"
 import { SERVER_AUTH_TOKEN_STORAGE_KEY, serverAuthTokenAtom } from "@/app/(main)/_atoms/server-status.atoms"
 import { getClientId, getClientIdProof, setClientIdentity } from "@/lib/server/client-id"
 import { __clientPlatform__ } from "@/types/constants"
@@ -156,6 +157,11 @@ export async function buildSeaQuery<T, D extends any = any>(
     syncClientIdFromHeader(res.headers)
 
     const response = _handleSeaResponse<T>(res.data)
+
+    // Development-only contract check. Reports where the generated schemas and the server
+    // disagree; deliberately not awaited, and cannot alter or reject the response.
+    void probeResponseContract(method, endpoint, response.data)
+
     return response.data
 }
 

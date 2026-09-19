@@ -1,4 +1,4 @@
-//go:generate go run main.go --skipHandlers=false --skipStructs=false --skipTypes=false --skipPluginEvents=false --skipHookEvents=false
+//go:generate go run main.go --skipHandlers=false --skipStructs=false --skipTypes=false --skipPluginEvents=false --skipHookEvents=false --skipZodSchemas=false
 package main
 
 import (
@@ -42,6 +42,9 @@ func main() {
 	var skipHookEvents bool
 	flag.BoolVar(&skipHookEvents, "skipHookEvents", false, "Skip generating hook events")
 
+	var skipZodSchemas bool
+	flag.BoolVar(&skipZodSchemas, "skipZodSchemas", false, "Skip generating zod schemas")
+
 	flag.Parse()
 
 	if !skipHandlers {
@@ -56,13 +59,21 @@ func main() {
 		}
 	}
 
-	if !skipTypes {
+	if !skipTypes || !skipZodSchemas {
 		goStructStrs, err := codegen.GenerateTypescriptEndpointsFile(handlersJson, publicStructsJson, webApiOutDir, eventsSrcDir)
 		if err != nil {
 			log.Fatalf("codegen: generating TypeScript endpoints: %v", err)
 		}
-		if err := codegen.GenerateTypescriptFile(handlersJson, publicStructsJson, webApiOutDir, goStructStrs); err != nil {
-			log.Fatalf("codegen: generating TypeScript types: %v", err)
+		if !skipTypes {
+			if err := codegen.GenerateTypescriptFile(handlersJson, publicStructsJson, webApiOutDir, goStructStrs); err != nil {
+				log.Fatalf("codegen: generating TypeScript types: %v", err)
+			}
+		}
+		// Zod schemas describe the same types, so they need the same struct list.
+		if !skipZodSchemas {
+			if err := codegen.GenerateZodSchemasFile(handlersJson, publicStructsJson, webApiOutDir, goStructStrs); err != nil {
+				log.Fatalf("codegen: generating zod schemas: %v", err)
+			}
 		}
 	}
 

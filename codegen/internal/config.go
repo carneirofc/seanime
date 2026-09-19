@@ -241,3 +241,39 @@ var scalarGoToTSTable = map[string]string{
 
 // tsRecordStringAny is the TypeScript type used for free-form JSON payloads.
 const tsRecordStringAny = "Record<string, any>"
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+// Zod schema generation
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// zodSchemaSuffix is appended to a generated type name to name its schema,
+// e.g. type Models_User => const Models_UserSchema.
+const zodSchemaSuffix = "Schema"
+
+// zodUnknown is the fallback for a TypeScript expression the converter does not
+// recognize. z.unknown() accepts anything, so an unmapped field is simply not
+// validated rather than rejected.
+const zodUnknown = "z.unknown()"
+
+// zodNullishSuffix is applied to every optional field.
+//
+// It is .nullish() rather than .optional() because Go sends null, not "absent":
+// codegen marks a field optional when it is a pointer, slice, map or qualified
+// type, and a nil pointer/slice/map marshals to `"field": null`. More than half
+// of all generated fields are optional this way, so .optional() alone would
+// reject nearly every real response.
+const zodNullishSuffix = ".nullish()"
+
+// zodScalars maps the TypeScript primitives the generator emits to zod schemas.
+//
+// "any" becomes z.unknown() rather than z.any(): both accept anything, but
+// z.unknown() keeps the inferred type honest about not knowing the shape.
+var zodScalars = map[string]string{
+	"string":              "z.string()",
+	"number":              "z.number()",
+	"boolean":             "z.boolean()",
+	"any":                 "z.unknown()",
+	"unknown":             "z.unknown()",
+	"null":                "z.null()",
+	"Record<string, any>": "z.record(z.string(), z.unknown())",
+}

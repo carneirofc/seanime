@@ -5,10 +5,13 @@ import { z } from "zod"
  * Schemas for the websocket boundary.
  *
  * Only the *envelope* is validated - `type`, and `extensionId` for plugin frames. Payloads
- * stay `unknown` here and are narrowed by the listener that asked for that event type:
- * validating every payload against the generated types would mean generating ~1000 zod
- * schemas for a contract the server already owns, at real bundle cost, to guard types that
- * are mostly optional anyway.
+ * stay `unknown` here and are narrowed by the listener that asked for that event type.
+ *
+ * Schemas for the generated types now exist (`@/api/generated/schemas`, used by
+ * `api-contract.ts` to check HTTP responses in development), so a payload here *could* be
+ * checked against one. It is not yet: the websocket carries far more frames than the HTTP
+ * API carries responses, and the event-type-to-payload mapping is not generated, so there is
+ * no table to look a schema up in. Worth revisiting if a payload shape causes a bug.
  *
  * The envelope is where the cheap wins are. A frame missing `type` used to flow into
  * `parsed.type === type` comparisons and dispatch handlers with `undefined` payloads.
