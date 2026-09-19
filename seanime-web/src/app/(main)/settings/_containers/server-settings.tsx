@@ -395,6 +395,12 @@ export function ServerSettings(props: ServerSettingsProps) {
                             label="Enable cache-only mode"
                             moreHelp="Seanime will use cached data instead of making API requests."
                         />
+                        <Field.Number
+                            name="mediaCacheDurationHours"
+                            label="Media cache duration (hours)"
+                            help="How long anime and manga details are served from the cache before AniList is asked again. Set to 0 for the default (24 hours). List and progress data is never affected — it is always fetched fresh."
+                            min={0}
+                        />
                     </div>
                 )}
                 <Field.Switch

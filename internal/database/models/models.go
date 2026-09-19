@@ -69,6 +69,11 @@ type AnilistSettings struct {
 	SplitAdultContent     bool `gorm:"column:split_adult_content" json:"splitAdultContent"`
 	HideMediaTagsSpoilers bool `gorm:"column:hide_media_tags_spoilers" json:"hideMediaTagsSpoilers"`
 	DisableCacheLayer     bool `gorm:"column:disable_cache_layer" json:"disableCacheLayer"`
+	// MediaCacheDurationHours is how long per-media AniList reads (anime/manga details, relations)
+	// are served from the cache without contacting AniList. Anime metadata is effectively
+	// immutable, and a library scan fans out one request per node of every media tree, so this is
+	// the main lever against the API's rate limit. A value of 0 uses the default (24 hours).
+	MediaCacheDurationHours int `gorm:"column:media_cache_duration_hours;default:0" json:"mediaCacheDurationHours"`
 	// MakeAdultEntriesPrivate, when enabled, makes newly-added adult (isAdult) list entries
 	// default to private + hidden from status lists on AniList. Existing entries are never re-forced.
 	// Enabled by default (privacy-protective).

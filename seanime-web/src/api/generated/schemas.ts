@@ -1842,6 +1842,7 @@ export const Models_AnilistSettingsSchema = z.looseObject({
     splitAdultContent: z.boolean(),
     hideMediaTagsSpoilers: z.boolean(),
     disableCacheLayer: z.boolean(),
+    mediaCacheDurationHours: z.number(),
     makeAdultEntriesPrivate: z.boolean(),
 })
 

@@ -48,6 +48,7 @@ import (
 
 	"github.com/cli/browser"
 	"github.com/rs/zerolog"
+	"time"
 )
 
 // initModulesOnce will initialize modules that need to persist.
@@ -492,6 +493,7 @@ func (a *App) InitOrRefreshModules() {
 
 	if settings.Anilist != nil {
 		shared_platform.ShouldCache.Store(!settings.Anilist.DisableCacheLayer)
+		shared_platform.SetMediaReadCacheTTL(time.Duration(settings.Anilist.MediaCacheDurationHours) * time.Hour)
 	}
 
 	// +---------------------+

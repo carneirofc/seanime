@@ -4164,6 +4164,7 @@ export type Models_AnilistSettings = {
     splitAdultContent: boolean
     hideMediaTagsSpoilers: boolean
     disableCacheLayer: boolean
+    mediaCacheDurationHours: number
     makeAdultEntriesPrivate: boolean
 }
 

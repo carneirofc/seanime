@@ -443,6 +443,7 @@ export default function Page() {
                                         makeAdultEntriesPrivate: data.makeAdultEntriesPrivate,
                                         hideMediaTagsSpoilers: data.hideMediaTagsSpoilers,
                                         disableCacheLayer: data.disableCacheLayer,
+                                        mediaCacheDurationHours: data.mediaCacheDurationHours ?? 0,
                                     },
                                     notifications: {
                                         disableNotifications: data?.disableNotifications ?? false,
@@ -551,6 +552,7 @@ export default function Page() {
                                 scannerMatchingAlgorithm: status?.settings?.library?.scannerMatchingAlgorithm || "-",
                                 mangaLocalSourceDirectory: status?.settings?.manga?.mangaLocalSourceDirectory || "",
                                 mangaCacheDurationHours: status?.settings?.manga?.mangaCacheDurationHours ?? 0,
+                                mediaCacheDurationHours: status?.settings?.anilist?.mediaCacheDurationHours ?? 0,
                                 autoSyncToLocalAccount: status?.settings?.library?.autoSyncToLocalAccount ?? false,
                                 nakamaEnabled: status?.settings?.nakama?.enabled ?? false,
                                 nakamaUsername: status?.settings?.nakama?.username ?? "",
