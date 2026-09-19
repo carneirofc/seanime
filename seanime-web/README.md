@@ -20,7 +20,6 @@ React + Rsbuild + Tanstack Router
         ├── app/
         │   └── (main)/
         │       ├── _atoms
-        │       ├── _electron
         │       ├── _features
         │       ├── _hooks
         │       ├── _listeners

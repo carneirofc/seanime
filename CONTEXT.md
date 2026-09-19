@@ -28,4 +28,3 @@ Canonical vocabulary for this project. Definitions only — no implementation de
   only informs and offers the user a one-click way to re-privatize. The alert is
   *independent* of whether the [[adult-privacy-default]] setting is enabled — it
   reflects real exposure regardless of the auto-default policy.
-</content>

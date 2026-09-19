@@ -59,10 +59,8 @@ To regenerate after a backend contract change, from the **repository root**:
 go generate ./codegen
 ```
 
-> Run it exactly like that. `codegen/main.go` resolves its paths (`../internal`,
-> `../seanime-web/...`) relative to the working directory, so `go run ./codegen` from the
-> repo root writes **outside** the repository. `go generate` runs the directive in the
-> package directory, which is what makes the relative paths correct.
+Run it exactly like that — never `go run ./codegen`. See
+[`../codegen/README.md`](../codegen/README.md) for why, and for what the generator writes.
 
 Commit the regenerated output in `src/api/generated/` and
 `src/app/(main)/_features/plugin/generated/`. CI fails if the tree is stale.

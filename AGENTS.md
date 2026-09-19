@@ -52,7 +52,7 @@ Not enforced yet, with the cost of each measured in `seanime-web/tsconfig.json`:
 
 Never hand-edit. Regenerate and commit instead.
 
-- `codegen/generated/`, `seanime-web/src/api/generated/`,
-  `seanime-web/src/app/(main)/_features/plugin/generated/` — from `go generate ./codegen`
-  (run from the repo root; see `internal/AGENTS.md` for why `go run ./codegen` is wrong).
+- `codegen/generated/`, `internal/events/endpoints.go`, `seanime-web/src/api/generated/`,
+  `seanime-web/src/app/(main)/_features/plugin/generated/` — from `go generate ./codegen`,
+  run from the repo root, never `go run`. See [`codegen/README.md`](codegen/README.md).
 - `seanime-web/src/routeTree.gen.ts` — from the TanStack Router plugin during dev/build.

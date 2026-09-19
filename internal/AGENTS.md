@@ -45,10 +45,8 @@ Generated frontend files come from this Go backend. Regenerate after any backend
 3. Commit the regenerated output in `seanime-web/src/api/generated/` and
    `seanime-web/src/app/(main)/_features/plugin/generated/`.
 
-> Use `go generate ./codegen`, **not** `go run ./codegen`. `codegen/main.go` resolves
-> `../internal` and `../seanime-web/...` relative to the working directory; `go generate`
-> runs the directive from the package directory, which is what makes those paths correct.
-> Running it from the repo root with `go run` writes outside the repository.
+Never `go run ./codegen` — see [`../codegen/README.md`](../codegen/README.md) for why, and for
+the full list of what the generator writes.
 
 CI fails when the regenerated output differs from what is committed (`.github/workflows/test.yml`).
 

@@ -75,7 +75,9 @@ Seanime favors simple, pragmatic code.
 Do not manually edit generated files, including:
 
 * `codegen/generated/`
+* `internal/events/endpoints.go`
 * `seanime-web/src/api/generated/`
+* `seanime-web/src/app/(main)/_features/plugin/generated/`
 * `seanime-web/src/routeTree.gen.ts`
 
 If handler signatures, routes, or returned structs change, update the routes in:
@@ -90,9 +92,8 @@ Then run, from the repository root:
 go generate ./codegen
 ```
 
-Use `go generate`, not `go run ./codegen`: the generator resolves its paths relative to the
-working directory, and only `go generate` runs it from `codegen/`. CI fails if the committed
-output is out of date.
+Use `go generate`, never `go run ./codegen`. CI fails if the committed output is out of date.
+See [codegen/README.md](codegen/README.md) for the details.
 
 ## Development Workflow
 
@@ -129,6 +130,7 @@ Use shared test helpers instead of local stubs or ad hoc fakes:
 
 * `internal/testmocks/NewFakePlatformBuilder()`
 * `internal/testmocks/NewFakeMetadataProviderBuilder()`
+* `internal/testmocks/NewFakeMangaProviderBuilder()`
 * `internal/testmocks/NewBaseAnimeBuilder()`
 * `internal/testmocks/NewBaseMangaBuilder()`
 

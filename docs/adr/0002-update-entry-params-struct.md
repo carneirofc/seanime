@@ -23,4 +23,3 @@ signatures — only the method that is actually growing fields is converted.
 - `UpdateEntry` becomes stylistically inconsistent with its two sibling methods.
   Accepted deliberately: converting the stable, narrow siblings would be churn with
   no present payoff; the same pattern can be applied to them later if needed.
-</content>

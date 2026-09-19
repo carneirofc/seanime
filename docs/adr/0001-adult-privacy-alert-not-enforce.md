@@ -32,4 +32,3 @@ regardless of the setting, because it reflects real exposure, not the auto-polic
 - The setting is enabled by default (`gorm:"default:true"`), which also enables it
   for existing users on migration. This is intentional (privacy-protective) and
   non-destructive — it only affects entries added *after* the migration.
-</content>
