@@ -148,6 +148,9 @@ seanime-webapp/public/test*
 
 # Tests
 testdata/
+# ...except codegen's, whose fixtures and golden files ARE the test suite:
+# without them `go test ./codegen/internal` fails on a clean checkout and in CI.
+!codegen/internal/testdata/
 test/testdata/**/*.json
 test/sample
 test/providers.json
