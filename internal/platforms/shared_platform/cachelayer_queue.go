@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"seanime/internal/api/anilist"
+	"seanime/internal/events"
 	"seanime/internal/util/filecache"
 	"slices"
 	"strconv"
@@ -21,6 +22,12 @@ const (
 	queueSyncTimeout   = 20 * time.Second
 	queueRetryDelay    = 15 * time.Second
 	queueRetryDelayMax = 5 * time.Minute
+
+	// An update AniList will never accept — deleted media, a malformed replay — used to retry every
+	// five minutes for the life of the install, taking the sync lock each time. These bound it.
+	// queueMaxAttempts is reached after roughly half an hour of the capped backoff.
+	queueMaxAttempts = 8
+	queueMaxAge      = 7 * 24 * time.Hour
 )
 
 type queuedMediaListUpdate struct {
@@ -63,25 +70,27 @@ func shouldQueueMediaListUpdate(err error) bool {
 	if isAnilistAuthError(err) || strings.Contains(errStr, "not authenticated") {
 		return false
 	}
-	if strings.Contains(errStr, "401") || strings.Contains(errStr, "403") || strings.Contains(errStr, "404") {
-		return false
-	}
-	// A 400 means AniList rejected the request itself. Replaying it on every sync tick would fail
-	// forever, so it must be excluded before the cache-only branch below queues everything.
-	if code, ok := anilistHTTPStatus(err); ok && code == http.StatusBadRequest {
-		return false
+
+	// Anything AniList itself answered with is decided on the transported status rather than on
+	// the error text, where a media id or title ("14042") used to read as a 404. A 400 means
+	// AniList rejected the request itself and a replay would fail forever; 401/403/404 are equally
+	// final. Both must be excluded before the cache-only branch below queues everything.
+	if code, ok := anilistHTTPStatus(err); ok {
+		switch code {
+		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden, http.StatusNotFound:
+			return false
+		case http.StatusTooManyRequests:
+			return true
+		}
+		return code >= http.StatusInternalServerError
 	}
 
 	if !IsWorking.Load() {
 		return true
 	}
 
+	// No HTTP status means the request never completed, so the error text is all there is.
 	queueableParts := []string{
-		"429",
-		"500",
-		"502",
-		"503",
-		"504",
 		"connection",
 		"deadline exceeded",
 		"eof",
@@ -270,10 +279,15 @@ func (c *CacheLayer) syncQueuedUpdates(ctx context.Context) {
 		return
 	}
 
-	c.pendingUpdateSyncMutex.Lock()
-	defer c.pendingUpdateSyncMutex.Unlock()
+	// One sync at a time. A tick that overlaps the previous one would only queue up behind it.
+	if !c.queueSyncInProgress.CompareAndSwap(false, true) {
+		return
+	}
+	defer c.queueSyncInProgress.Store(false)
 
+	c.pendingUpdateSyncMutex.Lock()
 	updates, err := c.getQueuedMediaListUpdates()
+	c.pendingUpdateSyncMutex.Unlock()
 	if err != nil {
 		c.logger.Warn().Err(err).Msg("anilist cache: Failed to load queued list updates")
 		return
@@ -289,27 +303,46 @@ func (c *CacheLayer) syncQueuedUpdates(ctx context.Context) {
 			continue
 		}
 
-		updateCtx, cancel := context.WithTimeout(ctx, queueSyncTimeout)
-		err := c.syncQueuedUpdate(updateCtx, update)
-		cancel()
-
-		c.checkAndUpdateWorkingState(err)
-		if err != nil {
-			c.setQueuedUpdateSyncFailed(update, err)
-			if !IsWorking.Load() {
-				return
-			}
-			continue
-		}
-
-		if c.deleteQueuedUpdateIfCurrent(update) {
+		if c.syncOneQueuedUpdate(ctx, update) {
 			synced++
+		}
+		if !IsWorking.Load() {
+			break
 		}
 	}
 
 	if synced > 0 {
 		c.logger.Info().Int("count", synced).Msg("anilist cache: Synced queued list updates")
 	}
+}
+
+// syncOneQueuedUpdate replays a single queued update, reporting whether it landed.
+//
+// The lock is taken per entry rather than around the whole batch. Held for the batch, a user's
+// episode-progress update — which takes the same lock — waited behind every queued entry ahead of
+// it, each allowed queueSyncTimeout. The entry is re-read under the lock before it is sent, because
+// a direct mutation may have superseded or cleared it while an earlier entry was syncing.
+func (c *CacheLayer) syncOneQueuedUpdate(ctx context.Context, update queuedMediaListUpdate) bool {
+	c.pendingUpdateSyncMutex.Lock()
+	defer c.pendingUpdateSyncMutex.Unlock()
+
+	var current queuedMediaListUpdate
+	found, err := c.fileCacher.GetPerm(c.buckets[PendingMediaListUpdatesBucket], strconv.Itoa(update.MediaID), &current)
+	if err != nil || !found || !sameQueuedUpdate(current, update) {
+		return false
+	}
+
+	updateCtx, cancel := context.WithTimeout(ctx, queueSyncTimeout)
+	err = c.syncQueuedUpdate(updateCtx, update)
+	cancel()
+
+	c.checkAndUpdateWorkingState(err)
+	if err != nil {
+		c.setQueuedUpdateSyncFailed(update, err)
+		return false
+	}
+
+	return c.deleteQueuedUpdateIfCurrent(update)
 }
 
 func (c *CacheLayer) syncQueuedUpdate(ctx context.Context, update queuedMediaListUpdate) error {
@@ -338,6 +371,22 @@ func (c *CacheLayer) setQueuedUpdateSyncFailed(update queuedMediaListUpdate, syn
 	}
 
 	current.Attempts++
+
+	// Give up rather than retry forever. Dropping the update silently would lose a change the user
+	// made, so say so: from their side the progress tick simply never reached AniList.
+	if current.Attempts >= queueMaxAttempts || time.Since(current.UpdatedAt) >= queueMaxAge {
+		c.logger.Warn().Err(syncErr).
+			Int("mediaId", update.MediaID).
+			Int("attempts", current.Attempts).
+			Msg("anilist cache: Giving up on a queued list update")
+		if err := c.fileCacher.DeletePerm(bucket, key); err != nil {
+			c.logger.Warn().Err(err).Int("mediaId", update.MediaID).Msg("anilist cache: Failed to drop an abandoned queued list update")
+		}
+		events.GlobalWSEventManager.SendEvent(events.WarningToast,
+			fmt.Sprintf("AniList kept rejecting an update for media %d, so it was discarded. You may need to set it manually.", update.MediaID))
+		return
+	}
+
 	current.NextAttemptAt = new(time.Now().Add(queuedUpdateRetryDelay(current.Attempts)))
 	if err := c.fileCacher.SetPerm(bucket, key, current); err != nil {
 		c.logger.Warn().Err(err).Int("mediaId", update.MediaID).Msg("anilist cache: Failed to update queued list retry state")
@@ -382,7 +431,7 @@ func sameQueuedUpdate(a, b queuedMediaListUpdate) bool {
 }
 
 func (c *CacheLayer) applyQueuedUpdateToCache(update queuedMediaListUpdate) (int, bool, error) {
-	cacheKey := c.generateCacheKey("collection", nil)
+	cacheKey := c.collectionCacheKey("collection", nil)
 	entryID := 0
 	patched := false
 
