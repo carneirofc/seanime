@@ -135,23 +135,21 @@ func (d *Database) saveLocalFiles(filesToSave []*anime.LocalFile) error {
 		return errors.New("database not initialized")
 	}
 
-	lfs, lfsId, err := db_bridge.GetLocalFiles(db)
-	if err != nil {
-		return err
-	}
-
 	filesToSaveMap := make(map[string]*anime.LocalFile)
 	for _, file := range filesToSave {
 		filesToSaveMap[util.NormalizePath(file.Path)] = file
 	}
 
-	for i := range lfs {
-		if fileToSave, ok := filesToSaveMap[util.NormalizePath(lfs[i].Path)]; !ok {
-			lfs[i] = fileToSave
+	_, err := db_bridge.MutateLocalFiles(db, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		for i := range lfs {
+			// devnote: this condition was inverted, so every file the plugin did NOT pass was
+			// replaced with a nil entry and written to the database that way.
+			if fileToSave, ok := filesToSaveMap[util.NormalizePath(lfs[i].Path)]; ok {
+				lfs[i] = fileToSave
+			}
 		}
-	}
-
-	_, err = db_bridge.SaveLocalFiles(db, lfsId, lfs)
+		return lfs, nil
+	})
 	if err != nil {
 		return err
 	}

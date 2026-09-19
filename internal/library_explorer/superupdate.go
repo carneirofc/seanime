@@ -31,39 +31,39 @@ func (l *LibraryExplorer) SuperUpdateFiles(opts []*SuperUpdateFileOptions) error
 		Int("count", len(opts)).
 		Msg("library explorer: Updating files")
 
-	wg := sync.WaitGroup{}
-	wg.Add(len(opts))
-
-	lfs, lfsId, err := db_bridge.GetLocalFiles(l.database)
-	if err != nil {
-		return err
-	}
-
 	settings, err := l.database.GetSettings()
 	if err != nil {
 		return err
 	}
-	for _, opt := range opts {
-		lf, err := validateSuperUpdateFile(opt, lfs)
-		if err != nil {
-			return err
+
+	// The whole batch runs inside the mutation: the workers below rename files on disk and edit
+	// the matching local files in place, so they have to be working on a private copy that nothing
+	// else can read, and the result has to be saved from that same copy.
+	_, err = db_bridge.MutateLocalFiles(l.database, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		for _, opt := range opts {
+			lf, err := validateSuperUpdateFile(opt, lfs)
+			if err != nil {
+				return nil, err
+			}
+			opt.Path = lf.Path
 		}
-		opt.Path = lf.Path
-	}
 
-	for _, opt := range opts {
-		go func(opt *SuperUpdateFileOptions) {
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			defer wg.Done()
-			_ = l.superUpdateFile(opt, lfs, lfsId, settings.GetLibrary().GetLibraryPaths())
-		}(opt)
-	}
+		wg := sync.WaitGroup{}
+		wg.Add(len(opts))
 
-	wg.Wait()
+		for _, opt := range opts {
+			go func(opt *SuperUpdateFileOptions) {
+				sem <- struct{}{}
+				defer func() { <-sem }()
+				defer wg.Done()
+				_ = l.superUpdateFile(opt, lfs, settings.GetLibrary().GetLibraryPaths())
+			}(opt)
+		}
 
-	// Save the local files
-	_, err = db_bridge.SaveLocalFiles(l.database, lfsId, lfs)
+		wg.Wait()
+
+		return lfs, nil
+	})
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func isValidSuperUpdateName(name string) bool {
 	return !strings.ContainsAny(name, `/\\`)
 }
 
-func (l *LibraryExplorer) superUpdateFile(opt *SuperUpdateFileOptions, lfs []*anime.LocalFile, lfsId uint, libraryPaths []string) error {
+func (l *LibraryExplorer) superUpdateFile(opt *SuperUpdateFileOptions, lfs []*anime.LocalFile, libraryPaths []string) error {
 
 	l.logger.Debug().
 		Any("path", opt.Path).

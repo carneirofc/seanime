@@ -2,6 +2,7 @@ package anime
 
 import (
 	"seanime/internal/library/filesystem"
+	"slices"
 
 	"github.com/5rahim/habari"
 )
@@ -136,4 +137,62 @@ func NewLocalFileParsedData(original string, elements *habari.Metadata) *LocalFi
 	}
 
 	return i
+}
+
+// Clone returns a deep copy of the local file, sharing no mutable state with the original.
+//
+// Local files are published as an immutable snapshot (see db_bridge.GetLocalFiles): every reader
+// holds the same *LocalFile values, so anything that needs to change one copies it first.
+func (f *LocalFile) Clone() *LocalFile {
+	if f == nil {
+		return nil
+	}
+
+	clone := *f
+	clone.ParsedData = f.ParsedData.Clone()
+	clone.Metadata = f.Metadata.Clone()
+
+	if f.ParsedFolderData != nil {
+		clone.ParsedFolderData = make([]*LocalFileParsedData, len(f.ParsedFolderData))
+		for i, parsed := range f.ParsedFolderData {
+			clone.ParsedFolderData[i] = parsed.Clone()
+		}
+	}
+
+	return &clone
+}
+
+// Clone returns a deep copy of the metadata.
+func (m *LocalFileMetadata) Clone() *LocalFileMetadata {
+	if m == nil {
+		return nil
+	}
+	clone := *m
+	return &clone
+}
+
+// Clone returns a deep copy of the parsed data, including its slice fields.
+func (d *LocalFileParsedData) Clone() *LocalFileParsedData {
+	if d == nil {
+		return nil
+	}
+
+	clone := *d
+	clone.SeasonRange = slices.Clone(d.SeasonRange)
+	clone.PartRange = slices.Clone(d.PartRange)
+	clone.EpisodeRange = slices.Clone(d.EpisodeRange)
+	return &clone
+}
+
+// CloneLocalFiles returns a deep copy of a slice of local files.
+func CloneLocalFiles(lfs []*LocalFile) []*LocalFile {
+	if lfs == nil {
+		return nil
+	}
+
+	cloned := make([]*LocalFile, len(lfs))
+	for i, lf := range lfs {
+		cloned[i] = lf.Clone()
+	}
+	return cloned
 }

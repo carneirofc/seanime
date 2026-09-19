@@ -125,29 +125,23 @@ func (h *Handler) HandleLocalFileBulkAction(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	// Get all the local files
-	lfs, lfsId, err := db_bridge.GetLocalFiles(h.App.Database)
-	if err != nil {
-		return h.RespondWithError(c, err)
-	}
-
-	switch b.Action {
-	case "lock":
-		for _, lf := range lfs {
-			// Note: Don't lock local files that are not associated with a media.
-			// Else refreshing the library will ignore them.
-			if lf.MediaId != 0 {
-				lf.Locked = true
+	retLfs, err := db_bridge.MutateLocalFiles(h.App.Database, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		switch b.Action {
+		case "lock":
+			for _, lf := range lfs {
+				// Note: Don't lock local files that are not associated with a media.
+				// Else refreshing the library will ignore them.
+				if lf.MediaId != 0 {
+					lf.Locked = true
+				}
+			}
+		case "unlock":
+			for _, lf := range lfs {
+				lf.Locked = false
 			}
 		}
-	case "unlock":
-		for _, lf := range lfs {
-			lf.Locked = false
-		}
-	}
-
-	// Save the local files
-	retLfs, err := db_bridge.SaveLocalFiles(h.App.Database, lfsId, lfs)
+		return lfs, nil
+	})
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
@@ -180,25 +174,19 @@ func (h *Handler) HandleUpdateLocalFileData(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	// Get all the local files
-	lfs, lfsId, err := db_bridge.GetLocalFiles(h.App.Database)
-	if err != nil {
-		return h.RespondWithError(c, err)
-	}
-
-	lf, found := lo.Find(lfs, func(i *anime.LocalFile) bool {
-		return i.HasSamePath(b.Path)
+	retLfs, err := db_bridge.MutateLocalFiles(h.App.Database, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		lf, found := lo.Find(lfs, func(i *anime.LocalFile) bool {
+			return i.HasSamePath(b.Path)
+		})
+		if !found {
+			return nil, errors.New("local file not found")
+		}
+		lf.Metadata = b.Metadata
+		lf.Locked = b.Locked
+		lf.Ignored = b.Ignored
+		lf.MediaId = b.MediaId
+		return lfs, nil
 	})
-	if !found {
-		return h.RespondWithError(c, errors.New("local file not found"))
-	}
-	lf.Metadata = b.Metadata
-	lf.Locked = b.Locked
-	lf.Ignored = b.Ignored
-	lf.MediaId = b.MediaId
-
-	// Save the local files
-	retLfs, err := db_bridge.SaveLocalFiles(h.App.Database, lfsId, lfs)
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
@@ -260,45 +248,39 @@ func (h *Handler) HandleUpdateLocalFiles(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	// Get all the local files
-	lfs, lfsId, err := db_bridge.GetLocalFiles(h.App.Database)
-	if err != nil {
-		return h.RespondWithError(c, err)
-	}
-
-	// Update the files
-	for _, path := range b.Paths {
-		lf, found := lo.Find(lfs, func(i *anime.LocalFile) bool {
-			return i.HasSamePath(path)
-		})
-		if !found {
-			continue
+	_, err := db_bridge.MutateLocalFiles(h.App.Database, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		// Update the files
+		for _, path := range b.Paths {
+			lf, found := lo.Find(lfs, func(i *anime.LocalFile) bool {
+				return i.HasSamePath(path)
+			})
+			if !found {
+				continue
+			}
+			switch b.Action {
+			case "lock":
+				lf.Locked = true
+			case "unlock":
+				lf.Locked = false
+			case "ignore":
+				lf.MediaId = 0
+				lf.Ignored = true
+				lf.Locked = false
+			case "unignore":
+				lf.Ignored = false
+				lf.Locked = false
+			case "unmatch":
+				lf.MediaId = 0
+				lf.Locked = false
+				lf.Ignored = false
+			case "match":
+				lf.MediaId = b.MediaId
+				lf.Locked = true
+				lf.Ignored = false
+			}
 		}
-		switch b.Action {
-		case "lock":
-			lf.Locked = true
-		case "unlock":
-			lf.Locked = false
-		case "ignore":
-			lf.MediaId = 0
-			lf.Ignored = true
-			lf.Locked = false
-		case "unignore":
-			lf.Ignored = false
-			lf.Locked = false
-		case "unmatch":
-			lf.MediaId = 0
-			lf.Locked = false
-			lf.Ignored = false
-		case "match":
-			lf.MediaId = b.MediaId
-			lf.Locked = true
-			lf.Ignored = false
-		}
-	}
-
-	// Save the local files
-	_, err = db_bridge.SaveLocalFiles(h.App.Database, lfsId, lfs)
+		return lfs, nil
+	})
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
@@ -330,7 +312,7 @@ func (h *Handler) HandleDeleteLocalFiles(c echo.Context) error {
 	}
 
 	// Get all the local files
-	lfs, lfsId, err := db_bridge.GetLocalFiles(h.App.Database)
+	lfs, _, err := db_bridge.GetLocalFiles(h.App.Database)
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
@@ -355,15 +337,15 @@ func (h *Handler) HandleDeleteLocalFiles(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	// Remove the files from the list
-	lfs = lo.Filter(lfs, func(i *anime.LocalFile, _ int) bool {
-		return !lo.ContainsBy(selectedFiles, func(lf *anime.LocalFile) bool {
-			return lf.HasSamePath(i.Path)
-		})
+	// Remove the files from the list. The deletions above touch the filesystem, so they stay
+	// outside the lock; only the list edit is re-read and applied under it.
+	_, err = db_bridge.MutateLocalFiles(h.App.Database, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		return lo.Filter(lfs, func(i *anime.LocalFile, _ int) bool {
+			return !lo.ContainsBy(selectedFiles, func(lf *anime.LocalFile) bool {
+				return lf.HasSamePath(i.Path)
+			})
+		}), nil
 	})
-
-	// Save the local files
-	_, err = db_bridge.SaveLocalFiles(h.App.Database, lfsId, lfs)
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}

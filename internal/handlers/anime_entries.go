@@ -148,43 +148,38 @@ func (h *Handler) HandleAnimeEntryBulkAction(c echo.Context) error {
 		return h.RespondWithError(c, err)
 	}
 
-	// Get all the local files
-	lfs, lfsId, err := db_bridge.GetLocalFiles(h.App.Database)
-	if err != nil {
-		return h.RespondWithError(c, err)
-	}
+	retLfs, err := db_bridge.MutateLocalFiles(h.App.Database, func(lfs []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		// Group local files by media id
+		groupedLfs := anime.GroupLocalFilesByMediaID(lfs)
 
-	// Group local files by media id
-	groupedLfs := anime.GroupLocalFilesByMediaID(lfs)
+		selectLfs, ok := groupedLfs[p.MediaId]
+		if !ok {
+			return nil, errors.New("no local files found for media id")
+		}
 
-	selectLfs, ok := groupedLfs[p.MediaId]
-	if !ok {
-		return h.RespondWithError(c, errors.New("no local files found for media id"))
-	}
+		switch p.Action {
+		case "unmatch":
+			lfs = lop.Map(lfs, func(item *anime.LocalFile, _ int) *anime.LocalFile {
+				if item.MediaId == p.MediaId && p.MediaId != 0 {
+					item.MediaId = 0
+					item.Locked = false
+					item.Ignored = false
+				}
+				return item
+			})
+		case "toggle-lock":
+			// Flip the locked status of all the local files for the given media
+			allLocked := lo.EveryBy(selectLfs, func(item *anime.LocalFile) bool { return item.Locked })
+			lfs = lop.Map(lfs, func(item *anime.LocalFile, _ int) *anime.LocalFile {
+				if item.MediaId == p.MediaId && p.MediaId != 0 {
+					item.Locked = !allLocked
+				}
+				return item
+			})
+		}
 
-	switch p.Action {
-	case "unmatch":
-		lfs = lop.Map(lfs, func(item *anime.LocalFile, _ int) *anime.LocalFile {
-			if item.MediaId == p.MediaId && p.MediaId != 0 {
-				item.MediaId = 0
-				item.Locked = false
-				item.Ignored = false
-			}
-			return item
-		})
-	case "toggle-lock":
-		// Flip the locked status of all the local files for the given media
-		allLocked := lo.EveryBy(selectLfs, func(item *anime.LocalFile) bool { return item.Locked })
-		lfs = lop.Map(lfs, func(item *anime.LocalFile, _ int) *anime.LocalFile {
-			if item.MediaId == p.MediaId && p.MediaId != 0 {
-				item.Locked = !allLocked
-			}
-			return item
-		})
-	}
-
-	// Save the local files
-	retLfs, err := db_bridge.SaveLocalFiles(h.App.Database, lfsId, lfs)
+		return lfs, nil
+	})
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
@@ -353,7 +348,7 @@ func (h *Handler) HandleAnimeEntryManualMatch(c echo.Context) error {
 	}
 
 	// Retrieve local files
-	lfs, lfsId, err := db_bridge.GetLocalFiles(h.App.Database)
+	lfs, _, err := db_bridge.GetLocalFiles(h.App.Database)
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
@@ -363,10 +358,12 @@ func (h *Handler) HandleAnimeEntryManualMatch(c echo.Context) error {
 		compPaths[util.NormalizePath(p)] = struct{}{}
 	}
 
-	selectedLfs := lo.Filter(lfs, func(item *anime.LocalFile, _ int) bool {
+	// Cloned, not taken from the snapshot: the hydration below mutates these, and a published
+	// local file is read by every other request without a lock.
+	selectedLfs := anime.CloneLocalFiles(lo.Filter(lfs, func(item *anime.LocalFile, _ int) bool {
 		_, found := compPaths[item.GetNormalizedPath()]
 		return found && item.MediaId == 0
-	})
+	}))
 
 	// Add the media id to the selected local files
 	// Also, lock the files
@@ -419,14 +416,7 @@ func (h *Handler) HandleAnimeEntryManualMatch(c echo.Context) error {
 		err = db_bridge.InsertScanSummary(h.App.Database, scanSummaryLogger.GenerateSummary())
 	}()
 
-	// Remove select local files from the database slice, we will add them (hydrated) later
 	selectedPaths := lop.Map(selectedLfs, func(item *anime.LocalFile, _ int) string { return item.GetNormalizedPath() })
-	lfs = lo.Filter(lfs, func(item *anime.LocalFile, _ int) bool {
-		if slices.Contains(selectedPaths, item.GetNormalizedPath()) {
-			return false
-		}
-		return true
-	})
 
 	// Event
 	event := new(anime.AnimeEntryManualMatchBeforeSaveEvent)
@@ -443,11 +433,15 @@ func (h *Handler) HandleAnimeEntryManualMatch(c echo.Context) error {
 		return h.RespondWithData(c, lfs)
 	}
 
-	// Add the hydrated local files to the slice
-	lfs = append(lfs, event.MatchedLocalFiles...)
-
-	// Update the local files
-	retLfs, err := db_bridge.SaveLocalFiles(h.App.Database, lfsId, lfs)
+	// The hydration above fans out AniList requests, so it runs outside the lock and only the
+	// swap — drop the files that were matched, append the hydrated ones — is applied under it,
+	// against a freshly read list rather than the one read before hydration started.
+	retLfs, err := db_bridge.MutateLocalFiles(h.App.Database, func(current []*anime.LocalFile) ([]*anime.LocalFile, error) {
+		kept := lo.Filter(current, func(item *anime.LocalFile, _ int) bool {
+			return !slices.Contains(selectedPaths, item.GetNormalizedPath())
+		})
+		return append(kept, event.MatchedLocalFiles...), nil
+	})
 	if err != nil {
 		return h.RespondWithError(c, err)
 	}
