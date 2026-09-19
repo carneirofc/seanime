@@ -31047,6 +31047,15 @@
         "comments": []
       },
       {
+        "name": "MediaCacheDurationHours",
+        "jsonName": "mediaCacheDurationHours",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "MakeAdultEntriesPrivate",
         "jsonName": "makeAdultEntriesPrivate",
         "goType": "bool",
@@ -81507,15 +81516,42 @@
         ]
       },
       {
-        "name": "lastCollectionUpdate",
-        "jsonName": "lastCollectionUpdate",
-        "goType": "time.Time",
-        "typescriptType": "string",
-        "usedStructName": "time.Time",
+        "name": "collectionUserName",
+        "jsonName": "collectionUserName",
+        "goType": "atomic.Value",
+        "typescriptType": "Value",
+        "usedTypescriptType": "Value",
+        "usedStructName": "atomic.Value",
         "required": false,
         "public": false,
         "comments": [
-          " When collections were last fetched"
+          " Last account a collection was fetched for (string)"
+        ]
+      },
+      {
+        "name": "lastCollectionUpdate",
+        "jsonName": "lastCollectionUpdate",
+        "goType": "atomic.Int64",
+        "typescriptType": "Int64",
+        "usedTypescriptType": "Int64",
+        "usedStructName": "atomic.Int64",
+        "required": false,
+        "public": false,
+        "comments": [
+          " When collections were last fetched (unix nanos)"
+        ]
+      },
+      {
+        "name": "collectionRefreshing",
+        "jsonName": "collectionRefreshing",
+        "goType": "atomic.Bool",
+        "typescriptType": "Bool",
+        "usedTypescriptType": "Bool",
+        "usedStructName": "atomic.Bool",
+        "required": false,
+        "public": false,
+        "comments": [
+          " Whether a collection-tracking refresh is in flight"
         ]
       },
       {
@@ -81539,6 +81575,19 @@
         "required": false,
         "public": false,
         "comments": []
+      },
+      {
+        "name": "queueSyncInProgress",
+        "jsonName": "queueSyncInProgress",
+        "goType": "atomic.Bool",
+        "typescriptType": "Bool",
+        "usedTypescriptType": "Bool",
+        "usedStructName": "atomic.Bool",
+        "required": false,
+        "public": false,
+        "comments": [
+          " Whether a queued-update sync tick is running"
+        ]
       }
     ],
     "comments": []
@@ -103519,6 +103568,28 @@
         "typescriptType": "Util_RWMutexMap",
         "usedTypescriptType": "Util_RWMutexMap",
         "usedStructName": "util.RWMutexMap",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "sweeping",
+        "jsonName": "sweeping",
+        "goType": "atomic.Bool",
+        "typescriptType": "Bool",
+        "usedTypescriptType": "Bool",
+        "usedStructName": "atomic.Bool",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "writes",
+        "jsonName": "writes",
+        "goType": "atomic.Int64",
+        "typescriptType": "Int64",
+        "usedTypescriptType": "Int64",
+        "usedStructName": "atomic.Int64",
         "required": false,
         "public": false,
         "comments": []
