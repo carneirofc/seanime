@@ -23,40 +23,38 @@
 
 ## Build Process
 
-### 1. Building the Web Interface
+From the repository root, one command builds everything on Linux, macOS and Windows:
 
-1. Build the web interface:
-   ```bash
-   npm run build
-   ```
+```bash
+npm run build
+```
 
-2. After the build completes, a new `out` directory will be created inside `seanime-web`.
+It runs three steps in order, each also available on its own:
 
-3. Move the contents of the `out` directory to a new `web` directory at the root of the project.
+| Step | Script | What it does |
+| --- | --- | --- |
+| 1 | `npm run build:web` | Typechecks and builds the web interface into `seanime-web/out`. |
+| 2 | `npm run build:embed` | Replaces the root `web/` directory with that output. |
+| 3 | `npm run build:api` | Builds the server binary into `dist/`. |
 
-### 2. Building the Server
+The order matters: `main.go` embeds the web interface with `//go:embed all:web`, so step 3
+fails with `pattern all:web: no matching files found` if `web/` is missing or empty.
 
-Choose the appropriate command based on your target platform:
+The binary lands at `dist/seanime` (`dist\seanime-windows-amd64.exe` on Windows). Step 3 is
+the headless, fully static build used by CI and both Dockerfiles:
 
-1. **Windows (System Tray)**:
-   ```bash
-   set CGO_ENABLED=1
-   go build -o seanime.exe -trimpath -ldflags="-s -w -H=windowsgui -extldflags '-static'"
-   ```
+```bash
+CGO_ENABLED=0 go build -tags=nosystray -trimpath -ldflags="-s -w" -o dist/seanime .
+```
 
-2. **Windows (No System Tray)** - Headless build:
-   ```bash
-   go build -o seanime.exe -trimpath -ldflags="-s -w" -tags=nosystray
-   ```
+The Windows system-tray variant needs CGO and a mingw toolchain and is only built in CI:
 
-3. **Linux/macOS**:
-   ```bash
-   go build -o seanime -trimpath -ldflags="-s -w"
-   ```
+```bash
+CGO_ENABLED=1 GOOS=windows go build -o seanime.exe -trimpath \
+    -ldflags="-s -w -H=windowsgui -extldflags '-static'"
+```
 
-**Important**: The web interface must be built first before building the server.
-
-### 3. Installing on Windows
+### Installing on Windows
 
 After building, you can install the server for the current user with the bundled
 installer script. It copies the binary into an install directory, creates the data
@@ -135,8 +133,15 @@ If you want to run both the Go server and the web dev server from one terminal, 
 
     This starts:
     - a watched codegen process for Go handler/struct/plugin event changes
-    - a watched Go server process from the repository root on `127.0.0.1:43001`
+    - a watched Go server process from the repository root on `127.0.0.1:43001`, using
+      the gitignored `dev-datadir/` as its data directory
     - the `seanime-web` dev server
+
+    `dev:go` passes `--datadir=$INIT_CWD/dev-datadir`. The server rejects a relative data
+    directory, and `$INIT_CWD` is how the absolute path stays portable: on Unix the shell
+    expands it, and on Windows `cmd.exe` leaves it alone so the server's own
+    `os.ExpandEnv` resolves it (`internal/core/config.go`). `mprocs.yaml` is an alternative
+    to `concurrently` and runs the same two scripts.
 
     The combined command keeps the full development stack in the same terminal and reloads the Go server when Go source files change. The root workspace uses port `43001` for the Go server so it matches the web client's localhost development routing.
 
