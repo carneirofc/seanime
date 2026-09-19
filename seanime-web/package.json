@@ -7,6 +7,9 @@
     "dev": "env-cmd -f .env.web rsbuild dev",
     "dev:mobile": "env-cmd -f .env.mobile rsbuild dev",
     "typecheck": "tsgo --pretty false",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "format": "biome format --write",
     "build": "npm run typecheck && rsbuild build",
     "build:rsdoctor": "RSDOCTOR=true rsbuild build",
     "preview": "rsbuild preview",
@@ -135,6 +138,7 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
     "@rsbuild/core": "^2.1.1",
     "@rsbuild/plugin-babel": "^2.0.0",
     "@rsbuild/plugin-node-polyfill": "^1.4.6",

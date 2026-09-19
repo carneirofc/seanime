@@ -3,8 +3,9 @@ import { WebSocketContext } from "@/app/(main)/_atoms/websocket.atoms"
 import { useServerStatus } from "@/app/(main)/_hooks/use-server-status"
 import { websocketConnectedAtom } from "@/app/websocket-provider"
 import { logger } from "@/lib/helpers/debug"
-import { SeaWebsocketEvent, SeaWebsocketPluginEvent } from "@/lib/server/queries.types"
+import { SeaWebsocketEvent } from "@/lib/server/queries.types"
 import { WSEvents } from "@/lib/server/ws-events"
+import { parsePluginBatchEvents, parsePluginEnvelope, parseWebsocketFrame } from "@/lib/validation/websocket"
 import { useAtom, useAtomValue } from "jotai"
 import { useContext, useEffect, useRef } from "react"
 import useUpdateEffect from "react-use/lib/useUpdateEffect"
@@ -293,14 +294,11 @@ export function useWebsocketMessageListener<TData = unknown>({ type, onMessage, 
                     logger("Websocket").warning("Unauthenticated, skipping message")
                     return
                 }
-                try {
-                    const parsed = JSON.parse(event.data) as SeaWebsocketEvent<TData>
-                    if (!!parsed.type && parsed.type === type) {
-                        onMessage(parsed.payload)
-                    }
-                }
-                catch (e) {
-                    logger("Websocket").error("Error parsing message", e)
+                const parsed = parseWebsocketFrame(event.data, "message-listener")
+                if (!parsed) return
+
+                if (parsed.type === type) {
+                    onMessage(parsed.payload as TData)
                 }
             }
 
@@ -327,37 +325,26 @@ export function useWebsocketPluginMessageListener<TData = unknown>({ type, exten
     useEffect(() => {
         if (socket) {
             const messageHandler = (event: MessageEvent) => {
-                try {
-                    const parsed = JSON.parse(event.data) as SeaWebsocketEvent<TData>
-                    if (!!parsed.type && parsed.type === "plugin") {
-                        const message = parsed.payload as SeaWebsocketPluginEvent<TData>
+                const parsed = parseWebsocketFrame(event.data, "plugin-listener")
+                if (!parsed || parsed.type !== "plugin") return
 
+                const message = parsePluginEnvelope(parsed.payload, "plugin-envelope")
+                if (!message) return
 
-                        // Handle batch events
-                        if (message.type === "plugin:batch-events" && message.payload && (message.payload as any).events) {
-                            // Extract and process each event in the batch
-                            const batchPayload = message.payload as any
-                            const events = batchPayload.events || []
-
-                            // Process each event in the batch
-                            for (const event of events) {
-                                if (event.type === type &&
-                                    (!extensionId || extensionId === event.extensionId || extensionId === "")) {
-                                    onMessage(event.payload as TData, event.extensionId)
-                                }
-                            }
-                            return
-                        }
-
-                        // Handle regular events
-                        if (message.type === type &&
-                            (!extensionId || extensionId === message.extensionId || extensionId === "")) {
-                            onMessage(message.payload as TData, message.extensionId)
+                // Payloads here come from user-installed third-party plugins, so a malformed
+                // batch must be dropped rather than thrown from inside the listener loop -
+                // an exception would take out every other listener on the same frame.
+                if (message.type === "plugin:batch-events") {
+                    for (const batched of parsePluginBatchEvents(message.payload, "plugin-batch")) {
+                        if (batched.type === type && (!extensionId || extensionId === batched.extensionId)) {
+                            onMessage(batched.payload as TData, batched.extensionId)
                         }
                     }
+                    return
                 }
-                catch (e) {
-                    logger("Websocket").error("Error parsing plugin message", e)
+
+                if (message.type === type && (!extensionId || extensionId === message.extensionId)) {
+                    onMessage(message.payload as TData, message.extensionId)
                 }
             }
 

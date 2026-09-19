@@ -75,3 +75,56 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+  web-biome:
+    name: Web (biome)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Full history so Biome can diff against the base ref.
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: seanime-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: seanime-web
+        run: npm ci || npm install
+
+      # Biome's --changed works at FILE granularity, unlike golangci-lint's line-level
+      # --new-from-merge-base. Diffing against upstream/main would therefore re-lint every
+      # file this fork has ever touched (325 errors remain in the inherited tree even with
+      # the backlog rules disabled in biome.jsonc). So the diff base here is the PR's own
+      # base ref: a file you modify in a PR must be clean, and untouched legacy files are
+      # left alone. The formatter is intentionally not gated - see biome.jsonc.
+      - name: Resolve diff base
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Biome (changed files)
+        working-directory: seanime-web
+        run: |
+          BASE='${{ steps.base.outputs.ref }}'
+          # github.event.before is all-zeroes on a branch's first push, and empty on
+          # workflow_dispatch; fall back to linting nothing rather than the whole tree.
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "No usable diff base; skipping."
+            exit 0
+          fi
+          # Biome exits 1 when no files match, so only invoke it when something changed.
+          if ! git diff --name-only "$BASE"...HEAD -- seanime-web/src | grep -q .; then
+            echo "No seanime-web/src changes; skipping."
+            exit 0
+          fi
+          npx @biomejs/biome lint --changed --since="$BASE"

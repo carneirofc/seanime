@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { fromMangaPreferences, getActiveMangaFilters, toMangaPreferences } from "./manga-preferences"
+import { fromMangaPreferences, getActiveMangaFilters, mangaEntryFiltersRecordSchema, toMangaPreferences } from "./manga-preferences"
 
 describe("manga preferences", () => {
     it("preserves filters for inactive providers", () => {
@@ -56,5 +56,40 @@ describe("manga preferences", () => {
         expect(filters).toEqual({
             "1": { scanlators: ["Active Group"], language: "en", sourceProvider: "" },
         })
+    })
+})
+
+describe("stored manga filter validation", () => {
+    it("backfills sourceProvider for filters stored before the field existed", () => {
+        // sourceProvider is a fork addition to a type that is persisted in localStorage, so
+        // every user upgrading into it has entries without the field while TypeScript still
+        // types it as `string`.
+        const parsed = mangaEntryFiltersRecordSchema.parse({
+            "1$provider-a": { scanlators: ["Group"], language: "en" },
+        })
+
+        expect(parsed).toEqual({
+            "1$provider-a": { scanlators: ["Group"], language: "en", sourceProvider: "" },
+        })
+    })
+
+    it("replaces fields of the wrong type with their defaults", () => {
+        const parsed = mangaEntryFiltersRecordSchema.parse({
+            "1$provider-a": { scanlators: "not-an-array", language: 7, sourceProvider: null },
+        })
+
+        expect(parsed).toEqual({
+            "1$provider-a": { scanlators: [], language: "", sourceProvider: "" },
+        })
+    })
+
+    it("keeps good entries when one entry is unusable", () => {
+        const parsed = mangaEntryFiltersRecordSchema.parse({
+            "1$provider-a": { scanlators: ["Group"], language: "en", sourceProvider: "src" },
+            "2$provider-b": "corrupt",
+        })
+
+        expect(parsed["1$provider-a"]).toEqual({ scanlators: ["Group"], language: "en", sourceProvider: "src" })
+        expect(parsed["2$provider-b"]).toEqual({ scanlators: [], language: "", sourceProvider: "" })
     })
 })

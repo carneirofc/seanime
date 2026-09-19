@@ -84,11 +84,15 @@ If handler signatures, routes, or returned structs change, update the routes in:
 internal/handlers/routes.go
 ```
 
-Then run:
+Then run, from the repository root:
 
 ```bash
-go generate ./codegen/main.go
+go generate ./codegen
 ```
+
+Use `go generate`, not `go run ./codegen`: the generator resolves its paths relative to the
+working directory, and only `go generate` runs it from `codegen/`. CI fails if the committed
+output is out of date.
 
 ## Development Workflow
 

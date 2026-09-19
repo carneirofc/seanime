@@ -1,0 +1,111 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-test:
+    name: Go (go test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.5'
+          cache: true
+
+      # `go test ./...` is not runnable in CI as-is. Two classes of package cannot pass on a
+      # clean checkout, and one class is failing for reasons unrelated to CI; all three are
+      # excluded here so the job protects the 126 packages that DO pass, rather than being
+      # permanently red and therefore ignored.
+      #
+      # Needs AniList fixtures, which .gitignore deliberately excludes
+      # (`test/testdata/**/*.json`) and which are recorded locally against an authenticated
+      # AniList account via SEANIME_TEST_RECORD_ANILIST_FIXTURES=true:
+      #   api/anilist, library/anime, library/autodownloader, library/scanner, local
+      # Needs a local `test/config.toml` (gitignored; see test/config.example.toml):
+      #   testutil
+      # Failing on main for reasons of their own — see internal/AGENTS.md "Test baseline":
+      #   notifier, goja/goja_bindings, handlers,
+      #   platforms/shared_platform, platforms/simulated_platform
+      #
+      # Removing a package from this list as it is fixed is the point — keep it shrinking.
+      - name: go test
+        run: |
+          EXCLUDED='^seanime/internal/(api/anilist|library/anime|library/autodownloader|library/scanner|local|testutil|notifier|goja/goja_bindings|handlers|platforms/shared_platform|platforms/simulated_platform)$'
+          go test $(go list ./... | grep -vE "$EXCLUDED")
+
+  web-test:
+    name: Web (vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seanime-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: seanime-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Vitest
+        run: npm run test
+
+  codegen-fresh:
+    name: Codegen up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.5'
+          cache: true
+
+      # Generated frontend types are committed, so a backend contract change that is not
+      # regenerated silently ships stale types. The generator is deterministic; run it and
+      # fail if anything moved.
+      #
+      # Must be `go generate ./codegen`, never `go run ./codegen`: codegen/main.go resolves
+      # `../internal` and `../seanime-web/...` relative to the working directory, and only
+      # `go generate` runs the directive from the package directory.
+      - name: Regenerate
+        run: go generate ./codegen
+
+      - name: Fail if generated output is stale
+        run: |
+          if ! git diff --exit-code -- \
+            codegen/generated \
+            seanime-web/src/api/generated \
+            'seanime-web/src/app/(main)/_features/plugin/generated'; then
+            echo "::error::Generated code is out of date. Run 'go generate ./codegen' from the repo root and commit the result."
+            exit 1
+          fi
