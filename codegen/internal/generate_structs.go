@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	"unicode"
 )
 
 type GoStruct struct {
@@ -52,91 +51,9 @@ type GoStructField struct {
 	Comments []string `json:"comments"`
 }
 
-var typePrefixesByPackage = map[string]string{
-	"anilist":                "AL_",
-	"auto_downloader":        "AutoDownloader_",
-	"autodownloader":         "AutoDownloader_",
-	"entities":               "",
-	"db":                     "DB_",
-	"db_bridge":              "DB_",
-	"models":                 "Models_",
-	"playbackmanager":        "PlaybackManager_",
-	"torrent_client":         "TorrentClient_",
-	"events":                 "Events_",
-	"torrent":                "Torrent_",
-	"manga":                  "Manga_",
-	"autoscanner":            "AutoScanner_",
-	"listsync":               "ListSync_",
-	"util":                   "Util_",
-	"scanner":                "Scanner_",
-	"offline":                "Offline_",
-	"discordrpc":             "DiscordRPC_",
-	"discordrpc_presence":    "DiscordRPC_",
-	"anizip":                 "Anizip_",
-	"animap":                 "Animap_",
-	"onlinestream":           "Onlinestream_",
-	"onlinestream_providers": "Onlinestream_",
-	"onlinestream_sources":   "Onlinestream_",
-	"manga_providers":        "Manga_",
-	"chapter_downloader":     "ChapterDownloader_",
-	"manga_downloader":       "MangaDownloader_",
-	"docs":                   "INTERNAL_",
-	"tvdb":                   "TVDB_",
-	"metadata":               "Metadata_",
-	"mappings":               "Mappings_",
-	"mal":                    "MAL_",
-	"handlers":               "",
-	"updater":                "Updater_",
-	"anime":                  "Anime_",
-	"anime_types":            "Anime_",
-	"summary":                "Summary_",
-	"filesystem":             "Filesystem_",
-	"filecache":              "Filecache_",
-	"core":                   "INTERNAL_",
-	"comparison":             "Comparison_",
-	"mediastream":            "Mediastream_",
-	"torrentstream":          "Torrentstream_",
-	"extension":              "Extension_",
-	"extension_repo":         "ExtensionRepo_",
-	//"vendor_hibike_manga":        "HibikeManga_",
-	//"vendor_hibike_onlinestream": "HibikeOnlinestream_",
-	//"vendor_hibike_torrent":      "HibikeTorrent_",
-	//"vendor_hibike_mediaplayer":  "HibikeMediaPlayer_",
-	//"vendor_hibike_extension":    "HibikeExtension_",
-	"hibikemanga":        "HibikeManga_",
-	"hibikeonlinestream": "HibikeOnlinestream_",
-	"hibiketorrent":      "HibikeTorrent_",
-	"hibikemediaplayer":  "HibikeMediaPlayer_",
-	"hibikeextension":    "HibikeExtension_",
-	"hibikecustomsource": "HibikeCustomSource_",
-	"continuity":         "Continuity_",
-	"local":              "Local_",
-	"debrid":             "Debrid_",
-	"debrid_client":      "DebridClient_",
-	"report":             "Report_",
-	"habari":             "Habari_",
-	"vendor_habari":      "Habari_",
-	"discordrpc_client":  "DiscordRPC_",
-	"directstream":       "Directstream_",
-	"nativeplayer":       "NativePlayer_",
-	"mpvcore":            "MpvCore_",
-	"player":             "Player_",
-	"mkvparser":          "MKVParser_",
-	"nakama":             "Nakama_",
-	"library_explorer":   "LibraryExplorer_",
-	"customsource":       "CustomSource_",
-	"videocore":          "VideoCore_",
-	"plugin_ui":          "PluginUI_",
-}
-
-func getTypePrefix(packageName string) string {
-	if prefix, ok := typePrefixesByPackage[packageName]; ok {
-		return prefix
-	}
-	return ""
-}
-
-func ExtractStructs(dir string, outDir string) {
+// ExtractStructs walks dir for Go files, collects every exported type
+// declaration it finds, and writes them to outDir/public_structs.json.
+func ExtractStructs(dir string, outDir string) error {
 
 	structs := make([]*GoStruct, 0)
 
@@ -154,27 +71,28 @@ func ExtractStructs(dir string, outDir string) {
 		return nil
 	})
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return fmt.Errorf("walking %s: %w", dir, err)
 	}
 
 	// Write structs to file
-	_ = os.MkdirAll(outDir, os.ModePerm)
-	file, err := os.Create(outDir + "/public_structs.json")
+	if err := os.MkdirAll(outDir, os.ModePerm); err != nil {
+		return fmt.Errorf("creating %s: %w", outDir, err)
+	}
+	outPath := filepath.Join(outDir, "public_structs.json")
+	file, err := os.Create(outPath)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(structs); err != nil {
-		fmt.Println("Error:", err)
-		return
+		return fmt.Errorf("encoding %s: %w", outPath, err)
 	}
 
 	fmt.Println("Public structs extracted and saved to public_structs.json")
+	return nil
 }
 
 func getGoStructsFromFile(path string, info os.FileInfo) (structs []*GoStruct, err error) {
@@ -532,23 +450,14 @@ func fieldTypeString(fieldType ast.Expr) string {
 func fieldTypeToTypescriptType(fieldType ast.Expr, usedStructPkgName string) string {
 	switch t := fieldType.(type) {
 	case *ast.Ident:
+		if ts, ok := scalarGoToTS(t.Name); ok {
+			return ts
+		}
 		switch t.Name {
-		case "string":
-			return "string"
-		case "uint", "uint8", "uint16", "uint32", "uint64", "int", "int8", "int16", "int32", "int64", "float", "float32", "float64":
-			return "number"
-		case "bool":
-			return "boolean"
 		case "byte":
 			return "string"
-		case "time.Time":
-			return "string"
-		case "nil":
-			return "null"
-		case "json.RawMessage":
-			return "Record<string, any>"
-		case "RawMessage":
-			return "Record<string, any>"
+		case "json.RawMessage", "RawMessage":
+			return tsRecordStringAny
 		default:
 			return getTypePrefix(usedStructPkgName) + t.Name
 		}
@@ -578,22 +487,19 @@ func fieldTypeToTypescriptType(fieldType ast.Expr, usedStructPkgName string) str
 	}
 }
 
+// stringGoTypeToTypescriptType converts a Go type already rendered as a string
+// (e.g. "map[string][]*models.User") to its TypeScript equivalent.
+//
+// Note: unlike fieldTypeToTypescriptType, "byte" is NOT mapped here and falls
+// through to be returned unchanged. That is pre-existing behavior; see
+// scalarGoToTS in config.go.
 func stringGoTypeToTypescriptType(goType string) string {
+	if ts, ok := scalarGoToTS(goType); ok {
+		return ts
+	}
 	switch goType {
-	case "string":
-		return "string"
-	case "uint", "uint8", "uint16", "uint32", "uint64", "int", "int8", "int16", "int32", "int64", "float", "float32", "float64":
-		return "number"
-	case "nil":
-		return "null"
-	case "bool":
-		return "boolean"
-	case "time.Time":
-		return "string"
-	case "json.RawMessage":
-		return "Record<string, any>"
-	case "RawMessage":
-		return "Record<string, any>"
+	case "json.RawMessage", "RawMessage":
+		return tsRecordStringAny
 	}
 
 	if strings.HasPrefix(goType, "[]") {
@@ -626,21 +532,18 @@ func stringGoTypeToTypescriptType(goType string) string {
 	return goType
 }
 
+// goTypeToTypescriptType converts a Go scalar type name to TypeScript, returning
+// "unknown" for anything that is not a shared scalar.
+//
+// The "unknown" fallback is load-bearing: isCustomStruct is defined as
+// goTypeToTypescriptType(t) == "unknown", and that drives whether generated
+// fields become pointers. Do not give this function a richer table than
+// scalarGoToTS without checking the generated diff.
 func goTypeToTypescriptType(goType string) string {
-	switch goType {
-	case "string":
-		return "string"
-	case "uint", "uint8", "uint16", "uint32", "uint64", "int", "int8", "int16", "int32", "int64", "float", "float32", "float64":
-		return "number"
-	case "bool":
-		return "boolean"
-	case "nil":
-		return "null"
-	case "time.Time":
-		return "string"
-	default:
-		return "unknown"
+	if ts, ok := scalarGoToTS(goType); ok {
+		return ts
 	}
+	return "unknown"
 }
 
 // fieldTypeUnformattedString returns the field type as a string without formatting.
@@ -717,43 +620,6 @@ func jsonFieldOmitEmpty(field *ast.Field) bool {
 
 func isCustomStruct(goType string) bool {
 	return goTypeToTypescriptType(goType) == "unknown"
-}
-
-var nameExceptions = map[string]string{"OAuth2": "oauth2"}
-
-func convertGoToJSName(name string) string {
-	if v, ok := nameExceptions[name]; ok {
-		return v
-	}
-
-	startUppercase := make([]rune, 0, len(name))
-
-	for _, c := range name {
-		if c != '_' && !unicode.IsUpper(c) && !unicode.IsDigit(c) {
-			break
-		}
-
-		startUppercase = append(startUppercase, c)
-	}
-
-	totalStartUppercase := len(startUppercase)
-
-	// all uppercase eg. "JSON" -> "json"
-	if len(name) == totalStartUppercase {
-		return strings.ToLower(name)
-	}
-
-	// eg. "JSONField" -> "jsonField"
-	if totalStartUppercase > 1 {
-		return strings.ToLower(name[0:totalStartUppercase-1]) + name[totalStartUppercase-1:]
-	}
-
-	// eg. "GetField" -> "getField"
-	if totalStartUppercase == 1 {
-		return strings.ToLower(name[0:1]) + name[1:]
-	}
-
-	return name
 }
 
 // fieldTypeToUsedTypescriptType extracts the core TypeScript type from complex type expressions

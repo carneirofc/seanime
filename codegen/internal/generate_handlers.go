@@ -45,7 +45,9 @@ type (
 	}
 )
 
-func GenerateHandlers(dir string, outDir string) {
+// GenerateHandlers walks dir for route handler functions and writes their parsed
+// API contract to outDir/handlers.json.
+func GenerateHandlers(dir string, outDir string) error {
 
 	handlers := make([]*RouteHandler, 0)
 
@@ -92,171 +94,8 @@ func GenerateHandlers(dir string, outDir string) {
 			filep := strings.ReplaceAll(strings.ReplaceAll(path, "\\", "/"), "../", "")
 			filename := filepath.Base(path)
 
-			// Get the endpoint
-			endpoint := ""
-			var methods []string
-			params := make([]*RouteHandlerParam, 0)
-			summary := ""
-			descriptions := make([]string, 0)
-			returns := "bool"
-
-			for _, comment := range comments {
-				cmt := strings.TrimSpace(strings.TrimPrefix(comment, "//"))
-				if strings.HasPrefix(cmt, "@summary") {
-					summary = strings.TrimSpace(strings.TrimPrefix(cmt, "@summary"))
-				}
-
-				if strings.HasPrefix(cmt, "@desc") {
-					descriptions = append(descriptions, strings.TrimSpace(strings.TrimPrefix(cmt, "@desc")))
-				}
-
-				if strings.HasPrefix(cmt, "@route") {
-					endpointParts := strings.Split(strings.TrimSpace(strings.TrimPrefix(cmt, "@route")), " ")
-					if len(endpointParts) == 2 {
-						endpoint = endpointParts[0]
-						methods = strings.Split(endpointParts[1][1:len(endpointParts[1])-1], ",")
-					}
-				}
-
-				if strings.HasPrefix(cmt, "@param") {
-					paramParts := strings.Split(strings.TrimSpace(strings.TrimPrefix(cmt, "@param")), " - ")
-					if len(paramParts) == 4 {
-						required := paramParts[2] == "true"
-						params = append(params, &RouteHandlerParam{
-							Name:           paramParts[0],
-							JsonName:       paramParts[0],
-							GoType:         paramParts[1],
-							TypescriptType: goTypeToTypescriptType(paramParts[1]),
-							Required:       required,
-							Descriptions:   []string{strings.ReplaceAll(paramParts[3], "\"", "")},
-						})
-					}
-				}
-
-				if strings.HasPrefix(cmt, "@returns") {
-					returns = strings.TrimSpace(strings.TrimPrefix(cmt, "@returns"))
-				}
-			}
-
-			bodyFields := make([]*RouteHandlerParam, 0)
-			// To get the request body fields, we need to look at the function body for a struct called "body"
-
-			// Get the function body
-			body := fn.Body
-			if body != nil {
-				for _, stmt := range body.List {
-					// Check if the statement is a declaration
-					declStmt, ok := stmt.(*ast.DeclStmt)
-					if !ok {
-						continue
-					}
-					// Check if the declaration is a gen decl
-					genDecl, ok := declStmt.Decl.(*ast.GenDecl)
-					if !ok {
-						continue
-					}
-					// Check if the declaration is a type
-					if genDecl.Tok != token.TYPE {
-						continue
-					}
-					// Check if the type is a struct
-					if len(genDecl.Specs) != 1 {
-						continue
-					}
-					typeSpec, ok := genDecl.Specs[0].(*ast.TypeSpec)
-					if !ok {
-						continue
-					}
-					structType, ok := typeSpec.Type.(*ast.StructType)
-					if !ok {
-						continue
-					}
-					// Check if the struct is called "body"
-					if typeSpec.Name.Name != "body" {
-						continue
-					}
-
-					// Get the fields
-					for _, field := range structType.Fields.List {
-						// Get the field name
-						fieldName := field.Names[0].Name
-
-						// Get the field type
-						fieldType := field.Type
-
-						jsonName := fieldName
-						// Get the field tag
-						required := !jsonFieldOmitEmpty(field)
-						jsonField := jsonFieldName(field)
-						if jsonField != "" {
-							jsonName = jsonField
-						}
-
-						// Get field comments
-						fieldComments := make([]string, 0)
-						cmtsTxt := field.Doc.Text()
-						if cmtsTxt != "" {
-							fieldComments = strings.Split(cmtsTxt, "\n")
-						}
-						for _, cmt := range fieldComments {
-							cmt = strings.TrimSpace(strings.TrimPrefix(cmt, "//"))
-							if cmt != "" {
-								fieldComments = append(fieldComments, cmt)
-							}
-						}
-
-						switch fieldType.(type) {
-						case *ast.StarExpr:
-							required = false
-						}
-
-						goType := fieldTypeString(fieldType)
-						goTypeUnformatted := fieldTypeUnformattedString(fieldType)
-						packageName := "handlers"
-						if strings.Contains(goTypeUnformatted, ".") {
-							parts := strings.Split(goTypeUnformatted, ".")
-							packageName = parts[0]
-						}
-
-						tsType := fieldTypeToTypescriptType(fieldType, packageName)
-
-						usedStructType := goTypeUnformatted
-						switch goTypeUnformatted {
-						case "string", "int", "int64", "float64", "float32", "bool", "nil", "uint", "uint64", "uint32", "uint16", "uint8", "byte", "rune", "[]byte", "interface{}", "error":
-							usedStructType = ""
-						}
-
-						// Add the request body field
-						bodyFields = append(bodyFields, &RouteHandlerParam{
-							Name:           fieldName,
-							JsonName:       jsonName,
-							GoType:         goType,
-							UsedStructType: usedStructType,
-							TypescriptType: tsType,
-							Required:       required,
-							Descriptions:   fieldComments,
-						})
-
-						// Check if it's an inline struct and capture its definition
-						if structType, ok := fieldType.(*ast.StructType); ok {
-							bodyFields[len(bodyFields)-1].InlineStructType = formatInlineStruct(structType)
-						} else {
-							// Check if it's a slice of inline structs
-							if arrayType, ok := fieldType.(*ast.ArrayType); ok {
-								if structType, ok := arrayType.Elt.(*ast.StructType); ok {
-									bodyFields[len(bodyFields)-1].InlineStructType = "[]" + formatInlineStruct(structType)
-								}
-							}
-							// Check if it's a map with inline struct values
-							if mapType, ok := fieldType.(*ast.MapType); ok {
-								if structType, ok := mapType.Value.(*ast.StructType); ok {
-									bodyFields[len(bodyFields)-1].InlineStructType = "map[" + fieldTypeString(mapType.Key) + "]" + formatInlineStruct(structType)
-								}
-							}
-						}
-					}
-				}
-			}
+			api := parseHandlerDoc(comments)
+			api.BodyFields = parseBodyFields(fn)
 
 			// Add the route handler
 			routeHandler := &RouteHandler{
@@ -265,17 +104,7 @@ func GenerateHandlers(dir string, outDir string) {
 				Comments:    comments,
 				Filepath:    filep,
 				Filename:    filename,
-				Api: &RouteHandlerApi{
-					Summary:              summary,
-					Descriptions:         descriptions,
-					Endpoint:             endpoint,
-					Methods:              methods,
-					Params:               params,
-					BodyFields:           bodyFields,
-					Returns:              returns,
-					ReturnGoType:         getUnformattedGoType(returns),
-					ReturnTypescriptType: stringGoTypeToTypescriptType(returns),
-				},
+				Api:         api,
 			}
 
 			handlers = append(handlers, routeHandler)
@@ -285,24 +114,25 @@ func GenerateHandlers(dir string, outDir string) {
 		return nil
 	})
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("walking %s: %w", dir, err)
 	}
 
-	// Write structs to file
-	_ = os.MkdirAll(outDir, os.ModePerm)
-	file, err := os.Create(outDir + "/handlers.json")
+	// Write handlers to file
+	if err := os.MkdirAll(outDir, os.ModePerm); err != nil {
+		return fmt.Errorf("creating %s: %w", outDir, err)
+	}
+	outPath := filepath.Join(outDir, "handlers.json")
+	file, err := os.Create(outPath)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(handlers); err != nil {
-		fmt.Println("Error:", err)
-		return
+		return fmt.Errorf("encoding %s: %w", outPath, err)
 	}
 
-	return
+	return nil
 }

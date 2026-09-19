@@ -2,33 +2,32 @@ package codegen
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
-func LoadHandlers(path string) []*RouteHandler {
+// LoadHandlers reads the handlers.json produced by GenerateHandlers.
+func LoadHandlers(path string) ([]*RouteHandler, error) {
 	var handlers []*RouteHandler
 	docsContent, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("reading handlers %s: %w", path, err)
 	}
-	err = json.Unmarshal(docsContent, &handlers)
-	if err != nil {
-		panic(err)
+	if err := json.Unmarshal(docsContent, &handlers); err != nil {
+		return nil, fmt.Errorf("parsing handlers %s: %w", path, err)
 	}
-	return handlers
+	return handlers, nil
 }
 
-func LoadPublicStructs(path string) []*GoStruct {
+// LoadPublicStructs reads the public_structs.json produced by ExtractStructs.
+func LoadPublicStructs(path string) ([]*GoStruct, error) {
 	var goStructs []*GoStruct
 	structsContent, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("reading public structs %s: %w", path, err)
 	}
-
-	err = json.Unmarshal(structsContent, &goStructs)
-	if err != nil {
-		panic(err)
+	if err := json.Unmarshal(structsContent, &goStructs); err != nil {
+		return nil, fmt.Errorf("parsing public structs %s: %w", path, err)
 	}
-
-	return goStructs
+	return goStructs, nil
 }

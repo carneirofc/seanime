@@ -16,45 +16,31 @@ import (
 	"golang.org/x/text/language"
 )
 
-var (
-	additionalStructNamesForHooks = []string{
-		"discordrpc_presence.MangaActivity",
-		"discordrpc_presence.AnimeActivity",
-		"discordrpc_presence.LegacyAnimeActivity",
-		"discordrpc_presence.CustomActivity",
-		"anilist.ListAnime",
-		"anilist.ListManga",
-		"anilist.MediaSort",
-		"anilist.ListRecentAnime",
-		"anilist.AnimeCollectionWithRelations",
-		"onlinestream.Episode",
-		"continuity.WatchHistoryItem",
-		"continuity.WatchHistoryItemResponse",
-		"continuity.UpdateWatchHistoryItemOptions",
-		"continuity.WatchHistory",
-		"torrent_client.Torrent",
-	}
-)
-
-func GeneratePluginEventFile(inFilePath string, outDir string) {
+// GeneratePluginEventFile parses the plugin UI events declared in inFilePath and
+// writes their TypeScript definitions to outDir/plugin-events.ts.
+func GeneratePluginEventFile(inFilePath string, outDir string) error {
 	// Parse the input file
 	file, err := parser.ParseFile(token.NewFileSet(), inFilePath, nil, parser.ParseComments)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("parsing %s: %w", inFilePath, err)
 	}
 	packageName := file.Name.Name
 
 	// Create output directory if it doesn't exist
-	_ = os.MkdirAll(outDir, os.ModePerm)
+	if err := os.MkdirAll(outDir, os.ModePerm); err != nil {
+		return fmt.Errorf("creating %s: %w", outDir, err)
+	}
 
 	const OutFileName = "plugin-events.ts"
 
 	// Create output file
-	f, err := os.Create(filepath.Join(outDir, OutFileName))
+	outPath := filepath.Join(outDir, OutFileName)
+	osF, err := os.Create(outPath)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
-	defer f.Close()
+	defer osF.Close()
+	f := newErrWriter(osF)
 
 	// Write imports
 	f.WriteString(`// This file is auto-generated. Do not edit.
@@ -290,6 +276,8 @@ func GeneratePluginEventFile(inFilePath string, outDir string) {
 			f.WriteString("}\n\n")
 		}
 	}
+
+	return f.Err()
 }
 
 var execptions = map[string]string{
@@ -313,21 +301,29 @@ type HookEventDefinition struct {
 	GoStruct *GoStruct `json:"goStruct"`
 }
 
-func GeneratePluginHooksDefinitionFile(outDir string, publicStructsFilePath string, genOutDir string) {
+// GeneratePluginHooksDefinitionFile generates the plugin hook definitions from the
+// Go types in srcDir, writing app.d.ts next to them and hooks.mdx / hooks.json
+// into genOutDir.
+func GeneratePluginHooksDefinitionFile(srcDir string, publicStructsFilePath string, genOutDir string) error {
 	// Create output file
-	f, err := os.Create(filepath.Join(outDir, "app.d.ts"))
+	osF, err := os.Create(filepath.Join(srcDir, "app.d.ts"))
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("creating app.d.ts in %s: %w", srcDir, err)
 	}
-	defer f.Close()
+	defer osF.Close()
+	f := newErrWriter(osF)
 
-	mdFile, err := os.Create(filepath.Join(genOutDir, "hooks.mdx"))
+	osMdFile, err := os.Create(filepath.Join(genOutDir, "hooks.mdx"))
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("creating hooks.mdx in %s: %w", genOutDir, err)
 	}
-	defer mdFile.Close()
+	defer osMdFile.Close()
+	mdFile := newErrWriter(osMdFile)
 
-	goStructs := LoadPublicStructs(publicStructsFilePath)
+	goStructs, err := LoadPublicStructs(publicStructsFilePath)
+	if err != nil {
+		return err
+	}
 
 	// e.g. map["models.User"]*GoStruct
 	goStructsMap := make(map[string]*GoStruct)
@@ -372,14 +368,13 @@ func GeneratePluginHooksDefinitionFile(outDir string, publicStructsFilePath stri
 	}
 	jsonFile, err := os.Create(filepath.Join(genOutDir, "hooks.json"))
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("creating hooks.json in %s: %w", genOutDir, err)
 	}
 	defer jsonFile.Close()
 	encoder := json.NewEncoder(jsonFile)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(hookEventDefinitions); err != nil {
-		fmt.Println("Error:", err)
-		return
+		return fmt.Errorf("encoding hooks.json: %w", err)
 	}
 
 	////////////////////////////////////////////////////
@@ -430,7 +425,7 @@ func GeneratePluginHooksDefinitionFile(outDir string, publicStructsFilePath stri
 
 	referencedStructsMap, ok := getReferencedStructsRecursively(sharedStructs, otherStructs, goStructsMap)
 	if !ok {
-		panic("Failed to get referenced structs")
+		return fmt.Errorf("failed to resolve referenced structs")
 	}
 
 	for _, packageName := range packageNames {
@@ -462,9 +457,16 @@ func GeneratePluginHooksDefinitionFile(outDir string, publicStructsFilePath stri
 	// Generate markdown documentation
 	writeMarkdownFile(mdFile, hookEventDefinitions, referencedStructsMap, referencedStructs)
 
+	for _, w := range []*errWriter{f, mdFile} {
+		if err := w.Err(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func writePackageEventGoStructs(f *os.File, packageName string, goStructs []*GoStruct, allGoStructs map[string]*GoStruct) {
+func writePackageEventGoStructs(f *errWriter, packageName string, goStructs []*GoStruct, allGoStructs map[string]*GoStruct) {
 	// Header comment block
 	f.WriteString(fmt.Sprintf("\n    /**\n     * @package %s\n     */\n\n", packageName))
 
@@ -528,7 +530,7 @@ func writePackageEventGoStructs(f *os.File, packageName string, goStructs []*GoS
 	}
 }
 
-func writeEventTypescriptType(f *os.File, goStruct *GoStruct, writtenTypes map[string]*GoStruct) {
+func writeEventTypescriptType(f *errWriter, goStruct *GoStruct, writtenTypes map[string]*GoStruct) {
 	f.WriteString("    /**\n")
 	f.WriteString(fmt.Sprintf("     * - Filepath: %s\n", strings.TrimPrefix(goStruct.Filepath, "../")))
 	if len(goStruct.Comments) > 0 {
@@ -589,7 +591,7 @@ func writeEventTypescriptType(f *os.File, goStruct *GoStruct, writtenTypes map[s
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // writeMarkdownFile generates a well-formatted Markdown documentation for hooks
-func writeMarkdownFile(mdFile *os.File, hookEventDefinitions []*HookEventDefinition, referencedStructsMap map[string]*GoStruct, referencedStructs []*GoStruct) {
+func writeMarkdownFile(mdFile *errWriter, hookEventDefinitions []*HookEventDefinition, referencedStructsMap map[string]*GoStruct, referencedStructs []*GoStruct) {
 
 	mdFile.WriteString("---\n")
 	mdFile.WriteString("title: Hooks\n")

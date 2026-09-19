@@ -3,7 +3,26 @@ package main
 
 import (
 	"flag"
+	"log"
 	codegen "seanime/codegen/internal"
+)
+
+// Paths are relative to this directory, so codegen must be run from it — which is
+// why the //go:generate directive above exists and why CI runs
+// `go generate ./codegen` rather than `go run ./codegen`.
+const (
+	handlersSrcDir     = "../internal/handlers"
+	internalSrcDir     = "../internal"
+	eventsSrcDir       = "../internal/events"
+	pluginEventsSrc    = "../internal/plugin/ui/events.go"
+	pluginHookTypesDir = "../internal/extension_repo/goja_plugin_types"
+
+	generatedDir      = "./generated"
+	handlersJson      = "./generated/handlers.json"
+	publicStructsJson = "./generated/public_structs.json"
+
+	webApiOutDir         = "../seanime-web/src/api/generated"
+	webPluginEventOutDir = "../seanime-web/src/app/(main)/_features/plugin/generated"
 )
 
 func main() {
@@ -26,24 +45,37 @@ func main() {
 	flag.Parse()
 
 	if !skipHandlers {
-		codegen.GenerateHandlers("../internal/handlers", "./generated")
+		if err := codegen.GenerateHandlers(handlersSrcDir, generatedDir); err != nil {
+			log.Fatalf("codegen: generating handlers: %v", err)
+		}
 	}
 
 	if !skipStructs {
-		codegen.ExtractStructs("../internal", "./generated")
+		if err := codegen.ExtractStructs(internalSrcDir, generatedDir); err != nil {
+			log.Fatalf("codegen: extracting structs: %v", err)
+		}
 	}
 
 	if !skipTypes {
-		goStructStrs := codegen.GenerateTypescriptEndpointsFile("./generated/handlers.json", "./generated/public_structs.json", "../seanime-web/src/api/generated", "../internal/events")
-		codegen.GenerateTypescriptFile("./generated/handlers.json", "./generated/public_structs.json", "../seanime-web/src/api/generated", goStructStrs)
+		goStructStrs, err := codegen.GenerateTypescriptEndpointsFile(handlersJson, publicStructsJson, webApiOutDir, eventsSrcDir)
+		if err != nil {
+			log.Fatalf("codegen: generating TypeScript endpoints: %v", err)
+		}
+		if err := codegen.GenerateTypescriptFile(handlersJson, publicStructsJson, webApiOutDir, goStructStrs); err != nil {
+			log.Fatalf("codegen: generating TypeScript types: %v", err)
+		}
 	}
 
 	if !skipPluginEvents {
-		codegen.GeneratePluginEventFile("../internal/plugin/ui/events.go", "../seanime-web/src/app/(main)/_features/plugin/generated")
+		if err := codegen.GeneratePluginEventFile(pluginEventsSrc, webPluginEventOutDir); err != nil {
+			log.Fatalf("codegen: generating plugin events: %v", err)
+		}
 	}
 
 	if !skipHookEvents {
-		codegen.GeneratePluginHooksDefinitionFile("../internal/extension_repo/goja_plugin_types", "./generated/public_structs.json", "./generated")
+		if err := codegen.GeneratePluginHooksDefinitionFile(pluginHookTypesDir, publicStructsJson, generatedDir); err != nil {
+			log.Fatalf("codegen: generating plugin hook definitions: %v", err)
+		}
 	}
 
 }
