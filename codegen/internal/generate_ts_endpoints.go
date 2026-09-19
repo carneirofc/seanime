@@ -443,8 +443,13 @@ func generateEventFile(eventDir string, endpointsMap map[string]string) error {
 		return fmt.Errorf("closing %s: %w", fp, err)
 	}
 
-	cmd := exec.Command("gofmt", "-w", fp)
-	cmd.Run()
+	// The emitted constants are written unaligned; gofmt is what makes them
+	// match what a contributor's editor would produce, so a failure here means
+	// the committed file will differ from a regenerated one and CI's codegen
+	// freshness job will fail with no explanation.
+	if out, err := exec.Command("gofmt", "-w", fp).CombinedOutput(); err != nil {
+		return fmt.Errorf("gofmt -w %s: %w: %s", fp, err, strings.TrimSpace(string(out)))
+	}
 
 	return nil
 }

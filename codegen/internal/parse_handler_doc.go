@@ -113,6 +113,13 @@ func parseBodyFields(fn *ast.FuncDecl) []*RouteHandlerParam {
 		}
 
 		for _, field := range structType.Fields.List {
+			// An embedded type has no names. goStructFromStruct guards this for
+			// top-level structs; a `body` struct can embed a type too, and
+			// indexing Names[0] here would panic on it.
+			if len(field.Names) == 0 {
+				continue
+			}
+
 			// Get the field name
 			fieldName := field.Names[0].Name
 

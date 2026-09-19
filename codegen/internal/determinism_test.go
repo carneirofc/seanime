@@ -1,6 +1,9 @@
 package codegen
 
 import (
+	"go/format"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"testing"
@@ -158,4 +161,44 @@ func TestExtractStructsReportsAWalkFailure(t *testing.T) {
 	// contract file. This is the case that used to print to stdout and exit 0.
 	err := ExtractStructs(filepath.Join(t.TempDir(), "does-not-exist"), t.TempDir())
 	require.Error(t, err)
+}
+
+// TestGenerateEventFileProducesFormattedGoSource covers the gofmt step.
+//
+// generateEventFile emits the const block unaligned and shells out to gofmt to
+// align it. That call used to discard its error, so a gofmt that failed or was
+// missing produced an unformatted internal/events/endpoints.go -- which then
+// differs from what a contributor's regeneration produces, failing the codegen
+// freshness job with nothing to explain why. Asserting the output is already
+// gofmt-clean is what proves the step ran.
+func TestGenerateEventFileProducesFormattedGoSource(t *testing.T) {
+	eventsDir := t.TempDir()
+	require.NoError(t, generateEventFile(eventsDir, map[string]string{
+		"GetAnimeCollection": "ANILIST-get-anime-collection",
+		"SaveThing":          "ANILIST-save-thing",
+		"A":                  "G-a",
+	}))
+
+	path := filepath.Join(eventsDir, goEndpointsFileName)
+	src, err := os.ReadFile(path)
+	require.NoError(t, err)
+
+	// It must parse as Go...
+	_, err = parser.ParseFile(token.NewFileSet(), path, src, parser.AllErrors)
+	require.NoError(t, err, "generated endpoints.go must be valid Go")
+
+	// ...and already be in gofmt's canonical form.
+	formatted, err := format.Source(src)
+	require.NoError(t, err)
+	require.Equal(t, string(formatted), string(src),
+		"generated endpoints.go is not gofmt-formatted, so the gofmt step did not run")
+
+	require.Contains(t, string(src), "package events")
+	// Constants are emitted in sorted order, for a stable diff.
+	require.Regexp(t, `(?s)AEndpoint.*GetAnimeCollectionEndpoint.*SaveThingEndpoint`, string(src))
+}
+
+func TestGenerateEventFileFailsOnAnUnwritableDirectory(t *testing.T) {
+	err := generateEventFile(filepath.Join(t.TempDir(), "does-not-exist"), map[string]string{"A": "a"})
+	require.Error(t, err, "an unwritable output path must fail the run")
 }

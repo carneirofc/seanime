@@ -333,3 +333,30 @@ func TestHandlerFixturesParse(t *testing.T) {
 		filepath.Join("testdata", "handlers", "routes.go"), nil, parser.ParseComments)
 	require.NoError(t, err)
 }
+
+// TestParseBodyFieldsSkipsEmbeddedTypes guards against a panic.
+//
+// An embedded type has no field names, and this loop used to index Names[0]
+// unconditionally -- unlike the equivalent loop in goStructFromStruct, which has
+// always guarded it. No handler in the tree embeds a type in its body struct
+// today, so the crash was latent; this fixture is the one that would have hit it.
+func TestParseBodyFieldsSkipsEmbeddedTypes(t *testing.T) {
+	fn := parseFuncDecl(t, `
+func HandleThing(c *RouteCtx) error {
+	type body struct {
+		models.Base
+		Name string `+"`"+`json:"name"`+"`"+`
+	}
+	return nil
+}`)
+
+	got := parseBodyFields(fn)
+	require.Len(t, got, 1, "the embedded type contributes no body field")
+	require.Equal(t, "name", got[0].JsonName)
+}
+
+func TestParseBodyFieldsHandlesAFunctionWithNoBody(t *testing.T) {
+	// An external or generated declaration has a nil Body.
+	fn := parseFuncDecl(t, "func HandleThing(c *RouteCtx) error")
+	require.Empty(t, parseBodyFields(fn))
+}
