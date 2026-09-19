@@ -110,6 +110,8 @@ For development, you should be familiar with both Go and React.
     ```
    
 	- This will generate all the files needed in the `path/to/datadir` directory.
+	- The path may be relative; it is resolved against the directory you run the command from.
+	  Omit `--datadir` entirely and the OS config directory is used.
    
 3. **Configure the development server**:
    - Change the port in the `config.toml` located in the development data directory to `43001`. The web interface will connect to this port during development. Change the host to `0.0.0.0` to allow connections from other devices.

@@ -4,6 +4,10 @@
 #
 # Keys are case-insensitive. Secrets should come from the environment, not this
 # file — see clientsecret below.
+#
+# Path values may be written relative; they resolve against the data directory, not the
+# directory the server was launched from. Prefer the $SEANIME_DATA_DIR/... form the server
+# writes by default — it keeps the data directory relocatable.
 
 [server]
 # Bind address. Behind a reverse proxy, bind loopback on bare metal ("127.0.0.1")

@@ -110,8 +110,10 @@ func NewConfig(options *ConfigOptions, logger *zerolog.Logger) (*Config, error) 
 	definedDataDir := ""
 
 	// Set data dir (flag overrides env var)
-	if os.Getenv("SEANIME_DATA_DIR") != "" {
-		definedDataDir = os.Getenv("SEANIME_DATA_DIR")
+	// The env var is trimmed like the flag is: a relative value is resolved against the
+	// working directory, so stray whitespace would become part of the path.
+	if envDataDir := strings.TrimSpace(os.Getenv("SEANIME_DATA_DIR")); envDataDir != "" {
+		definedDataDir = envDataDir
 	}
 
 	if flags.DataDir != "" {
@@ -254,10 +256,11 @@ func NewConfig(options *ConfigOptions, logger *zerolog.Logger) (*Config, error) 
 		return nil, err
 	}
 
-	// Expand the values, replacing environment variables
-	expandEnvironmentValues(cfg)
+	// Expand the values, replacing environment variables and resolving relative paths
+	// against the data directory
 	cfg.Data.AppDataDir = dataDir
 	cfg.Data.WorkingDir = os.Getenv("SEANIME_WORKING_DIR")
+	expandEnvironmentValues(cfg, dataDir)
 
 	if cfg.Server.Tls.Enabled && (cfg.Server.Tls.CertPath == "" || cfg.Server.Tls.KeyPath == "") {
 		viper.SetDefault("server.tls.certPath", "$SEANIME_DATA_DIR/certs/cert.pem")
@@ -265,7 +268,7 @@ func NewConfig(options *ConfigOptions, logger *zerolog.Logger) (*Config, error) 
 		_ = viper.WriteConfig()
 		_ = viper.ReadInConfig()
 		_ = viper.Unmarshal(cfg)
-		expandEnvironmentValues(cfg)
+		expandEnvironmentValues(cfg, cfg.Data.AppDataDir)
 	}
 
 	// Check validity of the config
@@ -341,11 +344,12 @@ func getWorkingDir(useBinaryPath bool) (string, error) {
 }
 
 func setDataDirEnv(dataDir string) error {
-	// Set the data directory environment variable
-	if os.Getenv("SEANIME_DATA_DIR") == "" {
-		if err := os.Setenv("SEANIME_DATA_DIR", dataDir); err != nil {
-			return err
-		}
+	// Set the data directory environment variable to the resolved, absolute path.
+	// The caller may have supplied a relative --datadir or SEANIME_DATA_DIR; every
+	// "$SEANIME_DATA_DIR/..." default below depends on this being absolute, so the
+	// resolved value always replaces whatever was there.
+	if err := os.Setenv("SEANIME_DATA_DIR", dataDir); err != nil {
+		return err
 	}
 
 	return nil
@@ -463,12 +467,77 @@ func validateConfig(cfg *Config, logger *zerolog.Logger) error {
 	return nil
 }
 
+// checkIsValidPath asserts that a path value came out of resolveConfigPath absolute.
+// Relative values are accepted from the user and resolved at load time, so a failure here
+// is a resolution bug rather than a configuration mistake.
 func checkIsValidPath(path string) error {
 	ok := filepath.IsAbs(path)
 	if !ok {
-		return errors.New("path is not an absolute path")
+		return errors.New("could not be resolved to an absolute path")
 	}
 	return nil
+}
+
+// resolveCallerPath makes a path supplied at invocation time -- the --datadir flag or the
+// SEANIME_DATA_DIR environment variable -- absolute against the process's current working
+// directory.
+//
+// filepath.Abs is used rather than filepath.Join(wd, p) because on Windows they disagree:
+// Abs goes through GetFullPathName, which resolves root-relative ("\foo" -> the root of the
+// current drive) and drive-relative ("C:foo" -> the current directory on C:) forms that Join
+// would mangle.
+func resolveCallerPath(p string) (string, error) {
+	original := strings.TrimSpace(p)
+
+	expanded := strings.TrimSpace(os.ExpandEnv(original))
+
+	// An unset variable expands to nothing, and filepath.Abs("") returns the working
+	// directory -- which would quietly scatter the data directory's contents over whatever
+	// directory the process was started from. filepath.Clean maps "", ".", "./" and
+	// "sub/.." alike to ".", so one check covers every spelling of "the current directory".
+	resolved := filepath.Clean(filepath.FromSlash(expanded))
+	if resolved == "." {
+		return "", fmt.Errorf("app: Data directory path %q does not name a directory", original)
+	}
+
+	if filepath.IsAbs(resolved) {
+		return resolved, nil
+	}
+
+	abs, err := filepath.Abs(resolved)
+	if err != nil {
+		return "", fmt.Errorf("app: Could not resolve data directory path %q: %w", original, err)
+	}
+
+	return abs, nil
+}
+
+// resolveConfigPath expands environment variables in a path value read from config.toml and
+// makes it absolute against baseDir, the data directory. An empty value stays empty so that
+// validateConfig can report it with its own "cannot be empty" message.
+func resolveConfigPath(p string, baseDir string) string {
+	if p == "" {
+		return ""
+	}
+
+	expanded := filepath.FromSlash(os.ExpandEnv(p))
+	if expanded == "" {
+		return ""
+	}
+	if filepath.IsAbs(expanded) {
+		return filepath.Clean(expanded)
+	}
+	if baseDir != "" {
+		return filepath.Clean(filepath.Join(baseDir, expanded))
+	}
+
+	// No data directory to anchor to; fall back to the working directory rather than
+	// handing a relative path to the rest of the app.
+	abs, err := filepath.Abs(expanded)
+	if err != nil {
+		return expanded
+	}
+	return abs
 }
 
 // errInvalidConfigValue returns an error for an invalid config value
@@ -498,24 +567,29 @@ func updateVersion(cfg *Config, opts *ConfigOptions) error {
 	return viper.WriteConfig()
 }
 
-func expandEnvironmentValues(cfg *Config) {
+// expandEnvironmentValues expands environment variables in the config's path values and
+// makes each one absolute. baseDir is the data directory: config.toml lives inside it and
+// every shipped default is "$SEANIME_DATA_DIR/<subdir>", so a relative value written by hand
+// means "next to the rest of the data", not "next to whatever directory the binary happened
+// to be launched from".
+func expandEnvironmentValues(cfg *Config, baseDir string) {
 	defer func() {
 		if r := recover(); r != nil {
 			// Do nothing
 		}
 	}()
-	cfg.Web.AssetDir = filepath.FromSlash(os.ExpandEnv(cfg.Web.AssetDir))
-	cfg.Cache.Dir = filepath.FromSlash(os.ExpandEnv(cfg.Cache.Dir))
-	cfg.Cache.TranscodeDir = filepath.FromSlash(os.ExpandEnv(cfg.Cache.TranscodeDir))
-	cfg.Logs.Dir = filepath.FromSlash(os.ExpandEnv(cfg.Logs.Dir))
-	cfg.Manga.DownloadDir = filepath.FromSlash(os.ExpandEnv(cfg.Manga.DownloadDir))
-	cfg.Manga.LocalDir = filepath.FromSlash(os.ExpandEnv(cfg.Manga.LocalDir))
-	cfg.Offline.Dir = filepath.FromSlash(os.ExpandEnv(cfg.Offline.Dir))
-	cfg.Offline.AssetDir = filepath.FromSlash(os.ExpandEnv(cfg.Offline.AssetDir))
-	cfg.Extensions.Dir = filepath.FromSlash(os.ExpandEnv(cfg.Extensions.Dir))
-	cfg.Torrent.Dir = filepath.FromSlash(os.ExpandEnv(cfg.Torrent.Dir))
-	cfg.Server.Tls.CertPath = filepath.FromSlash(os.ExpandEnv(cfg.Server.Tls.CertPath))
-	cfg.Server.Tls.KeyPath = filepath.FromSlash(os.ExpandEnv(cfg.Server.Tls.KeyPath))
+	cfg.Web.AssetDir = resolveConfigPath(cfg.Web.AssetDir, baseDir)
+	cfg.Cache.Dir = resolveConfigPath(cfg.Cache.Dir, baseDir)
+	cfg.Cache.TranscodeDir = resolveConfigPath(cfg.Cache.TranscodeDir, baseDir)
+	cfg.Logs.Dir = resolveConfigPath(cfg.Logs.Dir, baseDir)
+	cfg.Manga.DownloadDir = resolveConfigPath(cfg.Manga.DownloadDir, baseDir)
+	cfg.Manga.LocalDir = resolveConfigPath(cfg.Manga.LocalDir, baseDir)
+	cfg.Offline.Dir = resolveConfigPath(cfg.Offline.Dir, baseDir)
+	cfg.Offline.AssetDir = resolveConfigPath(cfg.Offline.AssetDir, baseDir)
+	cfg.Extensions.Dir = resolveConfigPath(cfg.Extensions.Dir, baseDir)
+	cfg.Torrent.Dir = resolveConfigPath(cfg.Torrent.Dir, baseDir)
+	cfg.Server.Tls.CertPath = resolveConfigPath(cfg.Server.Tls.CertPath, baseDir)
+	cfg.Server.Tls.KeyPath = resolveConfigPath(cfg.Server.Tls.KeyPath, baseDir)
 }
 
 // createConfigFile creates a default config file if it doesn't exist
@@ -537,15 +611,22 @@ func initAppDataDir(definedDataDir string, logger *zerolog.Logger) (dataDir stri
 	// User defined data directory
 	if definedDataDir != "" {
 
-		// Expand environment variables
-		definedDataDir = filepath.FromSlash(os.ExpandEnv(definedDataDir))
+		// Expand environment variables and resolve a relative path against the directory the
+		// process was started from
+		resolved, rErr := resolveCallerPath(definedDataDir)
+		if rErr != nil {
+			return "", "", rErr
+		}
 
-		if !filepath.IsAbs(definedDataDir) {
-			return "", "", errors.New("app: Data directory path must be absolute")
+		if resolved != definedDataDir {
+			logger.Info().
+				Str("given", definedDataDir).
+				Str("dataDir", resolved).
+				Msg("app: Resolved data directory path")
 		}
 
 		// Replace the default data directory
-		dataDir = definedDataDir
+		dataDir = resolved
 
 		logger.Trace().Str("dataDir", dataDir).Msg("app: Overriding default data directory")
 	} else {
