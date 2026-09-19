@@ -1,76 +1,131 @@
 # Seanime Web Agents
 
-Seanime web is Next.js 15 app: primary UI for every Seanime client (browser, desktop). Doc captures "agents" - major runtimes and responsibility slices - inside subproject so contributors find right entry point fast.
+Seanime web is the primary UI, served in development by Rsbuild and in production as a
+static build embedded into the Go binary. This doc captures the major responsibility slices
+so contributors find the right entry point fast.
+
+> This is **not** a Next.js app. Upstream migrated from Next.js to TanStack Router + Rsbuild.
+> Some directory names (`src/app/`, `(main)`, `_components`) survived that migration and
+> still look like the Next App Router — they are ordinary directories with no routing
+> meaning. Routes live in `src/routes/`.
 
 ## At-a-glance
 
 | Agent | Scope | Key Paths | Runtime | Typical Commands |
 | --- | --- | --- | --- | --- |
-| Next App Shell | Routing, layouts, streaming UI | `app/`, `pages/` (if present), `app/(main)` | Node.js 20+, Next 15 | `npm run dev`, `npm run build`, `npm run start` |
-| Feature Modules | Domain-specific UI, hooks, state | `app/(main)/_features/**` | React 18, TanStack Query, Jotai | Co-located with features; dev via Next |
-| API Client (generated) | Typed API access to Go handlers | `src/api/generated/**` | TypeScript (codegen) | Regenerate via `go run ./codegen` in repo root |
-| Shared UI System | Design system, atoms, forms | `src/components/**`, `src/ui/**` | React 18, Radix UI, Tailwind | Consumed across features |
-| State & Utils | Global atoms, helpers, browser detection | `src/lib/**`, `src/state/**` | TypeScript | Imported by features and layouts |
-| Build Targets | Environment-specific builds | `.env.*`, `next.config.{js|mjs}` | Next.js build pipeline | `npm run build[:desktop]` |
-| Testing | Unit/integration tests | `src/**/*.{test,spec}.{ts,tsx}` | Vitest 3 | `npm run test` (configure as needed) |
-| Static Assets | Logos, public files | `public/`, `src/assets/**` | N/A | Served by Next static pipeline |
+| App Shell | Root render, providers, routing | `src/main.tsx`, `src/routes/`, `src/app/client-providers.tsx` | React 19, TanStack Router | `npm run dev` |
+| Feature Modules | Domain UI, hooks, state | `src/app/(main)/**` | React 19, TanStack Query, Jotai | Co-located with features |
+| API Client | Typed access to Go handlers | `src/api/**` | TypeScript (partly generated) | Regenerate via `go generate ./codegen` at repo root |
+| Shared UI System | Design system, forms, primitives | `src/components/**` | Radix UI, Tailwind 4 | Consumed across features |
+| State & Utils | Global atoms, helpers | `src/lib/**`, `src/app/(main)/_atoms/**` | Jotai | Imported by features |
+| Validation | Schemas for untrusted input | `src/lib/validation/**` | zod 4 | See "Validation" below |
+| Build Targets | Per-target env config | `.env.web`, `.env.mobile`, `rsbuild.config.ts` | Rsbuild / Rspack | `npm run build` |
+| Testing | Unit tests | `src/**/*.test.ts` | Vitest 4 | `npm run test` |
+| Static Assets | Icons, public files | `public/` | N/A | Served by Rsbuild |
 
-## Next App Shell
+## App Shell
 
-- `app/` holds Next.js App Router entry points; `app/(main)` is authenticated shell for media experience.
-- Middleware (if present) governs auth and localisation.
-- Layouts compose global UI: shell chrome, toasts (`sonner`), theme handling (`next-themes`).
+- `src/main.tsx` is the entry point; `index.html` is the Rsbuild template.
+- Routing is **TanStack Router, file-based** over `src/routes/`. The route tree is generated
+  into `src/routeTree.gen.ts` by `@tanstack/router-plugin` during dev/build — never edit it.
+- `src/app/client-providers.tsx` composes global providers; `src/app/websocket-provider.tsx`
+  owns the server websocket connection.
 
 ## Feature Modules
 
-Each directory under `app/(main)/_features/` encapsulates a functional slice (e.g., library, torrent control, manga reader). Patterns:
+`src/app/(main)/` holds the authenticated UI, split by domain (`manga/`, `entry/`,
+`discover/`, `settings/`, …) plus shared slices in `_features/`, `_hooks/`, `_atoms/`,
+`_listeners/`. Patterns:
+
 - `*.tsx` components backed by hooks in `*.hooks.ts`.
-- Shared state via Jotai atoms fed into TanStack Query queries.
-- Localised styles from Tailwind CSS utilities.
+- Shared state via Jotai atoms; server state via TanStack Query.
+- Tailwind utilities for styling.
 
-## API Client (generated)
+## API Client
 
-Files in `src/api/generated/` originate from Go backend via repo-level Codegen agent.
-Never hand-edit these files. If you add or modify Go handlers/structs, re-run backend generator:
+Three layers, outermost last:
 
-1. Update Go handlers/structs or plugin event definitions.
-2. From repository root, run:
-   ```
-   go run ./codegen
-   ```
-   (or `go generate ./codegen`).
-3. Commit regenerated files in `src/api/generated/` and `app/(main)/_features/plugin/generated/`.
+1. `src/api/client/requests.ts` — hand-written axios wrapper exposing `useServerQuery`,
+   `useServerMutation`, and `buildSeaQuery`. Owns auth headers, client-id handshake, and
+   error toasts. **Edit this by hand.**
+2. `src/api/generated/` — emitted by the Go backend generator. **Never hand-edit.**
+   `types.ts` (domain types), `endpoint.types.ts` (per-endpoint request/response),
+   `endpoints.ts` (route table), `hooks_template.ts`.
+3. `src/api/hooks/*.hooks.ts` — per-domain hooks features actually import.
 
-`src/api/generated/client.ts` exposes typed fetchers; features import these for data.
+To regenerate after a backend contract change, from the **repository root**:
+
+```bash
+go generate ./codegen
+```
+
+> Run it exactly like that. `codegen/main.go` resolves its paths (`../internal`,
+> `../seanime-web/...`) relative to the working directory, so `go run ./codegen` from the
+> repo root writes **outside** the repository. `go generate` runs the directive in the
+> package directory, which is what makes the relative paths correct.
+
+Commit the regenerated output in `src/api/generated/` and
+`src/app/(main)/_features/plugin/generated/`. CI fails if the tree is stale.
+
+See `../internal/AGENTS.md` for generator internals and known constraints (notably the
+hand-maintained struct allowlist — a struct reachable only via a websocket event or plugin
+payload will be silently missing from `types.ts` until it is added there).
 
 ## Shared UI System
 
-- `src/components/` hosts reusable widgets (tables, dialogs, dropdowns).
-- `src/ui/` (if present) provides design primitives built on Radix UI and tailwind utilities for consistent look-and-feel.
+- `src/components/ui/` — design primitives built on Radix UI and Tailwind.
+- `src/components/shared/` — cross-feature widgets.
+- There is no `src/ui/` directory.
 
-## State & Utilities
+### Forms
 
-- `src/state/` contains global atoms (e.g., media sessions, settings).
-- `src/lib/utils/` includes helpers such as `browser-detection.ts`, date/number formatting, and history helpers.
-- `@total-typescript/ts-reset` ensures modern TypeScript defaults; see `tsconfig.json`.
+Forms use `react-hook-form` with zod through the project's own wrapper — do not wire
+`useForm` up by hand:
+
+- `src/components/ui/form/define-schema.ts` — `defineSchema(({ z, presets }) => …)`
+- `src/components/ui/form/schema-presets.ts` — shared field presets
+- `src/components/ui/form/zod-resolver.ts`, `form.tsx` — resolver and `<Form>` binding
+
+## Validation
+
+zod 4 covers two distinct jobs:
+
+- **Form input** — via `defineSchema`, as above.
+- **Untrusted runtime input** — schemas in `src/lib/validation/`, applied where external
+  data enters the app: persisted `localStorage` state, websocket frames, and third-party
+  plugin payloads.
+
+Rules for the runtime schemas:
+
+- Persisted state uses `atomWithValidatedStorage` (`src/lib/validation/storage.ts`) rather
+  than jotai's `atomWithStorage`, which returns whatever was stored without checking its
+  shape — a value written by an older Seanime version otherwise flows straight into state.
+- Validation failures **degrade, never throw**: fall back to the default, drop the frame,
+  log once in dev. A schema rejection must not blank a working screen.
+- API responses are **not** runtime-validated. `requests.ts` casts the response to the
+  generated type. Generated types are a compile-time contract only.
 
 ## Build Targets
 
-`.env.web`, `.env.desktop`, `.env.mobile` configure API endpoints, feature toggles, and analytics per target.
-Scripts in `package.json` wrap Next CLI: `npm run dev` (browser), `npm run dev:desktop`, `npm run build`, and `npm run build:desktop` (static exports consumed by Go embedding).
-Output directories (`out`, `out-desktop`) must be copied to `web/` or `web-desktop/` before packaging.
+- `npm run dev` — Rsbuild dev server with `.env.web`. `npm run dev:mobile` uses `.env.mobile`.
+- `npm run build` — runs `typecheck` then `rsbuild build`, emitting to `out/`.
+- `make build-web` — clean build copied into `../web/` for Go to embed.
+- Env vars must be prefixed `SEA_` to reach the client (`loadEnv` in `rsbuild.config.ts`).
+- Desktop targets no longer exist; there is no `build:desktop` or `out-desktop/`.
 
-## Testing
+## Code Quality
 
-- Vitest configured (`vitest.config.*`). Add tests alongside components (`*.test.tsx`).
-- Use `npm run test` (add script if missing) or `vitest` directly.
-
-## Static Assets
-
-- `public/` holds favicons, manifests, and static JSON files.
-- `docs/images` (outside this subproject) referenced via relative imports for marketing and screenshots.
+- `npm run typecheck` — `tsgo` (`@typescript/native-preview`). Gated in CI; keep it at zero.
+- `npm run test` — Vitest. Gated in CI.
+- `npm run lint` — Biome. CI lints only files this fork changed against upstream, so the
+  inherited upstream backlog is not a merge blocker; new code meets the full rule set.
+- The Biome **formatter is configured but not enforced**. It matches house style, so running
+  it is safe, but it is deliberately not a gate — reformatting the tree would conflict with
+  every upstream merge.
+- House style: 4-space indent, double quotes, no semicolons. Match the surrounding code.
 
 ## Maintaining this file
 
-- Update `seanime-web/AGENTS.md` whenever you introduce a new runtime slice (e.g., analytics agent) or significantly reorganise directories.
-- Link back to relevant READMEs (`../DEVELOPMENT_AND_BUILD.md`) when workflows evolve.
+- Update when a runtime slice is added or directories are reorganised.
+- Keep the codegen instructions aligned with `../internal/AGENTS.md` and `../CONTRIBUTING.md`.
+- See `../DEVELOPMENT_AND_BUILD.md` for full setup and build instructions.
