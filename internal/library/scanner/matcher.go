@@ -89,6 +89,11 @@ const (
 	scoreTitleBaseMatch     = 4.0  // base title (without season/part) matches
 	scoreTitleMainBonus     = 2.0  // bonus for matching a main title (romaji/english)
 
+	// parent folder titles
+	scoreExtraTitlePenalty     = 2.0 // penalty for a title taken from a folder further up the tree
+	scoreContainerTitlePenalty = 6.0 // penalty for a title naming a collection folder
+	scoreFranchiseAffinity     = 1.5 // bonus for sharing every token of a collection folder's title
+
 	// season/part scoring
 	scoreSeasonExactMatch      = 5.0  // season numbers match exactly
 	scoreSeasonMismatch        = -8.0 // season numbers explicitly don't match
@@ -308,13 +313,32 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 		}
 	}
 
+	// Of those extra titles, single out the ones naming a collection folder (a folder grouping
+	// several distinct entries, like "Monogatari Series/"). Their names are often exact AniList
+	// titles, which would let them outscore the subfolder that names the entry the file belongs to,
+	// so they are scored separately and can only win when nothing more specific does.
+	containerTitlesMap := m.collectionTitles(lf, primaryTitlesMap, extraTitlesMap)
+
 	// Normalize all title variations for matching
 	normalizedVariations := make([]*NormalizedTitle, 0, len(titleVariations))
 	for _, t := range titleVariations {
 		if t != nil && *t != "" {
 			nt := NormalizeTitle(*t)
 			_, nt.IsExtra = extraTitlesMap[*t]
+			_, nt.IsContainer = containerTitlesMap[*t]
 			normalizedVariations = append(normalizedVariations, nt)
+		}
+	}
+
+	// Significant tokens of the collection folders the file sits under, used to prefer candidates
+	// from the same franchise now that the folder's own title no longer carries them.
+	var containerTokens [][]string
+	for _, nv := range normalizedVariations {
+		if !nv.IsContainer {
+			continue
+		}
+		if tokens := GetSignificantTokens(nv.Tokens); len(tokens) > 0 {
+			containerTokens = append(containerTokens, tokens)
 		}
 	}
 
@@ -357,8 +381,15 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 	}
 	m.ScanSummaryLogger.LogDebug(lf, fmt.Sprintf("Extracted metadata: season=%d, part=%d, year=%d", fileSeason, filePart, fileYear))
 
-	bestScore := 0.0
-	var bestMedia *anime.NormalizedMedia
+	// Two running bests. bestSpecific ignores collection folder titles entirely; bestFallback allows
+	// them, penalized. The fallback is only consulted if nothing specific clears the threshold —
+	// a per-candidate fallback would not do, since the wrong candidate is precisely the one that
+	// scores badly without the collection folder's title.
+	// With no collection folder titles in play the two are identical.
+	bestSpecificScore := 0.0
+	var bestSpecificMedia *anime.NormalizedMedia
+	bestFallbackScore := 0.0
+	var bestFallbackMedia *anime.NormalizedMedia
 
 	// We filter candidates using token index
 	// Instead of iterating over all media, we only check media that share at least one significant token
@@ -430,8 +461,6 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 	// Process candidates serially
 	// devnote: slower than doing it concurrently but we won't abuse goroutines
 	for _, media := range candidates {
-		currentScore := 0.0
-
 		// use cached normalized titles
 		originalMediaTitles, ok := m.MediaContainer.NormalizedTitlesCache[media.ID]
 		if !ok || len(originalMediaTitles) == 0 {
@@ -455,34 +484,52 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 		}
 
 		// 1. Title matching (highest prio)
-		titleScore := calculateTitleScore(normalizedVariations, normalizedMediaTitles, sd)
+		titleScore, titleScoreWithContainer := calculateTitleScore(normalizedVariations, normalizedMediaTitles, sd)
 
-		// skip if title score is too low
-		if titleScore < 2.0 {
+		// skip if title score is too low.
+		// titleScoreWithContainer is never below titleScore, so this keeps candidates that only a
+		// collection folder's title reaches alive for the fallback.
+		if titleScoreWithContainer < 2.0 {
 			continue
 		}
-
-		currentScore += titleScore
 
 		// 2. Season/Part matching
 		mediaSeason, mediaSeasonExplicit, mediaSeasonConfidence := getMediaSeason(media, normalizedMediaTitles)
 		mediaPart, mediaPartExplicit := getMediaPart(normalizedMediaTitles)
 		seasonPartScore := calculateSeasonPartScore(fileSeason, filePart, mediaSeason, mediaSeasonExplicit, mediaSeasonConfidence, mediaPart, mediaPartExplicit)
-		currentScore += seasonPartScore
 
-		// 3. Year comparison
+		// 3. Base title matching bonus
+		baseTitleScore, baseTitleScoreWithContainer := calculateBaseTitleScore(normalizedVariations, normalizedMediaTitles, sd)
+
+		// 4. Format type matching (OVA/Special/Movie detection)
+		formatScore := calculateFormatScore(fileFormatType, media)
+
+		// 5. Franchise affinity: prefer candidates belonging to the collection folder's franchise
+		affinityScore := 0.0
+		if hasFranchiseAffinity(containerTokens, normalizedMediaTitles) {
+			affinityScore = scoreFranchiseAffinity
+		}
+
+		// 6. Year comparison, scaled by how confident the title match is
 		yearScore := calculateYearScore(fileYear, media, titleScore)
-		currentScore += yearScore
 
-		// 4. Base title matching bonus
-		baseTitleScore := calculateBaseTitleScore(normalizedVariations, normalizedMediaTitles, sd)
-		if baseTitleScore > 0 && seasonPartScore >= 0 {
+		// The base title bonus is only trusted when the season/part signals don't contradict the match
+		applyBaseTitle := seasonPartScore >= 0
+
+		currentScore := titleScore + seasonPartScore + formatScore + affinityScore + yearScore
+		if applyBaseTitle {
 			currentScore += baseTitleScore
 		}
 
-		// 5. Format type matching (OVA/Special/Movie detection)
-		formatScore := calculateFormatScore(fileFormatType, media)
-		currentScore += formatScore
+		// The same score, but allowing the collection folder titles the specific score leaves out
+		currentScoreWithContainer := currentScore
+		if titleScoreWithContainer != titleScore || baseTitleScoreWithContainer != baseTitleScore || affinityScore != 0 {
+			currentScoreWithContainer = titleScoreWithContainer + seasonPartScore + formatScore +
+				calculateYearScore(fileYear, media, titleScoreWithContainer)
+			if applyBaseTitle {
+				currentScoreWithContainer += baseTitleScoreWithContainer
+			}
+		}
 
 		if m.Debug {
 			m.Logger.Debug().
@@ -490,17 +537,19 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 				Int("id", media.ID).
 				Str("match", media.GetTitleSafe()).
 				Float64("score", currentScore).
+				Float64("scoreWithContainer", currentScoreWithContainer).
 				Float64("titleScore", titleScore).
 				Float64("baseTitleScore", baseTitleScore).
 				Float64("seasonPartScore", seasonPartScore).
 				Float64("yearScore", yearScore).
 				Float64("formatScore", formatScore).
+				Float64("affinityScore", affinityScore).
 				Int("season", mediaSeason).
 				Int("part", mediaPart).
 				Interface("titles", normalizedMediaTitles).
 				Msg("matcher: debug")
 		}
-		if titleScore > 2.0 {
+		if titleScoreWithContainer > 2.0 {
 			if m.Config != nil && m.Config.Logs.Verbose {
 				if m.ScanLogger != nil {
 					m.ScanLogger.LogMatcher(zerolog.DebugLevel).
@@ -508,11 +557,13 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 						Int("id", media.ID).
 						Str("match", media.GetTitleSafe()).
 						Float64("score", currentScore).
+						Float64("scoreWithContainer", currentScoreWithContainer).
 						Float64("titleScore", titleScore).
 						Float64("baseTitleScore", baseTitleScore).
 						Float64("seasonPartScore", seasonPartScore).
 						Float64("yearScore", yearScore).
 						Float64("formatScore", formatScore).
+						Float64("affinityScore", affinityScore).
 						Int("season", mediaSeason).
 						Int("part", mediaPart).
 						Interface("titles", normalizedMediaTitles).
@@ -521,9 +572,26 @@ func (m *Matcher) matchLocalFile(lf *anime.LocalFile) {
 			}
 		}
 
-		if currentScore > bestScore {
-			bestScore = currentScore
-			bestMedia = media
+		if titleScore >= 2.0 && currentScore > bestSpecificScore {
+			bestSpecificScore = currentScore
+			bestSpecificMedia = media
+		}
+		if currentScoreWithContainer > bestFallbackScore {
+			bestFallbackScore = currentScoreWithContainer
+			bestFallbackMedia = media
+		}
+	}
+
+	// A collection folder's title only names the match when nothing more specific does
+	bestScore, bestMedia := bestSpecificScore, bestSpecificMedia
+	if (bestMedia == nil || bestScore < thresholdMatch) && bestFallbackScore > bestScore {
+		bestScore, bestMedia = bestFallbackScore, bestFallbackMedia
+		if m.ScanLogger != nil && bestMedia != nil && len(containerTokens) > 0 {
+			m.ScanLogger.LogMatcher(zerolog.DebugLevel).
+				Str("filename", lf.Name).
+				Int("id", bestMedia.ID).
+				Float64("score", bestScore).
+				Msg("Falling back to a collection folder title")
 		}
 	}
 
@@ -808,28 +876,54 @@ func getMediaPart(normalizedTitles []*NormalizedTitle) (int, bool) {
 	return -1, false
 }
 
+// calculateTitleScore returns the best title score ignoring collection folder titles, and the best
+// one allowing them. The second is never lower than the first; the caller only falls back to it when
+// nothing more specific matched.
 func calculateTitleScore(
 	fileVariations []*NormalizedTitle,
 	mediaTitles []*NormalizedTitle,
 	sd *EfficientDice,
-) float64 {
-	bestScore := 0.0
-
+) (specific float64, withContainer float64) {
 	for _, fv := range fileVariations {
 		for _, mt := range mediaTitles {
 			score := compareTitles(fv, mt, sd)
+			if fv.IsContainer {
+				// A collection folder names a franchise, not the entry the file belongs to, so it
+				// is heavily penalized and kept out of the specific score entirely.
+				if s := score - scoreContainerTitlePenalty; s > withContainer {
+					withContainer = s
+				}
+				continue
+			}
 			// apply a small penalty to far away folder titles (extra titles)
 			// so they don't outcompete more specific files/folders
 			if fv.IsExtra {
-				score -= 2.0
+				score -= scoreExtraTitlePenalty
 			}
-			if score > bestScore {
-				bestScore = score
+			if score > specific {
+				specific = score
 			}
 		}
 	}
 
-	return bestScore
+	if specific > withContainer {
+		withContainer = specific
+	}
+
+	return specific, withContainer
+}
+
+// hasFranchiseAffinity reports whether the media shares every significant token of one of the
+// collection folders the file sits under, i.e. it plausibly belongs to that franchise.
+func hasFranchiseAffinity(containerTokens [][]string, mediaTitles []*NormalizedTitle) bool {
+	for _, tokens := range containerTokens {
+		for _, mt := range mediaTitles {
+			if ContainsAllTokens(tokens, mt.Tokens) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func compareTitles(file, media *NormalizedTitle, sd *EfficientDice) float64 {
@@ -1082,13 +1176,13 @@ func calculateYearScore(fileYear int, media *anime.NormalizedMedia, titleScore f
 }
 
 // calculateBaseTitleScore compares base titles (without season/part markers).
+// Like calculateTitleScore it returns the best score ignoring collection folder titles, and the best
+// one allowing them.
 func calculateBaseTitleScore(
 	fileVariations []*NormalizedTitle,
 	mediaTitles []*NormalizedTitle,
 	sd *EfficientDice,
-) float64 {
-	bestScore := 0.0
-
+) (specific float64, withContainer float64) {
 	for _, fv := range fileVariations {
 		if fv.Normalized == "" {
 			continue
@@ -1099,21 +1193,37 @@ func calculateBaseTitleScore(
 			}
 
 			// Compare clean base titles
+			score := 0.0
 			if fv.Normalized == mt.Normalized {
-				return scoreTitleBaseMatch
+				score = scoreTitleBaseMatch
+			} else if fuzzyScore := sd.Compare(fv.Normalized, mt.Normalized); fuzzyScore >= thresholdBaseTitleFuzzy {
+				score = scoreTitleBaseMatch * fuzzyScore
+			}
+			if score == 0 {
+				continue
 			}
 
-			fuzzyScore := sd.Compare(fv.Normalized, mt.Normalized)
-			if fuzzyScore >= thresholdBaseTitleFuzzy {
-				score := scoreTitleBaseMatch * fuzzyScore
-				if score > bestScore {
-					bestScore = score
+			if fv.IsContainer {
+				if score > withContainer {
+					withContainer = score
 				}
+				continue
+			}
+			if score >= scoreTitleBaseMatch {
+				// Can't do better than an exact match, and it caps the fallback score too
+				return scoreTitleBaseMatch, scoreTitleBaseMatch
+			}
+			if score > specific {
+				specific = score
 			}
 		}
 	}
 
-	return bestScore
+	if specific > withContainer {
+		withContainer = specific
+	}
+
+	return specific, withContainer
 }
 
 var builderPool = sync.Pool{

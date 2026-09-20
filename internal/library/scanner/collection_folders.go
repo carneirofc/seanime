@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/5rahim/habari"
+	"github.com/rs/zerolog"
 )
 
 // A "collection folder" is a folder that does not name an entry of its own but groups several
@@ -175,4 +176,72 @@ func hasCompoundTokenMatch(tokens, other []string) bool {
 		}
 	}
 	return false
+}
+
+// collectionTitles returns the titles of lf's folders that name a collection rather than the entry
+// the file belongs to, keyed by title so the caller can flag the matching title variations.
+//
+// Only titles that are already "extra" (i.e. some closer folder or the filename identified the
+// entry) are eligible: when nothing deeper identifies it, the collection folder's title is all we
+// have and demoting it would lose the file. A title related to the file's own — an abbreviation or
+// an extension of it, like "ReZero" under "Re Zero kara Hajimeru Isekai Seikatsu" — is left alone
+// too, since there the parent is what actually identifies the entry.
+func (m *Matcher) collectionTitles(
+	lf *anime.LocalFile,
+	primaryTitles map[string]struct{},
+	extraTitles map[string]struct{},
+) map[string]struct{} {
+	if len(m.collectionDirs) == 0 || len(extraTitles) == 0 {
+		return nil
+	}
+
+	primaryNormalized := make([]*NormalizedTitle, 0, len(primaryTitles))
+	for t := range primaryTitles {
+		primaryNormalized = append(primaryNormalized, NormalizeTitle(t))
+	}
+
+	var containers map[string]struct{}
+	for _, idx := range lf.ValidFolderTitleIndexes() {
+		title := lf.ParsedFolderData[idx].Title
+		if _, isExtra := extraTitles[title]; !isExtra {
+			continue
+		}
+		if _, already := containers[title]; already {
+			continue
+		}
+
+		dir, ok := folderPathAt(lf, idx)
+		if !ok {
+			continue
+		}
+		if _, isCollection := m.collectionDirs[dir]; !isCollection {
+			continue
+		}
+
+		normalized := NormalizeTitle(title)
+		related := false
+		for _, pt := range primaryNormalized {
+			if titlesAreRelated(normalized, pt) {
+				related = true
+				break
+			}
+		}
+		if related {
+			continue
+		}
+
+		if containers == nil {
+			containers = make(map[string]struct{}, 1)
+		}
+		containers[title] = struct{}{}
+
+		if m.ScanLogger != nil {
+			m.ScanLogger.LogMatcher(zerolog.DebugLevel).
+				Str("filename", lf.Name).
+				Str("folder", title).
+				Msg("Demoting collection folder title to a hint")
+		}
+	}
+
+	return containers
 }

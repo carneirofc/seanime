@@ -59439,6 +59439,17 @@
         "comments": [
           " Whether this title is an extra/fallback title (like a root folder title)"
         ]
+      },
+      {
+        "name": "IsContainer",
+        "jsonName": "isContainer",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": [
+          " Whether this title names a collection folder holding several distinct entries"
+        ]
       }
     ],
     "comments": [

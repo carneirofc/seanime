@@ -135,8 +135,9 @@ type NormalizedTitle struct {
 	Season         int      `json:"season"`
 	Part           int      `json:"part"`
 	Year           int      `json:"year"`
-	IsMain         bool     `json:"isMain"`  // Whether this title is a main title (romaji,english)
-	IsExtra        bool     `json:"isExtra"` // Whether this title is an extra/fallback title (like a root folder title)
+	IsMain         bool     `json:"isMain"`      // Whether this title is a main title (romaji,english)
+	IsExtra        bool     `json:"isExtra"`     // Whether this title is an extra/fallback title (like a root folder title)
+	IsContainer    bool     `json:"isContainer"` // Whether this title names a collection folder holding several distinct entries
 }
 
 // NormalizeTitle creates a normalized version of a title for matching

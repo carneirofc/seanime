@@ -372,6 +372,8 @@ declare namespace $scannerUtils {
         part: number
         year: number
         isMain: boolean
+        isExtra: boolean
+        isContainer: boolean
     }
 
     interface SmartSearchTitlesResult {
