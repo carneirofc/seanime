@@ -452,6 +452,11 @@ func (ap *AnilistPlatform) refreshAnimeCollection(ctx context.Context) error {
 		return err
 	}
 
+	// Recover the entries AniList kept out of the response. Done before the custom source
+	// entries are merged in, so the "already have it" set sent to AniList is made only of
+	// real AniList media ids, and before the raw copy is taken, so both collections get them.
+	recovered := ap.helper.ReconcileHiddenAnimeEntries(ctx, collection, ap.anilistClient, userName)
+
 	// Merge the custom entries into the collection
 	ap.helper.MergeCustomSourceAnimeEntries(collection)
 
@@ -482,6 +487,7 @@ func (ap *AnilistPlatform) refreshAnimeCollection(ctx context.Context) error {
 	ap.logger.Info().
 		Int("lists", listCount).
 		Int("entries", entryCount).
+		Int("recoveredHiddenEntries", recovered).
 		Dur("duration", time.Since(started)).
 		Msg("anilist platform: Anime collection refreshed")
 
@@ -614,6 +620,9 @@ func (ap *AnilistPlatform) refreshMangaCollection(ctx context.Context) error {
 		return err
 	}
 
+	// See refreshAnimeCollection for why this runs here.
+	recovered := ap.helper.ReconcileHiddenMangaEntries(ctx, collection, ap.anilistClient, userName)
+
 	// Merge the custom entries into the collection
 	ap.helper.MergeCustomSourceMangaEntries(collection)
 
@@ -648,6 +657,7 @@ func (ap *AnilistPlatform) refreshMangaCollection(ctx context.Context) error {
 	ap.logger.Info().
 		Int("lists", listCount).
 		Int("entries", entryCount).
+		Int("recoveredHiddenEntries", recovered).
 		Dur("duration", time.Since(started)).
 		Msg("anilist platform: Manga collection refreshed")
 
