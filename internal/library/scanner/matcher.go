@@ -584,13 +584,13 @@ func getFileSeason(lf *anime.LocalFile) int {
 		}
 	}
 
-	// Then check folder data for explicit season
-	if lf.ParsedFolderData != nil {
-		for _, fpd := range lf.ParsedFolderData {
-			if fpd.Season != "" {
-				if val, ok := util.StringToInt(fpd.Season); ok {
-					return val
-				}
+	// Then check folder data for explicit season.
+	// Walk from the closest folder outwards: in a nested layout like "Franchise/Franchise S2/" the
+	// innermost folder is the one that names the entry the file belongs to.
+	for i := len(lf.ParsedFolderData) - 1; i >= 0; i-- {
+		if fpd := lf.ParsedFolderData[i]; fpd.Season != "" {
+			if val, ok := util.StringToInt(fpd.Season); ok {
+				return val
 			}
 		}
 	}
@@ -602,13 +602,11 @@ func getFileSeason(lf *anime.LocalFile) int {
 		}
 	}
 
-	// Fallback: Try folder titles
-	if lf.ParsedFolderData != nil {
-		for _, fpd := range lf.ParsedFolderData {
-			if fpd.Title != "" {
-				if season := comparison.ExtractSeasonNumber(fpd.Title); season > 0 {
-					return season
-				}
+	// Fallback: Try folder titles (closest folder first, as above)
+	for i := len(lf.ParsedFolderData) - 1; i >= 0; i-- {
+		if fpd := lf.ParsedFolderData[i]; fpd.Title != "" {
+			if season := comparison.ExtractSeasonNumber(fpd.Title); season > 0 {
+				return season
 			}
 		}
 	}
@@ -624,13 +622,11 @@ func getFilePart(lf *anime.LocalFile) int {
 		}
 	}
 
-	// Then check folder data
-	if lf.ParsedFolderData != nil {
-		for _, fpd := range lf.ParsedFolderData {
-			if fpd.Part != "" {
-				if val, ok := util.StringToInt(fpd.Part); ok {
-					return val
-				}
+	// Then check folder data (closest folder first, as in getFileSeason)
+	for i := len(lf.ParsedFolderData) - 1; i >= 0; i-- {
+		if fpd := lf.ParsedFolderData[i]; fpd.Part != "" {
+			if val, ok := util.StringToInt(fpd.Part); ok {
+				return val
 			}
 		}
 	}
@@ -642,13 +638,11 @@ func getFilePart(lf *anime.LocalFile) int {
 		}
 	}
 
-	// Try folder titles
-	if lf.ParsedFolderData != nil {
-		for _, fpd := range lf.ParsedFolderData {
-			if fpd.Title != "" {
-				if part := ExtractPartNumber(fpd.Title); part > 0 {
-					return part
-				}
+	// Try folder titles (closest folder first, as above)
+	for i := len(lf.ParsedFolderData) - 1; i >= 0; i-- {
+		if fpd := lf.ParsedFolderData[i]; fpd.Title != "" {
+			if part := ExtractPartNumber(fpd.Title); part > 0 {
+				return part
 			}
 		}
 	}

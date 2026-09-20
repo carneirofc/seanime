@@ -328,15 +328,14 @@ func (f *LocalFile) GetTitleVariations() []*string {
 
 	folderSeason := 0
 
-	// Get the season from the folder data
-	if len(f.ParsedFolderData) > 0 {
-		v, found := lo.Find(f.ParsedFolderData, func(fpd *LocalFileParsedData) bool {
-			return len(fpd.Season) > 0
-		})
-		if found {
-			if res, ok := util.StringToInt(v.Season); ok {
-				folderSeason = res
-			}
+	// Get the season from the folder data.
+	// The closest folder wins: in a nested layout like "Franchise/Franchise S2/" the innermost
+	// folder is the one that names the entry the file belongs to.
+	if v, found := findInnermostFolderData(f.ParsedFolderData, func(fpd *LocalFileParsedData) bool {
+		return len(fpd.Season) > 0
+	}); found {
+		if res, ok := util.StringToInt(v.Season); ok {
+			folderSeason = res
 		}
 	}
 
@@ -350,15 +349,12 @@ func (f *LocalFile) GetTitleVariations() []*string {
 
 	part := 0
 
-	// Get the part from the folder data
-	if len(f.ParsedFolderData) > 0 {
-		v, found := lo.Find(f.ParsedFolderData, func(fpd *LocalFileParsedData) bool {
-			return len(fpd.Part) > 0
-		})
-		if found {
-			if res, ok := util.StringToInt(v.Part); ok {
-				part = res
-			}
+	// Get the part from the folder data (closest folder wins, as with the season above)
+	if v, found := findInnermostFolderData(f.ParsedFolderData, func(fpd *LocalFileParsedData) bool {
+		return len(fpd.Part) > 0
+	}); found {
+		if res, ok := util.StringToInt(v.Part); ok {
+			part = res
 		}
 	}
 
@@ -495,6 +491,17 @@ func (f *LocalFile) GetTitleVariations() []*string {
 	}
 
 	return lo.ToSlicePtr(titleVariations)
+}
+
+// findInnermostFolderData returns the last folder data satisfying predicate, i.e. the one closest
+// to the file. [LocalFile.ParsedFolderData] is ordered from the outermost folder inwards.
+func findInnermostFolderData(data []*LocalFileParsedData, predicate func(*LocalFileParsedData) bool) (*LocalFileParsedData, bool) {
+	for i := len(data) - 1; i >= 0; i-- {
+		if predicate(data[i]) {
+			return data[i], true
+		}
+	}
+	return nil, false
 }
 
 // intToRoman converts small integers (1-10) to Roman numerals
