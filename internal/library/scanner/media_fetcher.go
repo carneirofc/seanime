@@ -99,11 +99,19 @@ func NewMediaFetcher(ctx context.Context, opts *MediaFetcherOptions) (ret *Media
 	// Temporary slice to hold CompleteAnime before conversion
 	allCompleteAnime := make([]*anilist.CompleteAnime, 0)
 
+	// Media taken from opts.OptionalAnimeCollection rather than from the collection with relations:
+	// custom source entries, and the AniList entries the relations collection did not return.
+	// Held apart because the enhanced path below rebuilds allCompleteAnime from the cache, which
+	// these are deliberately not written to, and they would be dropped.
+	extraCompleteAnime := make([]*anilist.CompleteAnime, 0)
+
 	if !opts.DisableAnimeCollection {
 		// For each collection entry, append the media to AllMedia
+		collectionMediaIds := make(map[int]struct{})
 		for _, list := range animeCollectionWithRelations.GetMediaListCollection().GetLists() {
 			for _, entry := range list.GetEntries() {
 				allCompleteAnime = append(allCompleteAnime, entry.GetMedia())
+				collectionMediaIds[entry.GetMedia().ID] = struct{}{}
 
 				// +---------------------+
 				// |        Cache        |
@@ -112,21 +120,13 @@ func NewMediaFetcher(ctx context.Context, opts *MediaFetcherOptions) (ret *Media
 				opts.CompleteAnimeCache.Set(entry.GetMedia().ID, entry.GetMedia())
 			}
 		}
-		// Handle custom sources
-		// Devnote: For now we just get them from opts.AnimeCollection but in the future we could introduce a new method for custom sources to return many CompleteAnime at once
-		// right now custom source media wont have any relations data
-		if opts.OptionalAnimeCollection != nil {
-			for _, list := range opts.OptionalAnimeCollection.GetMediaListCollection().GetLists() {
-				if list == nil {
-					continue
-				}
-				for _, entry := range list.GetEntries() {
-					if entry == nil || entry.GetMedia() == nil || !customsource.IsExtensionId(entry.GetMedia().GetID()) {
-						continue
-					}
-					allCompleteAnime = append(allCompleteAnime, entry.GetMedia().ToCompleteAnime())
-				}
-			}
+		// Handle custom sources, and recover the list entries the query above left out
+		var recovered int
+		extraCompleteAnime, recovered = collectMissingCollectionMedia(opts.OptionalAnimeCollection, collectionMediaIds)
+		if mf.ScanLogger != nil && recovered > 0 {
+			mf.ScanLogger.LogMediaFetcher(zerolog.InfoLevel).
+				Int("count", recovered).
+				Msg("Recovered list entries missing from the collection with relations")
 		}
 	}
 
@@ -138,10 +138,16 @@ func NewMediaFetcher(ctx context.Context, opts *MediaFetcherOptions) (ret *Media
 
 	//--------------------------------------------
 
-	// Get the media IDs from the collection
-	mf.CollectionMediaIds = lop.Map(allCompleteAnime, func(m *anilist.CompleteAnime, index int) int {
-		return m.ID
-	})
+	// Get the media IDs from the collection.
+	// The recovered entries count as collection media too: they are list entries, just ones the
+	// query did not return.
+	mf.CollectionMediaIds = make([]int, 0, len(allCompleteAnime)+len(extraCompleteAnime))
+	for _, m := range allCompleteAnime {
+		mf.CollectionMediaIds = append(mf.CollectionMediaIds, m.ID)
+	}
+	for _, m := range extraCompleteAnime {
+		mf.CollectionMediaIds = append(mf.CollectionMediaIds, m.ID)
+	}
 
 	//--------------------------------------------
 
@@ -172,6 +178,9 @@ func NewMediaFetcher(ctx context.Context, opts *MediaFetcherOptions) (ret *Media
 			})
 		}
 	}
+
+	// Added after the enhanced path above, which replaces allCompleteAnime wholesale
+	allCompleteAnime = append(allCompleteAnime, extraCompleteAnime...)
 
 	mf.AllMedia = NormalizedMediaFromAnilistComplete(allCompleteAnime)
 
@@ -242,6 +251,55 @@ func NewMediaFetcher(ctx context.Context, opts *MediaFetcherOptions) (ret *Media
 	mf.UnknownMediaIds = completedEvent.UnknownMediaIds
 
 	return mf, nil
+}
+
+// collectMissingCollectionMedia returns the media of collection whose id is not already in knownIds,
+// and how many of those are AniList entries rather than custom source ones. knownIds is updated with
+// what was taken, so no media is returned twice.
+//
+// collection is the plain anime collection, which has been through
+// PlatformHelper.ReconcileHiddenAnimeEntries. That puts back the entries AniList keeps out of a
+// MediaListCollection response: an entry flagged hiddenFromStatusLists is filed under the user's
+// custom lists instead of its status group, and one that is hidden while belonging to no custom list
+// is not returned at all. The AnimeCollectionWithRelations query the scanner runs has the same blind
+// spot and nothing repairs it, so without this every such entry was absent from the matcher's
+// candidates and could not be matched however the files were named. Seanime privatizes adult entries
+// by default and that sets hiddenFromStatusLists, so this covered a whole class of library.
+//
+// Custom source entries come back through here too: they are never in the collection with relations.
+//
+// Devnote: the media carry the baseAnime fragment, so unlike the entries taken from the collection
+// with relations they bring no relations of their own.
+func collectMissingCollectionMedia(
+	collection *anilist.AnimeCollection,
+	knownIds map[int]struct{},
+) (extra []*anilist.CompleteAnime, recoveredAnilistEntries int) {
+	extra = make([]*anilist.CompleteAnime, 0)
+	if collection == nil {
+		return extra, 0
+	}
+
+	for _, list := range collection.GetMediaListCollection().GetLists() {
+		if list == nil {
+			continue
+		}
+		for _, entry := range list.GetEntries() {
+			if entry == nil || entry.GetMedia() == nil {
+				continue
+			}
+			mediaId := entry.GetMedia().GetID()
+			if _, ok := knownIds[mediaId]; ok {
+				continue
+			}
+			knownIds[mediaId] = struct{}{}
+			extra = append(extra, entry.GetMedia().ToCompleteAnime())
+			if !customsource.IsExtensionId(mediaId) {
+				recoveredAnilistEntries++
+			}
+		}
+	}
+
+	return extra, recoveredAnilistEntries
 }
 
 func NormalizedMediaFromAnilistComplete(c []*anilist.CompleteAnime) []*anime.NormalizedMedia {
