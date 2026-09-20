@@ -109,11 +109,15 @@ func NewMediaContainer(opts *MediaContainerOptions) *MediaContainer {
 	synonymsSlice := make([]*string, 0, len(mc.NormalizedMedia)*2)
 
 	for _, m := range mc.NormalizedMedia {
-		if m.Title.English != nil && len(*m.Title.English) > 0 {
-			engTitles = append(engTitles, m.Title.English)
-		}
-		if m.Title.Romaji != nil && len(*m.Title.Romaji) > 0 {
-			romTitles = append(romTitles, m.Title.Romaji)
+		// NormalizedMedia.Title is nil when the source media had no title at all, which a custom
+		// source or the offline database can produce
+		if m.Title != nil {
+			if m.Title.English != nil && len(*m.Title.English) > 0 {
+				engTitles = append(engTitles, m.Title.English)
+			}
+			if m.Title.Romaji != nil && len(*m.Title.Romaji) > 0 {
+				romTitles = append(romTitles, m.Title.Romaji)
+			}
 		}
 		if m.Synonyms != nil {
 			for _, syn := range m.Synonyms {
