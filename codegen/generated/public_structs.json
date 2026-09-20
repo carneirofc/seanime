@@ -58529,12 +58529,32 @@
         "comments": []
       },
       {
+        "name": "KnownPaths",
+        "jsonName": "KnownPaths",
+        "goType": "[]string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "matchingRules",
         "jsonName": "matchingRules",
         "goType": "map[string]compiledMatchingRule",
         "typescriptType": "Record\u003cstring, Scanner_compiledMatchingRule\u003e",
         "usedTypescriptType": "Scanner_compiledMatchingRule",
         "usedStructName": "scanner.compiledMatchingRule",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "collectionDirs",
+        "jsonName": "collectionDirs",
+        "goType": "map[string]__STRUCT__",
+        "inlineStructType": "map[string]struct{\n}",
+        "typescriptType": "Record\u003cstring, { }\u003e",
+        "usedTypescriptType": "{ }",
         "required": false,
         "public": false,
         "comments": []

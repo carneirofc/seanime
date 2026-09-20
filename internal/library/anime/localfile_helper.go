@@ -300,25 +300,51 @@ func (f *LocalFile) GetFolderTitle(all ...bool) string {
 	return ""
 }
 
-// GetAllFolderTitles returns all valid folder titles (not just the closest one).
-func (f *LocalFile) GetAllFolderTitles() []string {
+// ValidFolderTitleIndexes returns the indexes in [LocalFile.ParsedFolderData] whose title is usable
+// as a media title, i.e. non-empty and not merely a keyword like "specials" or "extras".
+// The indexes are ordered from the outermost folder to the closest one, like ParsedFolderData itself.
+//
+// Callers that need to know which folder a title came from (to look the folder up on disk, say)
+// should use this rather than [LocalFile.GetAllFolderTitles], which drops the association.
+func (f *LocalFile) ValidFolderTitleIndexes() []int {
 	if len(f.ParsedFolderData) == 0 {
 		return nil
 	}
-	titles := make([]string, 0, len(f.ParsedFolderData))
-	for _, fpd := range f.ParsedFolderData {
-		cleanTitle := strings.TrimSpace(strings.ToLower(fpd.Title))
-		if len(cleanTitle) == 0 {
+	indexes := make([]int, 0, len(f.ParsedFolderData))
+	for idx, fpd := range f.ParsedFolderData {
+		if !IsUsableFolderTitle(fpd.Title, fpd.Original) {
 			continue
 		}
-		if _, ok := comparison.IgnoredFilenames[cleanTitle]; ok {
-			continue
-		}
-		// Also check the original folder name for ignored keywords
-		if comparison.ValueContainsIgnoredKeywords(fpd.Original) {
-			continue
-		}
-		titles = append(titles, fpd.Title)
+		indexes = append(indexes, idx)
+	}
+	return indexes
+}
+
+// IsUsableFolderTitle reports whether a folder's parsed title can stand in for a media title, i.e.
+// it is non-empty and the folder is not simply a keyword like "specials" or "extras".
+//   - parsedTitle: the title habari extracted from the folder name.
+//   - originalName: the folder name as it appears on disk.
+func IsUsableFolderTitle(parsedTitle, originalName string) bool {
+	cleanTitle := strings.TrimSpace(strings.ToLower(parsedTitle))
+	if len(cleanTitle) == 0 {
+		return false
+	}
+	if _, ok := comparison.IgnoredFilenames[cleanTitle]; ok {
+		return false
+	}
+	// Also check the original folder name for ignored keywords
+	return !comparison.ValueContainsIgnoredKeywords(originalName)
+}
+
+// GetAllFolderTitles returns all valid folder titles (not just the closest one).
+func (f *LocalFile) GetAllFolderTitles() []string {
+	indexes := f.ValidFolderTitleIndexes()
+	if len(indexes) == 0 {
+		return nil
+	}
+	titles := make([]string, 0, len(indexes))
+	for _, idx := range indexes {
+		titles = append(titles, f.ParsedFolderData[idx].Title)
 	}
 	return titles
 }

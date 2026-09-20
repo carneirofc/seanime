@@ -380,6 +380,13 @@ func (scn *Scanner) Scan(ctx context.Context) (lfs []*anime.LocalFile, err error
 	// |      Matcher        |
 	// +---------------------+
 
+	// Files we aren't matching (locked, ignored, shelved) still tell the matcher the shape of the
+	// library, so a skipped sibling folder doesn't hide a folder that groups several entries.
+	knownPaths := make([]string, 0, len(skippedLfs))
+	for _, lf := range skippedLfs {
+		knownPaths = append(knownPaths, lf.Path)
+	}
+
 	// Create a new matcher
 	matcher := &Matcher{
 		LocalFiles:        localFiles,
@@ -391,6 +398,7 @@ func (scn *Scanner) Scan(ctx context.Context) (lfs []*anime.LocalFile, err error
 		Threshold:         scn.MatchingThreshold,
 		UseLegacyMatching: scn.UseLegacyMatching,
 		Config:            scn.Config,
+		KnownPaths:        knownPaths,
 	}
 
 	scn.WSEventManager.SendEvent(events.EventScanProgress, 60)

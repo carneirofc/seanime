@@ -56,7 +56,14 @@ type Matcher struct {
 	Debug             bool
 	UseLegacyMatching bool
 	Config            *Config
-	matchingRules     map[string]*compiledMatchingRule
+	// KnownPaths are paths of media files that exist in the library but are not being matched
+	// (locked, ignored or shelved files). They are used only to work out the shape of the library,
+	// so that such a file's folder does not hide a collection folder. Optional.
+	KnownPaths    []string
+	matchingRules map[string]*compiledMatchingRule
+	// collectionDirs holds the normalized paths of folders that group several distinct entries
+	// together. Written once by MatchLocalFilesWithMedia, read-only from then on.
+	collectionDirs map[string]struct{}
 }
 
 type compiledMatchingRule struct {
@@ -133,6 +140,17 @@ func (m *Matcher) MatchLocalFilesWithMedia() error {
 	m.Logger.Debug().Msg("matcher: Starting matching process")
 
 	m.precompileRules()
+
+	// Work out which folders group several distinct entries together, so their titles can be
+	// demoted to a hint during matching. Done here, before the workers start, so the map is only
+	// ever read concurrently.
+	m.collectionDirs = detectCollectionFolders(m.LocalFiles, m.KnownPaths)
+	if m.ScanLogger != nil && len(m.collectionDirs) > 0 {
+		m.ScanLogger.LogMatcher(zerolog.DebugLevel).
+			Int("count", len(m.collectionDirs)).
+			Interface("dirs", lo.Keys(m.collectionDirs)).
+			Msg("Found collection folders")
+	}
 
 	// Invoke ScanMatchingStarted hook
 	event := &ScanMatchingStartedEvent{
