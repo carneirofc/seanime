@@ -1955,8 +1955,9 @@ type User struct {
 	// If this user if following the authenticated user
 	IsFollower *bool `json:"isFollower,omitempty"`
 	// If the user is blocked by the authenticated user
-	IsBlocked *bool   `json:"isBlocked,omitempty"`
-	Bans      *string `json:"bans,omitempty"`
+	IsBlocked *bool `json:"isBlocked,omitempty"`
+	// List of active bans. Mod-only
+	Bans *string `json:"bans,omitempty"`
 	// The user's general options
 	Options *UserOptions `json:"options,omitempty"`
 	// The user's media list options
@@ -1987,7 +1988,7 @@ type User struct {
 	PreviousNames []*UserPreviousName `json:"previousNames,omitempty"`
 }
 
-// A user's activity history stats.
+// A user's activity history stats for the previous 6 months. Refreshes only periodically
 type UserActivityHistory struct {
 	// The day the activity took place (Unix timestamp)
 	Date *int `json:"date,omitempty"`
@@ -3064,6 +3065,8 @@ const (
 	MediaRelationCompilation MediaRelation = "COMPILATION"
 	// Version 2 only.
 	MediaRelationContains MediaRelation = "CONTAINS"
+	// Version 3 only. The media is set in the same universe as another media
+	MediaRelationSameUniverse MediaRelation = "SAME_UNIVERSE"
 )
 
 var AllMediaRelation = []MediaRelation{
@@ -3080,11 +3083,12 @@ var AllMediaRelation = []MediaRelation{
 	MediaRelationSource,
 	MediaRelationCompilation,
 	MediaRelationContains,
+	MediaRelationSameUniverse,
 }
 
 func (e MediaRelation) IsValid() bool {
 	switch e {
-	case MediaRelationAdaptation, MediaRelationPrequel, MediaRelationSequel, MediaRelationParent, MediaRelationSideStory, MediaRelationCharacter, MediaRelationSummary, MediaRelationAlternative, MediaRelationSpinOff, MediaRelationOther, MediaRelationSource, MediaRelationCompilation, MediaRelationContains:
+	case MediaRelationAdaptation, MediaRelationPrequel, MediaRelationSequel, MediaRelationParent, MediaRelationSideStory, MediaRelationCharacter, MediaRelationSummary, MediaRelationAlternative, MediaRelationSpinOff, MediaRelationOther, MediaRelationSource, MediaRelationCompilation, MediaRelationContains, MediaRelationSameUniverse:
 		return true
 	}
 	return false

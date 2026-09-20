@@ -47,6 +47,38 @@ query MangaCollectionTags ($userName: String) {
 }
 
 
+query MangaListEntriesNotIn ($userName: String, $excludedMediaIds: [Int], $page: Int, $perPage: Int) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      currentPage
+      hasNextPage
+    }
+    mediaList(userName: $userName, type: MANGA, mediaId_not_in: $excludedMediaIds) {
+      id
+      score(format: POINT_100)
+      progress
+      status
+      notes
+      repeat
+      private
+      hiddenFromStatusLists
+      startedAt {
+        year
+        month
+        day
+      }
+      completedAt {
+        year
+        month
+        day
+      }
+      media {
+        ...baseManga
+      }
+    }
+  }
+}
+
 query SearchBaseManga($page: Int, $perPage: Int, $sort: [MediaSort], $search: String, $status: [MediaStatus]){
   Page(page: $page, perPage: $perPage){
     pageInfo{

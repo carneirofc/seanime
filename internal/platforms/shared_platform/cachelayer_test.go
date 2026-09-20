@@ -475,6 +475,14 @@ func mangaListContains(collection *anilist.MangaCollection, status anilist.Media
 	return false
 }
 
+func (c *cacheLayerTestClient) AnimeListEntriesNotIn(_ context.Context, _ *string, _ []*int, _ *int, _ *int, _ ...clientv2.RequestInterceptor) (*anilist.AnimeListEntriesNotIn, error) {
+	return &anilist.AnimeListEntriesNotIn{Page: &anilist.AnimeListEntriesNotIn_Page{}}, nil
+}
+
+func (c *cacheLayerTestClient) MangaListEntriesNotIn(_ context.Context, _ *string, _ []*int, _ *int, _ *int, _ ...clientv2.RequestInterceptor) (*anilist.MangaListEntriesNotIn, error) {
+	return &anilist.MangaListEntriesNotIn{Page: &anilist.MangaListEntriesNotIn_Page{}}, nil
+}
+
 // animeCollectionTagsCalls counts how often the tags query actually reached AniList.
 func (c *cacheLayerTestClient) AnimeCollectionTags(_ context.Context, _ *string, _ ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionTags, error) {
 	c.animeCollectionTagsCalls++

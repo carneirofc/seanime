@@ -32,6 +32,7 @@ type AnilistClient interface {
 	AnimeCollection(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*AnimeCollection, error)
 	AnimeCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*AnimeCollectionTags, error)
 	AnimeCollectionWithRelations(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*AnimeCollectionWithRelations, error)
+	AnimeListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*AnimeListEntriesNotIn, error)
 	BaseAnimeByMalID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*BaseAnimeByMalID, error)
 	BaseAnimeByID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*BaseAnimeByID, error)
 	SearchBaseAnimeByIds(ctx context.Context, ids []*int, page *int, perPage *int, status []*MediaStatus, inCollection *bool, sort []*MediaSort, season *MediaSeason, year *int, genre *string, format *MediaFormat, interceptors ...clientv2.RequestInterceptor) (*SearchBaseAnimeByIds, error)
@@ -45,6 +46,7 @@ type AnilistClient interface {
 	DeleteEntry(ctx context.Context, mediaListEntryID *int, interceptors ...clientv2.RequestInterceptor) (*DeleteEntry, error)
 	MangaCollection(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*MangaCollection, error)
 	MangaCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*MangaCollectionTags, error)
+	MangaListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*MangaListEntriesNotIn, error)
 	GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error)
 	SearchBaseManga(ctx context.Context, page *int, perPage *int, sort []*MediaSort, search *string, status []*MediaStatus, interceptors ...clientv2.RequestInterceptor) (*SearchBaseManga, error)
 	BaseMangaByID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*BaseMangaByID, error)
@@ -298,6 +300,18 @@ func (ac *AnilistClientImpl) AnimeCollectionWithRelations(ctx context.Context, u
 	return ac.Client.AnimeCollectionWithRelations(ctx, userName, interceptors...)
 }
 
+// AnimeListEntriesNotIn returns the user's anime list entries whose media id is not in
+// excludedMediaIds. It exists to recover entries that MediaListCollection leaves out:
+// AniList files an entry flagged hiddenFromStatusLists under the user's custom lists only,
+// so an entry that is hidden and in no custom list is absent from the collection entirely.
+func (ac *AnilistClientImpl) AnimeListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*AnimeListEntriesNotIn, error) {
+	if !ac.IsAuthenticated() {
+		return nil, ErrNotAuthenticated
+	}
+	ac.logger.Debug().Int("excluded", len(excludedMediaIds)).Msg("anilist: Fetching anime list entries missing from the collection")
+	return ac.Client.AnimeListEntriesNotIn(ctx, userName, excludedMediaIds, page, perPage, interceptors...)
+}
+
 func (ac *AnilistClientImpl) GetViewer(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetViewer, error) {
 	if !ac.IsAuthenticated() {
 		return nil, ErrNotAuthenticated
@@ -332,6 +346,15 @@ func (ac *AnilistClientImpl) MangaCollectionTags(ctx context.Context, userName *
 	}
 	ac.logger.Debug().Msg("anilist: Fetching manga collection tags")
 	return ac.Client.MangaCollectionTags(ctx, userName, interceptors...)
+}
+
+// MangaListEntriesNotIn is the manga counterpart of AnimeListEntriesNotIn.
+func (ac *AnilistClientImpl) MangaListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*MangaListEntriesNotIn, error) {
+	if !ac.IsAuthenticated() {
+		return nil, ErrNotAuthenticated
+	}
+	ac.logger.Debug().Int("excluded", len(excludedMediaIds)).Msg("anilist: Fetching manga list entries missing from the collection")
+	return ac.Client.MangaListEntriesNotIn(ctx, userName, excludedMediaIds, page, perPage, interceptors...)
 }
 
 func (ac *AnilistClientImpl) ViewerStats(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*ViewerStats, error) {

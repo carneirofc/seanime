@@ -1081,6 +1081,18 @@ func (c *CacheLayer) GetMediaTagsByID(ctx context.Context, ids []int, page *int,
 	return c.anilistClientRef.Get().GetMediaTagsByID(ctx, ids, page, perPage, interceptors...)
 }
 
+// AnimeListEntriesNotIn and MangaListEntriesNotIn are deliberately not cached, for the same
+// reason as GetMediaTagsByID: the exclusion set is derived from the collection that was just
+// fetched, so it differs on nearly every call and a cached response would never be reused.
+// A failure here is not fatal — the caller keeps the collection it already has.
+func (c *CacheLayer) AnimeListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeListEntriesNotIn, error) {
+	return c.anilistClientRef.Get().AnimeListEntriesNotIn(ctx, userName, excludedMediaIds, page, perPage, interceptors...)
+}
+
+func (c *CacheLayer) MangaListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*anilist.MangaListEntriesNotIn, error) {
+	return c.anilistClientRef.Get().MangaListEntriesNotIn(ctx, userName, excludedMediaIds, page, perPage, interceptors...)
+}
+
 func (c *CacheLayer) AnimeCollectionWithRelations(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*anilist.AnimeCollectionWithRelations, error) {
 	c.rememberCollectionUser(userName)
 	cacheKey := c.collectionCacheKey("collection-relations", userName)

@@ -1114,7 +1114,8 @@ export type AL_MediaRelation = "ADAPTATION" |
     "OTHER" |
     "SOURCE" |
     "COMPILATION" |
-    "CONTAINS"
+    "CONTAINS" |
+    "SAME_UNIVERSE"
 
 /**
  * - Filepath: internal/api/anilist/models_gen.go

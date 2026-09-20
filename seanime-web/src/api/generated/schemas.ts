@@ -286,7 +286,7 @@ export const AL_AnimeDetailsById_Media_RecommendationsSchema = z.looseObject({
 })
 
 /** anilist.MediaRelation — models_gen.go */
-export const AL_MediaRelationValues = ["ADAPTATION", "PREQUEL", "SEQUEL", "PARENT", "SIDE_STORY", "CHARACTER", "SUMMARY", "ALTERNATIVE", "SPIN_OFF", "OTHER", "SOURCE", "COMPILATION", "CONTAINS"] as const
+export const AL_MediaRelationValues = ["ADAPTATION", "PREQUEL", "SEQUEL", "PARENT", "SIDE_STORY", "CHARACTER", "SUMMARY", "ALTERNATIVE", "SPIN_OFF", "OTHER", "SOURCE", "COMPILATION", "CONTAINS", "SAME_UNIVERSE"] as const
 export const AL_MediaRelationSchema = z.enum(AL_MediaRelationValues)
 
 /** anilist.AnimeDetailsById_Media_Relations_Edges — client_gen.go */

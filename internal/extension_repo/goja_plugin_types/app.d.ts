@@ -3015,7 +3015,8 @@ declare namespace $app {
     "OTHER" |
     "SOURCE" |
     "COMPILATION" |
-    "CONTAINS";
+    "CONTAINS" |
+    "SAME_UNIVERSE";
 
     /**
      * - Filepath: internal/api/anilist/models_gen.go

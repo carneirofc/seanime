@@ -501,6 +501,11 @@ func (ac *FixtureAnilistClient) AnimeCollectionTags(ctx context.Context, userNam
 	return ac.realAnilistClient.AnimeCollectionTags(ctx, userName, interceptors...)
 }
 
+func (ac *FixtureAnilistClient) AnimeListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*AnimeListEntriesNotIn, error) {
+	ac.logger.Debug().Int("excluded", len(excludedMediaIds)).Msg("anilist: Fetching anime list entries missing from the collection")
+	return ac.realAnilistClient.AnimeListEntriesNotIn(ctx, userName, excludedMediaIds, page, perPage, interceptors...)
+}
+
 func (ac *FixtureAnilistClient) AnimeCollectionWithRelations(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*AnimeCollectionWithRelations, error) {
 	key := fixtureCollectionKey(userName)
 	fixturePath := testutil.TestDataPath("AnimeCollectionWithRelations")
@@ -771,6 +776,11 @@ func (ac *FixtureAnilistClient) MangaCollection(ctx context.Context, userName *s
 func (ac *FixtureAnilistClient) MangaCollectionTags(ctx context.Context, userName *string, interceptors ...clientv2.RequestInterceptor) (*MangaCollectionTags, error) {
 	ac.logger.Debug().Msg("anilist: Fetching manga collection tags")
 	return ac.realAnilistClient.MangaCollectionTags(ctx, userName, interceptors...)
+}
+
+func (ac *FixtureAnilistClient) MangaListEntriesNotIn(ctx context.Context, userName *string, excludedMediaIds []*int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*MangaListEntriesNotIn, error) {
+	ac.logger.Debug().Int("excluded", len(excludedMediaIds)).Msg("anilist: Fetching manga list entries missing from the collection")
+	return ac.realAnilistClient.MangaListEntriesNotIn(ctx, userName, excludedMediaIds, page, perPage, interceptors...)
 }
 
 func (ac *FixtureAnilistClient) GetMediaTagsByID(ctx context.Context, ids []int, page *int, perPage *int, interceptors ...clientv2.RequestInterceptor) (*GetMediaTagsByID, error) {

@@ -246,3 +246,78 @@ func (ac *AnimeList) CopyT() *AnimeCollection_MediaListCollection_Lists {
 	}
 	return &copy
 }
+
+// AnimeListEntryFromMediaList converts an entry returned by the AnimeListEntriesNotIn
+// query into a collection entry. The two queries select the same fields, so the copy is
+// exhaustive; only the per-query date structs have to be rebuilt, since the media itself
+// is the shared baseAnime fragment type.
+func AnimeListEntryFromMediaList(src *AnimeListEntriesNotIn_Page_MediaList) *AnimeListEntry {
+	if src == nil {
+		return nil
+	}
+
+	entry := &AnimeListEntry{
+		ID:                    src.ID,
+		Score:                 src.Score,
+		Progress:              src.Progress,
+		Status:                src.Status,
+		Notes:                 src.Notes,
+		Repeat:                src.Repeat,
+		Private:               src.Private,
+		HiddenFromStatusLists: src.HiddenFromStatusLists,
+		Media:                 src.Media,
+	}
+
+	if src.StartedAt != nil {
+		entry.StartedAt = &AnimeCollection_MediaListCollection_Lists_Entries_StartedAt{
+			Year:  src.StartedAt.Year,
+			Month: src.StartedAt.Month,
+			Day:   src.StartedAt.Day,
+		}
+	}
+	if src.CompletedAt != nil {
+		entry.CompletedAt = &AnimeCollection_MediaListCollection_Lists_Entries_CompletedAt{
+			Year:  src.CompletedAt.Year,
+			Month: src.CompletedAt.Month,
+			Day:   src.CompletedAt.Day,
+		}
+	}
+
+	return entry
+}
+
+// MangaListEntryFromMediaList is the manga counterpart of AnimeListEntryFromMediaList.
+func MangaListEntryFromMediaList(src *MangaListEntriesNotIn_Page_MediaList) *MangaListEntry {
+	if src == nil {
+		return nil
+	}
+
+	entry := &MangaListEntry{
+		ID:                    src.ID,
+		Score:                 src.Score,
+		Progress:              src.Progress,
+		Status:                src.Status,
+		Notes:                 src.Notes,
+		Repeat:                src.Repeat,
+		Private:               src.Private,
+		HiddenFromStatusLists: src.HiddenFromStatusLists,
+		Media:                 src.Media,
+	}
+
+	if src.StartedAt != nil {
+		entry.StartedAt = &MangaCollection_MediaListCollection_Lists_Entries_StartedAt{
+			Year:  src.StartedAt.Year,
+			Month: src.StartedAt.Month,
+			Day:   src.StartedAt.Day,
+		}
+	}
+	if src.CompletedAt != nil {
+		entry.CompletedAt = &MangaCollection_MediaListCollection_Lists_Entries_CompletedAt{
+			Year:  src.CompletedAt.Year,
+			Month: src.CompletedAt.Month,
+			Day:   src.CompletedAt.Day,
+		}
+	}
+
+	return entry
+}

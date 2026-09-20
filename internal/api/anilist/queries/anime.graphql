@@ -79,6 +79,38 @@ query AnimeCollectionWithRelations ($userName: String) {
   }
 }
 
+query AnimeListEntriesNotIn ($userName: String, $excludedMediaIds: [Int], $page: Int, $perPage: Int) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      currentPage
+      hasNextPage
+    }
+    mediaList(userName: $userName, type: ANIME, mediaId_not_in: $excludedMediaIds) {
+      id
+      score(format: POINT_100)
+      progress
+      status
+      notes
+      repeat
+      private
+      hiddenFromStatusLists
+      startedAt {
+        year
+        month
+        day
+      }
+      completedAt {
+        year
+        month
+        day
+      }
+      media {
+        ...baseAnime
+      }
+    }
+  }
+}
+
 query BaseAnimeByMalId ($id: Int) {
   Media(idMal: $id, type: ANIME) {
     ...baseAnime
