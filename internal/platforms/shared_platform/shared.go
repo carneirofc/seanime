@@ -507,16 +507,17 @@ func (h *PlatformHelper) TriggerDeleteEntryHooks(ctx context.Context, mediaID in
 	return err
 }
 
+// FilterOutCustomAnimeLists returns the status groups of a collection. Entries that AniList
+// only returned inside a custom list are folded into the status group matching their own
+// status first, rather than dropped with the group: AniList files an entry flagged
+// hiddenFromStatusLists under the custom lists alone, so dropping them outright made every
+// hidden entry vanish from the library, Continue Watching and everything else downstream.
 func (h *PlatformHelper) FilterOutCustomAnimeLists(lists []*anilist.AnimeCollection_MediaListCollection_Lists) []*anilist.AnimeCollection_MediaListCollection_Lists {
-	return lo.Filter(lists, func(list *anilist.AnimeCollection_MediaListCollection_Lists, _ int) bool {
-		return list.Status != nil
-	})
+	return anilist.FoldAnimeCustomLists(lists)
 }
 
 func (h *PlatformHelper) FilterOutCustomMangaLists(lists []*anilist.MangaCollection_MediaListCollection_Lists) []*anilist.MangaCollection_MediaListCollection_Lists {
-	return lo.Filter(lists, func(list *anilist.MangaCollection_MediaListCollection_Lists, _ int) bool {
-		return list.Status != nil
-	})
+	return anilist.FoldMangaCustomLists(lists)
 }
 
 func (h *PlatformHelper) RemoveNovelsFromMangaCollection(collection *anilist.MangaCollection) {
