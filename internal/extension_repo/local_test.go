@@ -94,13 +94,11 @@ func TestInstallExternalExtensionFromLocalFile(t *testing.T) {
 	repo, extensionDir := newExternalExtensionTestRepository(t)
 
 	srcDir := t.TempDir()
-	// The stored manifestURI (used later for reload-from-source) is the absolute path.
+	// The manifest declares no manifestURI of its own; install records the path it was
+	// fetched from, which is what reload-from-source reads back later.
 	manifestPath := writeLocalExtensionSource(t, srcDir, "", asyncAnimeTorrentProviderPayload)
 
-	// Install using a plain absolute filesystem path (exercises the IsAbs branch),
-	// with the manifest self-declaring the absolute path as its manifestURI.
-	rewriteManifestURI(t, manifestPath, manifestPath)
-
+	// Install using a plain absolute filesystem path (exercises the IsAbs branch).
 	res, err := repo.InstallExternalExtension(manifestPath)
 	require.NoError(t, err)
 	require.Contains(t, res.Message, "installed")
@@ -115,8 +113,13 @@ func TestInstallExternalExtensionFromLocalFile(t *testing.T) {
 	require.Len(t, all.Extensions, 1)
 	require.Equal(t, "local-torrent-provider", all.Extensions[0].ID)
 
-	_, found := repo.GetAnimeTorrentProviderExtensionByID("local-torrent-provider")
+	loaded, found := repo.GetAnimeTorrentProviderExtensionByID("local-torrent-provider")
 	require.True(t, found)
+	require.Equal(t, filepath.ToSlash(manifestPath), loaded.GetManifestURI())
+
+	// Having recorded a usable source, it can be reloaded from it.
+	_, err = repo.RefetchExternalExtension("local-torrent-provider")
+	require.NoError(t, err)
 }
 
 func TestRefetchExternalExtensionReloadsFromSourceWithoutVersionBump(t *testing.T) {
@@ -206,24 +209,19 @@ func TestInstallExternalExtensionsFromLocalRepositoryRelative(t *testing.T) {
 	require.Empty(t, all.InvalidExtensions)
 	require.Len(t, all.Extensions, 2)
 
-	for _, id := range []string{"prov-a", "prov-b"} {
-		_, found := repo.GetAnimeTorrentProviderExtensionByID(id)
+	for sub, id := range map[string]string{"a": "prov-a", "b": "prov-b"} {
+		loaded, found := repo.GetAnimeTorrentProviderExtensionByID(id)
 		require.Truef(t, found, "expected %s to be installed and loaded", id)
+
+		// The self-declared manifestURI is discarded in favour of the local path the
+		// manifest was actually read from, and the relative payload URI is stored
+		// resolved, so both stay usable after install.
+		require.Equal(t, filepath.ToSlash(filepath.Join(repoDir, sub, "manifest.json")), loaded.GetManifestURI())
+		require.Equal(t, filepath.ToSlash(filepath.Join(repoDir, sub, "payload.js")), loaded.GetPayloadURI())
 	}
-}
 
-// rewriteManifestURI rewrites the manifestURI field of an on-disk manifest file.
-func rewriteManifestURI(t *testing.T, manifestPath string, manifestURI string) {
-	t.Helper()
-
-	raw, err := os.ReadFile(manifestPath)
-	require.NoError(t, err)
-
-	var ext extension.Extension
-	require.NoError(t, json.Unmarshal(raw, &ext))
-	ext.ManifestURI = manifestURI
-
-	out, err := json.Marshal(ext)
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(manifestPath, out, 0600))
+	// Which is what makes reload-from-source work for a monorepo checkout.
+	reloaded := repo.RefetchAllExternalExtensions()
+	require.ElementsMatch(t, []string{"prov-a", "prov-b"}, reloaded.Reloaded)
+	require.Empty(t, reloaded.Failed)
 }

@@ -55,13 +55,21 @@ func (r *Repository) fetchExternalExtensionData(manifestURI string, noPayloadDow
 		return nil, fmt.Errorf("failed to parse extension manifest, %w", err)
 	}
 
+	// Record where the extension was actually fetched from instead of trusting the
+	// manifest's self-declared manifestURI, which is relative in a monorepo layout,
+	// stale after a move, or simply absent. This is the value persisted on install and
+	// read back to reload from source and to check for updates.
+	ext.ManifestURI = manifestURI
+	// Resolve a relative payload URI against the manifest's location, so a local (or
+	// remote) manifest can reference its payload by relative path. The resolved value
+	// is what gets stored: the payload fallbacks in GetExtensionPayload have no base
+	// to resolve against later.
+	ext.PayloadURI = resolveExtensionURI(manifestURI, ext.PayloadURI)
+
 	// Before sanity check, fetch the payload if needed
 	if ext.PayloadURI != "" && !lo.Contains(noPayloadDownload, true) {
-		// Resolve a relative payload URI against the manifest's location, so a
-		// local (or remote) manifest can reference its payload by relative path.
-		payloadURI := resolveExtensionURI(manifestURI, ext.PayloadURI)
 		r.logger.Debug().Str("id", ext.ID).Msg("extensions: Downloading payload")
-		payloadFromURI, err := r.downloadPayload(payloadURI)
+		payloadFromURI, err := r.downloadPayload(ext.PayloadURI)
 		if err != nil {
 			r.logger.Error().Err(err).Str("id", ext.ID).Msg("extensions: Failed to download payload")
 			return nil, fmt.Errorf("failed to download payload, %w", err)
