@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button, IconButton } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/components/ui/core/styling"
+import { Disclosure, DisclosureContent, DisclosureItem, DisclosureTrigger } from "@/components/ui/disclosure"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Modal } from "@/components/ui/modal"
 import { Popover } from "@/components/ui/popover"
@@ -30,7 +31,7 @@ import React, { useMemo } from "react"
 import { AiOutlineExclamationCircle } from "react-icons/ai"
 import { BiSearch } from "react-icons/bi"
 import { CgMediaPodcast } from "react-icons/cg"
-import { LuBlocks, LuBookOpen, LuCheck, LuDownload, LuSettings } from "react-icons/lu"
+import { LuBlocks, LuBookOpen, LuCheck, LuChevronDown, LuDownload, LuSettings } from "react-icons/lu"
 import { MdDataSaverOn } from "react-icons/md"
 import { RiFolderDownloadFill } from "react-icons/ri"
 import { toast } from "sonner"
@@ -167,6 +168,9 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
     const mangaExtensions = filteredExtensions.filter(n => n.type === "manga-provider")
     const onlinestreamExtensions = filteredExtensions.filter(n => n.type === "onlinestream-provider")
     const customSources = filteredExtensions.filter(n => n.type === "custom-source")
+    // Anything whose type matches none of the groups above would otherwise be counted as a
+    // result and then rendered nowhere at all.
+    const otherExtensions = filteredExtensions.filter(n => !MARKETPLACE_GROUPED_TYPES.includes(n.type))
 
     // if (isLoadingMarketplace || isLoadingAllExtensions) return <LoadingSpinner />
 
@@ -178,6 +182,12 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
             return true
         }
         catch (e) {
+            // Bare absolute filesystem paths (no URL scheme) are also valid — the
+            // backend accepts these for local/monorepo marketplaces.
+            if (/^\//.test(url) || /^[a-zA-Z]:[\\/]/.test(url)) {
+                setUrlError("")
+                return true
+            }
             setUrlError("Please enter a valid URL")
             return false
         }
@@ -236,7 +246,8 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
             >
                 <div className="space-y-4">
                     <p className="text-sm text-(--muted)">
-                        Enter the URL of the repository JSON file.
+                        Enter the URL of the repository JSON file, or an absolute local file path / file:// URL
+                        for a marketplace checked out on the server's filesystem.
                     </p>
 
                     <p className="text-sm text-(--muted)">
@@ -244,6 +255,77 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                         (e.g. https://&lt;token&gt;@raw.githubusercontent.com/...) or set the SEANIME_GITHUB_TOKEN
                         environment variable on the server.
                     </p>
+
+                    <Disclosure type="single" collapsible>
+                        <DisclosureItem value="local-repo-help">
+                            <DisclosureTrigger>
+                                <Button
+                                    intent="gray-outline"
+                                    size="sm"
+                                    className="w-full justify-between"
+                                    rightIcon={<LuChevronDown />}
+                                >
+                                    Using a local repository?
+                                </Button>
+                            </DisclosureTrigger>
+                            <DisclosureContent className="pt-3">
+                                <div className="space-y-3 text-sm text-(--muted)">
+                                    <div>
+                                        <p className="font-medium text-(--foreground)">Local file path</p>
+                                        <p>
+                                            The server reads the marketplace file directly off its own filesystem — use an
+                                            absolute path, either bare or as a file:// URL. Relative paths are not
+                                            accepted here (only inside the marketplace JSON, see below).
+                                        </p>
+                                        <pre className="mt-2 rounded-[--radius-md] bg-gray-950 p-2 text-xs overflow-x-auto">
+{`# Linux/macOS
+/home/user/my-extensions/marketplace.json
+file:///home/user/my-extensions/marketplace.json
+
+# Windows
+file:///C:/Users/me/my-extensions/marketplace.json`}
+                                        </pre>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-(--foreground)">Monorepo layout</p>
+                                        <p>
+                                            A local marketplace.json can reference sibling extensions by a path relative
+                                            to its own location, and each manifest can in turn reference its payload the
+                                            same way — so a whole repository can be checked out and referenced as-is.
+                                            An entry only needs an id and a manifestURI; everything shown on its card is
+                                            read from the manifest it points at.
+                                        </p>
+                                        <pre className="mt-2 rounded-[--radius-md] bg-gray-950 p-2 text-xs overflow-x-auto">
+{`my-extensions/
+├── marketplace.json
+└── extensions/
+    └── extension-example/
+        ├── manifest.json
+        └── payload.js`}
+                                        </pre>
+                                        <pre className="mt-2 rounded-[--radius-md] bg-gray-950 p-2 text-xs overflow-x-auto">
+{`// marketplace.json
+[
+  {
+    "id": "extension-example",
+    "manifestURI": "extensions/extension-example/manifest.json"
+  }
+]`}
+                                        </pre>
+                                        <pre className="mt-2 rounded-[--radius-md] bg-gray-950 p-2 text-xs overflow-x-auto">
+{`// extensions/extension-example/manifest.json
+{
+  "id": "extension-example",
+  "payloadURI": "payload.js",
+  ...
+}`}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </DisclosureContent>
+                        </DisclosureItem>
+                    </Disclosure>
 
                     <TextInput
                         label="Marketplace URL"
@@ -254,7 +336,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                             if (value) validateUrl(value)
                         }}
                         error={urlError}
-                        placeholder="Enter marketplace URL"
+                        placeholder="https://example.com/marketplace.json or file:///path/to/marketplace.json"
                     />
 
                     <div className="flex justify-between">
@@ -522,9 +604,33 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                     </div>
                 </Card>
             )}
+            {!!otherExtensions?.length && (
+                <Card className="p-4 space-y-6">
+                    <h3 className="flex gap-3 items-center"><LuBlocks /> Other</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                        {otherExtensions.map(extension => (
+                            <MarketplaceExtensionCard
+                                key={extension.id}
+                                extension={extension}
+                                isInstalled={isExtensionInstalled(extension.id)}
+                                showType
+                            />
+                        ))}
+                    </div>
+                </Card>
+            )}
         </AppLayoutStack>
     )
 }
+
+// The extension types MarketplaceExtensions renders a dedicated group for.
+const MARKETPLACE_GROUPED_TYPES: string[] = [
+    "plugin",
+    "anime-torrent-provider",
+    "manga-provider",
+    "onlinestream-provider",
+    "custom-source",
+]
 
 type MarketplaceExtensionCardProps = {
     extension: Extension_Extension

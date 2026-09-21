@@ -63,18 +63,12 @@ func manifestSanityCheck(ext *extension.Extension) error {
 	}
 
 	// Check language
-	if ext.Language != extension.LanguageGo &&
-		ext.Language != extension.LanguageJavascript &&
-		ext.Language != extension.LanguageTypescript {
+	if !isKnownExtensionLanguage(ext.Language) {
 		return fmt.Errorf("unsupported language: %v", ext.Language)
 	}
 
 	// Check type
-	if ext.Type != extension.TypeMangaProvider &&
-		ext.Type != extension.TypeOnlinestreamProvider &&
-		ext.Type != extension.TypeAnimeTorrentProvider &&
-		ext.Type != extension.TypeCustomSource &&
-		ext.Type != extension.TypePlugin {
+	if !isKnownExtensionType(ext.Type) {
 		return fmt.Errorf("unsupported extension type: %v", ext.Type)
 	}
 
@@ -85,6 +79,60 @@ func manifestSanityCheck(ext *extension.Extension) error {
 	}
 
 	ext.Lang = strings.ToLower(ext.Lang)
+
+	return nil
+}
+
+// isKnownExtensionLanguage reports whether l is a language the app can interpret.
+func isKnownExtensionLanguage(l extension.Language) bool {
+	return l == extension.LanguageGo ||
+		l == extension.LanguageJavascript ||
+		l == extension.LanguageTypescript
+}
+
+// isKnownExtensionType reports whether t is an area of the app an extension can target.
+func isKnownExtensionType(t extension.Type) bool {
+	return t == extension.TypeMangaProvider ||
+		t == extension.TypeOnlinestreamProvider ||
+		t == extension.TypeAnimeTorrentProvider ||
+		t == extension.TypeCustomSource ||
+		t == extension.TypePlugin
+}
+
+// marketplaceEntrySanityCheck checks that a marketplace listing entry carries enough to be
+// shown and installed. It is deliberately weaker than manifestSanityCheck: a listing entry
+// points at a manifest rather than being one, so it legitimately carries no version and no
+// payload — the default marketplace listing has neither. Type and language are required
+// because the UI groups entries by type and filters by language; an entry missing either is
+// rendered nowhere rather than rendered badly.
+func marketplaceEntrySanityCheck(ext *extension.Extension) error {
+	if ext == nil {
+		return errors.New("entry is empty")
+	}
+
+	if err := isValidExtensionID(ext.ID); err != nil {
+		return err
+	}
+
+	if ext.ManifestURI == "" {
+		return errors.New("entry is missing a manifest URI")
+	}
+
+	if ext.Name == "" {
+		return errors.New("entry is missing a name")
+	}
+
+	if len(ext.Name) > 50 {
+		return errors.New("entry name is too long")
+	}
+
+	if !isKnownExtensionLanguage(ext.Language) {
+		return fmt.Errorf("unsupported language: %v", ext.Language)
+	}
+
+	if !isKnownExtensionType(ext.Type) {
+		return fmt.Errorf("unsupported extension type: %v", ext.Type)
+	}
 
 	return nil
 }

@@ -75,7 +75,7 @@ func TestGetMarketplaceExtensionsWithToken(t *testing.T) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		_, _ = w.Write([]byte(`[{"id":"dummy-provider","manifestURI":"https://example.com/dummy.json"}]`))
+		_, _ = w.Write([]byte(`[{"id":"dummy-provider","name":"Dummy","author":"Test","language":"javascript","type":"manga-provider","manifestURI":"https://example.com/dummy.json"}]`))
 	}))
 	defer server.Close()
 
@@ -101,7 +101,7 @@ func TestGetMarketplaceExtensionsWithBasicAuth(t *testing.T) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		_, _ = w.Write([]byte(`[{"id":"dummy-provider","manifestURI":"https://example.com/dummy.json"}]`))
+		_, _ = w.Write([]byte(`[{"id":"dummy-provider","name":"Dummy","author":"Test","language":"javascript","type":"manga-provider","manifestURI":"https://example.com/dummy.json"}]`))
 	}))
 	defer server.Close()
 

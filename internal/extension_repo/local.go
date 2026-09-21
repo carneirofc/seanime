@@ -101,6 +101,33 @@ func resolveExtensionURI(base, ref string) string {
 	return ref
 }
 
+// isRelativeURI reports whether ref is neither a URL with a scheme nor an absolute
+// filesystem path, i.e. it only means something relative to some base.
+func isRelativeURI(ref string) bool {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return false
+	}
+	if u, err := url.Parse(ref); err == nil && u.Scheme != "" {
+		return false
+	}
+	return !filepath.IsAbs(ref)
+}
+
+// isRemoteURI reports whether uri is an http(s) URL, i.e. a location a browser could also
+// fetch from.
+func isRemoteURI(uri string) bool {
+	u, err := url.Parse(strings.TrimSpace(uri))
+	if err != nil {
+		return false
+	}
+	switch strings.ToLower(u.Scheme) {
+	case "http", "https":
+		return true
+	}
+	return false
+}
+
 // fetchExtensionBytes reads an extension-related resource (marketplace listing,
 // manifest, payload, repository JSON) from either the local filesystem or over
 // HTTP, supporting private GitHub repositories via newExtensionRequest.
