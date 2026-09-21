@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"net/url"
 	"seanime/internal/constants"
 	"seanime/internal/core"
 	"seanime/internal/extension"
@@ -592,12 +591,9 @@ func (h *Handler) HandleSaveExtensionUserConfig(c echo.Context) error {
 //	@route /api/v1/extensions/marketplace [GET]
 //	@returns []extension.Extension
 func (h *Handler) HandleGetMarketplaceExtensions(c echo.Context) error {
-	encodedMarketplaceUrl := c.QueryParam("marketplace")
-	marketplaceUrl := ""
-
-	if encodedMarketplaceUrl != "" {
-		marketplaceUrl, _ = url.PathUnescape(encodedMarketplaceUrl)
-	}
+	// QueryParam already percent-decodes; decoding a second time would corrupt a path
+	// containing a literal "%".
+	marketplaceUrl := c.QueryParam("marketplace")
 
 	if h.App.FeatureManager.IsDisabled(core.ManageExtensions) {
 		marketplaceUrl = ""
@@ -607,9 +603,13 @@ func (h *Handler) HandleGetMarketplaceExtensions(c echo.Context) error {
 	if targetMarketplaceUrl == "" {
 		targetMarketplaceUrl = constants.DefaultExtensionMarketplaceURL
 	}
-	// Local filesystem marketplaces are gated behind privileged extension management,
-	// not outbound network validation.
-	if !extension_repo.IsLocalFileURI(targetMarketplaceUrl) {
+	if extension_repo.IsLocalFileURI(targetMarketplaceUrl) {
+		// Reading an arbitrary path off the server's filesystem is gated behind privileged
+		// extension management, not outbound network validation.
+		if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+			return err
+		}
+	} else {
 		if err := security.ValidateOutboundUrl(targetMarketplaceUrl); err != nil {
 			return h.RespondWithStatusError(c, echo.ErrForbidden.Code, err)
 		}
