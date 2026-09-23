@@ -1,4 +1,4 @@
-import { Extension_Extension, Extension_InvalidExtension, ExtensionRepo_UpdateData } from "@/api/generated/types"
+import { Extension_Extension, Extension_InvalidExtension, ExtensionRepo_ExtensionHealth, ExtensionRepo_UpdateData } from "@/api/generated/types"
 import {
     useFetchExternalExtensionData,
     useInstallExternalExtension,
@@ -8,11 +8,11 @@ import {
     useUninstallExternalExtension,
 } from "@/api/hooks/extensions.hooks"
 import { ExtensionDetails } from "@/app/(main)/extensions/_components/extension-details"
+import { ExtensionIcon } from "@/app/(main)/extensions/_components/extension-icon"
 import { ExtensionCodeModal } from "@/app/(main)/extensions/_containers/extension-code"
 import { ExtensionUserConfigModal } from "@/app/(main)/extensions/_containers/extension-user-config"
-import { LANGUAGES_LIST } from "@/app/(main)/manga/_lib/language-map"
+import { getExtensionLanguageLabel } from "@/app/(main)/extensions/_lib/extension-filters"
 import { ConfirmationDialog, useConfirmationDialog } from "@/components/shared/confirmation-dialog"
-import { SeaImage } from "@/components/shared/sea-image"
 import { AppLayoutStack } from "@/components/ui/app-layout"
 import { Badge } from "@/components/ui/badge"
 import { Button, IconButton } from "@/components/ui/button"
@@ -37,6 +37,7 @@ type ExtensionCardProps = {
     allowReload?: boolean
     isUnsafe?: boolean
     isDisabled?: boolean
+    health?: ExtensionRepo_ExtensionHealth | undefined
 }
 
 export function ExtensionCard(props: ExtensionCardProps) {
@@ -49,10 +50,12 @@ export function ExtensionCard(props: ExtensionCardProps) {
         allowReload,
         isUnsafe = false,
         isDisabled = false,
+        health,
         ...rest
     } = props
 
     const router = useRouter()
+    const isFailing = !isDisabled && !!health?.failing
 
     const isBuiltin = extension.manifestURI === "builtin"
 
@@ -63,15 +66,11 @@ export function ExtensionCard(props: ExtensionCardProps) {
                 "bg-gray-900 rounded-xl p-3",
                 !!updateData && "border-(--green)",
                 userConfigError && "border-(--orange)",
+                isFailing && "border-red-800",
                 isDisabled && "opacity-70 border-gray-700",
             )}
         >
-            <div
-                className={cn(
-                    "absolute z-0 right-0 top-0 h-full w-full max-w-[150px] bg-linear-to-l to-gray-950",
-                    // !isBuiltin && "max-w-[50%] from-indigo-950/20",
-                )}
-            ></div>
+            <div className="absolute z-0 right-0 top-0 h-full w-full max-w-[150px] bg-linear-to-l to-gray-950"></div>
 
             <div className="absolute top-3 right-3 z-2">
                 <div className=" flex flex-row gap-1 z-2 flex-wrap justify-end">
@@ -145,50 +144,12 @@ export function ExtensionCard(props: ExtensionCardProps) {
                             </div>
                         </ExtensionCodeModal>
                     )}
-
-                    {/* {(allowReload && !isBuiltin) && (
-                        <div>
-                            <Tooltip
-                                side="right" trigger={<IconButton
-                     size="sm"
-                     intent="gray-basic"
-                     icon={<LuRefreshCcw />}
-                     onClick={() => {
-                     if (!extension.id) return toast.error("Extension has no ID")
-                     reloadExternalExtension({ id: extension.id })
-                     }}
-                     disabled={isReloadingExtension}
-                     />}
-                            >Reload</Tooltip>
-                        </div>
-                     )} */}
                 </div>
             </div>
 
             <div className="z-1 relative flex flex-col h-full">
                 <div className="flex gap-3 pr-16">
-                    <div
-                        className={cn(
-                            "relative rounded-md size-12 flex-none bg-gray-950 overflow-hidden",
-                            !!extension.icon && "bg-gray-900",
-                        )}
-                    >
-                        {!!extension.icon ? (
-                            <SeaImage
-                                src={extension.icon}
-                                alt="extension icon"
-                                crossOrigin="anonymous"
-                                fill
-                                quality={100}
-                                className="object-cover"
-                                isExternal
-                            />
-                        ) : <div className="w-full h-full flex items-center justify-center">
-                            <p className="text-2xl font-bold">
-                                {(extension.name[0]).toUpperCase()}
-                            </p>
-                        </div>}
-                    </div>
+                    <ExtensionIcon icon={extension.icon} name={extension.name} />
 
                     <div>
                         <p
@@ -222,6 +183,15 @@ export function ExtensionCard(props: ExtensionCardProps) {
                     {isDisabled && <Badge className="rounded-md tracking-wide border-transparent bg-transparent opacity-50 px-0" intent="warning">
                         Disabled
                     </Badge>}
+                    {isFailing && <Tooltip
+                        side="top"
+                        className="max-w-md break-words"
+                        trigger={<Badge className="rounded-md tracking-wide cursor-help" intent="alert">
+                            Failing
+                        </Badge>}
+                    >
+                        {health?.consecutiveFailures} failed calls in a row. Last error: {health?.lastError}
+                    </Tooltip>}
                     {!!extension.version && !updateData && <Badge className="rounded-md tracking-wide" intent={!!updateData ? "success" : "unstyled"}>
                         {extension.version}
                     </Badge>}
@@ -236,12 +206,8 @@ export function ExtensionCard(props: ExtensionCardProps) {
                         {extension.author}
                     </Badge>}
                     {extension.lang?.toUpperCase() !== "MULTI" && <Badge className="border-transparent rounded-md px-0!" intent="unstyled">
-                        {/*{extension.lang.toUpperCase()}*/}
-                        {LANGUAGES_LIST[extension.lang?.toLowerCase()]?.nativeName || extension.lang?.toUpperCase() || "Unknown"}
+                        {getExtensionLanguageLabel(extension.lang)}
                     </Badge>}
-                    {/*<Badge className="rounded-md" intent="unstyled">*/}
-                    {/*    {capitalize(extension.language)}*/}
-                    {/*</Badge>*/}
                 </div>
 
             </div>
@@ -258,16 +224,31 @@ type ExtensionSettingsProps = {
     isDisabled?: boolean
 }
 
+/**
+ * Details modal with update / disable / uninstall actions.
+ * The actions live in ExtensionSettingsContent so their mutation hooks only
+ * mount while the modal is open, not once per card.
+ */
 export function ExtensionSettings(props: ExtensionSettingsProps) {
+    const { children, ...rest } = props
+    return (
+        <Modal
+            trigger={children}
+            contentClass="max-w-3xl"
+        >
+            <ExtensionSettingsContent {...rest} />
+        </Modal>
+    )
+}
+
+function ExtensionSettingsContent(props: Omit<ExtensionSettingsProps, "children">) {
 
     const {
         extension,
-        children,
         isInstalled,
         updateData,
         allowReload,
         isDisabled = false,
-        ...rest
     } = props
 
     const isBuiltin = extension.manifestURI === "builtin"
@@ -329,10 +310,7 @@ export function ExtensionSettings(props: ExtensionSettingsProps) {
     }, [fetchedExtensionData])
 
     return (
-        <Modal
-            trigger={children}
-            contentClass="max-w-3xl"
-        >
+        <>
             {(isUninstalling || isTogglingDisabled) && <LoadingOverlay />}
 
             <ExtensionDetails extension={extension} />
@@ -448,10 +426,8 @@ export function ExtensionSettings(props: ExtensionSettingsProps) {
                     )}
 
                     <ConfirmationDialog {...confirmUninstall} />
-
-
                 </>
             )}
-        </Modal>
+        </>
     )
 }

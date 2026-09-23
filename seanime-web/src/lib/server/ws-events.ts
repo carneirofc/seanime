@@ -33,6 +33,7 @@ export const enum WSEvents {
     MEDIASTREAM_SHUTDOWN_STREAM = "mediastream-shutdown-stream",
     EXTENSIONS_RELOADED = "extensions-reloaded",
     EXTENSION_UPDATES_FOUND = "extension-updates-found",
+    EXTENSION_FAILING = "extension-failing",
     PLUGIN_UNLOADED = "plugin-unloaded",
     PLUGIN_LOADED = "plugin-loaded",
     EXTENSION_PROMPT = "extension-prompt",

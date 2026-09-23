@@ -1,21 +1,14 @@
-import { Extension_Extension } from "@/api/generated/types"
-import {
-    useGetAllExtensions,
-    useGetMarketplaceExtensions,
-    useInstallExternalExtension,
-    useReloadExternalExtension,
-} from "@/api/hooks/extensions.hooks"
-import { EXTENSION_TYPE } from "@/app/(main)/extensions/_containers/extension-list"
+import { Extension_Type } from "@/api/generated/types"
+import { useGetAllExtensions, useGetMarketplaceExtensions } from "@/api/hooks/extensions.hooks"
+import { MarketplaceExtensionCard } from "@/app/(main)/extensions/_containers/marketplace-extension-card"
+import { groupExtensionsByType, matchesExtensionSearch, normalizeSearchTerm } from "@/app/(main)/extensions/_lib/extension-filters"
 import { DEFAULT_MARKETPLACE_URL, marketplaceUrlAtom } from "@/app/(main)/extensions/_lib/marketplace.atoms"
 import { LANGUAGES_LIST } from "@/app/(main)/manga/_lib/language-map"
 import { LuffyError } from "@/components/shared/luffy-error"
-import { SeaImage } from "@/components/shared/sea-image"
 import { Alert } from "@/components/ui/alert"
 import { AppLayoutStack } from "@/components/ui/app-layout"
-import { Badge } from "@/components/ui/badge"
-import { Button, IconButton } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { cn } from "@/components/ui/core/styling"
 import { Disclosure, DisclosureContent, DisclosureItem, DisclosureTrigger } from "@/components/ui/disclosure"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Modal } from "@/components/ui/modal"
@@ -25,16 +18,36 @@ import { StaticTabs } from "@/components/ui/tabs"
 import { TextInput } from "@/components/ui/text-input"
 import { useSearchParams } from "@/lib/navigation"
 import { useAtom } from "jotai/react"
-import capitalize from "lodash/capitalize"
 import orderBy from "lodash/orderBy"
 import React, { useMemo } from "react"
 import { AiOutlineExclamationCircle } from "react-icons/ai"
 import { BiSearch } from "react-icons/bi"
 import { CgMediaPodcast } from "react-icons/cg"
-import { LuBlocks, LuBookOpen, LuCheck, LuChevronDown, LuDownload, LuSettings } from "react-icons/lu"
+import { LuBlocks, LuBookOpen, LuChevronDown, LuSettings } from "react-icons/lu"
 import { MdDataSaverOn } from "react-icons/md"
 import { RiFolderDownloadFill } from "react-icons/ri"
 import { toast } from "sonner"
+
+const GRID_CLASS = "grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
+// Off-screen cards skip layout and paint; a marketplace can list hundreds
+const CARD_CLASS = "[content-visibility:auto] [contain-intrinsic-size:auto_180px]"
+
+const CUSTOM_SOURCE_TITLE = <>
+    <MdDataSaverOn /> Custom sources <Popover
+        className="text-sm"
+        trigger={<AiOutlineExclamationCircle className="text-[1.2rem] transition-opacity opacity-45 hover:opacity-90 cursor-pointer" />}
+    >
+        Custom sources do not provide any streaming features. Torrent and online streaming providers are needed for this.
+    </Popover>
+</>
+
+const TYPE_SECTIONS: { type: Extension_Type, title: React.ReactNode, description?: string }[] = [
+    { type: "plugin", title: <><LuBlocks /> Plugins</> },
+    { type: "anime-torrent-provider", title: <><RiFolderDownloadFill />Anime torrents</> },
+    { type: "manga-provider", title: <><LuBookOpen />Manga</> },
+    { type: "onlinestream-provider", title: <><CgMediaPodcast /> Online streaming</> },
+    { type: "custom-source", title: CUSTOM_SOURCE_TITLE, description: "Custom sources let you browse media beyond what AniList provides." },
+]
 
 type MarketplaceExtensionsProps = {
     children?: React.ReactNode
@@ -47,6 +60,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
     } = props
 
     const [searchTerm, setSearchTerm] = React.useState("")
+    const deferredSearchTerm = React.useDeferredValue(searchTerm)
     const [filterType, setFilterType] = React.useState<string>("all")
     const [filterLanguage, setFilterLanguage] = React.useState<string>("all")
     const [marketplaceUrl, setMarketplaceUrl] = useAtom(marketplaceUrlAtom)
@@ -57,7 +71,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
     const isDefaultMarketplace = marketplaceUrl === DEFAULT_MARKETPLACE_URL
 
     const { data: marketplaceExtensions, isPending: isLoadingMarketplace, refetch } = useGetMarketplaceExtensions(marketplaceUrl)
-    const { data: allExtensions, isPending: isLoadingAllExtensions } = useGetAllExtensions(false)
+    const { data: allExtensions } = useGetAllExtensions(false)
 
     const searchParams = useSearchParams()
     React.useEffect(() => {
@@ -67,12 +81,6 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
         }
     }, [searchParams])
 
-    function orderExtensions(extensions: Extension_Extension[] | undefined) {
-        return extensions ?
-            orderBy(extensions, ["name", "manifestUri"])
-            : []
-    }
-
     function formatMissingTypes(types: string[]) {
         if (types.length <= 1) return types[0] ?? ""
         if (types.length === 2) return `${types[0]} and ${types[1]}`
@@ -80,40 +88,25 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
         return `${types.slice(0, -1).join(", ")}, and ${types.at(-1)}`
     }
 
-    function isExtensionInstalled(extensionID: string) {
-        return !!allExtensions?.extensions?.find(n => n.id === extensionID) ||
-            !!allExtensions?.disabledExtensions?.find(n => n.id === extensionID) ||
-            !!allExtensions?.invalidExtensions?.find(n => n.id === extensionID)
-    }
+    const installedIds = useMemo(() => new Set([
+        ...(allExtensions?.extensions ?? []),
+        ...(allExtensions?.disabledExtensions ?? []),
+        ...(allExtensions?.invalidExtensions ?? []),
+    ].map(ext => ext.id)), [allExtensions])
 
     // Filter extensions based on search term, filter type, and language
     const filteredExtensions = React.useMemo(() => {
         if (!marketplaceExtensions) return []
 
-        let filtered = [...marketplaceExtensions]
-
-        // Filter by type if not "all"
-        if (filterType !== "all") {
-            filtered = filtered.filter(ext => ext.type === filterType)
-        }
-
-        // Filter by language if not "all"
-        if (filterLanguage !== "all") {
-            filtered = filtered.filter(ext => ext.lang?.toLowerCase() === filterLanguage.toLowerCase())
-        }
-
-        // Filter by search term
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase()
-            filtered = filtered.filter(ext =>
-                ext.name.toLowerCase().includes(term) ||
-                ext.description?.toLowerCase().includes(term) ||
-                ext.id.toLowerCase().includes(term),
-            )
-        }
-
-        return orderExtensions(filtered)
-    }, [marketplaceExtensions, searchTerm, filterType, filterLanguage])
+        const term = normalizeSearchTerm(deferredSearchTerm)
+        const lang = filterLanguage.toLowerCase()
+        const filtered = marketplaceExtensions.filter(ext =>
+            (filterType === "all" || ext.type === filterType)
+            && (filterLanguage === "all" || ext.lang?.toLowerCase() === lang)
+            && matchesExtensionSearch(ext, term),
+        )
+        return orderBy(filtered, ["name", "manifestUri"])
+    }, [marketplaceExtensions, deferredSearchTerm, filterType, filterLanguage])
 
     // Get available languages from extensions
     const availableLanguages = useMemo(() => {
@@ -162,17 +155,7 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
             .map(item => item.label)
     }, [isDefaultMarketplace, marketplaceExtensions])
 
-    // Group extensions by type
-    const pluginExtensions = filteredExtensions.filter(n => n.type === "plugin")
-    const animeTorrentExtensions = filteredExtensions.filter(n => n.type === "anime-torrent-provider")
-    const mangaExtensions = filteredExtensions.filter(n => n.type === "manga-provider")
-    const onlinestreamExtensions = filteredExtensions.filter(n => n.type === "onlinestream-provider")
-    const customSources = filteredExtensions.filter(n => n.type === "custom-source")
-    // Anything whose type matches none of the groups above would otherwise be counted as a
-    // result and then rendered nowhere at all.
-    const otherExtensions = filteredExtensions.filter(n => !MARKETPLACE_GROUPED_TYPES.includes(n.type))
-
-    // if (isLoadingMarketplace || isLoadingAllExtensions) return <LoadingSpinner />
+    const groups = groupExtensionsByType(filteredExtensions)
 
     // validate URL
     const validateUrl = (url: string): boolean => {
@@ -211,12 +194,6 @@ export function MarketplaceExtensions(props: MarketplaceExtensionsProps) {
                 setIsUpdatingUrl(false)
             }
         }
-    }
-
-    // reset URL to default
-    const resetToDefaultUrl = async () => {
-        setTempUrl(DEFAULT_MARKETPLACE_URL)
-        setUrlError("")
     }
 
     // apply default URL immediately
@@ -341,12 +318,6 @@ file:///C:/Users/me/my-extensions/marketplace.json`}
 
                     <div className="flex justify-between">
                         <div className="flex gap-2">
-                            {/*<Button*/}
-                            {/*    intent="gray-outline"*/}
-                            {/*    onClick={resetToDefaultUrl}*/}
-                            {/*>*/}
-                            {/*    Set to Default*/}
-                            {/*</Button>*/}
                             <Button
                                 intent="primary-subtle"
                                 onClick={applyDefaultUrl}
@@ -519,100 +490,35 @@ file:///C:/Users/me/my-extensions/marketplace.json`}
                 </Card>
             )}
 
-            {!!pluginExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><LuBlocks /> Plugins</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {pluginExtensions.map(extension => (
-                            <MarketplaceExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!animeTorrentExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><RiFolderDownloadFill />Anime torrents</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {animeTorrentExtensions.map(extension => (
-                            <MarketplaceExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!mangaExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><LuBookOpen />Manga</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {mangaExtensions.map(extension => (
-                            <MarketplaceExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!onlinestreamExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><CgMediaPodcast /> Online streaming</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {onlinestreamExtensions.map(extension => (
-                            <MarketplaceExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!customSources?.length && (
-                <Card className="p-4 space-y-6">
+            {TYPE_SECTIONS.map(section => !!groups[section.type].length && (
+                <Card key={section.type} className="p-4 space-y-6">
                     <div>
-                        <h3 className="flex gap-3 items-center"><MdDataSaverOn /> Custom sources <Popover
-                            className="text-sm"
-                            trigger={
-                                <AiOutlineExclamationCircle className="text-[1.2rem] transition-opacity opacity-45 hover:opacity-90 cursor-pointer" />}
-                        >
-                            Custom sources do not provide any streaming features. Torrent and online streaming providers are needed for this.
-                        </Popover></h3>
-                        <p className="text-(--muted) text-sm">
-                            Custom sources let you browse media beyond what AniList provides.
-                        </p>
+                        <h3 className="flex gap-3 items-center">{section.title}</h3>
+                        {section.description && <p className="text-(--muted) text-sm">{section.description}</p>}
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {customSources.map(extension => (
+                    <div className={GRID_CLASS}>
+                        {groups[section.type].map(extension => (
                             <MarketplaceExtensionCard
                                 key={extension.id}
                                 extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
+                                isInstalled={installedIds.has(extension.id)}
+                                className={CARD_CLASS}
                             />
                         ))}
                     </div>
                 </Card>
-            )}
-            {!!otherExtensions?.length && (
+            ))}
+            {/* Anything whose type matches none of the groups above would otherwise be counted as a result and rendered nowhere */}
+            {!!groups.other.length && (
                 <Card className="p-4 space-y-6">
                     <h3 className="flex gap-3 items-center"><LuBlocks /> Other</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {otherExtensions.map(extension => (
+                    <div className={GRID_CLASS}>
+                        {groups.other.map(extension => (
                             <MarketplaceExtensionCard
                                 key={extension.id}
                                 extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
+                                isInstalled={installedIds.has(extension.id)}
+                                className={CARD_CLASS}
                                 showType
                             />
                         ))}
@@ -620,146 +526,5 @@ file:///C:/Users/me/my-extensions/marketplace.json`}
                 </Card>
             )}
         </AppLayoutStack>
-    )
-}
-
-// The extension types MarketplaceExtensions renders a dedicated group for.
-const MARKETPLACE_GROUPED_TYPES: string[] = [
-    "plugin",
-    "anime-torrent-provider",
-    "manga-provider",
-    "onlinestream-provider",
-    "custom-source",
-]
-
-type MarketplaceExtensionCardProps = {
-    extension: Extension_Extension
-    updateData?: Extension_Extension | undefined
-    isInstalled: boolean
-    hideInstallButton?: boolean
-    showType?: boolean
-}
-
-export function MarketplaceExtensionCard(props: MarketplaceExtensionCardProps) {
-
-    const {
-        extension,
-        updateData,
-        isInstalled,
-        hideInstallButton,
-        showType,
-        ...rest
-    } = props
-
-    const { mutate: reloadExternalExtension, isPending: isReloadingExtension } = useReloadExternalExtension()
-
-    const [installModalOpen, setInstallModalOpen] = React.useState(false)
-
-    const {
-        mutate: installExtension,
-        data: installResponse,
-        isPending: isInstalling,
-    } = useInstallExternalExtension()
-
-    React.useEffect(() => {
-        if (installResponse) {
-            toast.success(installResponse.message)
-            setInstallModalOpen(false)
-        }
-    }, [installResponse])
-
-    return (
-        <div
-            className={cn(
-                "group/extension-card border border-[rgb(255_255_255/5%)] relative overflow-hidden",
-                "bg-gray-900 rounded-xl p-3",
-                !!updateData && "border-(--green)",
-            )}
-        >
-            {!hideInstallButton && <div className="absolute top-3 right-3 z-2">
-                <div className=" flex flex-row gap-1 z-2 flex-wrap justify-end">
-                    {!isInstalled ? <IconButton
-                        size="sm"
-                        intent="primary-subtle"
-                        icon={<LuDownload />}
-                        loading={isInstalling}
-                        onClick={() => installExtension({ manifestUri: extension.manifestURI })}
-                    /> : <IconButton
-                        size="sm"
-                        disabled
-                        intent="success-subtle"
-                        icon={<LuCheck />}
-                    />
-                    }
-                </div>
-            </div>}
-
-            <div className="z-1 relative space-y-3">
-                <div className="flex gap-3 pr-16">
-                    <div className={cn("relative rounded-md size-12 bg-gray-950 overflow-hidden", !!extension.icon && "bg-gray-900")}>
-                        {!!extension.icon ? (
-                            <SeaImage
-                                src={extension.icon}
-                                alt="extension icon"
-                                crossOrigin="anonymous"
-                                fill
-                                isExternal
-                                quality={100}
-                                className="object-cover"
-                            />
-                        ) : <div className="w-full h-full flex items-center justify-center">
-                            <p className="text-2xl font-bold">
-                                {(extension.name[0]).toUpperCase()}
-                            </p>
-                        </div>}
-                    </div>
-
-                    <div>
-                        <p className="font-semibold line-clamp-1">
-                            {extension.name}
-                        </p>
-                        <p className="text-xs line-clamp-1 tracking-wide">
-                            {showType && <span className="opacity-70">{EXTENSION_TYPE[extension.type]} - </span>}
-                            <span className="opacity-30">{extension.id}</span>
-                        </p>
-                    </div>
-                </div>
-
-                {extension.description && (
-                    <Popover
-                        trigger={<p className="text-sm text-(--muted) line-clamp-2 cursor-pointer">
-                            {extension.description}
-                        </p>}
-                    >
-                        <p className="text-sm">
-                            {extension.description}
-                        </p>
-                    </Popover>
-                )}
-
-                <div className="flex gap-2 flex-wrap">
-                    {!!extension.version && <Badge className="rounded-md tracking-wide">
-                        {extension.version}
-                    </Badge>}
-                    {<Badge className="rounded-md" intent="unstyled">
-                        {extension.author}
-                    </Badge>}
-                    {extension.lang?.toUpperCase() !== "MULTI" && <Badge
-                        className="border-transparent rounded-md"
-                        intent={extension.lang !== "multi" ? "blue" : "unstyled"}
-                    >
-                        {/*{extension.lang.toUpperCase()}*/}
-                        {LANGUAGES_LIST[extension.lang?.toLowerCase()]?.nativeName || extension.lang?.toUpperCase() || "Unknown"}
-                    </Badge>}
-                    <Badge className="border-transparent rounded-md text-(--muted) px-0" intent="unstyled">
-                        {capitalize(extension.language)}
-                    </Badge>
-                    {!!updateData && <Badge className="rounded-md" intent="success">
-                        Update available
-                    </Badge>}
-                </div>
-
-            </div>
-        </div>
     )
 }

@@ -3,13 +3,10 @@ import { useGetExtensionPayload, useUpdateExtensionCode } from "@/api/hooks/exte
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Modal } from "@/components/ui/modal"
-import { javascript } from "@codemirror/lang-javascript"
-import { StreamLanguage } from "@codemirror/language"
-import { go } from "@codemirror/legacy-modes/mode/go"
-import { unifiedMergeView } from "@codemirror/merge"
-import { vscodeDark } from "@uiw/codemirror-theme-vscode"
-import CodeMirror, { EditorView } from "@uiw/react-codemirror"
-import React, { useMemo } from "react"
+import React from "react"
+
+const ExtensionCodeEditor = React.lazy(() => import("./extension-code-editor").then(m => ({ default: m.ExtensionCodeEditor })))
+const UnifiedDiff = React.lazy(() => import("./extension-code-editor").then(m => ({ default: m.UnifiedDiff })))
 
 
 type ExtensionCodeModalProps = {
@@ -97,86 +94,14 @@ function Content(props: ExtensionCodeModalProps) {
                 </Button>
                 <div className="flex flex-1"></div>
             </div>}
-            {!diff ? <ExtensionCodeEditor
-                code={code}
-                setCode={setCode}
-                language={extension.language}
-                readOnly={readOnly}
-            /> : <UnifiedDiff oldCode={code} currentCode={diff} language={extension.language} />}
+            <React.Suspense fallback={<LoadingSpinner />}>
+                {!diff ? <ExtensionCodeEditor
+                    code={code}
+                    setCode={setCode}
+                    language={extension.language}
+                    readOnly={readOnly}
+                /> : <UnifiedDiff oldCode={code} currentCode={diff} language={extension.language} />}
+            </React.Suspense>
         </>
-    )
-}
-
-function getCodeMirrorLanguageExtensions(language?: string) {
-    const normalized = language?.toLowerCase()
-    if (normalized === "go") return [StreamLanguage.define(go)]
-
-    return [javascript({ typescript: normalized === "typescript" })]
-}
-
-function normalizeDiffCode(code: string) {
-    return code.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n")
-}
-
-function ExtensionCodeEditor({
-    code,
-    setCode,
-    language,
-    readOnly,
-}: { code: string, language: string, setCode: any, readOnly?: boolean }) {
-
-    return (
-        <div className="overflow-hidden rounded-md">
-            <CodeMirror
-                value={code}
-                height="75vh"
-                theme={vscodeDark}
-                extensions={getCodeMirrorLanguageExtensions(language)}
-                onChange={setCode}
-                readOnly={readOnly}
-            />
-        </div>
-    )
-}
-
-interface Props {
-    oldCode: string;
-    currentCode: string;
-    language: string;
-}
-
-export const UnifiedDiff = ({ oldCode, currentCode, language }: Props) => {
-    const normalizedOldCode = useMemo(() => normalizeDiffCode(oldCode), [oldCode])
-    const normalizedCurrentCode = useMemo(() => normalizeDiffCode(currentCode), [currentCode])
-    const extensions = useMemo(() => [
-        ...getCodeMirrorLanguageExtensions(language),
-        unifiedMergeView({
-            original: normalizedOldCode,
-            highlightChanges: true,
-            gutter: true,
-            mergeControls: false,
-            allowInlineDiffs: true,
-        }),
-    ], [normalizedOldCode, language])
-
-    const hideDiffStyles = EditorView.theme({
-        ".cm-changedText": {
-            background: "rgba(100, 160, 128, .1) !important",
-        },
-        ".cm-changedLine": {
-            background: "rgba(100, 160, 128, .06) !important",
-        },
-    })
-
-    return (
-        <div className="overflow-hidden rounded-md">
-            <CodeMirror
-                value={normalizedCurrentCode}
-                height="75vh"
-                theme={vscodeDark}
-                extensions={[hideDiffStyles, ...extensions]}
-                readOnly
-            />
-        </div>
     )
 }

@@ -19,6 +19,24 @@ entrypoints, and how backend changes flow to the frontend.
 - OS-specific server entrypoints in `internal/server/server_{unix,windows}.go`.
 - Flags parsed in `internal/core/app.go`; config and logging in `internal/core/config.go` and `internal/util/`.
 
+### Updater source
+
+- `internal/updater` checks `api.github.com/repos/carneirofc/seanime/releases/latest` only; the
+  upstream `seanime.app` channels are not used, and a stored `updateChannel` is ignored.
+- `util.ValidateReleaseUrl` accepts only `carneirofc` GitHub release assets.
+- `constants.AnnouncementURL` is empty (no fork feed yet), which disables announcements.
+
+## Extensions
+
+- Runtime health: every Goja provider call goes through `gojaProviderBase.callClassMethod`,
+  which records its outcome in `extension_repo.HealthTracker`. After `failingThreshold`
+  consecutive failures an extension is failing: it is reported in `AllExtensions.health`,
+  an `extension-failing` event is sent, and it is disabled if
+  `StoredExtensionSettingsData.AutoDisableFailing` is on. Health is in memory and resets on reload.
+- Plugins are not covered: they have no single call path.
+- Provider methods must return the error from `callClassMethod`; discarding it makes a failing
+  source look like one that returned no results.
+
 ## HTTP API + Events
 
 - Echo instantiated in `internal/core/echo.go` with JSON serialization overrides.

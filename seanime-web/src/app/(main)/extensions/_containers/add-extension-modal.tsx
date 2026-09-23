@@ -1,7 +1,7 @@
 import { Extension_Extension } from "@/api/generated/types"
 import { useFetchExternalExtensionData, useInstallExternalExtension, useInstallExternalExtensionRepository } from "@/api/hooks/extensions.hooks"
 import { ExtensionDetails } from "@/app/(main)/extensions/_components/extension-details"
-import { MarketplaceExtensionCard } from "@/app/(main)/extensions/_containers/marketplace-extensions"
+import { MarketplaceExtensionCard } from "@/app/(main)/extensions/_containers/marketplace-extension-card"
 import { FileSelectorModal } from "@/components/shared/file-selector"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"

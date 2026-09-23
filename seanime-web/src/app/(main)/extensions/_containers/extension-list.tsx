@@ -1,9 +1,20 @@
-import { Extension_Extension, Extension_InvalidExtension } from "@/api/generated/types"
-import { useGetAllExtensions, useInstallExternalExtension, useReloadAllExternalExtensionsFromSource } from "@/api/hooks/extensions.hooks"
+import { Extension_Extension, Extension_Type, ExtensionRepo_AllExtensions } from "@/api/generated/types"
+import {
+    getFailingExtensionIds,
+    useGetAllExtensions,
+    useInstallExternalExtension,
+    useReloadAllExternalExtensionsFromSource,
+    useSetExtensionAutoDisable,
+    useSetExternalExtensionDisabled,
+    useUninstallExternalExtension,
+} from "@/api/hooks/extensions.hooks"
+import { ExtensionIcon } from "@/app/(main)/extensions/_components/extension-icon"
 import { AddExtensionModal } from "@/app/(main)/extensions/_containers/add-extension-modal"
 import { ExtensionCard } from "@/app/(main)/extensions/_containers/extension-card"
 import { GitTokensModal } from "@/app/(main)/extensions/_containers/git-tokens-modal"
 import { InvalidExtensionCard, UnauthorizedExtensionPluginCard } from "@/app/(main)/extensions/_containers/invalid-extension-card"
+import { groupExtensionsByType, matchesExtensionSearch, normalizeSearchTerm } from "@/app/(main)/extensions/_lib/extension-filters"
+import { ConfirmationDialog, useConfirmationDialog } from "@/components/shared/confirmation-dialog"
 import { LuffyError } from "@/components/shared/luffy-error"
 import { SeaLink } from "@/components/shared/sea-link"
 import { AppLayoutStack } from "@/components/ui/app-layout"
@@ -11,19 +22,20 @@ import { Button, IconButton } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { Switch } from "@/components/ui/switch"
 import { TextInput } from "@/components/ui/text-input"
 import { useRouter } from "@/lib/navigation"
+import { formatDistanceToNow } from "date-fns"
 import { atom, useSetAtom } from "jotai"
 import orderBy from "lodash/orderBy"
 import React from "react"
-import { BiSearch } from "react-icons/bi"
-import { BiDotsVerticalRounded } from "react-icons/bi"
+import { BiDotsVerticalRounded, BiSearch } from "react-icons/bi"
 import { CgMediaPodcast } from "react-icons/cg"
 import { GrInstallOption } from "react-icons/gr"
-import { LuBlocks, LuDownload } from "react-icons/lu"
+import { LuBlocks, LuDownload, LuPower } from "react-icons/lu"
 import { MdDataSaverOn } from "react-icons/md"
 import { PiBookFill } from "react-icons/pi"
-import { RiFolderDownloadFill } from "react-icons/ri"
+import { RiDeleteBinLine, RiFolderDownloadFill } from "react-icons/ri"
 import { TbRefresh, TbReload } from "react-icons/tb"
 import { toast } from "sonner"
 
@@ -33,25 +45,24 @@ type ExtensionListProps = {
 
 export const __extensions_currentPageAtom = atom<"installed" | "marketplace">("installed")
 
-export const EXTENSION_TYPE = {
-    "plugin": "Plugin",
-    "anime-torrent-provider": "Anime Torrent Provider",
-    "manga-provider": "Manga Provider",
-    "onlinestream-provider": "Online Streaming Provider",
-    "custom-source": "Custom Source",
-}
+const TYPE_SECTIONS: { type: Extension_Type, title: string, icon: React.ReactNode }[] = [
+    { type: "plugin", title: "Plugins", icon: <LuBlocks /> },
+    { type: "custom-source", title: "Custom Sources", icon: <MdDataSaverOn /> },
+    { type: "anime-torrent-provider", title: "Anime torrents", icon: <RiFolderDownloadFill /> },
+    { type: "manga-provider", title: "Manga", icon: <PiBookFill /> },
+    { type: "onlinestream-provider", title: "Online streaming", icon: <CgMediaPodcast /> },
+]
+
+const GRID_CLASS = "grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4"
 
 export function ExtensionList(props: ExtensionListProps) {
-
-    const {
-        children,
-        ...rest
-    } = props
 
     const router = useRouter()
 
     const [checkForUpdates, setCheckForUpdates] = React.useState(false)
     const [searchTerm, setSearchTerm] = React.useState("")
+    // Filtering re-renders every card; keep typing responsive on large lists
+    const deferredSearchTerm = React.useDeferredValue(searchTerm)
     const [gitTokensModalOpen, setGitTokensModalOpen] = React.useState(false)
 
     const { data: allExtensions, isPending: isLoading, refetch } = useGetAllExtensions(checkForUpdates)
@@ -60,7 +71,6 @@ export function ExtensionList(props: ExtensionListProps) {
 
     const {
         mutate: installExtension,
-        data: installResponse,
         isPending: isInstalling,
     } = useInstallExternalExtension()
 
@@ -69,67 +79,32 @@ export function ExtensionList(props: ExtensionListProps) {
         isPending: isReloadingFromSource,
     } = useReloadAllExternalExtensionsFromSource()
 
-    function orderExtensions(extensions: Extension_Extension[] | undefined) {
-        return extensions ?
-            orderBy(extensions, ["name", "manifestUri"])
-            : []
-    }
+    const { mutate: setAutoDisable, isPending: isSettingAutoDisable } = useSetExtensionAutoDisable()
 
-    function isExtensionInstalled(extensionID: string) {
-        return !!allExtensions?.extensions?.find(n => n.id === extensionID) ||
-            !!allExtensions?.disabledExtensions?.find(n => n.id === extensionID) ||
-            !!allExtensions?.invalidExtensions?.find(n => n.id === extensionID)
-    }
-
-    const normalizedSearchTerm = searchTerm.trim().toLowerCase()
-
-    function matchesSearchTerm(extension: Extension_Extension) {
-        if (!normalizedSearchTerm) return true
-
-        return [extension.name, extension.description, extension.id]
-            .some(value => value?.toLowerCase().includes(normalizedSearchTerm))
-    }
-
-    function matchesInvalidExtensionSearchTerm(extension: Extension_InvalidExtension) {
-        return matchesSearchTerm(extension.extension)
-    }
-
-    const installedExtensions = [
-        ...(allExtensions?.extensions ?? []),
-        ...(allExtensions?.disabledExtensions ?? []),
-    ]
-
-    const enabledExtensions = orderExtensions(allExtensions?.extensions ?? []).filter(matchesSearchTerm)
-    const disabledExtensions = orderExtensions(allExtensions?.disabledExtensions ?? []).filter(matchesSearchTerm)
-
-    const pluginExtensions = enabledExtensions.filter(n => n.type === "plugin")
-    const animeTorrentExtensions = enabledExtensions.filter(n => n.type === "anime-torrent-provider")
-    const mangaExtensions = enabledExtensions.filter(n => n.type === "manga-provider")
-    const onlinestreamExtensions = enabledExtensions.filter(n => n.type === "onlinestream-provider")
-    const customSourceExtensions = enabledExtensions.filter(n => n.type === "custom-source")
-
-    const nonvalidExtensions = (allExtensions?.invalidExtensions ?? []).filter(n => n.code !== "plugin_permissions_not_granted")
-        .filter(matchesInvalidExtensionSearchTerm)
-        .sort((a, b) => a.id.localeCompare(b.id))
-    const pluginPermissionsNotGrantedExtensions = (allExtensions?.invalidExtensions ?? []).filter(n => n.code === "plugin_permissions_not_granted")
-        .filter(matchesInvalidExtensionSearchTerm)
-        .sort((a, b) => a.id.localeCompare(b.id))
-
-    const hasVisibleResults =
-        pluginPermissionsNotGrantedExtensions.length > 0 ||
-        nonvalidExtensions.length > 0 ||
-        disabledExtensions.length > 0 ||
-        pluginExtensions.length > 0 ||
-        customSourceExtensions.length > 0 ||
-        animeTorrentExtensions.length > 0 ||
-        mangaExtensions.length > 0 ||
-        onlinestreamExtensions.length > 0
+    const term = normalizeSearchTerm(deferredSearchTerm)
+    const view = buildListView(allExtensions, term)
 
     if (isLoading) return <LoadingSpinner />
 
     if (!allExtensions) return <LuffyError>
         Could not get extensions.
     </LuffyError>
+
+    function renderCard(extension: Extension_Extension, isDisabled = false) {
+        return (
+            <ExtensionCard
+                key={extension.id}
+                extension={extension}
+                updateData={view.updates.get(extension.id)}
+                isInstalled={view.installedIds.has(extension.id)}
+                userConfigError={view.userConfigErrors.get(extension.id)}
+                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
+                health={allExtensions?.health?.[extension.id]}
+                isDisabled={isDisabled}
+                allowReload={!isDisabled}
+            />
+        )
+    }
 
     return (
         <AppLayoutStack className="gap-6">
@@ -175,9 +150,6 @@ export function ExtensionList(props: ExtensionListProps) {
                         disabled={isLoading}
                         onClick={() => {
                             setCheckForUpdates(true)
-                            // React.startTransition(() => {
-                            //     refetch()
-                            // })
                         }}
                     >
                         Check for updates
@@ -206,7 +178,7 @@ export function ExtensionList(props: ExtensionListProps) {
                     >
                         Reload from source
                     </Button>
-                    <AddExtensionModal extensions={installedExtensions}>
+                    <AddExtensionModal extensions={view.installedExtensions}>
                         <Button
                             className="rounded-full"
                             intent="white-subtle"
@@ -247,176 +219,250 @@ export function ExtensionList(props: ExtensionListProps) {
                 </div>
             </div>
 
-            <TextInput
-                placeholder="Search installed extensions..."
-                value={searchTerm}
-                onValueChange={setSearchTerm}
-                className="pl-10"
-                leftIcon={<BiSearch />}
-            />
+            <div className="flex items-center gap-4 flex-wrap">
+                <TextInput
+                    placeholder="Search installed extensions..."
+                    value={searchTerm}
+                    onValueChange={setSearchTerm}
+                    className="pl-10"
+                    fieldClass="flex-1 min-w-60"
+                    leftIcon={<BiSearch />}
+                />
+                <div className="w-fit">
+                    <Switch
+                        side="right"
+                        label="Auto-disable failing extensions"
+                        help="Disable an extension after 5 failed calls in a row."
+                        value={!!allExtensions.autoDisableFailing}
+                        disabled={isSettingAutoDisable}
+                        onValueChange={enabled => setAutoDisable({ enabled })}
+                    />
+                </div>
+            </div>
 
-            {!!searchTerm && !hasVisibleResults && (
+            {!!term && !view.hasVisibleResults && (
                 <Card className="p-8 text-center">
                     <p className="text-(--muted)">No extensions found matching your search.</p>
                 </Card>
             )}
 
+            {!!view.failing.length && <FailingExtensionsCard extensions={view.failing} allExtensions={allExtensions} />}
 
-            {!!pluginPermissionsNotGrantedExtensions?.length && (
+            {!!view.permissionsRequired.length && (
                 <Card className="p-4 space-y-6">
                     <h3 className="flex gap-3 items-center">Permissions required</h3>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {pluginPermissionsNotGrantedExtensions.map(extension => (
+                    <div className={GRID_CLASS}>
+                        {view.permissionsRequired.map(extension => (
                             <UnauthorizedExtensionPluginCard
                                 key={extension.id}
                                 extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
+                                isInstalled={view.installedIds.has(extension.id)}
                                 isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
                             />
                         ))}
                     </div>
                 </Card>
             )}
-            {!!nonvalidExtensions?.length && (
-                <Card className="p-4 space-y-6 border-red-800">
 
-                    <h3 className="flex gap-3 items-center">Invalid extensions</h3>
+            {!!view.invalid.length && <InvalidExtensionsCard extensions={view.invalid} installedIds={view.installedIds} />}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {nonvalidExtensions.map(extension => (
-                            <InvalidExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!disabledExtensions?.length && (
+            {!!view.disabled.length && (
                 <Card className="p-4 space-y-6">
                     <h3 className="flex gap-3 items-center">Disabled</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {disabledExtensions.map(extension => (
-                            <ExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                updateData={allExtensions?.hasUpdate?.find(n => n.extensionID === extension.id)}
-                                isInstalled={true}
-                                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
-                                isDisabled
-                            />
-                        ))}
+                    <div className={GRID_CLASS}>
+                        {view.disabled.map(extension => renderCard(extension, true))}
                     </div>
                 </Card>
             )}
 
-            {/*<Card className="p-4 space-y-6">*/}
-
-            {!!pluginExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><LuBlocks /> Plugins</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {pluginExtensions.map(extension => (
-                            <ExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                updateData={allExtensions?.hasUpdate?.find(n => n.extensionID === extension.id)}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                                userConfigError={allExtensions?.invalidUserConfigExtensions?.find(n => n.id == extension.id)}
-                                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
-                                allowReload={true}
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!customSourceExtensions?.length && (
-                <Card className="p-4 space-y-6">
+            {TYPE_SECTIONS.map(section => !!view.enabledByType[section.type].length && (
+                <Card key={section.type} className="p-4 space-y-6">
                     <div className="flex items-center gap-4">
-                        <h3 className="flex gap-3 items-center"><MdDataSaverOn />Custom Sources</h3>
-                        <SeaLink href="/custom-sources" className="text-sm underline underline-offset-2 text-(--muted) hover:text-(--foreground)">
-                            Browse all sources
-                        </SeaLink>
+                        <h3 className="flex gap-3 items-center">{section.icon} {section.title}</h3>
+                        {section.type === "custom-source" && (
+                            <SeaLink href="/custom-sources" className="text-sm underline underline-offset-2 text-(--muted) hover:text-(--foreground)">
+                                Browse all sources
+                            </SeaLink>
+                        )}
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {customSourceExtensions.map(extension => (
-                            <ExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                updateData={allExtensions?.hasUpdate?.find(n => n.extensionID === extension.id)}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                                userConfigError={allExtensions?.invalidUserConfigExtensions?.find(n => n.id == extension.id)}
-                                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
-                                allowReload
-                            />
-                        ))}
+                    <div className={GRID_CLASS}>
+                        {view.enabledByType[section.type].map(extension => renderCard(extension))}
                     </div>
                 </Card>
-            )}
-
-            {!!animeTorrentExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><RiFolderDownloadFill />Anime torrents</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {animeTorrentExtensions.map(extension => (
-                            <ExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                updateData={allExtensions?.hasUpdate?.find(n => n.extensionID === extension.id)}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                                userConfigError={allExtensions?.invalidUserConfigExtensions?.find(n => n.id == extension.id)}
-                                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
-                                allowReload
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-
-            {!!mangaExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><PiBookFill />Manga</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {mangaExtensions.map(extension => (
-                            <ExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                updateData={allExtensions?.hasUpdate?.find(n => n.extensionID === extension.id)}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                                userConfigError={allExtensions?.invalidUserConfigExtensions?.find(n => n.id == extension.id)}
-                                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
-                                allowReload
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {!!onlinestreamExtensions?.length && (
-                <Card className="p-4 space-y-6">
-                    <h3 className="flex gap-3 items-center"><CgMediaPodcast /> Online streaming</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                        {onlinestreamExtensions.map(extension => (
-                            <ExtensionCard
-                                key={extension.id}
-                                extension={extension}
-                                updateData={allExtensions?.hasUpdate?.find(n => n.extensionID === extension.id)}
-                                isInstalled={isExtensionInstalled(extension.id)}
-                                userConfigError={allExtensions?.invalidUserConfigExtensions?.find(n => n.id == extension.id)}
-                                isUnsafe={allExtensions?.unsafeExtensions?.[extension.id] ?? false}
-                                allowReload
-                            />
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {/*</Card>*/}
+            ))}
         </AppLayoutStack>
+    )
+}
+
+/**
+ * Derives everything the list renders from the API response in a few passes,
+ * with O(1) lookups for the per-card data.
+ */
+function buildListView(allExtensions: ExtensionRepo_AllExtensions | undefined, term: string) {
+    const extensions = allExtensions?.extensions ?? []
+    const disabledExtensions = allExtensions?.disabledExtensions ?? []
+    const invalidExtensions = allExtensions?.invalidExtensions ?? []
+
+    const installedIds = new Set<string>()
+    for (const ext of [...extensions, ...disabledExtensions, ...invalidExtensions]) installedIds.add(ext.id)
+
+    const updates = new Map((allExtensions?.hasUpdate ?? []).map(u => [u.extensionID, u]))
+    const userConfigErrors = new Map((allExtensions?.invalidUserConfigExtensions ?? []).map(e => [e.id, e]))
+    const failingIds = new Set(getFailingExtensionIds(allExtensions))
+
+    const matches = (ext: Extension_Extension | undefined) => matchesExtensionSearch(ext, term)
+    const enabled = orderBy(extensions.filter(matches), ["name", "manifestUri"])
+    const disabled = orderBy(disabledExtensions.filter(matches), ["name", "manifestUri"])
+    const failing = enabled.filter(ext => failingIds.has(ext.id))
+
+    const visibleInvalid = invalidExtensions
+        .filter(ext => matches(ext.extension))
+        .sort((a, b) => a.id.localeCompare(b.id))
+    const permissionsRequired = visibleInvalid.filter(ext => ext.code === "plugin_permissions_not_granted")
+    const invalid = visibleInvalid.filter(ext => ext.code !== "plugin_permissions_not_granted")
+
+    return {
+        installedIds,
+        updates,
+        userConfigErrors,
+        enabledByType: groupExtensionsByType(enabled),
+        disabled,
+        failing,
+        permissionsRequired,
+        invalid,
+        installedExtensions: [...extensions, ...disabledExtensions],
+        hasVisibleResults: enabled.length + disabled.length + visibleInvalid.length > 0,
+    }
+}
+
+function FailingExtensionsCard({ extensions, allExtensions }: { extensions: Extension_Extension[], allExtensions: ExtensionRepo_AllExtensions }) {
+    const { mutateAsync: setDisabled, isPending } = useSetExternalExtensionDisabled({ silent: true })
+
+    async function disable(ids: string[]) {
+        let disabled = 0
+        for (const id of ids) {
+            try {
+                await setDisabled({ id, disabled: true })
+                disabled++
+            }
+            catch {
+                // The request layer already shows the error
+            }
+        }
+        if (disabled) toast.success(disabled === 1 ? "Extension disabled." : `${disabled} extensions disabled.`)
+    }
+
+    return (
+        <Card className="p-4 space-y-4 border-red-800">
+            <div className="flex items-center gap-2 flex-wrap">
+                <div>
+                    <h3>Failing extensions</h3>
+                    <p className="text-sm text-(--muted)">
+                        These extensions loaded, but their recent calls keep failing. The source may be down or the extension may be outdated.
+                    </p>
+                </div>
+                <div className="flex flex-1"></div>
+                {extensions.length > 1 && (
+                    <Button
+                        intent="alert-subtle"
+                        leftIcon={<LuPower className="text-lg" />}
+                        loading={isPending}
+                        onClick={() => disable(extensions.map(ext => ext.id))}
+                    >
+                        Disable all failing
+                    </Button>
+                )}
+            </div>
+            <div className="divide-y divide-(--border)">
+                {extensions.map(ext => {
+                    const health = allExtensions.health?.[ext.id]
+                    return (
+                        <div key={ext.id} className="flex items-center gap-3 py-3">
+                            <ExtensionIcon icon={ext.icon} name={ext.name} className="size-10" />
+                            <div className="flex-1 min-w-0">
+                                <p className="font-semibold line-clamp-1">{ext.name}</p>
+                                <p className="text-sm text-red-300 line-clamp-2 break-words" title={health?.lastError}>
+                                    {health?.lastError || "Unknown error"}
+                                </p>
+                                <p className="text-xs text-(--muted)">
+                                    {health?.consecutiveFailures} failed calls in a row
+                                    {health?.lastErrorAt && <> · last {formatDistanceToNow(new Date(health.lastErrorAt), { addSuffix: true })}</>}
+                                    {!!health?.calls && <> · {health.failures}/{health.calls} calls failed since load</>}
+                                </p>
+                            </div>
+                            <Button
+                                size="sm"
+                                intent="warning-subtle"
+                                leftIcon={<LuPower />}
+                                disabled={isPending}
+                                onClick={() => disable([ext.id])}
+                            >
+                                Disable
+                            </Button>
+                        </div>
+                    )
+                })}
+            </div>
+        </Card>
+    )
+}
+
+function InvalidExtensionsCard({ extensions, installedIds }: {
+    extensions: NonNullable<ExtensionRepo_AllExtensions["invalidExtensions"]>,
+    installedIds: Set<string>
+}) {
+    const { mutateAsync: uninstall, isPending } = useUninstallExternalExtension({ silent: true })
+
+    const removableIds = extensions
+        .filter(ext => !!ext.extension?.id && ext.extension.manifestURI !== "builtin")
+        .map(ext => ext.extension.id)
+
+    const confirmRemoveAll = useConfirmationDialog({
+        title: `Remove ${removableIds.length} invalid extension(s)`,
+        description: "Their files and settings are deleted. This action cannot be undone.",
+        onConfirm: async () => {
+            let removed = 0
+            for (const id of removableIds) {
+                try {
+                    await uninstall({ id })
+                    removed++
+                }
+                catch {
+                    // The request layer already shows the error
+                }
+            }
+            if (removed) toast.success(`Removed ${removed} invalid extension(s).`)
+        },
+    })
+
+    return (
+        <Card className="p-4 space-y-6 border-red-800">
+            <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="flex gap-3 items-center">Invalid extensions</h3>
+                <div className="flex flex-1"></div>
+                {removableIds.length > 1 && (
+                    <Button
+                        intent="alert-subtle"
+                        leftIcon={<RiDeleteBinLine className="text-lg" />}
+                        loading={isPending}
+                        onClick={confirmRemoveAll.open}
+                    >
+                        Remove all invalid
+                    </Button>
+                )}
+            </div>
+
+            <div className={GRID_CLASS}>
+                {extensions.map(extension => (
+                    <InvalidExtensionCard
+                        key={extension.id}
+                        extension={extension}
+                        isInstalled={installedIds.has(extension.id)}
+                    />
+                ))}
+            </div>
+            <ConfirmationDialog {...confirmRemoveAll} />
+        </Card>
     )
 }

@@ -10,6 +10,7 @@ import {
     RemoveExtensionGitToken_Variables,
     RunExtensionPlaygroundCode_Variables,
     SaveExtensionUserConfig_Variables,
+    SetExtensionAutoDisable_Variables,
     SetExtensionGitToken_Variables,
     SetExternalExtensionDisabled_Variables,
     SetPluginSettingsPinnedTrays_Variables,
@@ -43,6 +44,14 @@ import { toast } from "sonner"
 
 const pluginWithIssuesCountAtom = atom(0)
 
+/**
+ * IDs of loaded extensions whose recent provider calls keep failing.
+ */
+export function getFailingExtensionIds(data: Nullish<ExtensionRepo_AllExtensions>): string[] {
+    if (!data?.health) return []
+    return (data.extensions ?? []).filter(ext => data.health?.[ext.id]?.failing).map(ext => ext.id)
+}
+
 export function usePluginWithIssuesCount() {
     const [count] = useAtom(pluginWithIssuesCountAtom)
     return count
@@ -56,13 +65,16 @@ export function useGetAllExtensions(withUpdates: boolean) {
         data: {
             withUpdates: withUpdates,
         },
-        gcTime: 0,
+        // Websocket events invalidate this query whenever extensions change
+        staleTime: 30_000,
         enabled: true,
     })
 
     const [, setCount] = useAtom(pluginWithIssuesCountAtom)
     React.useEffect(() => {
-        setCount((data?.invalidExtensions ?? []).length + (data?.invalidUserConfigExtensions ?? []).length)
+        setCount((data?.invalidExtensions ?? []).length
+            + (data?.invalidUserConfigExtensions ?? []).length
+            + getFailingExtensionIds(data).length)
     }, [data])
 
     return { data, ...rest }
@@ -101,14 +113,14 @@ export function useInstallExternalExtensionRepository() {
     })
 }
 
-export function useUninstallExternalExtension() {
+export function useUninstallExternalExtension(opts?: { silent?: boolean }) {
     return useServerMutation<boolean, UninstallExternalExtension_Variables>({
         endpoint: API_ENDPOINTS.EXTENSIONS.UninstallExternalExtension.endpoint,
         method: API_ENDPOINTS.EXTENSIONS.UninstallExternalExtension.methods[0],
         mutationKey: [API_ENDPOINTS.EXTENSIONS.UninstallExternalExtension.key],
         onSuccess: async () => {
             // DEVNOTE: No need to refetch, the websocket listener will do it
-            toast.success("Extension uninstalled successfully.")
+            if (!opts?.silent) toast.success("Extension uninstalled successfully.")
         },
     })
 }
@@ -279,13 +291,26 @@ export function useReloadExternalExtension() {
     })
 }
 
-export function useSetExternalExtensionDisabled() {
+export function useSetExternalExtensionDisabled(opts?: { silent?: boolean }) {
     return useServerMutation<boolean, SetExternalExtensionDisabled_Variables>({
         endpoint: API_ENDPOINTS.EXTENSIONS.SetExternalExtensionDisabled.endpoint,
         method: API_ENDPOINTS.EXTENSIONS.SetExternalExtensionDisabled.methods[0],
         mutationKey: [API_ENDPOINTS.EXTENSIONS.SetExternalExtensionDisabled.key],
         onSuccess: async (_data, variables) => {
-            toast.success(variables.disabled ? "Extension disabled." : "Extension enabled.")
+            if (!opts?.silent) toast.success(variables.disabled ? "Extension disabled." : "Extension enabled.")
+        },
+    })
+}
+
+export function useSetExtensionAutoDisable() {
+    const qc = useQueryClient()
+    return useServerMutation<boolean, SetExtensionAutoDisable_Variables>({
+        endpoint: API_ENDPOINTS.EXTENSIONS.SetExtensionAutoDisable.endpoint,
+        method: API_ENDPOINTS.EXTENSIONS.SetExtensionAutoDisable.methods[0],
+        mutationKey: [API_ENDPOINTS.EXTENSIONS.SetExtensionAutoDisable.key],
+        onSuccess: async (_data, variables) => {
+            await qc.invalidateQueries({ queryKey: [API_ENDPOINTS.EXTENSIONS.GetAllExtensions.key] })
+            toast.success(variables.enabled ? "Failing extensions will be disabled automatically." : "Auto-disable turned off.")
         },
     })
 }

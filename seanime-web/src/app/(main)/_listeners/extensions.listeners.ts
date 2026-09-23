@@ -1,8 +1,9 @@
 import { API_ENDPOINTS } from "@/api/generated/endpoints"
-import { ExtensionRepo_UpdateData } from "@/api/generated/types"
+import { ExtensionRepo_ExtensionFailingEvent, ExtensionRepo_UpdateData } from "@/api/generated/types"
 import { useWebsocketMessageListener } from "@/app/(main)/_hooks/handle-websockets"
 import { WSEvents } from "@/lib/server/ws-events"
 import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 /**
  * @description
@@ -34,6 +35,19 @@ export function useExtensionListener() {
             (async () => {
                 await qc.invalidateQueries({ queryKey: [API_ENDPOINTS.EXTENSIONS.ListDevelopmentModeExtensions.key] })
             })()
+        },
+    })
+
+    useWebsocketMessageListener<ExtensionRepo_ExtensionFailingEvent>({
+        type: WSEvents.EXTENSION_FAILING,
+        onMessage: async (data) => {
+            const name = data.name || data.id
+            if (data.autoDisabled) {
+                toast.warning(`${name} was disabled because it keeps failing.`, { description: data.lastError })
+            } else {
+                toast.error(`${name} keeps failing.`, { description: data.lastError })
+            }
+            await qc.invalidateQueries({ queryKey: [API_ENDPOINTS.EXTENSIONS.GetAllExtensions.key] })
         },
     })
 

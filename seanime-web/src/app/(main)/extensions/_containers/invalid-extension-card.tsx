@@ -3,8 +3,8 @@ import { useGrantPluginPermissions, useReloadExternalExtension } from "@/api/hoo
 import { useWebsocketMessageListener } from "@/app/(main)/_hooks/handle-websockets"
 import { ExtensionSettings } from "@/app/(main)/extensions/_containers/extension-card"
 import { ExtensionCodeModal } from "@/app/(main)/extensions/_containers/extension-code"
-import { LANGUAGES_LIST } from "@/app/(main)/manga/_lib/language-map"
-import { SeaImage } from "@/components/shared/sea-image"
+import { ExtensionIcon } from "@/app/(main)/extensions/_components/extension-icon"
+import { getExtensionLanguageLabel } from "@/app/(main)/extensions/_lib/extension-filters"
 import { Alert } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button, IconButton } from "@/components/ui/button"
@@ -105,23 +105,7 @@ export function InvalidExtensionCard(props: InvalidExtensionCardProps) {
 
             <div className="z-1 relative space-y-3">
                 <div className="flex gap-3 pr-16">
-                    <div className="relative rounded-md size-12 bg-gray-900 overflow-hidden">
-                        {!!extension.extension?.icon ? (
-                            <SeaImage
-                                src={extension.extension?.icon}
-                                alt="extension icon"
-                                crossOrigin="anonymous"
-                                fill
-                                quality={100}
-                                priority
-                                className="object-cover"
-                            />
-                        ) : <div className="w-full h-full flex items-center justify-center">
-                            <p className="text-2xl font-bold">
-                                {(extension.extension?.name?.[0] ?? "?").toUpperCase()}
-                            </p>
-                        </div>}
-                    </div>
+                    <ExtensionIcon icon={extension.extension?.icon} name={extension.extension?.name} />
 
                     <div>
                         <p className="font-semibold line-clamp-1">
@@ -218,11 +202,12 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                         The plugin <span className="font-bold">{extension.extension?.name}</span> is requesting the following permissions:
                     </p>
 
-                    <p className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-md leading-relaxed text-left bg-(--subtle) p-3 rounded-xl">
+                    <div className="whitespace-pre-wrap w-full max-w-full overflow-x-auto text-md leading-relaxed text-left bg-(--subtle) p-3 rounded-xl">
                         {extension.pluginPermissionDescription?.split("\n").map((line, index) => {
                             line = line.trimEnd()
                             if (line.startsWith("•") && !line.startsWith("*")) {
                                 const l = line.replace("• ", "")
+                                // biome-ignore lint/suspicious/noArrayIndexKey: lines of a static string, never reordered
                                 return <span key={index} className="mb-1 block">
                                     {l.startsWith("Domain:") ? <>
                                             <span className="font-bold bg-gray-900 border px-2 py-[0.08rem] rounded-lg inline-block">{l
@@ -235,15 +220,17 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                                 </span>
                             }
                             if (line.startsWith("*")) {
+                                // biome-ignore lint/suspicious/noArrayIndexKey: lines of a static string, never reordered
                                 return <p key={index} className="mb-1 block text-(--orange)">
                                     <span className="font-bold inline-block">{line.replace("* ", "")?.trim()}</span>
                                 </p>
                             }
+                            // biome-ignore lint/suspicious/noArrayIndexKey: lines of a static string, never reordered
                             return <p key={index} className="py-1 w-full">
                                 {line}<br />
                             </p>
                         })}
-                    </p>
+                    </div>
 
                     {isUnsafe && <Alert
                         intent="warning"
@@ -321,23 +308,7 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
 
             <div className="z-1 relative space-y-3">
                 <div className="flex gap-3 pr-16">
-                    <div className="relative rounded-md size-12 bg-gray-900 overflow-hidden">
-                        {!!extension.extension?.icon ? (
-                            <SeaImage
-                                src={extension.extension?.icon}
-                                alt="extension icon"
-                                crossOrigin="anonymous"
-                                fill
-                                quality={100}
-                                priority
-                                className="object-cover"
-                            />
-                        ) : <div className="w-full h-full flex items-center justify-center">
-                            <p className="text-2xl font-bold">
-                                {(extension.extension?.name?.[0] ?? "?").toUpperCase()}
-                            </p>
-                        </div>}
-                    </div>
+                    <ExtensionIcon icon={extension.extension?.icon} name={extension.extension?.name} />
 
                     <div>
                         <p className="font-semibold line-clamp-1">
@@ -365,7 +336,7 @@ export function UnauthorizedExtensionPluginCard(props: UnauthorizedExtensionPlug
                     </Badge>
                     <Badge className="border-transparent rounded-md" intent="unstyled">
                         {/*{extension.extension.lang.toUpperCase()}*/}
-                        {LANGUAGES_LIST[extension.extension.lang?.toLowerCase()]?.nativeName || extension.extension.lang?.toUpperCase() || "Unknown"}
+                        {getExtensionLanguageLabel(extension.extension.lang)}
                     </Badge>
                 </div>
 
