@@ -29,6 +29,7 @@ func (r *Repository) loadExternalMangaExtensionJS(ext *extension.Extension, lang
 	if err != nil {
 		return err
 	}
+	gojaExt.setHealthTracker(r.health)
 
 	// Add the extension to the map
 	retExt := extension.NewMangaProviderExtension(ext, provider)

@@ -828,6 +828,16 @@ export const API_ENDPOINTS = {
             methods: ["POST"],
             endpoint: "/api/v1/extensions/external/disabled",
         },
+        /**
+         *  @description
+         *  Route sets whether extensions are disabled automatically once they are failing.
+         *  An extension is failing after several consecutive provider calls fail.
+         */
+        SetExtensionAutoDisable: {
+            key: "EXTENSIONS-set-extension-auto-disable",
+            methods: ["POST"],
+            endpoint: "/api/v1/extensions/auto-disable",
+        },
         ListExtensionData: {
             key: "EXTENSIONS-list-extension-data",
             methods: ["GET"],

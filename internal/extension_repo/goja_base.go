@@ -26,6 +26,8 @@ type gojaProviderBase struct {
 	store          *plugin.Store[string, any]
 	scheduler      *gojautil.Scheduler
 	wsEventManager events.WSEventManagerInterface
+	// health records the outcome of every provider call; nil disables tracking.
+	health *HealthTracker
 }
 
 func initializeProviderBase(
@@ -94,10 +96,23 @@ func (g *gojaProviderBase) GetExtension() *extension.Extension {
 	return g.ext
 }
 
-func (g *gojaProviderBase) callClassMethod(ctx context.Context, methodName string, args ...interface{}) (any, error) {
+// setHealthTracker attaches the repository's tracker to this provider.
+func (g *gojaProviderBase) setHealthTracker(h *HealthTracker) {
+	g.health = h
+}
+
+func (g *gojaProviderBase) callClassMethod(ctx context.Context, methodName string, args ...interface{}) (ret any, err error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			g.health.Record(g.ext.ID, fmt.Errorf("method %s panicked: %v", methodName, r))
+			panic(r)
+		}
+		g.health.Record(g.ext.ID, err)
+	}()
 
 	vm, err := g.pool.Get(ctx)
 	if err != nil {
@@ -200,7 +215,7 @@ func (g *gojaProviderBase) awaitAndExportValue(ctx context.Context, value any) (
 		}
 
 		if v.State() == goja.PromiseStateRejected {
-			return nil, fmt.Errorf("promise rejected: %v", exportGojaValue(v.Result()))
+			return nil, fmt.Errorf("promise rejected: %s", rejectionMessage(v.Result()))
 		}
 
 		return g.awaitAndExportValue(ctx, v.Result())
@@ -217,6 +232,17 @@ func (g *gojaProviderBase) awaitAndExportValue(ctx context.Context, value any) (
 	default:
 		return value, nil
 	}
+}
+
+// rejectionMessage describes a rejection reason. A thrown Error exports as an
+// empty map, so its message would be lost if it were formatted with %v.
+func rejectionMessage(reason goja.Value) string {
+	if obj, ok := reason.(*goja.Object); ok {
+		if msg := obj.Get("message"); msg != nil && !goja.IsUndefined(msg) && !goja.IsNull(msg) {
+			return obj.String()
+		}
+	}
+	return fmt.Sprintf("%v", exportGojaValue(reason))
 }
 
 func exportGojaValue(value goja.Value) any {

@@ -75,6 +75,9 @@ func (g *GojaOnlinestreamProvider) FindEpisodes(id string) (ret []*hibikeonlines
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".FindEpisodes", &err)
 
 	method, err := g.callClassMethod(context.Background(), "findEpisodes", id)
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
@@ -97,6 +100,9 @@ func (g *GojaOnlinestreamProvider) FindEpisodeServer(episode *hibikeonlinestream
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".FindEpisodeServer", &err)
 
 	method, err := g.callClassMethod(context.Background(), "findEpisodeServer", structToMap(episode), server)
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {

@@ -83,6 +83,7 @@ func (r *Repository) loadExternalCustomSourceExtensionJS(ext *extension.Extensio
 	if err != nil {
 		return err
 	}
+	gojaExt.setHealthTracker(r.health)
 
 	// Add the extension to the map
 	retExt := extension.NewCustomSourceExtension(ext, provider)

@@ -263,6 +263,7 @@ const (
 	SetDiscordAnimeActivityWithProgressEndpoint        = "DISCORD-set-discord-anime-activity-with-progress"
 	SetDiscordLegacyAnimeActivityEndpoint              = "DISCORD-set-discord-legacy-anime-activity"
 	SetDiscordMangaActivityEndpoint                    = "DISCORD-set-discord-manga-activity"
+	SetExtensionAutoDisableEndpoint                    = "EXTENSIONS-set-extension-auto-disable"
 	SetExtensionGitTokenEndpoint                       = "EXTENSIONS-set-extension-git-token"
 	SetExternalExtensionDisabledEndpoint               = "EXTENSIONS-set-external-extension-disabled"
 	SetOfflineModeEndpoint                             = "LOCAL-set-offline-mode"

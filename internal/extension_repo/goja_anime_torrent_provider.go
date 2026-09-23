@@ -31,6 +31,9 @@ func (g *GojaAnimeTorrentProvider) Search(opts hibiketorrent.AnimeSearchOptions)
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".Search", &err)
 
 	method, err := g.callClassMethod(context.Background(), "search", structToMap(opts))
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
@@ -53,6 +56,9 @@ func (g *GojaAnimeTorrentProvider) SmartSearch(opts hibiketorrent.AnimeSmartSear
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".SmartSearch", &err)
 
 	method, err := g.callClassMethod(context.Background(), "smartSearch", structToMap(opts))
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {

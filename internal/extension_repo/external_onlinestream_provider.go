@@ -32,6 +32,7 @@ func (r *Repository) loadExternalOnlinestreamExtensionJS(ext *extension.Extensio
 	if err != nil {
 		return err
 	}
+	gojaExt.setHealthTracker(r.health)
 
 	// Add the extension to the map
 	retExt := extension.NewOnlinestreamProviderExtension(ext, provider)

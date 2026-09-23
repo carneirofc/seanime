@@ -1535,6 +1535,17 @@ export const RunPlaygroundCodeResponseSchema = z.looseObject({
     value: z.string(),
 })
 
+/** extension_repo.ExtensionHealth — health.go */
+export const ExtensionRepo_ExtensionHealthSchema = z.looseObject({
+    calls: z.number(),
+    failures: z.number(),
+    consecutiveFailures: z.number(),
+    lastError: z.string().nullish(),
+    lastErrorAt: z.string().nullish(),
+    lastSuccessAt: z.string().nullish(),
+    failing: z.boolean(),
+})
+
 /** extension_repo.UpdateData — repository.go */
 export const ExtensionRepo_UpdateDataSchema = z.looseObject({
     extensionID: z.string(),
@@ -1552,6 +1563,8 @@ export const ExtensionRepo_AllExtensionsSchema = z.looseObject({
     invalidUserConfigExtensions: z.array(Extension_InvalidExtensionSchema).nullish(),
     hasUpdate: z.array(ExtensionRepo_UpdateDataSchema).nullish(),
     unsafeExtensions: z.record(z.string(), z.boolean()).nullish(),
+    health: z.record(z.string(), ExtensionRepo_ExtensionHealthSchema).nullish(),
+    autoDisableFailing: z.boolean(),
 })
 
 /** hibiketorrent.AnimeProviderSmartSearchFilter — types.go */
@@ -1591,6 +1604,14 @@ export const ExtensionRepo_CustomSourceExtensionItemSchema = z.looseObject({
     name: z.string(),
     lang: z.string(),
     settings: HibikeCustomSource_SettingsSchema.nullish(),
+})
+
+/** extension_repo.ExtensionFailingEvent — health.go */
+export const ExtensionRepo_ExtensionFailingEventSchema = z.looseObject({
+    id: z.string(),
+    name: z.string(),
+    lastError: z.string(),
+    autoDisabled: z.boolean(),
 })
 
 /** extension_repo.ExtensionInstallResponse — external.go */

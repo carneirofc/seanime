@@ -755,6 +755,10 @@ export const SetDiscordMangaActivity_VariablesSchema = z.looseObject({
     chapter: z.string(),
 })
 
+export const SetExtensionAutoDisable_VariablesSchema = z.looseObject({
+    enabled: z.boolean(),
+})
+
 export const SetExtensionGitToken_VariablesSchema = z.looseObject({
     repository: z.string(),
     token: z.string(),
@@ -1021,6 +1025,7 @@ export const responseSchemasByKey: Record<string, z.ZodType> = {
     "EXTENSIONS-remove-extension-git-token": z.boolean(),
     "EXTENSIONS-run-extension-playground-code": s.RunPlaygroundCodeResponseSchema,
     "EXTENSIONS-save-extension-user-config": z.boolean(),
+    "EXTENSIONS-set-extension-auto-disable": z.boolean(),
     "EXTENSIONS-set-extension-git-token": z.boolean(),
     "EXTENSIONS-set-external-extension-disabled": z.boolean(),
     "EXTENSIONS-set-plugin-settings-pinned-trays": z.boolean(),
@@ -1286,6 +1291,7 @@ export const staticEndpointSchemas: Record<string, { key: string, schema: z.ZodT
     "POST /api/v1/download-release": { key: "DOWNLOAD-download-release", schema: s.DownloadReleaseResponseSchema },
     "POST /api/v1/download-torrent-file": { key: "DOWNLOAD-download-torrent-file", schema: z.boolean() },
     "POST /api/v1/extensions/all": { key: "EXTENSIONS-get-all-extensions", schema: s.ExtensionRepo_AllExtensionsSchema },
+    "POST /api/v1/extensions/auto-disable": { key: "EXTENSIONS-set-extension-auto-disable", schema: z.boolean() },
     "POST /api/v1/extensions/external/disabled": { key: "EXTENSIONS-set-external-extension-disabled", schema: z.boolean() },
     "POST /api/v1/extensions/external/edit-payload": { key: "EXTENSIONS-update-extension-code", schema: z.boolean() },
     "POST /api/v1/extensions/external/fetch": { key: "EXTENSIONS-fetch-external-extension-data", schema: s.Extension_ExtensionSchema },

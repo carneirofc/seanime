@@ -4200,6 +4200,46 @@
     }
   },
   {
+    "name": "HandleSetExtensionAutoDisable",
+    "trimmedName": "SetExtensionAutoDisable",
+    "comments": [
+      "HandleSetExtensionAutoDisable",
+      "",
+      "\t@summary sets whether extensions are disabled automatically once they are failing.",
+      "\t@desc An extension is failing after several consecutive provider calls fail.",
+      "\t@route /api/v1/extensions/auto-disable [POST]",
+      "\t@returns bool",
+      ""
+    ],
+    "filepath": "internal/handlers/extensions.go",
+    "filename": "extensions.go",
+    "api": {
+      "summary": "sets whether extensions are disabled automatically once they are failing.",
+      "descriptions": [
+        "An extension is failing after several consecutive provider calls fail."
+      ],
+      "endpoint": "/api/v1/extensions/auto-disable",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "bodyFields": [
+        {
+          "name": "Enabled",
+          "jsonName": "enabled",
+          "goType": "bool",
+          "usedStructType": "",
+          "typescriptType": "boolean",
+          "required": true,
+          "descriptions": []
+        }
+      ],
+      "returns": "bool",
+      "returnGoType": "bool",
+      "returnTypescriptType": "boolean"
+    }
+  },
+  {
     "name": "HandleListExtensionData",
     "trimmedName": "ListExtensionData",
     "comments": [

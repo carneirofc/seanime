@@ -127,6 +127,7 @@ var additionalStructNames = []string{
 	"torrentstream.TorrentStatus",
 	"debrid_client.StreamState",
 	"extension_repo.TrayPluginExtensionItem",
+	"extension_repo.ExtensionFailingEvent",
 	"vendor_habari.Metadata",
 	"nativeplayer.PlaybackInfo",
 	"nativeplayer.ServerEvent",

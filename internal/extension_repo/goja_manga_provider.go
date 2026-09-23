@@ -50,6 +50,9 @@ func (g *GojaMangaProvider) Search(opts hibikemanga.SearchOptions) (ret []*hibik
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".Search", &err)
 
 	method, err := g.callClassMethod(context.Background(), "search", structToMap(opts))
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
@@ -88,6 +91,9 @@ func (g *GojaMangaProvider) FindChapters(id string) (ret []*hibikemanga.ChapterD
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".FindChapters", &err)
 
 	method, err := g.callClassMethod(context.Background(), "findChapters", id)
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {
@@ -108,6 +114,9 @@ func (g *GojaMangaProvider) FindChapterPages(id string) (ret []*hibikemanga.Chap
 	defer util.HandlePanicInModuleWithError(g.ext.ID+".FindChapterPages", &err)
 
 	method, err := g.callClassMethod(context.Background(), "findChapterPages", id)
+	if err != nil {
+		return nil, err
+	}
 
 	promiseRes, err := g.waitForPromise(method)
 	if err != nil {

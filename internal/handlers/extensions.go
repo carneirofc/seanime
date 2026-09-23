@@ -260,6 +260,33 @@ func (h *Handler) HandleSetExternalExtensionDisabled(c echo.Context) error {
 	return h.RespondWithData(c, true)
 }
 
+// HandleSetExtensionAutoDisable
+//
+//	@summary sets whether extensions are disabled automatically once they are failing.
+//	@desc An extension is failing after several consecutive provider calls fail.
+//	@route /api/v1/extensions/auto-disable [POST]
+//	@returns bool
+func (h *Handler) HandleSetExtensionAutoDisable(c echo.Context) error {
+	type body struct {
+		Enabled bool `json:"enabled"`
+	}
+
+	var b body
+	if err := c.Bind(&b); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	if err := h.guardPrivilegedExtensionManagement(c); err != nil {
+		return err
+	}
+
+	if err := h.App.ExtensionRepository.SetAutoDisableFailing(b.Enabled); err != nil {
+		return h.RespondWithError(c, err)
+	}
+
+	return h.RespondWithData(c, true)
+}
+
 // HandleListExtensionData
 //
 //	@summary returns the loaded extensions

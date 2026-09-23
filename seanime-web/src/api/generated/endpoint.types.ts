@@ -910,6 +910,17 @@ export type SetExternalExtensionDisabled_Variables = {
 /**
  * - Filepath: internal/handlers/extensions.go
  * - Filename: extensions.go
+ * - Endpoint: /api/v1/extensions/auto-disable
+ * @description
+ * Route sets whether extensions are disabled automatically once they are failing.
+ */
+export type SetExtensionAutoDisable_Variables = {
+    enabled: boolean
+}
+
+/**
+ * - Filepath: internal/handlers/extensions.go
+ * - Filename: extensions.go
  * - Endpoint: /api/v1/extensions/all
  * @description
  * Route returns all loaded and invalid extensions.

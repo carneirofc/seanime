@@ -45421,6 +45421,15 @@
         "comments": []
       },
       {
+        "name": "AutoDisableFailing",
+        "jsonName": "autoDisableFailing",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "mu",
         "jsonName": "",
         "goType": "sync.Mutex",
@@ -45755,6 +45764,176 @@
     ],
     "comments": [
       " TestPluginOptions contains options for initializing a test plugin"
+    ]
+  },
+  {
+    "filepath": "../internal/extension_repo/health.go",
+    "filename": "health.go",
+    "name": "ExtensionHealth",
+    "formattedName": "ExtensionRepo_ExtensionHealth",
+    "package": "extension_repo",
+    "fields": [
+      {
+        "name": "Calls",
+        "jsonName": "calls",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Failures",
+        "jsonName": "failures",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ConsecutiveFailures",
+        "jsonName": "consecutiveFailures",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LastError",
+        "jsonName": "lastError",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LastErrorAt",
+        "jsonName": "lastErrorAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LastSuccessAt",
+        "jsonName": "lastSuccessAt",
+        "goType": "time.Time",
+        "typescriptType": "string",
+        "usedStructName": "time.Time",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Failing",
+        "jsonName": "failing",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ExtensionHealth is the runtime health of a loaded provider extension.",
+      " It is kept in memory only and resets when the extension is reloaded."
+    ]
+  },
+  {
+    "filepath": "../internal/extension_repo/health.go",
+    "filename": "health.go",
+    "name": "ExtensionFailingEvent",
+    "formattedName": "ExtensionRepo_ExtensionFailingEvent",
+    "package": "extension_repo",
+    "fields": [
+      {
+        "name": "ID",
+        "jsonName": "id",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Name",
+        "jsonName": "name",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LastError",
+        "jsonName": "lastError",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AutoDisabled",
+        "jsonName": "autoDisabled",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ExtensionFailingEvent is the payload of events.ExtensionFailing."
+    ]
+  },
+  {
+    "filepath": "../internal/extension_repo/health.go",
+    "filename": "health.go",
+    "name": "HealthTracker",
+    "formattedName": "ExtensionRepo_HealthTracker",
+    "package": "extension_repo",
+    "fields": [
+      {
+        "name": "mu",
+        "jsonName": "mu",
+        "goType": "sync.Mutex",
+        "typescriptType": "Mutex",
+        "usedTypescriptType": "Mutex",
+        "usedStructName": "sync.Mutex",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "entries",
+        "jsonName": "entries",
+        "goType": "map[string]ExtensionHealth",
+        "typescriptType": "Record\u003cstring, ExtensionRepo_ExtensionHealth\u003e",
+        "usedTypescriptType": "ExtensionRepo_ExtensionHealth",
+        "usedStructName": "extension_repo.ExtensionHealth",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
+        "name": "onFailing",
+        "jsonName": "onFailing",
+        "goType": "",
+        "typescriptType": "any",
+        "required": true,
+        "public": false,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " HealthTracker records the outcome of provider calls per extension.",
+      " A nil *HealthTracker is valid and records nothing."
     ]
   },
   {
@@ -46254,6 +46433,17 @@
         "comments": []
       },
       {
+        "name": "health",
+        "jsonName": "health",
+        "goType": "HealthTracker",
+        "typescriptType": "ExtensionRepo_HealthTracker",
+        "usedTypescriptType": "ExtensionRepo_HealthTracker",
+        "usedStructName": "extension_repo.HealthTracker",
+        "required": false,
+        "public": false,
+        "comments": []
+      },
+      {
         "name": "hookManager",
         "jsonName": "hookManager",
         "goType": "hook.Manager",
@@ -46410,6 +46600,26 @@
         "goType": "map[string]bool",
         "typescriptType": "Record\u003cstring, boolean\u003e",
         "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Health",
+        "jsonName": "health",
+        "goType": "map[string]ExtensionHealth",
+        "typescriptType": "Record\u003cstring, ExtensionRepo_ExtensionHealth\u003e",
+        "usedTypescriptType": "ExtensionRepo_ExtensionHealth",
+        "usedStructName": "extension_repo.ExtensionHealth",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AutoDisableFailing",
+        "jsonName": "autoDisableFailing",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
         "public": true,
         "comments": []
       }
@@ -102669,27 +102879,6 @@
         "jsonName": "body",
         "goType": "string",
         "typescriptType": "string",
-        "required": true,
-        "public": true,
-        "comments": []
-      }
-    ],
-    "comments": []
-  },
-  {
-    "filepath": "../internal/updater/check.go",
-    "filename": "check.go",
-    "name": "DocsResponse",
-    "formattedName": "Updater_DocsResponse",
-    "package": "updater",
-    "fields": [
-      {
-        "name": "Release",
-        "jsonName": "release",
-        "goType": "Release",
-        "typescriptType": "Updater_Release",
-        "usedTypescriptType": "Updater_Release",
-        "usedStructName": "updater.Release",
         "required": true,
         "public": true,
         "comments": []

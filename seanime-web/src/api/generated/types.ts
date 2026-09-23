@@ -2575,6 +2575,8 @@ export type ExtensionRepo_AllExtensions = {
     invalidUserConfigExtensions?: Array<Extension_InvalidExtension>
     hasUpdate?: Array<ExtensionRepo_UpdateData>
     unsafeExtensions?: Record<string, boolean>
+    health?: Record<string, ExtensionRepo_ExtensionHealth>
+    autoDisableFailing: boolean
 }
 
 /**
@@ -2606,6 +2608,38 @@ export type ExtensionRepo_CustomSourceExtensionItem = {
      */
     lang: string
     settings?: HibikeCustomSource_Settings
+}
+
+/**
+ * - Filepath: internal/extension_repo/health.go
+ * - Filename: health.go
+ * - Package: extension_repo
+ * @description
+ *  ExtensionFailingEvent is the payload of events.ExtensionFailing.
+ */
+export type ExtensionRepo_ExtensionFailingEvent = {
+    id: string
+    name: string
+    lastError: string
+    autoDisabled: boolean
+}
+
+/**
+ * - Filepath: internal/extension_repo/health.go
+ * - Filename: health.go
+ * - Package: extension_repo
+ * @description
+ *  ExtensionHealth is the runtime health of a loaded provider extension.
+ *  It is kept in memory only and resets when the extension is reloaded.
+ */
+export type ExtensionRepo_ExtensionHealth = {
+    calls: number
+    failures: number
+    consecutiveFailures: number
+    lastError?: string
+    lastErrorAt?: string
+    lastSuccessAt?: string
+    failing: boolean
 }
 
 /**

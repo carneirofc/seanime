@@ -668,6 +668,7 @@ func (r *Repository) unloadExternalExtensions() {
 
 	for _, id := range ids {
 		extensionBank.Delete(id)
+		r.health.Reset(id)
 	}
 
 	r.logger.Debug().Int("count", count).Msg("extensions: Unloaded external extensions")
@@ -974,6 +975,7 @@ func (r *Repository) reloadExtension(id string) {
 	// Remove from invalid extensions
 	r.invalidExtensions.Delete(id)
 	r.disabledExtensions.Delete(id)
+	r.health.Reset(id)
 
 	time.Sleep(200 * time.Millisecond)
 

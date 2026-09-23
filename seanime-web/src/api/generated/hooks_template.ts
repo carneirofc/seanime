@@ -1000,6 +1000,17 @@
 //     })
 // }
 
+// export function useSetExtensionAutoDisable() {
+//     return useServerMutation<boolean, SetExtensionAutoDisable_Variables>({
+//         endpoint: API_ENDPOINTS.EXTENSIONS.SetExtensionAutoDisable.endpoint,
+//         method: API_ENDPOINTS.EXTENSIONS.SetExtensionAutoDisable.methods[0],
+//         mutationKey: [API_ENDPOINTS.EXTENSIONS.SetExtensionAutoDisable.key],
+//         onSuccess: async () => {
+//
+//         },
+//     })
+// }
+
 // export function useListExtensionData() {
 //     return useServerQuery<Array<Extension_Extension>>({
 //         endpoint: API_ENDPOINTS.EXTENSIONS.ListExtensionData.endpoint,

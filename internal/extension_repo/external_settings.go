@@ -22,7 +22,9 @@ type StoredExtensionSettingsData struct {
 	// or "host/owner/repo") to an access token used when fetching extension
 	// resources (manifests, payloads, repositories) from matching URLs.
 	GitTokens map[string]string `json:"gitTokens,omitempty"`
-	mu        sync.Mutex        `json:"-"`
+	// AutoDisableFailing disables an extension once it is reported as failing.
+	AutoDisableFailing bool       `json:"autoDisableFailing,omitempty"`
+	mu                 sync.Mutex `json:"-"`
 }
 
 func defaultExtensionSettings() *StoredExtensionSettingsData {
@@ -181,4 +183,26 @@ func (r *Repository) removeExtensionFromStoredSettings(id string) {
 
 func (r *Repository) externalExtensionFilepath(id string) string {
 	return filepath.Join(r.extensionDir, id+".json")
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Auto-disable failing extensions
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (r *Repository) isAutoDisableFailingEnabled() bool {
+	settings := r.GetExtensionSettings()
+	settings.mu.Lock()
+	defer settings.mu.Unlock()
+	return settings.AutoDisableFailing
+}
+
+// SetAutoDisableFailing sets whether extensions are disabled automatically once
+// they are reported as failing.
+func (r *Repository) SetAutoDisableFailing(enabled bool) error {
+	bucket := filecache.NewPermanentBucket(ExtensionSettingsBucket)
+	settings := r.GetExtensionSettings()
+	settings.mu.Lock()
+	defer settings.mu.Unlock()
+	settings.AutoDisableFailing = enabled
+	return r.fileCacher.SetPerm(bucket, ExtensionSettingsKey, settings)
 }

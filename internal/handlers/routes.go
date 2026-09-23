@@ -561,6 +561,7 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 	v1Extensions.POST("/external/reload-source", h.HandleReloadExternalExtensionFromSource)
 	v1Extensions.POST("/external/reload-all-source", h.HandleReloadAllExternalExtensionsFromSource)
 	v1Extensions.POST("/external/disabled", h.HandleSetExternalExtensionDisabled)
+	v1Extensions.POST("/auto-disable", h.HandleSetExtensionAutoDisable)
 	v1Extensions.POST("/all", h.HandleGetAllExtensions)
 	v1Extensions.GET("/updates", h.HandleGetExtensionUpdateData)
 	v1Extensions.GET("/list", h.HandleListExtensionData)

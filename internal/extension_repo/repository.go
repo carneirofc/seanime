@@ -44,6 +44,9 @@ type (
 		invalidExtensions  *result.Map[string, *extension.InvalidExtension]
 		disabledExtensions *result.Map[string, *extension.Extension]
 
+		// Runtime health of loaded provider extensions
+		health *HealthTracker
+
 		hookManager hook.Manager
 
 		client        *http.Client
@@ -78,6 +81,10 @@ type (
 		HasUpdate []UpdateData `json:"hasUpdate"`
 		// Extensions that use unsafe flags
 		UnsafeExtensions map[string]bool `json:"unsafeExtensions"`
+		// Runtime health of loaded provider extensions, keyed by extension ID
+		Health map[string]*ExtensionHealth `json:"health"`
+		// Whether extensions are disabled automatically once they are failing
+		AutoDisableFailing bool `json:"autoDisableFailing"`
 	}
 
 	UpdateData struct {
@@ -153,6 +160,7 @@ func NewRepository(opts *NewRepositoryOptions) *Repository {
 	}
 
 	ret.loadOnlyType.Store([]extension.Type{})
+	ret.health = NewHealthTracker(ret.onExtensionFailing)
 
 	firstExtensionLoadedCtx, firstExtensionLoadedCancel := context.WithCancel(context.Background())
 	ret.firstExternalExtensionLoadedFunc = firstExtensionLoadedCancel
@@ -211,6 +219,8 @@ func (r *Repository) GetAllExtensions(withUpdates bool) (ret *AllExtensions) {
 		DisabledExtensions:          r.ListDisabledExtensionData(),
 		InvalidUserConfigExtensions: userConfigInvalidExtensions,
 		UnsafeExtensions:            make(map[string]bool),
+		Health:                      r.health.Snapshot(),
+		AutoDisableFailing:          r.isAutoDisableFailingEnabled(),
 	}
 
 	for _, ext := range ret.Extensions {

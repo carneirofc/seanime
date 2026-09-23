@@ -32,6 +32,7 @@ func (r *Repository) loadExternalAnimeTorrentProviderExtensionJS(ext *extension.
 	if err != nil {
 		return err
 	}
+	gojaExt.setHealthTracker(r.health)
 
 	// Add the extension to the map
 	retExt := extension.NewAnimeTorrentProviderExtension(ext, provider)

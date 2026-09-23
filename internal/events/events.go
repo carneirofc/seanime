@@ -62,6 +62,7 @@ const (
 
 	ExtensionsReloaded      = "extensions-reloaded"
 	ExtensionUpdatesFound   = "extension-updates-found"
+	ExtensionFailing        = "extension-failing"
 	PluginUnloaded          = "plugin-unloaded"
 	PluginLoaded            = "plugin-loaded"
 	ExtensionPrompt         = "extension-prompt"
