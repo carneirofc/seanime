@@ -7,9 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUpdater_GetLatestUpdateShouldFallback(t *testing.T) {
+func TestUpdater_GetLatestUpdateGitHub(t *testing.T) {
 	fixture := newUpdaterTestFixture(t)
-	websiteUrl = fixture.deadAPIURL
 
 	u := fixture.newUpdater("2.0.2", nil)
 	// update channel is "github"
@@ -21,7 +20,7 @@ func TestUpdater_GetLatestUpdateShouldFallback(t *testing.T) {
 	assert.Equal(t, MajorRelease, update.Type)
 }
 
-func TestUpdater_GetLatestUpdateSeanime(t *testing.T) {
+func TestUpdater_GetLatestUpdateLegacyChannel(t *testing.T) {
 	fixture := newUpdaterTestFixture(t)
 
 	u := fixture.newUpdater("2.0.2", nil)

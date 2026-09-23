@@ -511,11 +511,8 @@ func (a *App) InitOrRefreshModules() {
 
 		if a.Updater != nil {
 			a.Updater.SetEnabled(!settings.Library.DisableUpdateCheck)
-			if settings.Library.UpdateChannel != "" {
-				a.Updater.UpdateChannel = settings.Library.UpdateChannel
-			} else {
-				a.Updater.UpdateChannel = "github"
-			}
+			// Only the fork's GitHub releases are used; legacy seanime.app channels are ignored
+			a.Updater.UpdateChannel = "github"
 		}
 
 		// Refresh auto scanner settings (thread safe)

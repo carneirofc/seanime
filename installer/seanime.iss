@@ -70,7 +70,7 @@
 
 #define AppName "Seanime"
 #define AppPublisher "Seanime"
-#define AppURL "https://github.com/5rahim/seanime"
+#define AppURL "https://github.com/carneirofc/seanime"
 #define AppExeName "seanime.exe"
 ; Path is relative to this .iss file (installer\).
 #define SourceBinary "..\dist\seanime-windows-amd64.exe"

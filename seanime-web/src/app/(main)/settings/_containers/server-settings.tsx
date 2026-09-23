@@ -427,28 +427,9 @@ export function ServerSettings(props: ServerSettingsProps) {
                     side="right"
                     name="disableUpdateCheck"
                     label="Do not check for updates"
-                    help="If enabled, Seanime will not check for new releases."
+                    help="If enabled, Seanime will not check for new releases of this fork on GitHub."
                     icon={<TbDownloadOff className="" />}
                 />
-                <Field.Select
-                    label="Update Channel"
-                    name="updateChannel"
-                    help=""
-                    options={[
-                        { label: "GitHub (Default)", value: "github" },
-                        { label: "Seanime", value: "seanime" },
-                        { label: "Seanime (Canary)", value: "seanime_nightly" },
-                    ]}
-                />
-                {serverStatus?.settings?.library?.updateChannel === "seanime" && (
-                    <Alert intent="info" description="You are currently using a release channel hosted on Seanime." />
-                )}
-                {serverStatus?.settings?.library?.updateChannel === "seanime_nightly" && (
-                    <Alert
-                        intent="warning"
-                        description="You are currently using the canary release channel hosted on Seanime. This channel may receive unstable updates without much testing."
-                    />
-                )}
                 <Separator />
                 <Field.Switch
                     side="right"

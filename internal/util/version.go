@@ -111,10 +111,10 @@ func VersionIsOlderThan(version string, compare string) bool {
 	return comp < 0 && shouldUpdate
 }
 
-var allowedGitHubOwners = []string{"5rahim"}
+var allowedGitHubOwners = []string{"carneirofc"}
 
-// validateReleaseUrl checks that the URL points to a GitHub release asset
-// from an allowed owner.
+// ValidateReleaseUrl checks that the URL points to a GitHub release asset
+// from an allowed owner (this fork).
 func ValidateReleaseUrl(rawURL string) error {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
@@ -127,7 +127,7 @@ func ValidateReleaseUrl(rawURL string) error {
 
 	switch parsed.Host {
 	case "github.com":
-		// e.g. https://github.com/5rahim/seanime/releases/download/v1.0.0/file.zip
+		// e.g. https://github.com/carneirofc/seanime/releases/download/v1.0.0/file.zip
 		parts := strings.Split(strings.TrimPrefix(parsed.Path, "/"), "/")
 		if len(parts) < 6 || parts[2] != "releases" || parts[3] != "download" {
 			return fmt.Errorf("URL must point to a GitHub release asset")
@@ -139,9 +139,6 @@ func ValidateReleaseUrl(rawURL string) error {
 			}
 		}
 		return fmt.Errorf("repository owner %q is not allowed", owner)
-
-	case "seanime.app":
-		return nil
 
 	default:
 		return fmt.Errorf("host %q is not allowed", parsed.Host)
