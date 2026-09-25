@@ -1,6 +1,0 @@
-procs:
-  backend:
-    shell: "npm run dev:go"
-
-  frontend:
-    shell: "npm run dev:web"

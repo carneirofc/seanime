@@ -9,7 +9,7 @@
 ;
 ; Build:
 ;   npm run build:installer            (compiles this script)
-;   npm run dist:windows               (build the app, then the installer)
+;   npm run build:all                  (build the app, then the installer)
 ;
 ; The version is read automatically from internal/constants/constants.go (the single
 ; source of truth) at compile time, so it never needs to be edited here. To override it

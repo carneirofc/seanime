@@ -25,7 +25,7 @@ From the repository root:
 
 ```bash
 # Build the app, then package the installer
-npm run dist:windows
+npm run build:all
 
 # Or, if the binary is already built
 npm run build:installer

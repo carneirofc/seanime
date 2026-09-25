@@ -10,7 +10,8 @@
     "dev:codegen": "nodemon --watch codegen --watch internal --ext go,mod,sum,json --ignore \"codegen/generated/**\" --ignore \"internal/events/endpoints.go\" --ignore \"seanime-web/src/api/generated/**\" --ignore \"seanime-web/src/app/(main)/_features/plugin/generated/**\" --exec \"npm run codegen\"",
     "dev:go": "nodemon --watch main.go --watch internal --watch go.mod --watch go.sum --ext go,mod,sum,toml,json --ignore \"internal/**/*.json\" --ignore \"internal/events/endpoints.go\" --exec \"go run . --port=43000 --datadir=$INIT_CWD/dev-datadir\"",
     "dev:web": "npm run dev --workspace seanime-web",
-    "build": "npm run build:web && npm run build:embed && npm run build:api",
+    "clean": "shx rm -rf web dist seanime-web/out",
+    "build": "npm run clean && npm run codegen && npm run build:web && npm run build:embed && npm run build:api",
     "build:embed": "shx rm -rf web && shx mkdir -p web && shx cp -r seanime-web/out/* web/",
     "build:api": "run-script-os",
     "build:api:win32": "cross-env CGO_ENABLED=0 go build -tags=nosystray -trimpath -ldflags=\"-s -w\" -o dist/seanime-windows-amd64.exe .",
@@ -29,7 +30,6 @@
     "build:installer:win32": "iscc installer/seanime.iss",
     "build:installer:default": "node -e \"console.error('build:installer is Windows-only: it needs the Inno Setup compiler (iscc) on PATH.'); process.exit(1)\"",
     "build:all": "npm run build && npm run build:installer",
-    "dist:windows": "npm run build:all",
     "build:web": "npm run build --workspace seanime-web",
     "test:go": "go test ./...",
     "postinstall": "patch-package || exit 0"
