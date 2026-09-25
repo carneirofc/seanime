@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v3.10.2-fork.2
 
 - 📝 docs: Added the phased plan in `docs/plans/2026-09-upstream-sync-browser-relay/` for merging upstream v3.10.3, a browser relay that runs extension requests in the user's own browser session through a companion extension (with direct fetch and cloak-backend as fallbacks), and the cloak-backend error-handling fixes.
 - ⚡️ extensions: The extensions page is lighter. The code editor (CodeMirror with its merge view, about 550 kB before compression) was a static import of every installed-extension card, so opening the page loaded it even though it is only used inside the code modal; it is now split out and loaded when that modal opens. Each card's details modal also ran six mutation hooks per card while closed — they now mount with the modal. The installed list no longer re-filters the whole collection five times per render or does a linear lookup per card for its update and config state, the extensions query is no longer evicted from the cache on every unmount (`gcTime: 0`) with three components reading it, search input is deferred so typing stays responsive on long lists, and off-screen marketplace cards skip layout and paint (`content-visibility`). The five near-identical type sections on each tab are rendered from one list, the icon markup repeated across four cards is one component, and the marketplace card lives in its own file, which also removes an import cycle between the list, the add-extension modal and the marketplace. Invalid extensions can be removed in bulk, and the permission list of a plugin no longer nests `<p>` elements.
