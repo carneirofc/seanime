@@ -17,7 +17,7 @@ install time with the paths you chose.
 - A **built server binary** at `dist/seanime` — run `npm run build`, or pass
   `--build-first`.
 - `ffmpeg` on `PATH` for on-the-fly transcoding. The installer warns if it is missing.
-- Optional: `imagemagick` for crisp icons at every size (see [Icons](#icons)),
+- Optional: `imagemagick` for crisp icons at every size (see [Icons](#icons-desktop-icon-path)),
   `curl` or `wget` so the launcher can tell when the server is ready.
 
 ## Installing
@@ -64,7 +64,7 @@ sudo ./install-linux.sh --system
 | `--datadir DIR` | `~/.config/Seanime` (`/var/lib/seanime` with `--system`) | must be absolute |
 | `--host ADDR` / `--port N` | `127.0.0.1` / `43211` | seeded into `config.toml` on a first install; see [Address](#address) |
 | `--build-first` | | run `npm run build` first |
-| `--add-to-path` | | see [PATH](#path) |
+| `--add-to-path` | | see [PATH](#icons-desktop-icon-path) |
 | `--desktop-icon` | | also place a launcher on the desktop |
 | `--no-menu-entry` | | skip the application menu entry |
 | `--server-url URL` | | also install a "Seanime (remote)" entry |
@@ -97,29 +97,18 @@ the server's own default means the install location and your library are indepen
 
 ## The launcher
 
-The menu entry does not run `seanime` directly. It runs an installed
-`seanime-launch` script, because the server is headless: it serves the web interface
-and prints to stdout, and opens no window. A bare `Exec=seanime` would look, to the
-person who clicked it, like nothing happened.
+The menu entry runs `seanime-launch`, not `seanime`: the server is headless, so a bare
+`Exec=seanime` would look like nothing happened. With no arguments it:
 
-`seanime-launch` with no arguments:
-
-1. checks whether something is already answering — a second click opens the tab
-   rather than starting a second server;
-2. if not, starts the server. With `--systemd` that is `systemctl --user start`;
-   otherwise the server is spawned under `setsid` in its own session, so it survives
-   the launcher, the browser and the terminal that started it;
-3. polls `GET /api/v1/status` — the same endpoint `server.Dockerfile` uses as its
-   healthcheck — until it answers, for up to `SEANIME_LAUNCH_TIMEOUT` seconds
-   (default 90; a first run builds the database and caches before it listens);
+1. opens the existing tab if a server already answers;
+2. otherwise starts one (`systemctl --user start` under `--systemd`, else `setsid`, so it
+   outlives the launcher and browser);
+3. polls `GET /api/v1/status` for up to `SEANIME_LAUNCH_TIMEOUT` seconds (default 90);
 4. opens the URL with `xdg-open`.
 
 Other modes: `--terminal`, `--remote`, `--stop`, `--status`, `--url`, `--help`.
-
-**Closing the browser does not stop the server, and that is correct — it is a
-server.** Three ways to stop it: the "Stop the server" action on the menu entry,
-`seanime-launch --stop`, or `systemctl --user stop seanime` under `--systemd`. If you
-want the server's lifetime managed for you, use `--systemd`.
+Closing the browser does not stop the server; use the menu's "Stop the server" action,
+`seanime-launch --stop`, or `systemctl --user stop seanime`.
 
 ### Settings — `launcher.env`
 
@@ -138,74 +127,26 @@ SEANIME_REMOTE_URL=               # set by --server-url
 
 ### Address
 
-Note what is **not** in that file: `SEANIME_SERVER_HOST` and `SEANIME_SERVER_PORT`.
-The server rewrites `config.toml` whenever either differs from the stored value
-(`internal/core/config.go`), so a launcher or a systemd unit that helpfully repeated
-them would overwrite a hand-edited config on every single start. The launcher instead
-*reads* `[server] host` and `port` out of `<datadir>/config.toml` and passes only
-`--datadir`.
+`launcher.env` deliberately omits `SEANIME_SERVER_HOST`/`PORT`: the server rewrites
+`config.toml` whenever those differ (`internal/core/config.go`). The launcher reads
+`[server] host`/`port` from `<datadir>/config.toml` instead, so change the address there.
 
-That is why `--host`/`--port` are seeded into `config.toml` at install time rather
-than exported: to change the address afterwards, edit `config.toml` — the launcher
-will follow it.
+### Menu actions
 
-### The terminal action
+Right-click the entry for **Start in a terminal**, **Stop the server** and **Open data
+directory**. The terminal action calls `seanime-launch --terminal`, which detects an
+emulator itself (`Terminal=true` is invalid in a `[Desktop Action]` group); set
+`SEANIME_TERMINAL` if it picks wrong.
 
-Right-click the menu entry in the launcher and you get **Start in a terminal**, which
-runs the server in the foreground so you can watch the logs, plus **Stop the server**
-and **Open data directory**.
+## Icons, desktop icon, PATH
 
-It does not work by setting `Terminal=true`. That key is not valid inside a
-`[Desktop Action]` group — the Desktop Entry specification allows only `Name`, `Icon`
-and `Exec` there, and `desktop-file-validate` rejects it outright:
-
-```
-error: file contains key "Terminal" in group "Desktop Action terminal",
-but keys extending the format should start with "X-"
-```
-
-So the action calls `seanime-launch --terminal`, which finds a terminal emulator
-itself. This is also more reliable than `Terminal=true` would have been: the argument
-that introduces a command differs per emulator (`konsole -e`, `wezterm start --`,
-`gnome-terminal --`, `kitty` with no flag at all), and the emulator your desktop is
-configured to use is not necessarily one that accepts a bare `-e`. Set
-`SEANIME_TERMINAL` if the detection picks wrong.
-
-## Icons
-
-The source is `internal/icon/logo.png`, a 439×439 raster. The installer downscales it
-to 16, 22, 24, 32, 48, 64, 128 and 256 px under `icons/hicolor/<n>x<n>/apps/` — 22 and
-24 are the Plasma panel sizes, 256 is what KRunner and the overview use. Nothing is
-upscaled, and `scalable/` is never used, because that directory means SVG.
-
-Without ImageMagick (`magick` or `convert`) the unmodified PNG goes to
-`share/pixmaps/seanime.png` instead, which both KDE and GTK still search by icon name.
-It works; the sizes are just not tuned.
-
-Cache refresh (`update-desktop-database`, `gtk-update-icon-cache`, `kbuildsycoca6`) is
-best-effort — every one of them is skipped if absent and ignored if it fails.
-`gtk-update-icon-cache` is additionally skipped when the theme directory has no
-`index.theme`, which is the normal state of a per-user `hicolor` and would otherwise
-make it hard-fail.
-
-## Desktop icon
-
-`--desktop-icon` copies the entry to `xdg-user-dir DESKTOP` (falling back to
-`~/Desktop`) and marks it executable. Plasma refuses to run a non-executable
-`.desktop` file placed on the desktop, so the exec bit is not optional. It is skipped
-with a warning if you have no desktop directory.
-
-## PATH
-
-`--add-to-path` checks first and usually does nothing: `~/.local/bin` is already on
-`PATH` on stock Arch/CachyOS, Fedora and Debian.
-
-When it genuinely is not, the installer writes
-`~/.config/environment.d/10-seanime.conf` rather than editing a shell rc file. One
-file, shell-agnostic, and `--uninstall` removes it with one `rm`. Its two limits are
-printed at install time and worth repeating: it applies **at your next login**, not to
-the current shell, and it does not reach TTY logins or `ssh`. For those, add the
-directory to your shell's own path the usual way.
+- Icons: `internal/icon/logo.png` is downscaled to 16–256 px under `icons/hicolor/`. Without
+  ImageMagick the raw PNG goes to `share/pixmaps/` instead. Cache refreshes are best-effort.
+- `--desktop-icon` copies the entry to `xdg-user-dir DESKTOP` and marks it executable
+  (Plasma requires that); skipped if there is no desktop directory.
+- `--add-to-path` does nothing when `~/.local/bin` is already on `PATH`; otherwise it writes
+  `~/.config/environment.d/10-seanime.conf`, which applies at next login and not to TTY or
+  `ssh` sessions.
 
 ## systemd
 

@@ -1,21 +1,7 @@
 # Seanime Development and Build Guide
 
-## Tech stack
-
-* Server: [Go](https://go.dev/)
-    * API: [Echo](https://echo.labstack.com/)
-    * Plugin system: [Goja](https://github.com/dop251/goja) for Javascript runtimes
-    * Database: [SQLite](https://github.com/glebarez/sqlite) handled via [GORM](https://gorm.io/)
-    * File scanner: [Habari](https://github.com/5rahim/habari) for filename parsing
-    * Torrent streaming: [anacrolix/torrent](https://github.com/anacrolix/torrent) for Bittorrent client
-    * OS Integration: [Fyne](https://github.com/fyne-io/systray) for Windows system tray management
-    * MKV Parser: Fork of [matroska-go](https://github.com/luispater/matroska-go)
-* Frontend: [React](https://reactjs.org/), [Rsbuild](https://rsbuild.dev/), [Tanstack Router](https://tanstack.com/router)
-	* UI Library: Custom components built with [Tailwind](https://tailwindcss.com/) and [Radix UI](https://www.radix-ui.com/)
-	* Data Fetching: [TanStack Query](https://tanstack.com/query/latest)
-	* State Management: [Jotai](https://jotai.org/) for global state
-	* Built-in Player: Custom-made (VideoCore)
-	* `hls.js` is pinned to `1.5.20`: 1.6.0 and above cause `appendBuffer` fatal errors.
+Stack: Go (Echo, GORM/SQLite, Goja plugins) and a React + Rsbuild + TanStack Router web UI.
+`hls.js` is pinned to `1.5.20`: 1.6.0 and above cause `appendBuffer` fatal errors.
 
 ## Prerequisites
 
@@ -30,18 +16,22 @@ From the repository root, one command builds everything on Linux, macOS and Wind
 npm run build
 ```
 
-It runs three steps in order, each also available on its own:
+It runs these steps in order, each also available on its own:
 
 | Step | Script | What it does |
 | --- | --- | --- |
-| 1 | `npm run build:web` | Typechecks and builds the web interface into `seanime-web/out`. |
-| 2 | `npm run build:embed` | Replaces the root `web/` directory with that output. |
-| 3 | `npm run build:api` | Builds the server binary into `dist/`. |
+| 1 | `npm run clean` | Removes `web/`, `dist/` and `seanime-web/out`. |
+| 2 | `npm run codegen` | Regenerates the Go → TypeScript contract (`go generate ./codegen`). |
+| 3 | `npm run build:web` | Typechecks and builds the web interface into `seanime-web/out`. |
+| 4 | `npm run build:embed` | Copies that output into the root `web/` directory. |
+| 5 | `npm run build:api` | Builds the server binary into `dist/`. |
 
-The order matters: `main.go` embeds the web interface with `//go:embed all:web`, so step 3
+`npm run build:all` also packages the Windows installer (see below).
+
+The order matters: `main.go` embeds the web interface with `//go:embed all:web`, so step 5
 fails with `pattern all:web: no matching files found` if `web/` is missing or empty.
 
-The binary lands at `dist/seanime` (`dist\seanime-windows-amd64.exe` on Windows). Step 3 is
+The binary lands at `dist/seanime` (`dist\seanime-windows-amd64.exe` on Windows). Step 5 is
 the headless, fully static build used by CI and both Dockerfiles:
 
 ```bash
@@ -95,8 +85,7 @@ That starts three processes:
 The web client routes its localhost requests to port `43000`
 (`seanime-web/src/lib/server/config.ts`), which is why the Go server uses it in development.
 
-`mprocs.yaml` is an alternative to `concurrently` and runs the server and web processes.
-`npm run dev:codegen` runs the codegen watcher alone.
+`npm run dev:codegen`, `dev:go` and `dev:web` run each process alone.
 
 ### Server only
 
@@ -190,20 +179,6 @@ SEANIME_TEST_RECORD_ANILIST_FIXTURES=true go test ./internal/api/anilist/...
 
 ### Writing tests
 
-Use the shared helpers in `internal/testutil` rather than ad hoc stubs:
-
-- `InitTestProvider` — loads the test config and applies feature-flag skips.
-- `NewTestEnv` — an isolated temp root, app data dir, cache dir and database.
-- `FixtureRelPath` and the fixture helpers.
-- `RequireSampleVideoPath` — for media-player tests needing a real file.
-
-```go
-func TestSomething(t *testing.T) {
-	env := testutil.NewTestEnv(t, testutil.Anilist())
-	database := env.MustNewDatabase(util.NewLogger())
-	_ = database
-}
-```
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the mock builders in `internal/testmocks` and the
-naming conventions for test files.
+Use the shared helpers in `internal/testutil` (`InitTestProvider`, `NewTestEnv`, fixture
+helpers, `RequireSampleVideoPath`) and the mock builders in `internal/testmocks`; see
+[`CONTRIBUTING.md`](CONTRIBUTING.md#testing).

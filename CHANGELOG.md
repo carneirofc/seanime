@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- 🔨 build: `npm run build` now cleans old output (new `npm run clean`: `web/`, `dist/`, `seanime-web/out`) and regenerates the Go → TypeScript contract before building, so a build can no longer embed a stale web bundle or ship out-of-date generated types. The duplicate entrypoints are gone: `seanime-web/Makefile` (`make build-web`, same as `build:embed`), `mprocs.yaml` (same as `npm run dev`) and the `dist:windows` alias (use `npm run build:all`).
+- 📝 docs: Documentation is consolidated. `CONTEXT.md` and `docs/adr/` are folded into `internal/AGENTS.md`, the completed `docs/plans/` directory and two empty upstream READMEs are removed, the systemd section of `WEB_DEPLOYMENT.md` points to `installer/linux/README.md` instead of repeating it, the Linux installer README and `DEVELOPMENT_AND_BUILD.md` are shorter, the AGENTS.md files no longer restate the root CI table, and `CONTRIBUTING.md` names the right upstream remote.
+
 ## v3.10.2-fork.2
 
 - 📝 docs: Added the phased plan in `docs/plans/2026-09-upstream-sync-browser-relay/` for merging upstream v3.10.3, a browser relay that runs extension requests in the user's own browser session through a companion extension (with direct fetch and cloak-backend as fallbacks), and the cloak-backend error-handling fixes.

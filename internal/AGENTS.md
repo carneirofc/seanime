@@ -9,7 +9,7 @@ entrypoints, and how backend changes flow to the frontend.
 | --- | --- | --- | --- | --- |
 | Core Server | Boot, flags, config, logging, updater | `main.go`, `internal/server/`, `internal/core/` | Go 1.26.5 | `go run .`, `go build -o seanime` |
 | HTTP API + Events | REST endpoints and websocket events | `internal/handlers/`, `internal/core/echo.go` | Echo v4 | `go test ./internal/...` |
-| Embedded Web UI | Serve the built web UI | `web/`, `internal/core/echo.go` | Go embed FS | Build web, then copy into `web/` |
+| Embedded Web UI | Serve the built web UI | `web/`, `internal/core/echo.go` | Go embed FS | `npm run build` at repo root |
 | Background Jobs | Recurring sync/update loops | `internal/cron/` | Go | Runs with server startup |
 | Codegen | Emit frontend types from Go | `codegen/` | Go | `go generate ./codegen` |
 
@@ -37,6 +37,17 @@ entrypoints, and how backend changes flow to the frontend.
 - Provider methods must return the error from `callClassMethod`; discarding it makes a failing
   source look like one that returned no results.
 
+## AniList entry privacy
+
+- Adult media first added to the list defaults to `private` + `hiddenFromStatusLists`
+  (setting on by default). It is applied server-side on the add path
+  (`HandleEditAnilistListEntry`, `AddMediaToCollection`) and keyed on nil-vs-explicit flag
+  pointers, so an explicit user choice always wins. Later saves never re-force the flags.
+- Instead of enforcing, the UI alerts when an adult entry is public. Exposure is keyed on
+  `private` only, and the alert fires regardless of the setting.
+- `Platform.UpdateEntry` takes an `UpdateEntryParams` struct; its narrow siblings
+  `UpdateEntryProgress` / `UpdateEntryRepeat` keep positional arguments on purpose.
+
 ## HTTP API + Events
 
 - Echo instantiated in `internal/core/echo.go` with JSON serialization overrides.
@@ -49,7 +60,7 @@ entrypoints, and how backend changes flow to the frontend.
 - `internal/core/echo.go` mounts the embedded `web/` filesystem with HTML5 fallback routing.
 - Static mounts from config: `/assets` → `app.Config.Web.AssetDir`,
   `/manga-downloads` → `app.Config.Manga.DownloadDir`, `/offline-assets` → `app.Config.Offline.AssetDir`.
-- Don't edit `web/` by hand; it is a build artifact from `seanime-web/` (see `seanime-web/Makefile`).
+- Don't edit `web/` by hand; it is a build artifact from `seanime-web/`, written by `npm run build` (or `build:embed`) at the repo root.
 
 ## Backend → Frontend Codegen
 
@@ -116,12 +127,8 @@ See `../CONTRIBUTING.md` for test-helper conventions (`internal/testmocks/…`).
 
 ## Code Quality
 
-- `go vet ./...` and `golangci-lint` run in CI (`.github/workflows/lint.yml`).
-- golangci-lint uses `--new-from-merge-base=upstream/main`: this fork tracks upstream, so
-  findings are reported only on lines this fork added or changed. New work meets the full
-  standard set; the inherited upstream backlog is not a merge blocker. See `../.golangci.yml`.
-- Security scanning (govulncheck, OSV-Scanner, Trivy, npm audit) runs in
-  `.github/workflows/security.yml`.
+- `go vet ./...` and `golangci-lint` (config `../.golangci.yml`); CI scope is described in the
+  root `AGENTS.md`.
 
 ## Maintaining this file
 

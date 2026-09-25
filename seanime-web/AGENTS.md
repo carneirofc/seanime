@@ -107,19 +107,15 @@ Rules for the runtime schemas:
 
 - `npm run dev` — Rsbuild dev server with `.env.web`. `npm run dev:mobile` uses `.env.mobile`.
 - `npm run build` — runs `typecheck` then `rsbuild build`, emitting to `out/`.
-- `make build-web` — clean build copied into `../web/` for Go to embed.
+- `npm run build` at the repo root — the full build: codegen, this build, copy into `../web/`
+  for Go to embed, then the server binary.
 - Env vars must be prefixed `SEA_` to reach the client (`loadEnv` in `rsbuild.config.ts`).
-- Desktop targets no longer exist; there is no `build:desktop` or `out-desktop/`.
 
 ## Code Quality
 
-- `npm run typecheck` — `tsgo` (`@typescript/native-preview`). Gated in CI; keep it at zero.
-- `npm run test` — Vitest. Gated in CI.
-- `npm run lint` — Biome. CI lints only files this fork changed against upstream, so the
-  inherited upstream backlog is not a merge blocker; new code meets the full rule set.
-- The Biome **formatter is configured but not enforced**. It matches house style, so running
-  it is safe, but it is deliberately not a gate — reformatting the tree would conflict with
-  every upstream merge.
+- `npm run typecheck` (`tsgo`), `npm run test` (Vitest), `npm run lint` (Biome). CI scope for
+  each is described in the root `AGENTS.md`; typecheck must stay at zero.
+- The Biome formatter is safe to run on files you touch but is not a gate.
 - House style: 4-space indent, double quotes, no semicolons. Match the surrounding code.
 
 ## Maintaining this file

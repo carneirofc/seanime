@@ -102,7 +102,7 @@ See [DEVELOPMENT_AND_BUILD.md](DEVELOPMENT_AND_BUILD.md) for setup, backend, fro
 > [!IMPORTANT]
 > To avoid merge conflicts, always make changes against the most active branch! It's not always `main`.
 
-This repository is a fork of [5rahim/seanime](https://github.com/5rahim/seanime), but it is where the work happens: branch from and open pull requests against **this** repository. Releases from the original project are merged in periodically by the maintainer, through a remote named `fork-source`; contributors do not need it.
+This repository is a fork of [5rahim/seanime](https://github.com/5rahim/seanime), but it is where the work happens: branch from and open pull requests against **this** repository. Releases from the original project are merged in periodically by the maintainer, through a remote named `upstream`; contributors do not need it.
 
 Recommended workflow:
 
