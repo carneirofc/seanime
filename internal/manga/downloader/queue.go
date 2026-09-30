@@ -43,9 +43,10 @@ type (
 		Pages          []*hibikemanga.ChapterPage
 		DownloadedUrls []string
 		Status         QueueStatus
-		// MediaTitle and ChapterTitle feed the ComicInfo.xml metadata. May be empty.
+		// MediaTitle, ChapterTitle and Metadata feed the ComicInfo.xml metadata. May be empty.
 		MediaTitle   string
 		ChapterTitle string
+		Metadata     *ChapterMetadata
 	}
 )
 
@@ -60,7 +61,7 @@ func NewQueue(db *db.Database, logger *zerolog.Logger, wsEventManager events.WSE
 
 // Add adds a chapter to the download queue.
 // It tells the queue to download the next item if possible.
-func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, mediaTitle string, chapterTitle string, runNext bool) error {
+func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, mediaTitle string, chapterTitle string, metadata *ChapterMetadata, runNext bool) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
@@ -68,6 +69,14 @@ func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, mediaTitle 
 	if err != nil {
 		q.logger.Error().Err(err).Msgf("Failed to marshal pages for id %v", id)
 		return err
+	}
+
+	var marshalledMetadata []byte
+	if metadata != nil {
+		if marshalledMetadata, err = json.Marshal(metadata); err != nil {
+			q.logger.Error().Err(err).Msgf("Failed to marshal metadata for id %v", id)
+			return err
+		}
 	}
 
 	err = q.db.InsertChapterDownloadQueueItem(&models.ChapterDownloadQueueItem{
@@ -78,6 +87,7 @@ func (q *Queue) Add(id DownloadID, pages []*hibikemanga.ChapterPage, mediaTitle 
 		ChapterID:     id.ChapterId,
 		MediaTitle:    mediaTitle,
 		ChapterTitle:  chapterTitle,
+		Metadata:      marshalledMetadata,
 		PageData:      marshalled,
 		Status:        string(QueueStatusNotStarted),
 	})
@@ -229,6 +239,17 @@ func (q *Queue) prepareNext() (current *QueueInfo, id DownloadID, ok bool) {
 		Status:         QueueStatusDownloading,
 		MediaTitle:     next.MediaTitle,
 		ChapterTitle:   next.ChapterTitle,
+	}
+
+	// Metadata is best-effort: items queued before it was recorded have none,
+	// and a corrupt blob should cost the ComicInfo fields, not the download.
+	if len(next.Metadata) > 0 {
+		var metadata ChapterMetadata
+		if err := json.Unmarshal(next.Metadata, &metadata); err == nil {
+			current.Metadata = &metadata
+		} else {
+			q.logger.Warn().Err(err).Msgf("chapter downloader: Ignoring unreadable metadata for id %v", id)
+		}
 	}
 
 	// Unmarshal the page data.

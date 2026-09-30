@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -35,30 +36,26 @@ func (h *Handler) HandleDownloadMangaChapters(c echo.Context) error {
 
 	h.App.WSEventManager.SendEvent(events.InfoToast, "Adding chapters to download queue...")
 
-	// Resolve the media title once for the ComicInfo.xml metadata.
-	// Empty if the manga is not in the user's collection.
-	mediaTitle := ""
-	if mangaCollection, err := h.App.GetMangaCollection(false); err == nil {
-		if listEntry, ok := mangaCollection.GetListEntryFromMangaId(b.MediaId); ok {
-			if media := listEntry.GetMedia(); media != nil {
-				mediaTitle = media.GetPreferredTitle()
-			}
-		}
-	}
-
 	// Queueing fetches the page list from the provider for every chapter, which is
 	// slow and network-bound. Do it in the background so the request returns promptly,
 	// and keep going if a single chapter fails instead of aborting the whole batch.
 	go func() {
+		// Resolve the ComicInfo.xml series metadata (title, tags, authors, ...) once
+		// for the whole batch. Best-effort: missing fields never block a download.
+		mangaCollection, _ := h.App.GetMangaCollection(false)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		series := manga.ResolveDownloadSeriesMetadata(ctx, h.App.AnilistPlatformRef.Get(), mangaCollection, b.MediaId, h.App.Logger)
+		cancel()
+
 		chapterIds := b.ChapterIds
 		var failed int
 		for _, chapterId := range chapterIds {
 			err := h.App.MangaDownloader.DownloadChapter(manga.DownloadChapterOptions{
-				Provider:   b.Provider,
-				MediaId:    b.MediaId,
-				ChapterId:  chapterId,
-				MediaTitle: mediaTitle,
-				StartNow:   b.StartNow,
+				Provider:  b.Provider,
+				MediaId:   b.MediaId,
+				ChapterId: chapterId,
+				Series:    series,
+				StartNow:  b.StartNow,
 			})
 			if err != nil {
 				failed++

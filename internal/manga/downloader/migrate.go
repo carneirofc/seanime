@@ -64,7 +64,7 @@ func MigrateLegacyChapterDirs(downloadDir string, logger *zerolog.Logger) {
 		}
 
 		// Media/chapter titles are unknown at migration time
-		info := buildComicInfo(id, "", "", registry)
+		info := buildComicInfo(id, "", "", nil, registry)
 		if err := writeCBZ(destPath, srcDir, registry, info); err != nil {
 			logger.Warn().Err(err).Str("dir", entry.Name()).Msg("chapter downloader: Migration failed to write chapter archive, skipping")
 			failed++

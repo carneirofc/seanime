@@ -48,6 +48,17 @@ entrypoints, and how backend changes flow to the frontend.
 - `Platform.UpdateEntry` takes an `UpdateEntryParams` struct; its narrow siblings
   `UpdateEntryProgress` / `UpdateEntryRepeat` keep positional arguments on purpose.
 
+## Manga downloads
+
+- Downloaded chapters are CBZ archives with a `ComicInfo.xml`
+  (`internal/manga/downloader/`); the struct's field order is the ComicInfo XSD sequence, so
+  new fields must be inserted in schema order.
+- ComicInfo metadata is resolved once per download batch by
+  `manga.ResolveDownloadSeriesMetadata` and persisted as JSON in the queue item's `metadata`
+  column. Every lookup is best-effort and must never fail a download.
+- Staff (authors/artists) use a custom AniList query in `internal/manga/download_metadata.go`
+  instead of the generated client, to avoid regenerating it; it is skipped for custom-source ids.
+
 ## HTTP API + Events
 
 - Echo instantiated in `internal/core/echo.go` with JSON serialization overrides.

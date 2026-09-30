@@ -148,3 +148,25 @@ func TestDownloadChapterImagesWritesCBZ(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, queueItems)
 }
+
+func TestQueueRoundTripsMetadata(t *testing.T) {
+	downloader, _, _ := newTestDownloader(t)
+
+	id := DownloadID{Provider: "test-provider", MediaId: 101517, ChapterId: "chapter-1", ChapterNumber: "1"}
+	err := downloader.AddToQueue(DownloadOptions{
+		DownloadID: id,
+		Pages:      []*hibikemanga.ChapterPage{{Index: 0, URL: "https://example.com/01.png"}},
+		MediaTitle: "Test Manga",
+		Metadata:   &ChapterMetadata{Writer: "Writer Name", Tags: "Shounen", Translator: "Scan Group"},
+	})
+	require.NoError(t, err)
+
+	downloader.queue.active = true
+	current, gotId, ok := downloader.queue.prepareNext()
+	require.True(t, ok)
+	require.Equal(t, id, gotId)
+	require.NotNil(t, current.Metadata)
+	require.Equal(t, "Writer Name", current.Metadata.Writer)
+	require.Equal(t, "Shounen", current.Metadata.Tags)
+	require.Equal(t, "Scan Group", current.Metadata.Translator)
+}

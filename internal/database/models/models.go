@@ -469,11 +469,14 @@ type ChapterDownloadQueueItem struct {
 	MediaID       int    `gorm:"column:media_id" json:"mediaId"`
 	ChapterID     string `gorm:"column:chapter_id" json:"chapterId"`
 	ChapterNumber string `gorm:"column:chapter_number" json:"chapterNumber"`
-	// MediaTitle and ChapterTitle feed the ComicInfo.xml metadata of the CBZ archive. May be empty.
+	// MediaTitle, ChapterTitle and Metadata feed the ComicInfo.xml metadata of the CBZ archive. May be empty.
 	MediaTitle   string `gorm:"column:media_title" json:"mediaTitle"`
 	ChapterTitle string `gorm:"column:chapter_title" json:"chapterTitle"`
-	PageData     []byte `gorm:"column:page_data" json:"pageData"` // Contains map of page index to page details
-	Status       string `gorm:"column:status" json:"status"`
+	// Metadata is a JSON-encoded chapter_downloader.ChapterMetadata. Internal to the
+	// downloader, so it is not sent to the client.
+	Metadata []byte `gorm:"column:metadata" json:"-"`
+	PageData []byte `gorm:"column:page_data" json:"pageData"` // Contains map of page index to page details
+	Status   string `gorm:"column:status" json:"status"`
 }
 
 // +---------------------+

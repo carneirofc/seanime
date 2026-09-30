@@ -3,6 +3,7 @@ package chapter_downloader
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -92,7 +93,7 @@ func TestWriteAndReadCBZ(t *testing.T) {
 	registry := writeTestChapterDir(t, srcDir, 2)
 
 	id := DownloadID{Provider: "comick", MediaId: 1, ChapterId: "ch-1", ChapterNumber: "1"}
-	info := buildComicInfo(id, "Series Title", "Chapter Title", registry)
+	info := buildComicInfo(id, "Series Title", "Chapter Title", nil, registry)
 
 	destPath := filepath.Join(tmp, "0001_ch-1.cbz")
 	require.NoError(t, writeCBZ(destPath, srcDir, registry, info))
@@ -163,4 +164,55 @@ func TestScanDownloadDirMixedLayouts(t *testing.T) {
 	require.Equal(t, legacyName, result[DownloadID{
 		Provider: "mangapill", MediaId: 2, ChapterId: "ch_2", ChapterNumber: "3",
 	}])
+}
+
+func TestWriteAndReadCBZWithMetadata(t *testing.T) {
+	tmp := t.TempDir()
+	srcDir := filepath.Join(tmp, "staging")
+	registry := writeTestChapterDir(t, srcDir, 1)
+
+	id := DownloadID{Provider: "comick", MediaId: 1, ChapterId: "ch-1", ChapterNumber: "1"}
+	metadata := &ChapterMetadata{
+		Summary:     "A summary.",
+		Year:        2020,
+		Count:       120,
+		Writer:      "Writer Name",
+		Penciller:   "Artist Name",
+		Translator:  "Scan Group",
+		Genre:       "Action, Drama",
+		Tags:        "Shounen, Swordplay",
+		Web:         "https://example.com/ch-1 https://anilist.co/manga/1",
+		LanguageISO: "en",
+		Characters:  "Hero, Rival",
+		AgeRating:   "Adults Only 18+",
+	}
+	info := buildComicInfo(id, "Series Title", "Chapter Title", metadata, registry)
+
+	destPath := filepath.Join(tmp, "0001_ch-1.cbz")
+	require.NoError(t, writeCBZ(destPath, srcDir, registry, info))
+
+	_, readInfo, err := ReadCBZ(destPath)
+	require.NoError(t, err)
+	require.NotNil(t, readInfo)
+	require.Equal(t, "Writer Name", readInfo.Writer)
+	require.Equal(t, "Artist Name", readInfo.Penciller)
+	require.Equal(t, "Scan Group", readInfo.Translator)
+	require.Equal(t, "Shounen, Swordplay", readInfo.Tags)
+	require.Equal(t, "Action, Drama", readInfo.Genre)
+	require.Equal(t, "Hero, Rival", readInfo.Characters)
+	require.Equal(t, "en", readInfo.LanguageISO)
+	require.Equal(t, MangaRightToLeft, readInfo.Manga)
+	require.Equal(t, 120, readInfo.Count)
+	require.Equal(t, 2020, readInfo.Year)
+
+	// Readers validating against the XSD reject out-of-order elements.
+	data, err := info.Marshal()
+	require.NoError(t, err)
+	order := []string{"<Summary>", "<Year>", "<Writer>", "<Penciller>", "<Translator>", "<Genre>", "<Tags>", "<Web>", "<PageCount>", "<LanguageISO>", "<Manga>", "<Characters>", "<AgeRating>", "<Pages>"}
+	last := -1
+	for _, element := range order {
+		pos := strings.Index(string(data), element)
+		require.Greater(t, pos, last, "%s is out of schema order", element)
+		last = pos
+	}
 }

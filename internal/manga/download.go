@@ -74,9 +74,9 @@ type (
 		Provider  string
 		MediaId   int
 		ChapterId string
-		// MediaTitle feeds the ComicInfo.xml metadata of the CBZ archive. May be empty.
-		MediaTitle string
-		StartNow   bool
+		// Series feeds the ComicInfo.xml metadata of the CBZ archive. May be nil.
+		Series   *DownloadSeriesMetadata
+		StartNow bool
 	}
 )
 
@@ -213,6 +213,11 @@ func (d *Downloader) DownloadChapter(opts DownloadChapterOptions) error {
 		return err
 	}
 
+	mediaTitle := ""
+	if opts.Series != nil {
+		mediaTitle = opts.Series.Title
+	}
+
 	// Add the chapter to the download queue
 	return d.chapterDownloader.AddToQueue(chapter_downloader.DownloadOptions{
 		DownloadID: chapter_downloader.DownloadID{
@@ -222,8 +227,9 @@ func (d *Downloader) DownloadChapter(opts DownloadChapterOptions) error {
 			ChapterNumber: manga_providers.GetNormalizedChapter(chapter.Chapter),
 		},
 		Pages:        pageContainer.Pages,
-		MediaTitle:   opts.MediaTitle,
+		MediaTitle:   mediaTitle,
 		ChapterTitle: chapter.Title,
+		Metadata:     chapterDownloadMetadata(opts.Series, opts.Provider, chapter),
 		StartNow:     opts.StartNow,
 	})
 }

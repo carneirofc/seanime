@@ -34053,6 +34053,15 @@
         "comments": []
       },
       {
+        "name": "Metadata",
+        "jsonName": "",
+        "goType": "string",
+        "typescriptType": "Array\u003cstring\u003e",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "PageData",
         "jsonName": "pageData",
         "goType": "string",
@@ -62944,11 +62953,13 @@
         "comments": []
       },
       {
-        "name": "MediaTitle",
-        "jsonName": "MediaTitle",
-        "goType": "string",
-        "typescriptType": "string",
-        "required": true,
+        "name": "Series",
+        "jsonName": "Series",
+        "goType": "DownloadSeriesMetadata",
+        "typescriptType": "Manga_DownloadSeriesMetadata",
+        "usedTypescriptType": "Manga_DownloadSeriesMetadata",
+        "usedStructName": "manga.DownloadSeriesMetadata",
+        "required": false,
         "public": true,
         "comments": []
       },
@@ -63025,6 +63036,40 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/manga/download_metadata.go",
+    "filename": "download_metadata.go",
+    "name": "DownloadSeriesMetadata",
+    "formattedName": "Manga_DownloadSeriesMetadata",
+    "package": "manga",
+    "fields": [
+      {
+        "name": "Title",
+        "jsonName": "Title",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "Metadata",
+        "goType": "chapter_downloader.ChapterMetadata",
+        "typescriptType": "ChapterDownloader_ChapterMetadata",
+        "usedTypescriptType": "ChapterDownloader_ChapterMetadata",
+        "usedStructName": "chapter_downloader.ChapterMetadata",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " DownloadSeriesMetadata is the series-level metadata shared by every chapter",
+      " of one download batch. Resolve it once per batch with ResolveDownloadSeriesMetadata:",
+      " it costs up to three AniList requests."
+    ]
   },
   {
     "filepath": "../internal/manga/downloader/cbz.go",
@@ -63408,6 +63453,17 @@
         "comments": []
       },
       {
+        "name": "Metadata",
+        "jsonName": "Metadata",
+        "goType": "ChapterMetadata",
+        "typescriptType": "ChapterDownloader_ChapterMetadata",
+        "usedTypescriptType": "ChapterDownloader_ChapterMetadata",
+        "usedStructName": "chapter_downloader.ChapterMetadata",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "StartNow",
         "jsonName": "StartNow",
         "goType": "bool",
@@ -63549,8 +63605,44 @@
         "comments": []
       },
       {
+        "name": "Writer",
+        "jsonName": "Writer",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Penciller",
+        "jsonName": "Penciller",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Translator",
+        "jsonName": "Translator",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "Genre",
         "jsonName": "Genre",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Tags",
+        "jsonName": "Tags",
         "goType": "string",
         "typescriptType": "string",
         "required": true,
@@ -63594,6 +63686,15 @@
         "comments": []
       },
       {
+        "name": "Characters",
+        "jsonName": "Characters",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "AgeRating",
         "jsonName": "AgeRating",
         "goType": "string",
@@ -63609,6 +63710,143 @@
         "typescriptType": "ChapterDownloader_ComicInfoPages",
         "usedTypescriptType": "ChapterDownloader_ComicInfoPages",
         "usedStructName": "chapter_downloader.ComicInfoPages",
+        "required": false,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " ComicInfo is the standard CBZ metadata document (ComicInfo.xml) embedded in",
+      " each chapter archive Seanime writes. Only the fields Seanime produces or",
+      " consumes are modeled; unknown elements are ignored when parsing foreign",
+      " archives.",
+      "",
+      " Field order follows the ComicInfo v2.0 schema sequence, because readers that",
+      " validate against the XSD reject an out-of-order document and Go marshals in",
+      " declaration order. Everything but the identifying fields is optional, so a",
+      " document only carries what the caller actually knows."
+    ]
+  },
+  {
+    "filepath": "../internal/manga/downloader/comicinfo.go",
+    "filename": "comicinfo.go",
+    "name": "ChapterMetadata",
+    "formattedName": "ChapterDownloader_ChapterMetadata",
+    "package": "chapter_downloader",
+    "fields": [
+      {
+        "name": "Summary",
+        "jsonName": "summary",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Notes",
+        "jsonName": "notes",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Year",
+        "jsonName": "year",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Count",
+        "jsonName": "count",
+        "goType": "int",
+        "typescriptType": "number",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Writer",
+        "jsonName": "writer",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Penciller",
+        "jsonName": "penciller",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Translator",
+        "jsonName": "translator",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Genre",
+        "jsonName": "genre",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Tags",
+        "jsonName": "tags",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Web",
+        "jsonName": "web",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "LanguageISO",
+        "jsonName": "languageIso",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Characters",
+        "jsonName": "characters",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "AgeRating",
+        "jsonName": "ageRating",
+        "goType": "string",
+        "typescriptType": "string",
         "required": false,
         "public": true,
         "comments": []
@@ -63869,6 +64107,17 @@
         "goType": "string",
         "typescriptType": "string",
         "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Metadata",
+        "jsonName": "Metadata",
+        "goType": "ChapterMetadata",
+        "typescriptType": "ChapterDownloader_ChapterMetadata",
+        "usedTypescriptType": "ChapterDownloader_ChapterMetadata",
+        "usedStructName": "chapter_downloader.ChapterMetadata",
+        "required": false,
         "public": true,
         "comments": []
       }

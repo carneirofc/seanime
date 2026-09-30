@@ -99,10 +99,11 @@ type (
 	DownloadOptions struct {
 		DownloadID
 		Pages []*hibikemanga.ChapterPage
-		// MediaTitle and ChapterTitle feed the ComicInfo.xml metadata.
+		// MediaTitle, ChapterTitle and Metadata feed the ComicInfo.xml metadata.
 		// They may be empty.
 		MediaTitle   string
 		ChapterTitle string
+		Metadata     *ChapterMetadata
 		StartNow     bool
 	}
 )
@@ -176,7 +177,7 @@ func (cd *Downloader) AddToQueue(opts DownloadOptions) error {
 	// Start download
 	cd.logger.Debug().Msgf("chapter downloader: Adding chapter to download queue: %s", opts.ChapterId)
 	// Add to queue
-	return cd.queue.Add(downloadId, opts.Pages, opts.MediaTitle, opts.ChapterTitle, opts.StartNow)
+	return cd.queue.Add(downloadId, opts.Pages, opts.MediaTitle, opts.ChapterTitle, opts.Metadata, opts.StartNow)
 }
 
 // DeleteChapter deletes a downloaded chapter (CBZ archive or legacy folder) from the download directory.
@@ -416,7 +417,7 @@ func (cd *Downloader) finalizeChapter(queueInfo *QueueInfo, stagingDir string, r
 		return err
 	}
 
-	info := buildComicInfo(queueInfo.DownloadID, queueInfo.MediaTitle, queueInfo.ChapterTitle, registry)
+	info := buildComicInfo(queueInfo.DownloadID, queueInfo.MediaTitle, queueInfo.ChapterTitle, queueInfo.Metadata, registry)
 	if err = writeCBZ(cbzPath, stagingDir, registry, info); err != nil {
 		cd.logger.Error().Err(err).Msgf("chapter downloader: Failed to write chapter archive for chapter %s", queueInfo.ChapterId)
 		queueInfo.Status = QueueStatusErrored

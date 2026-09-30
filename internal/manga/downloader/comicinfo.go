@@ -31,14 +31,42 @@ type (
 		Year    int    `xml:"Year,omitempty"`
 		Month   int    `xml:"Month,omitempty"`
 		Day     int    `xml:"Day,omitempty"`
-		// Genre is a comma-separated list, as the schema defines it.
-		Genre       string          `xml:"Genre,omitempty"`
+		// Writer, Penciller, Translator, Genre, Tags and Characters are
+		// comma-separated lists, as the schema defines them.
+		Writer    string `xml:"Writer,omitempty"`
+		Penciller string `xml:"Penciller,omitempty"`
+		// Translator is a ComicInfo v2.1 field; Seanime puts the scanlation group here.
+		Translator string `xml:"Translator,omitempty"`
+		Genre      string `xml:"Genre,omitempty"`
+		Tags       string `xml:"Tags,omitempty"`
+		// Web is a space-separated list of URLs.
 		Web         string          `xml:"Web,omitempty"`
 		PageCount   int             `xml:"PageCount,omitempty"`
 		LanguageISO string          `xml:"LanguageISO,omitempty"`
 		Manga       string          `xml:"Manga,omitempty"`
+		Characters  string          `xml:"Characters,omitempty"`
 		AgeRating   string          `xml:"AgeRating,omitempty"`
 		Pages       *ComicInfoPages `xml:"Pages,omitempty"`
+	}
+
+	// ChapterMetadata is the scraped metadata of a queued chapter that ends up
+	// in its ComicInfo.xml. It is persisted with the queue item as JSON, so it
+	// survives a restart between queueing and downloading. Every field is
+	// optional; the list fields are already comma-separated.
+	ChapterMetadata struct {
+		Summary     string `json:"summary,omitempty"`
+		Notes       string `json:"notes,omitempty"`
+		Year        int    `json:"year,omitempty"`
+		Count       int    `json:"count,omitempty"`
+		Writer      string `json:"writer,omitempty"`
+		Penciller   string `json:"penciller,omitempty"`
+		Translator  string `json:"translator,omitempty"`
+		Genre       string `json:"genre,omitempty"`
+		Tags        string `json:"tags,omitempty"`
+		Web         string `json:"web,omitempty"`
+		LanguageISO string `json:"languageIso,omitempty"`
+		Characters  string `json:"characters,omitempty"`
+		AgeRating   string `json:"ageRating,omitempty"`
 	}
 
 	ComicInfoPages struct {
@@ -86,8 +114,9 @@ func (ci *ComicInfo) SetPages(pages []ComicInfoPage) {
 }
 
 // buildComicInfo assembles the ComicInfo document for a downloaded chapter from
-// the page registry. Titles may be empty (e.g. during offline migration).
-func buildComicInfo(id DownloadID, mediaTitle string, chapterTitle string, registry Registry) *ComicInfo {
+// the page registry. Titles and metadata may be empty (e.g. during offline
+// migration, or for a queue item persisted before metadata was recorded).
+func buildComicInfo(id DownloadID, mediaTitle string, chapterTitle string, metadata *ChapterMetadata, registry Registry) *ComicInfo {
 	pages := make([]ComicInfoPage, 0, len(registry))
 	for _, pageInfo := range registry {
 		pages = append(pages, ComicInfoPage{
@@ -102,6 +131,24 @@ func buildComicInfo(id DownloadID, mediaTitle string, chapterTitle string, regis
 	info.Title = chapterTitle
 	info.Series = mediaTitle
 	info.Number = id.ChapterNumber
+	if metadata != nil {
+		info.Summary = metadata.Summary
+		info.Notes = metadata.Notes
+		info.Year = metadata.Year
+		info.Count = metadata.Count
+		info.Writer = metadata.Writer
+		info.Penciller = metadata.Penciller
+		info.Translator = metadata.Translator
+		info.Genre = metadata.Genre
+		info.Tags = metadata.Tags
+		info.Web = metadata.Web
+		info.LanguageISO = metadata.LanguageISO
+		info.Characters = metadata.Characters
+		info.AgeRating = metadata.AgeRating
+		// Only chapters Seanime scraped from a manga source carry metadata, so
+		// the reading direction is known to be manga's.
+		info.Manga = MangaRightToLeft
+	}
 	info.SetPages(pages)
 
 	return info
