@@ -2,7 +2,7 @@
 # `seanime-web:latest` image (the existing two-image flow). For a self-contained
 # single-command build, use the top-level `Dockerfile` instead.
 
-FROM golang:1.26
+FROM golang:1.27
 
 WORKDIR /usr/src/app
 

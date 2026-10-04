@@ -30,7 +30,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26.5'
+          go-version: '1.27.1'
           cache: true
 
       # `go test ./...` is not runnable in CI as-is. Two classes of package cannot pass on a
@@ -87,7 +87,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26.5'
+          go-version: '1.27.1'
           cache: true
 
       # Generated frontend types are committed, so a backend contract change that is not
