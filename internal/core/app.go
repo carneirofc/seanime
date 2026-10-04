@@ -46,6 +46,7 @@ import (
 	"seanime/internal/playlist"
 	"seanime/internal/plugin"
 	"seanime/internal/report"
+	"seanime/internal/stealth"
 	"seanime/internal/torrent_clients/torrent_client"
 	"seanime/internal/torrents/torrent"
 	"seanime/internal/torrentstream"
@@ -277,6 +278,19 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 
 	// Initialize DNS-over-HTTPS service in background
 	go doh.HandleDoH(cfg.Server.DoHUrl, logger)
+
+	// Route outbound requests through the stealth gateway where configured
+	stealthMode, _ := stealth.ParseMode(cfg.Stealth.ExtensionMode)
+	stealth.Configure(stealth.Config{
+		Enabled:       cfg.Stealth.Enabled,
+		URL:           cfg.Stealth.URL,
+		Token:         cfg.Stealth.Token,
+		ExtensionMode: stealthMode,
+		OfficialAPIs:  cfg.Stealth.OfficialAPIs,
+	})
+	if cfg.Stealth.Enabled {
+		logger.Info().Str("url", cfg.Stealth.URL).Str("extensionMode", string(stealthMode)).Bool("officialAPIs", cfg.Stealth.OfficialAPIs).Msg("app: Stealth gateway enabled")
+	}
 
 	// Initialize file cache system for media and metadata
 	fileCacher, err := filecache.NewCacher(cfg.Cache.Dir)

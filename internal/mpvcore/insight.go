@@ -2,6 +2,7 @@ package mpvcore
 
 import (
 	"fmt"
+	"seanime/internal/stealth"
 	"seanime/internal/util/limiter"
 	"seanime/internal/util/result"
 	"sync"
@@ -10,6 +11,9 @@ import (
 	"github.com/imroc/req/v3"
 	"github.com/rs/zerolog"
 )
+
+// jikanClient goes through the stealth gateway when official APIs are opted in.
+var jikanClient = stealth.WrapReq(req.C(), stealth.CategoryOfficialAPI)
 
 type InSight struct {
 	logger                *zerolog.Logger
@@ -109,7 +113,7 @@ func (is *InSight) fetchCharacters(malID int) {
 		return
 	}
 	is.rateLimiter.Wait()
-	resp, err := req.C().R().Get(fmt.Sprintf("https://api.jikan.moe/v4/anime/%d/characters", malID))
+	resp, err := jikanClient.R().Get(fmt.Sprintf("https://api.jikan.moe/v4/anime/%d/characters", malID))
 	if err != nil || resp.IsErrorState() {
 		is.logger.Warn().Err(err).Int("malId", malID).Msg("mpvcore insight: failed to fetch characters")
 		return
@@ -136,7 +140,7 @@ func (is *InSight) GetCharacterInfo(malID int) (*InSightCharacterDetails, error)
 		return cached, nil
 	}
 	is.rateLimiter.Wait()
-	resp, err := req.C().R().Get(fmt.Sprintf("https://api.jikan.moe/v4/characters/%d/full", malID))
+	resp, err := jikanClient.R().Get(fmt.Sprintf("https://api.jikan.moe/v4/characters/%d/full", malID))
 	if err != nil {
 		return nil, err
 	}

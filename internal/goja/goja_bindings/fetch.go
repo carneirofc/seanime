@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"seanime/internal/security"
+	"seanime/internal/stealth"
 	"seanime/internal/util"
 	"strings"
 	"sync/atomic"
@@ -43,6 +44,10 @@ var (
 	clientWithoutBypass = req.C().
 				SetTimeout(defaultTimeout).
 				SetDial(security.HardenedDialContext(30*time.Second, 30*time.Second))
+
+	// clientViaStealth replays every request through the stealth gateway, which
+	// applies its own SSRF guard to each hop and supplies the browser fingerprint.
+	clientViaStealth = stealth.ForceReq(req.C().SetTimeout(defaultTimeout))
 )
 
 type Fetch struct {
@@ -168,6 +173,7 @@ type fetchOptions struct {
 	NoCloudFlareBypass bool
 	Redirect           string
 	Signal             *goja.Object // AbortSignal
+	Stealth            *bool        // nil = follow the configured stealth mode
 }
 
 type fetchResult struct {
@@ -342,6 +348,11 @@ func (f *Fetch) Fetch(call goja.FunctionCall) goja.Value {
 				}
 			}
 
+			if o := rawOpts.Get("stealth"); o != nil && !goja.IsUndefined(o) && !goja.IsNull(o) {
+				v := o.ToBoolean()
+				options.Stealth = &v
+			}
+
 			if o := rawOpts.Get("redirect"); o != nil && !goja.IsUndefined(o) {
 				if v, ok := o.Export().(string); ok {
 					options.Redirect = v
@@ -427,75 +438,97 @@ func (f *Fetch) Fetch(call goja.FunctionCall) goja.Value {
 
 		log.Trace().Str("id", f.extensionId).Str("url", url).Str("method", options.Method).Msgf("extension: Network request")
 
-		var client *req.Client
+		directClient := clientWithCloudFlareBypass
 		if options.NoCloudFlareBypass {
-			client = clientWithoutBypass
-		} else {
-			client = clientWithCloudFlareBypass
+			directClient = clientWithoutBypass
 		}
 
-		// Create request with timeout
-		reqClient := client.Clone().SetTimeout(time.Duration(options.Timeout) * time.Second)
-		switch options.Redirect {
-		case "manual":
-			reqClient.SetRedirectPolicy(req.NoRedirectPolicy())
-		case "error":
-			reqClient.SetRedirectPolicy(func(req *http.Request, via []*http.Request) error {
-				return fmt.Errorf("redirect mode error: received redirect to %s", req.URL.String())
-			})
-		}
+		send := func(client *req.Client) (*req.Request, *req.Response, error) {
+			// Create request with timeout
+			reqClient := client.Clone().SetTimeout(time.Duration(options.Timeout) * time.Second)
+			switch options.Redirect {
+			case "manual":
+				reqClient.SetRedirectPolicy(req.NoRedirectPolicy())
+			case "error":
+				reqClient.SetRedirectPolicy(func(req *http.Request, via []*http.Request) error {
+					return fmt.Errorf("redirect mode error: received redirect to %s", req.URL.String())
+				})
+			}
 
-		request := reqClient.R()
+			request := reqClient.R()
 
-		// Set headers
-		for k, v := range options.Headers {
-			request.SetHeader(k, v)
-		}
+			// Set headers
+			for k, v := range options.Headers {
+				request.SetHeader(k, v)
+			}
 
-		if reqContentType != "" {
-			request.SetContentType(reqContentType)
-		}
+			if reqContentType != "" {
+				request.SetContentType(reqContentType)
+			}
 
-		// Set body if present
-		if reqBody != nil {
-			request.SetBody(reqBody)
-		}
+			// Set body if present
+			if reqBody != nil {
+				request.SetBody(reqBody)
+			}
 
-		// Set context from AbortSignal if provided
-		if options.Signal != nil {
-			// Extract the context from the AbortSignal
-			getContextFunc := options.Signal.Get("_getContext")
-			if callable, ok := goja.AssertFunction(getContextFunc); ok {
-				ctxVal, err := callable(goja.Undefined())
-				if err == nil {
-					if ctx, ok := ctxVal.Export().(context.Context); ok {
-						request.SetContext(ctx)
+			// Set context from AbortSignal if provided
+			if options.Signal != nil {
+				// Extract the context from the AbortSignal
+				getContextFunc := options.Signal.Get("_getContext")
+				if callable, ok := goja.AssertFunction(getContextFunc); ok {
+					ctxVal, err := callable(goja.Undefined())
+					if err == nil {
+						if ctx, ok := ctxVal.Export().(context.Context); ok {
+							request.SetContext(ctx)
+						}
 					}
 				}
 			}
+
+			var resp *req.Response
+			var err error
+			switch options.Method {
+			case "GET":
+				resp, err = request.Get(url)
+			case "POST":
+				resp, err = request.Post(url)
+			case "PUT":
+				resp, err = request.Put(url)
+			case "DELETE":
+				resp, err = request.Delete(url)
+			case "PATCH":
+				resp, err = request.Patch(url)
+			case "HEAD":
+				resp, err = request.Head(url)
+			case "OPTIONS":
+				resp, err = request.Options(url)
+			default:
+				resp, err = request.Send(options.Method, url)
+			}
+			return request, resp, err
 		}
 
 		var result fetchResult
+		var request *req.Request
 		var resp *req.Response
 		var err error
 
-		switch options.Method {
-		case "GET":
-			resp, err = request.Get(url)
-		case "POST":
-			resp, err = request.Post(url)
-		case "PUT":
-			resp, err = request.Put(url)
-		case "DELETE":
-			resp, err = request.Delete(url)
-		case "PATCH":
-			resp, err = request.Patch(url)
-		case "HEAD":
-			resp, err = request.Head(url)
-		case "OPTIONS":
-			resp, err = request.Options(url)
+		switch decideStealth(options.Stealth) {
+		case stealthRoute:
+			request, resp, err = send(clientViaStealth)
+		case stealthFallback:
+			request, resp, err = send(directClient)
+			if err == nil && resp.Response != nil && bodyIsReplayable(reqBody) &&
+				stealth.IsChallenge(resp.StatusCode, resp.Header, resp.Bytes()) {
+				log.Debug().Str("id", f.extensionId).Str("url", url).Msg("extension: Challenge detected, retrying through stealth gateway")
+				if sReq, sResp, sErr := send(clientViaStealth); sErr == nil {
+					request, resp = sReq, sResp
+				} else {
+					log.Warn().Err(sErr).Str("id", f.extensionId).Str("url", url).Msg("extension: Stealth gateway retry failed")
+				}
+			}
 		default:
-			resp, err = request.Send(options.Method, url)
+			request, resp, err = send(directClient)
 		}
 
 		if err != nil {
@@ -565,4 +598,41 @@ func (f *fetchResult) toGojaObject(vm *goja.Runtime) *goja.Object {
 	})
 
 	return obj
+}
+
+type stealthDecision int
+
+const (
+	stealthDirect stealthDecision = iota
+	stealthFallback
+	stealthRoute
+)
+
+// decideStealth resolves the per-call `stealth` option against the configured mode.
+// An explicit `stealth: true` needs the gateway to be enabled; `stealth: false` always
+// goes direct.
+func decideStealth(override *bool) stealthDecision {
+	if override != nil {
+		if *override && stealth.Available() {
+			return stealthRoute
+		}
+		return stealthDirect
+	}
+	if stealth.Routed(stealth.CategoryExtension) {
+		return stealthRoute
+	}
+	if stealth.FallbackEnabled() {
+		return stealthFallback
+	}
+	return stealthDirect
+}
+
+// bodyIsReplayable reports whether a request body can be sent a second time. Readers
+// (including FormData buffers) are consumed by the first attempt.
+func bodyIsReplayable(body interface{}) bool {
+	switch body.(type) {
+	case nil, string, []byte, map[string]interface{}:
+		return true
+	}
+	return false
 }

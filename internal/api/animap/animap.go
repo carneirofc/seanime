@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"seanime/internal/constants"
 	"seanime/internal/hook"
+	"seanime/internal/stealth"
 	"seanime/internal/util/result"
 	"strconv"
 
@@ -97,7 +98,7 @@ func FetchAnimapMedia(from string, id int) (*Anime, error) {
 	request.Header.Set("X-Seanime-Version", "Seanime/"+constants.Version)
 
 	// Send an HTTP GET request
-	response, err := http.DefaultClient.Do(request)
+	response, err := stealth.Client(nil, stealth.CategoryOfficialAPI).Do(request)
 	if err != nil {
 		return nil, err
 	}

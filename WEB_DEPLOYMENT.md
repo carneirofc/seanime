@@ -150,6 +150,25 @@ A quick local IdP: run Dex or Pocket ID in Docker with redirect URI
 - The built-in self-signed TLS (`[server.tls]`) remains available as a fallback,
   but a reverse proxy with real certificates is the recommended setup.
 
+## Stealth gateway (optional)
+
+Sources behind Cloudflare and similar walls can be reached through the cloak-backend
+gateway (`seanime-extensions/cloak-backend`), which replays requests with a real Firefox
+fingerprint and solves challenges in Camoufox:
+
+```toml
+[stealth]
+enabled = true
+url = "http://127.0.0.1:47541"   # or SEANIME_STEALTH_URL
+# token = ""                     # or SEANIME_STEALTH_TOKEN; required when the gateway is not on loopback
+extensionMode = "fallback"       # off | fallback | always
+officialAPIs = false             # also route AniList, MAL, Jikan, animap, filler, image proxy
+```
+
+The gateway refuses a non-loopback bind without `CLOAK_AUTH_TOKEN`. In a compose stack,
+put it on Seanime's internal network, set the token on both sides, and do not publish its
+port. Datacenter IPs are challenged more than home connections.
+
 ## Docker
 
 A self-contained image and a reverse-proxy-fronted stack are provided:

@@ -3,9 +3,11 @@ package core
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"seanime/internal/constants"
+	"seanime/internal/stealth"
 	"seanime/internal/util"
 	"strconv"
 	"strings"
@@ -86,6 +88,15 @@ type Config struct {
 	}
 	Anilist struct {
 		ClientID string
+	}
+	// Stealth routes outbound requests through the cloak-backend gateway, which replays
+	// them with a real browser fingerprint (see internal/stealth).
+	Stealth struct {
+		Enabled       bool
+		URL           string // gateway base URL, defaults to http://127.0.0.1:47541
+		Token         string // X-Cloak-Token; can be supplied via SEANIME_STEALTH_TOKEN
+		ExtensionMode string // "off", "fallback" (default) or "always"
+		OfficialAPIs  bool   // also route AniList, MAL, Jikan, animap, filler and the image proxy
 	}
 	Experimental struct {
 		BuiltinTorrentClient bool
@@ -192,6 +203,10 @@ func NewConfig(options *ConfigOptions, logger *zerolog.Logger) (*Config, error) 
 	viper.SetDefault("server.oidc.sessionMaxDays", 90)
 	// Allow the OIDC client secret to be supplied via the environment instead of the config file
 	_ = viper.BindEnv("server.oidc.clientSecret", "SEANIME_OIDC_CLIENT_SECRET")
+	viper.SetDefault("stealth.url", stealth.DefaultURL)
+	viper.SetDefault("stealth.extensionMode", string(stealth.ModeFallback))
+	_ = viper.BindEnv("stealth.url", "SEANIME_STEALTH_URL")
+	_ = viper.BindEnv("stealth.token", "SEANIME_STEALTH_TOKEN")
 
 	// Create and populate the config file if it doesn't exist
 	if err = createConfigFile(configPath); err != nil {
@@ -426,6 +441,15 @@ func validateConfig(cfg *Config, logger *zerolog.Logger) error {
 	}
 	if err := checkIsValidPath(cfg.Extensions.Dir); err != nil {
 		return wrapInvalidConfigValue("extensions.dir", err)
+	}
+
+	if _, ok := stealth.ParseMode(cfg.Stealth.ExtensionMode); !ok {
+		return errInvalidConfigValue("stealth.extensionMode", "must be one of off, fallback, always")
+	}
+	if cfg.Stealth.Enabled {
+		if u, err := url.Parse(cfg.Stealth.URL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+			return errInvalidConfigValue("stealth.url", "must be an http(s) URL")
+		}
 	}
 
 	if oidc := cfg.Server.Oidc; oidc.IssuerURL != "" || oidc.ClientID != "" || oidc.ClientSecret != "" {

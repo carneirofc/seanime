@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"seanime/internal/mkvparser"
+	"seanime/internal/stealth"
 	"seanime/internal/util/limiter"
 	"seanime/internal/util/result"
 	"sort"
@@ -17,6 +18,9 @@ import (
 	"github.com/imroc/req/v3"
 	"github.com/rs/zerolog"
 )
+
+// jikanClient goes through the stealth gateway when official APIs are opted in.
+var jikanClient = stealth.WrapReq(req.C(), stealth.CategoryOfficialAPI)
 
 // InSight returns the characters for any given anime.
 // TODO: map specific characters to a window of time where they appear in the subtitles (ASS character) or are mentioned by other characters.
@@ -262,7 +266,7 @@ func (is *InSight) fetchCharacters(malId int) {
 	is.logger.Debug().Int("malId", malId).Msg("insight: Fetching characters")
 
 	is.rateLimiter.Wait()
-	resp, err := req.C().R().Get(fmt.Sprintf(JikanSeriesCharactersUrl, malId))
+	resp, err := jikanClient.R().Get(fmt.Sprintf(JikanSeriesCharactersUrl, malId))
 	if err != nil {
 		is.logger.Error().Err(err).Msg("insight: Failed to fetch characters")
 		return
@@ -546,7 +550,7 @@ func (is *InSight) GetCharacterInfo(malId int) (*InSightCharacterDetails, error)
 
 	is.rateLimiter.Wait()
 
-	resp, err := req.C().R().Get(fmt.Sprintf(JikanCharacterUrl, malId))
+	resp, err := jikanClient.R().Get(fmt.Sprintf(JikanCharacterUrl, malId))
 	if err != nil {
 		return nil, err
 	}

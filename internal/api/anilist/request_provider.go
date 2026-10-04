@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"seanime/internal/constants"
 	"seanime/internal/security"
+	"seanime/internal/stealth"
 	"strings"
 	"sync"
 	"time"
@@ -109,16 +110,19 @@ func (r *requestProviderRegistry) currentProvider() RequestProvider {
 
 func requestProviderHTTPClient(provider RequestProvider) *http.Client {
 	if provider == nil {
-		return http.DefaultClient
+		return officialHTTPClient
 	}
 
 	client := provider.HttpClient()
 	if client == nil {
-		return http.DefaultClient
+		return officialHTTPClient
 	}
 
 	return client
 }
+
+// officialHTTPClient goes through the stealth gateway when official APIs are opted in.
+var officialHTTPClient = stealth.Client(nil, stealth.CategoryOfficialAPI)
 
 type anilistApiProvider struct{}
 
@@ -131,7 +135,7 @@ func (anilistApiProvider) ApiUrl() string {
 }
 
 func (anilistApiProvider) HttpClient() *http.Client {
-	return http.DefaultClient
+	return officialHTTPClient
 }
 
 func (anilistApiProvider) PrepareRequest(_ context.Context, req *http.Request, token string) error {

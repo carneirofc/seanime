@@ -30707,6 +30707,18 @@
         "comments": []
       },
       {
+        "name": "Stealth",
+        "jsonName": "Stealth",
+        "goType": "INTERNAL_Config_Stealth",
+        "inlineStructType": "struct{\nEnabled bool\nURL string\nToken string\nExtensionMode string\nOfficialAPIs bool}",
+        "typescriptType": "INTERNAL_Config_Stealth",
+        "usedTypescriptType": "{ Enabled: boolean; URL: string; Token: string; ExtensionMode: string; OfficialAPIs: boolean; }",
+        "usedStructName": "core.Config_Stealth",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
         "name": "Experimental",
         "jsonName": "Experimental",
         "goType": "INTERNAL_Config_Experimental",
@@ -31093,6 +31105,69 @@
         "required": true,
         "public": true,
         "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/core/config.go",
+    "filename": "config.go",
+    "name": "Config_Stealth",
+    "formattedName": "INTERNAL_Config_Stealth",
+    "package": "core",
+    "fields": [
+      {
+        "name": "Enabled",
+        "jsonName": "Enabled",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "URL",
+        "jsonName": "URL",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": [
+          " gateway base URL, defaults to http://127.0.0.1:47541"
+        ]
+      },
+      {
+        "name": "Token",
+        "jsonName": "Token",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": [
+          " X-Cloak-Token; can be supplied via SEANIME_STEALTH_TOKEN"
+        ]
+      },
+      {
+        "name": "ExtensionMode",
+        "jsonName": "ExtensionMode",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": [
+          " \"off\", \"fallback\" (default) or \"always\""
+        ]
+      },
+      {
+        "name": "OfficialAPIs",
+        "jsonName": "OfficialAPIs",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": [
+          " also route AniList, MAL, Jikan, animap, filler and the image proxy"
+        ]
       }
     ],
     "comments": []
@@ -93861,6 +93936,135 @@
       }
     ],
     "comments": []
+  },
+  {
+    "filepath": "../internal/stealth/stealth.go",
+    "filename": "stealth.go",
+    "name": "Mode",
+    "formattedName": "Mode",
+    "package": "stealth",
+    "fields": [],
+    "aliasOf": {
+      "goType": "string",
+      "typescriptType": "string",
+      "declaredValues": [
+        "\"off\"",
+        "\"fallback\"",
+        "\"always\""
+      ]
+    },
+    "comments": [
+      " Mode decides how extension fetch() uses the gateway."
+    ]
+  },
+  {
+    "filepath": "../internal/stealth/stealth.go",
+    "filename": "stealth.go",
+    "name": "Category",
+    "formattedName": "Category",
+    "package": "stealth",
+    "fields": [],
+    "aliasOf": {
+      "goType": "int",
+      "typescriptType": "number",
+      "declaredValues": []
+    },
+    "comments": [
+      " Category groups outbound clients so each group can be opted in separately."
+    ]
+  },
+  {
+    "filepath": "../internal/stealth/stealth.go",
+    "filename": "stealth.go",
+    "name": "Config",
+    "formattedName": "Config",
+    "package": "stealth",
+    "fields": [
+      {
+        "name": "Enabled",
+        "jsonName": "Enabled",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "URL",
+        "jsonName": "URL",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Token",
+        "jsonName": "Token",
+        "goType": "string",
+        "typescriptType": "string",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "ExtensionMode",
+        "jsonName": "ExtensionMode",
+        "goType": "Mode",
+        "typescriptType": "Mode",
+        "usedTypescriptType": "Mode",
+        "usedStructName": "stealth.Mode",
+        "required": true,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "OfficialAPIs",
+        "jsonName": "OfficialAPIs",
+        "goType": "bool",
+        "typescriptType": "boolean",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": []
+  },
+  {
+    "filepath": "../internal/stealth/transport.go",
+    "filename": "transport.go",
+    "name": "Transport",
+    "formattedName": "Transport",
+    "package": "stealth",
+    "fields": [
+      {
+        "name": "Base",
+        "jsonName": "Base",
+        "goType": "http.RoundTripper",
+        "typescriptType": "RoundTripper",
+        "usedTypescriptType": "RoundTripper",
+        "usedStructName": "http.RoundTripper",
+        "required": false,
+        "public": true,
+        "comments": []
+      },
+      {
+        "name": "Category",
+        "jsonName": "Category",
+        "goType": "Category",
+        "typescriptType": "Category",
+        "usedTypescriptType": "Category",
+        "usedStructName": "stealth.Category",
+        "required": true,
+        "public": true,
+        "comments": []
+      }
+    ],
+    "comments": [
+      " Transport sends requests of Category through the gateway when that category is",
+      " routed, and through Base otherwise. The decision is made per request, so a",
+      " configuration change applies without rebuilding clients."
+    ]
   },
   {
     "filepath": "../internal/testmocks/fake_manga_provider.go",

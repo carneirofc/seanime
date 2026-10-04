@@ -2,6 +2,7 @@ package filler
 
 import (
 	"fmt"
+	"seanime/internal/stealth"
 	"seanime/internal/util"
 	"strings"
 	"time"
@@ -45,9 +46,9 @@ type (
 func NewAnimeFillerList(logger *zerolog.Logger) *AnimeFillerList {
 	return &AnimeFillerList{
 		baseUrl: "https://www.animefillerlist.com",
-		client: req.C().
-			SetTimeout(10 * time.Second).
-			ImpersonateChrome(),
+		client: stealth.WrapReq(req.C().
+			SetTimeout(10*time.Second).
+			ImpersonateChrome(), stealth.CategoryOfficialAPI),
 		logger: logger,
 	}
 }

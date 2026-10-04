@@ -602,7 +602,7 @@ func doAniListRequestWithRetries(
 	onRateLimited func(waitSeconds int),
 ) (resp *http.Response, rlRemainingStr string, err error) {
 	if client == nil {
-		client = http.DefaultClient
+		client = officialHTTPClient
 	}
 	if sleep == nil {
 		sleep = sleepWithContext

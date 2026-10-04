@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"seanime/internal/database/db"
 	"seanime/internal/database/models"
+	"seanime/internal/stealth"
 	"strings"
 	"time"
 )
@@ -28,7 +29,7 @@ type (
 func NewWrapper(accessToken string, logger *zerolog.Logger) *Wrapper {
 	return &Wrapper{
 		AccessToken: accessToken,
-		client:      &http.Client{},
+		client:      stealth.Client(nil, stealth.CategoryOfficialAPI),
 		logger:      logger,
 	}
 }
@@ -95,7 +96,7 @@ func VerifyMALAuth(malInfo *models.Mal, db *db.Database, logger *zerolog.Logger)
 	}
 
 	// Token is expired, refresh it
-	client := &http.Client{}
+	client := stealth.Client(nil, stealth.CategoryOfficialAPI)
 
 	// Build URL
 	urlData := url.Values{}

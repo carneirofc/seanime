@@ -373,6 +373,12 @@ declare namespace $ui {
         body?: any
         /** Whether to bypass cloudflare */
         noCloudflareBypass?: boolean
+        /**
+         * Route this request through the stealth gateway (Seanime's [stealth] config),
+         * which replays it with a real Firefox fingerprint and solves anti-bot challenges.
+         * Omit to follow the configured mode; false always sends it directly.
+         */
+        stealth?: boolean
         /** Redirect behavior, defaults to follow */
         redirect?: "follow" | "manual" | "error"
         /** Timeout in seconds, defaults to 35 */

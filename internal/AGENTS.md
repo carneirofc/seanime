@@ -37,6 +37,30 @@ entrypoints, and how backend changes flow to the frontend.
 - Provider methods must return the error from `callClassMethod`; discarding it makes a failing
   source look like one that returned no results.
 
+## Stealth gateway
+
+- `internal/stealth` replays outbound requests through the cloak-backend gateway
+  (`seanime-extensions/cloak-backend`, `POST /proxy`): curl_cffi impersonating Firefox, with
+  Camoufox solving anti-bot challenges. The wire contract is `proxyRequest`/`proxyResponse` in
+  `transport.go`; change it together with the gateway's `models.py`.
+- Configured by `[stealth]` in `config.toml` (`enabled`, `url`, `token`, `extensionMode`,
+  `officialAPIs`; env `SEANIME_STEALTH_URL`, `SEANIME_STEALTH_TOKEN`), applied in `core.NewApp`
+  through `stealth.Configure`. The config is process-wide and read per request.
+- Categories:
+  - `CategoryExtension`: goja `fetch` (`goja_bindings/fetch.go`). `extensionMode` is `off`,
+    `fallback` (direct first, one gateway retry when `stealth.IsChallenge` matches and the
+    body can be resent) or `always`. A per-call `fetch(url, {stealth})` overrides it.
+  - `CategoryOfficialAPI` (opt-in `officialAPIs`): AniList (`officialHTTPClient` in
+    `api/anilist/request_provider.go`), MAL, animap, Jikan (`jikanClient` in
+    `mediacore`/`mpvcore`/`videocore` insight), filler, and the image proxy.
+- Wire a new first-party client with `stealth.Client(base, cat)` (net/http) or
+  `stealth.WrapReq(c, cat)` (req). Debrid, torrent clients, media players, the updater,
+  translators and video streams stay direct on purpose: they carry credentials or bulk
+  streams, or talk to local services.
+- `stealth.Do` never follows redirects, so the caller's client applies its redirect policy
+  and every hop goes through the gateway; the gateway runs its own SSRF guard, which is why
+  its connection does not use `security.HardenedTransport` (it usually sits on loopback).
+
 ## AniList entry privacy
 
 - Adult media first added to the list defaults to `private` + `hiddenFromStatusLists`

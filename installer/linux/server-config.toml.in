@@ -28,3 +28,11 @@ port = @PORT@
 #
 # Granting one here means relaxing the matching directive in the systemd unit too.
 capabilities = []
+
+# Optional stealth gateway (seanime-extensions/cloak-backend), for sources behind
+# Cloudflare-style walls. See WEB_DEPLOYMENT.md.
+# [stealth]
+# enabled = true
+# url = "http://127.0.0.1:47541"
+# extensionMode = "fallback"   # off | fallback | always
+# officialAPIs = false
