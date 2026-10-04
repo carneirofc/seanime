@@ -1,0 +1,30 @@
+# Stealth gateway for Seanime as a systemd --user service (seanime-cloak-backend-git).
+#
+#   systemctl --user enable --now seanime-cloak-backend.service
+#
+# Settings: ~/.config/seanime/cloak-backend.env, CLOAK_* variables
+# (see /usr/share/doc/seanime-cloak-backend/env.example). It listens on
+# 127.0.0.1:47541, which is what Seanime's [stealth] url defaults to.
+
+[Unit]
+Description=Seanime stealth gateway (Camoufox + curl_cffi)
+Documentation=file:///usr/share/doc/seanime-cloak-backend/README.md
+After=network-online.target
+Wants=network-online.target
+Before=seanime.service
+
+[Service]
+Type=simple
+EnvironmentFile=-%h/.config/seanime/cloak-backend.env
+# Downloads the Camoufox browser into ~/.cache/camoufox on first start only.
+ExecStartPre=/opt/seanime-cloak-backend/bin/python -c "from camoufox.pkgman import camoufox_path; camoufox_path()"
+ExecStart=/usr/bin/cloak-backend
+# The first start downloads the browser (several hundred MB).
+TimeoutStartSec=15min
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

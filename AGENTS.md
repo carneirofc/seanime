@@ -7,6 +7,8 @@ nearest `AGENTS.md`.
 
 - Go backend: `internal/AGENTS.md`.
 - Frontend: `seanime-web/AGENTS.md`.
+- Arch Linux packaging (split PKGBUILD for seanime + the cloak-backend gateway):
+  `packaging/arch/AGENTS.md`.
 
 ## Scope
 

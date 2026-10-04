@@ -1,0 +1,22 @@
+post_install() {
+  cat <<'EOF'
+==> Seanime is installed. Start it from the application menu, or run it as a
+    user service:
+        systemctl --user enable --now seanime.service
+    The web interface is at http://127.0.0.1:43211 and data lives in
+    ~/.config/Seanime.
+
+==> Optional stealth gateway (package seanime-cloak-backend-git):
+        systemctl --user enable --now seanime-cloak-backend.service
+    then turn it on in ~/.config/Seanime/config.toml:
+        [stealth]
+        enabled = true
+        extensionMode = 'fallback'   # off | fallback | always
+        officialAPIs = false         # true also routes AniList, MAL, Jikan, ...
+EOF
+}
+
+post_upgrade() {
+  echo "==> Restart running user services to pick up the new version:"
+  echo "        systemctl --user try-restart seanime.service seanime-cloak-backend.service"
+}

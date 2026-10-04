@@ -1,0 +1,195 @@
+# Maintainer: carneirofc <claudiofcarneiro@gmail.com>
+#
+# Split package for Arch Linux:
+#   seanime-git                 the server (Go binary with the web UI embedded),
+#                               launcher, desktop entry, icons, systemd user unit
+#   seanime-cloak-backend-git   the stealth gateway (Camoufox + curl_cffi) in a
+#                               self-contained venv under /opt, with a user unit
+#
+# Build:   makepkg -si
+# Sources are the fork's git repositories; see packaging/arch/AGENTS.md.
+
+pkgbase=seanime-git
+pkgname=(seanime-git seanime-cloak-backend-git)
+pkgver=3.10.2.fork.2.r0.g0000000
+pkgrel=1
+pkgdesc="Self-hosted anime and manga media server with AniList integration"
+arch=(x86_64 aarch64)
+url="https://github.com/carneirofc/seanime"
+makedepends=(git go nodejs npm python uv imagemagick)
+source=(
+  "seanime::git+https://github.com/carneirofc/seanime.git"
+  "seanime-extensions::git+https://github.com/carneirofc/seanime-extensions.git"
+  "seanime-cloak-backend.service"
+  "cloak-backend.sh"
+  "seanime.install"
+)
+sha256sums=('SKIP'
+            'SKIP'
+            '76f9b5314df1addc5616f8453034cb927b7f0c685cefe9e4608fb1fd32de8ae4'
+            '7b05e827f1614b4421878e29304132c59220a5bded55db2063669fad9d37678e'
+            'add55df4995a0c202b3e4f42bb1be599021f7643eb490533d3b3b68bfe8c1204')
+_icon_sizes=(16 24 32 48 64 128 256)
+_gateway_dir=/opt/seanime-cloak-backend
+
+pkgver() {
+  cd seanime
+  # The fork's releases are not tagged on main, so the version comes from the
+  # source: 3.10.2-fork.2 at commit abc1234, 5 commits in -> 3.10.2.fork.2.r5.gabc1234
+  local version
+  version=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' \
+    internal/constants/constants.go | head -n 1)
+  printf '%s.r%s.g%s' "${version//-/.}" "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+prepare() {
+  cd seanime
+  export GOPATH="$srcdir/gopath" GOFLAGS="-modcacherw"
+  go mod download
+  npm ci --no-audit --no-fund
+}
+
+build() {
+  # --- seanime --------------------------------------------------------------
+  cd "$srcdir/seanime"
+  export GOPATH="$srcdir/gopath"
+  export CGO_ENABLED=0
+  export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
+  # Runs clean, codegen, the web build, embedding, then go build into dist/.
+  npm run build
+
+  # --- cloak-backend --------------------------------------------------------
+  # A relocatable venv built against the system Python, filled from uv.lock, so
+  # package() can move it to /opt unchanged. Rebuild this package after a
+  # Python minor-version upgrade, like any Python package.
+  cd "$srcdir/seanime-extensions/cloak-backend"
+  rm -rf "$srcdir/cloak-venv"
+  export UV_CACHE_DIR="$srcdir/uv-cache" UV_PYTHON_DOWNLOADS=never
+  uv venv --relocatable --python /usr/bin/python3 "$srcdir/cloak-venv"
+  UV_PROJECT_ENVIRONMENT="$srcdir/cloak-venv" \
+    uv sync --frozen --no-dev --extra geoip --no-editable
+}
+
+check() {
+  cd "$srcdir/seanime"
+  export GOPATH="$srcdir/gopath" CGO_ENABLED=0 GOFLAGS="-mod=readonly -modcacherw"
+  go test ./internal/stealth/...
+  cd "$srcdir/seanime-extensions/cloak-backend"
+  UV_CACHE_DIR="$srcdir/uv-cache" UV_PYTHON=/usr/bin/python3 UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT="$srcdir/cloak-check-venv" \
+    uv run --frozen --extra geoip pytest -q
+}
+
+_render() {
+  # _render <template> <destination> <mode>; fills the installer/linux templates
+  # with the paths a package install uses.
+  local version
+  version=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' \
+    "$srcdir/seanime/internal/constants/constants.go" | head -n 1)
+  install -dm755 "$(dirname "$2")"
+  sed \
+    -e "s|@BIN@|/usr/bin/seanime|g" \
+    -e "s|@LAUNCHER@|/usr/bin/seanime-launch|g" \
+    -e "s|@VERSION@|${version}|g" \
+    -e "s|@MODE@|user|g" \
+    -e "s|@ENVFILE@|${_envfile}|g" \
+    -e "s|@DATADIR@|${_datadir}|g" \
+    "$1" >"$2"
+  chmod "$3" "$2"
+}
+
+package_seanime-git() {
+  pkgdesc="Self-hosted anime and manga media server with AniList integration"
+  license=(GPL-3.0-only)
+  depends=(glibc)
+  optdepends=(
+    'seanime-cloak-backend-git: stealth gateway for anti-bot protected sites ([stealth] in config.toml)'
+    'ffmpeg: transcoding and media probing'
+    'mpv: external media player'
+    'curl: launcher readiness check'
+    'xdg-utils: open the web interface from the launcher'
+  )
+  provides=(seanime)
+  conflicts=(seanime seanime-bin)
+  install=seanime.install
+
+  cd "$srcdir/seanime"
+  install -Dm755 dist/seanime "$pkgdir/usr/bin/seanime"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  local tpl="$srcdir/seanime/installer/linux"
+
+  # The launcher and desktop entry expand these at run time for whoever starts them.
+  local _envfile='${XDG_CONFIG_HOME:-$HOME/.config}/seanime/launcher.env'
+  local _datadir='${XDG_CONFIG_HOME:-$HOME/.config}/Seanime'
+  _render "$tpl/seanime-launch.in" "$pkgdir/usr/bin/seanime-launch" 755
+
+  # Desktop entries cannot expand variables, so drop the "open data directory" action.
+  _render "$tpl/seanime.desktop.in" "$srcdir/seanime.desktop" 644
+  sed -i -e 's/^Actions=terminal;stop;datadir;$/Actions=terminal;stop;/' \
+    -e '/^\[Desktop Action datadir\]$/,$d' "$srcdir/seanime.desktop"
+  install -Dm644 "$srcdir/seanime.desktop" "$pkgdir/usr/share/applications/seanime.desktop"
+
+  # systemd fills %h with the user's home directory.
+  _envfile='-%h/.config/seanime/launcher.env'
+  _datadir='%h/.config/Seanime'
+  _render "$tpl/seanime.user.service.in" "$pkgdir/usr/lib/systemd/user/seanime.service" 644
+  sed -i 's|^Documentation=.*|&\nWants=seanime-cloak-backend.service\nAfter=seanime-cloak-backend.service|' \
+    "$pkgdir/usr/lib/systemd/user/seanime.service"
+
+  local size
+  for size in "${_icon_sizes[@]}"; do
+    install -dm755 "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
+    magick internal/icon/logo.png -resize "${size}x${size}" \
+      "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/seanime.png"
+  done
+}
+
+package_seanime-cloak-backend-git() {
+  pkgdesc="Stealth-browsing gateway for Seanime (Camoufox + curl_cffi)"
+  license=(MIT)
+  # Python for the venv; the rest are what the Camoufox (Firefox) build links against.
+  depends=(python gtk3 libx11 libxcb libxcomposite libxdamage libxrandr libxtst
+           alsa-lib dbus-glib nss ttf-liberation)
+  optdepends=('xorg-server-xvfb: CLOAK_HEADLESS=virtual (headful on a hidden display)')
+  provides=(cloak-backend)
+  options=(!strip !debug)
+
+  install -dm755 "$pkgdir${_gateway_dir}"
+  cp -a "$srcdir/cloak-venv/." "$pkgdir${_gateway_dir}/"
+  # Records the build directory; nothing reads it at run time.
+  rm -f "$pkgdir${_gateway_dir}"/lib/python3*/site-packages/cloak_backend-*.dist-info/direct_url.json
+  # Byte-compile at the final location, so the .pyc files name /opt paths and
+  # the unprivileged service never tries to write them.
+  python -m compileall -q -j0 -s "$pkgdir" "$pkgdir${_gateway_dir}/lib"
+  install -Dm755 "$srcdir/cloak-backend.sh" "$pkgdir/usr/bin/cloak-backend"
+  install -Dm644 "$srcdir/seanime-cloak-backend.service" \
+    "$pkgdir/usr/lib/systemd/user/seanime-cloak-backend.service"
+
+  cd "$srcdir/seanime-extensions/cloak-backend"
+  install -Dm644 .env.example "$pkgdir/usr/share/doc/seanime-cloak-backend/env.example"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/seanime-cloak-backend/README.md"
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/licenses/$pkgname/LICENSE" <<'EOF'
+MIT License
+
+Copyright (c) carneirofc
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+EOF
+}
