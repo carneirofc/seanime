@@ -35,10 +35,10 @@
     "postinstall": "patch-package || exit 0"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.5",
     "cross-env": "^10.1.0",
-    "esbuild": "^0.28.1",
-    "nodemon": "^3.1.10",
+    "esbuild": "^0.28.2",
+    "nodemon": "^3.1.14",
     "patch-package": "^8.0.1",
     "run-script-os": "^1.1.6",
     "shx": "^0.4.0"

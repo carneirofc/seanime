@@ -117,6 +117,11 @@ Rules for the runtime schemas:
   each is described in the root `AGENTS.md`; typecheck must stay at zero.
 - The Biome formatter is safe to run on files you touch but is not a gate.
 - House style: 4-space indent, double quotes, no semicolons. Match the surrounding code.
+- Dependencies track their latest majors, with one hold: `@tanstack/react-table` stays on v8.
+  v9 is an API rewrite of everything `src/components/ui/datagrid/` is built on, a file set
+  upstream also edits. Migrate it as its own change, not inside a routine upgrade.
+- `src/components/shared/resizable.tsx` adapts react-resizable-panels v4 to the props callers
+  use (`direction`, `autoSaveId`, numeric sizes as percentages); v4 itself reads numbers as pixels.
 
 ## Maintaining this file
 

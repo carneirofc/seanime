@@ -1,6 +1,6 @@
 import { Anime_Episode } from "@/api/generated/types"
 import { atom } from "jotai"
-import { atomFamily } from "jotai/utils"
+import { atomFamily } from "jotai-family"
 
 export const missingEpisodesAtom = atom<Anime_Episode[]>([])
 

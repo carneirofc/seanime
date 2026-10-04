@@ -499,14 +499,12 @@
     self.name = "em-pthread";
   }
   async function Module(moduleArg = {}) {
-    var moduleRtn;
     var Module2 = moduleArg;
     var ENVIRONMENT_IS_WEB = true;
     var ENVIRONMENT_IS_WORKER = !!globalThis.WorkerGlobalScope;
     var out = (...args) => console.log(...args);
     var err = (...args) => console.error(...args);
     function ready() {
-      readyPromiseResolve?.(Module2);
       if (ENVIRONMENT_IS_PTHREAD) {
         startWorker();
       }
@@ -546,6 +544,13 @@
         }
       };
     }
+    const _origLoadModule = loadModule;
+    loadModule = function() {
+      _origLoadModule();
+      ASM_CONSTS = new Proxy({}, { get() {
+        return ($0) => stringToNewUTF8(Emval.toValue($0));
+      } });
+    };
     if (!ENVIRONMENT_IS_PTHREAD) {
     }
     function abort(what) {
@@ -560,18 +565,17 @@
         updateMemoryViews();
       }
     }
-    var readyPromiseResolve, readyPromiseReject;
     var startWorker;
     if (ENVIRONMENT_IS_PTHREAD) {
       let handleMessage = function(e) {
         try {
-          var msgData = e["data"];
+          var msgData = e.data;
           var cmd = msgData.cmd;
-          if (cmd === "load") {
+          if (cmd == 1) {
             let messageQueue = [];
             self.onmessage = (e2) => messageQueue.push(e2);
             startWorker = () => {
-              postMessage({ cmd: "loaded" });
+              postMessage({ cmd: 3 });
               for (let msg of messageQueue) {
                 handleMessage(msg);
               }
@@ -580,7 +584,7 @@
             for (const handler of msgData.handlers) {
               if (!Module2[handler] || Module2[handler].proxy) {
                 Module2[handler] = (...args) => {
-                  postMessage({ cmd: "callHandler", handler, args });
+                  postMessage({ cmd: 9, handler, args });
                 };
                 if (handler == "print")
                   out = Module2[handler];
@@ -592,7 +596,7 @@
             updateMemoryViews();
             Module2["wasm"] = msgData.wasmModule;
             loadModule();
-          } else if (cmd === "run") {
+          } else if (cmd == 2) {
             establishStackSpace(msgData.pthread_ptr);
             __emscripten_thread_init(msgData.pthread_ptr, 0, 0, 1, 0, 0);
             PThread.threadInitTLS();
@@ -608,8 +612,7 @@
                 throw ex;
               }
             }
-          } else if (msgData.target === "setimmediate") {
-          } else if (cmd === "checkMailbox") {
+          } else if (cmd == 4) {
             if (initializedJS) {
               checkMailbox();
             }
@@ -618,7 +621,8 @@
             err(msgData);
           }
         } catch (ex) {
-          __emscripten_thread_crashed();
+          if (runtimeInitialized)
+            __emscripten_thread_crashed();
           throw ex;
         }
       };
@@ -629,8 +633,13 @@
       self.onmessage = handleMessage;
     }
     var runtimeInitialized = false;
+    function getMemoryBuffer() {
+      return wasmMemory.buffer;
+    }
     function updateMemoryViews() {
-      var b2 = wasmMemory.buffer;
+      if (HEAP8?.buffer?.growable)
+        return;
+      var b2 = getMemoryBuffer();
       HEAP8 = new Int8Array(b2);
       HEAP16 = new Int16Array(b2);
       HEAPU8 = new Uint8Array(b2);
@@ -653,16 +662,7 @@
       updateMemoryViews();
     }
     initMemory();
-    var HEAP16;
-    var HEAP32;
-    var HEAP64;
     var HEAP8;
-    var HEAPF32;
-    var HEAPF64;
-    var HEAPU16;
-    var HEAPU32;
-    var HEAPU64;
-    var HEAPU8;
     var terminateWorker = (worker) => {
       worker.terminate();
       worker.onmessage = (e) => {
@@ -683,16 +683,17 @@
       if (!worker) {
         return 6;
       }
-      PThread.runningWorkers.push(worker);
       PThread.pthreads[threadParams.pthread_ptr] = worker;
       worker.pthread_ptr = threadParams.pthread_ptr;
-      var msg = { cmd: "run", start_routine: threadParams.startRoutine, arg: threadParams.arg, pthread_ptr: threadParams.pthread_ptr };
+      var msg = { cmd: 2, start_routine: threadParams.startRoutine, arg: threadParams.arg, pthread_ptr: threadParams.pthread_ptr };
       worker.postMessage(msg, threadParams.transferList);
       return 0;
     };
     var stackSave = () => _emscripten_stack_get_current();
     var stackRestore = (val) => __emscripten_stack_restore(val);
     var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
+    var HEAPF64;
+    var HEAP64;
     var proxyToMainThread = (funcIndex, emAsmAddr, proxyMode, ...callArgs) => {
       var bufSize = 8 * callArgs.length * 2;
       var sp = stackSave();
@@ -718,7 +719,8 @@
     }
     var _exit = _proc_exit;
     var waitAsyncPolyfilled = !Atomics.waitAsync || globalThis.navigator?.userAgent && Number((navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./) || [])[2]) < 91;
-    var PThread = { unusedWorkers: [], runningWorkers: [], tlsInitFunctions: [], pthreads: {}, init() {
+    var HEAP32;
+    var PThread = { unusedWorkers: [], tlsInitFunctions: [], pthreads: {}, init() {
       if (!ENVIRONMENT_IS_PTHREAD) {
         PThread.initMainThread();
       }
@@ -728,14 +730,13 @@
         PThread.allocateUnusedWorker();
       }
     }, terminateAllThreads: () => {
-      for (var worker of PThread.runningWorkers) {
+      for (var worker of Object.values(PThread.pthreads)) {
         terminateWorker(worker);
       }
       for (var worker of PThread.unusedWorkers) {
         terminateWorker(worker);
       }
       PThread.unusedWorkers = [];
-      PThread.runningWorkers = [];
       PThread.pthreads = {};
     }, terminateRuntime: () => {
       PThread.terminateAllThreads();
@@ -748,39 +749,42 @@
       var pthread_ptr = worker.pthread_ptr;
       delete PThread.pthreads[pthread_ptr];
       PThread.unusedWorkers.push(worker);
-      PThread.runningWorkers.splice(PThread.runningWorkers.indexOf(worker), 1);
       worker.pthread_ptr = 0;
       __emscripten_thread_free_data(pthread_ptr);
     }, threadInitTLS() {
       PThread.tlsInitFunctions.forEach((f) => f());
     }, loadWasmModuleToWorker: (worker) => new Promise((onFinishedLoading) => {
       worker.onmessage = (e) => {
-        var d2 = e["data"];
+        var d2 = e.data;
         var cmd = d2.cmd;
         if (d2.targetThread && d2.targetThread != _pthread_self()) {
           var targetWorker = PThread.pthreads[d2.targetThread];
-          if (targetWorker) {
-            targetWorker.postMessage(d2, d2.transferList);
-          } else {
-            err(`worker sent message (${cmd}) to pthread (${d2.targetThread}) that no longer exists`);
-          }
+          targetWorker?.postMessage(d2);
           return;
         }
-        if (cmd === "checkMailbox") {
-          checkMailbox();
-        } else if (cmd === "spawnThread") {
-          spawnThread(d2);
-        } else if (cmd === "cleanupThread") {
-          callUserCallback(() => cleanupThread(d2.thread));
-        } else if (cmd === "loaded") {
-          worker.loaded = true;
-          onFinishedLoading(worker);
-        } else if (d2.target === "setimmediate") {
+        if (d2 === "setimmediate" || d2 === "_si") {
           worker.postMessage(d2);
-        } else if (cmd === "callHandler") {
-          Module2[d2.handler](...d2.args);
-        } else if (cmd) {
-          err(`worker sent an unknown command ${cmd}`);
+          return;
+        }
+        switch (cmd) {
+          case 4:
+            checkMailbox();
+            break;
+          case 5:
+            spawnThread(d2);
+            break;
+          case 6:
+            callUserCallback(() => cleanupThread(d2.thread));
+            break;
+          case 3:
+            onFinishedLoading(worker);
+            break;
+          case 9:
+            Module2[d2.handler](...d2.args);
+            break;
+          default:
+            if (cmd)
+              err(`worker sent an unknown command ${cmd}`);
         }
       };
       worker.onerror = (e) => {
@@ -795,7 +799,7 @@
           handlers.push(handler);
         }
       }
-      worker.postMessage({ cmd: "load", handlers, wasmMemory, wasmModule });
+      worker.postMessage({ cmd: 1, handlers, wasmMemory, wasmModule });
     }), async loadWasmModuleToAllWorkers() {
       if (ENVIRONMENT_IS_PTHREAD) {
         return;
@@ -806,13 +810,15 @@
       var worker;
       worker = new Worker(new URL("jassub-worker.js", self.location.href), { type: "module", name: "em-pthread" });
       PThread.unusedWorkers.push(worker);
+      return worker;
     }, getNewWorker() {
       if (PThread.unusedWorkers.length == 0) {
-        PThread.allocateUnusedWorker();
-        PThread.loadWasmModuleToWorker(PThread.unusedWorkers[0]);
+        var newWorker = PThread.allocateUnusedWorker();
+        PThread.loadWasmModuleToWorker(newWorker);
       }
       return PThread.unusedWorkers.pop();
     } };
+    var HEAPU32;
     function establishStackSpace(pthread_ptr) {
       var stackHigh = (growMemViews(), HEAPU32)[pthread_ptr + 48 >> 2];
       var stackSize = (growMemViews(), HEAPU32)[pthread_ptr + 52 >> 2];
@@ -887,6 +893,7 @@
       heap[outIdx] = 0;
       return outIdx - startIdx;
     };
+    var HEAPU8;
     var stringToUTF8 = (str, outPtr, maxBytesToWrite) => stringToUTF8Array(str, (growMemViews(), HEAPU8), outPtr, maxBytesToWrite);
     var stringToNewUTF8 = (str) => {
       var size = lengthBytesUTF8(str) + 1;
@@ -931,7 +938,7 @@
         return error;
       var threadParams = { startRoutine, pthread_ptr, arg, transferList };
       if (ENVIRONMENT_IS_PTHREAD) {
-        threadParams.cmd = "spawnThread";
+        threadParams.cmd = 5;
         postMessage(threadParams, transferList);
         return 0;
       }
@@ -975,12 +982,12 @@
     var awaitingDependencies = {};
     var registeredTypes = {};
     var typeDependencies = {};
-    var BindingError = class BindingError extends Error {
+    class BindingError extends Error {
       constructor(message) {
         super(message);
         this.name = "BindingError";
       }
-    };
+    }
     var throwBindingError = (message) => {
       throw new BindingError(message);
     };
@@ -1007,6 +1014,9 @@
     function registerType(rawType, registeredInstance, options = {}) {
       return sharedRegisterType(rawType, registeredInstance, options);
     }
+    var HEAP16;
+    var HEAPU16;
+    var HEAPU64;
     var integerReadValueFromPointer = (name, width, signed) => {
       switch (width) {
         case 1:
@@ -1371,12 +1381,12 @@
       ptr = getBasestPointer(class_, ptr);
       return registeredInstances[ptr];
     };
-    var InternalError = class InternalError extends Error {
+    class InternalError extends Error {
       constructor(message) {
         super(message);
         this.name = "InternalError";
       }
-    };
+    }
     var throwInternalError = (message) => {
       throw new InternalError(message);
     };
@@ -1679,6 +1689,15 @@
         invoker(fn, thisWired, arg0Wired);
         arg0Wired_dtor(arg0Wired);
       };
+    }, tffntnn: function anonymous(humanName, throwBindingError2, invoker, fn, runDestructors2, fromRetWire, toClassParamWire, toArg0Wire, toArg1Wire, toArg2Wire, arg0Wired_dtor) {
+      return function(arg0, arg1, arg2) {
+        var thisWired = toClassParamWire(null, this);
+        var arg0Wired = toArg0Wire(null, arg0);
+        var arg1Wired = toArg1Wire(null, arg1);
+        var arg2Wired = toArg2Wire(null, arg2);
+        invoker(fn, thisWired, arg0Wired, arg1Wired, arg2Wired);
+        arg0Wired_dtor(arg0Wired);
+      };
     }, tffnnnn: function anonymous(humanName, throwBindingError2, invoker, fn, runDestructors2, fromRetWire, toClassParamWire, toArg0Wire, toArg1Wire, toArg2Wire) {
       return function(arg0, arg1, arg2) {
         var thisWired = toClassParamWire(null, this);
@@ -1723,7 +1742,7 @@
     function craftInvokerFunction(humanName, argTypes, classType, cppInvokerFunc, cppTargetFunc, isAsync) {
       var argCount = argTypes.length;
       if (argCount < 2) {
-        throwBindingError("argTypes array size mismatch! Must at least get return value and 'this' types!");
+        throwBindingError("argTypes array size mismatch! Must at least get return value and receiver (this) types!");
       }
       var isClassMethodFunc = argTypes[1] !== null && classType !== null;
       var needsDestructorStack = usesDestructorStack(argTypes);
@@ -1903,6 +1922,7 @@
       return rv;
     }, toWireType: (destructors, value) => Emval.toHandle(value), readValueFromPointer: readPointer, destructorFunction: null };
     var __embind_register_emval = (rawType) => registerType(rawType, EmValType);
+    var HEAPF32;
     var floatReadValueFromPointer = (name, width) => {
       switch (width) {
         case 4:
@@ -2007,8 +2027,7 @@
       var endIdx = findStringEnd((growMemViews(), HEAPU16), idx, maxBytesToRead / 2, ignoreNul);
       return UTF16Decoder.decode((growMemViews(), HEAPU16).slice(idx, endIdx));
     };
-    var stringToUTF16 = (str, outPtr, maxBytesToWrite) => {
-      maxBytesToWrite ??= 2147483647;
+    var stringToUTF16 = (str, outPtr, maxBytesToWrite = 2147483647) => {
       if (maxBytesToWrite < 2)
         return 0;
       maxBytesToWrite -= 2;
@@ -2034,8 +2053,7 @@
       }
       return str;
     };
-    var stringToUTF32 = (str, outPtr, maxBytesToWrite) => {
-      maxBytesToWrite ??= 2147483647;
+    var stringToUTF32 = (str, outPtr, maxBytesToWrite = 2147483647) => {
       if (maxBytesToWrite < 4)
         return 0;
       var startPtr = outPtr;
@@ -2102,7 +2120,8 @@
       registerType(rawType, { isVoid: true, name, fromWireType: () => void 0, toWireType: (destructors, o) => void 0 });
     };
     var __emscripten_init_main_thread_js = (tb) => {
-      __emscripten_thread_init(tb, !ENVIRONMENT_IS_WORKER, 1, !ENVIRONMENT_IS_WEB, 262144, false);
+      var can_block = !ENVIRONMENT_IS_WEB;
+      __emscripten_thread_init(tb, !ENVIRONMENT_IS_WORKER, 1, can_block, 262144, false);
       PThread.threadInitTLS();
     };
     var callUserCallback = (func) => {
@@ -2112,7 +2131,7 @@
       if (!waitAsyncPolyfilled) {
         var wait = Atomics.waitAsync((growMemViews(), HEAP32), pthread_ptr >> 2, pthread_ptr);
         wait.value.then(checkMailbox);
-        var waitingAsync = pthread_ptr + 120;
+        var waitingAsync = pthread_ptr + 112;
         Atomics.store((growMemViews(), HEAP32), waitingAsync >> 2, 1);
       }
     };
@@ -2129,13 +2148,13 @@
       if (targetThread == currThreadId) {
         setTimeout(checkMailbox);
       } else if (ENVIRONMENT_IS_PTHREAD) {
-        postMessage({ targetThread, cmd: "checkMailbox" });
+        postMessage({ targetThread, cmd: 4 });
       } else {
         var worker = PThread.pthreads[targetThread];
         if (!worker) {
           return;
         }
-        worker.postMessage({ cmd: "checkMailbox" });
+        worker.postMessage({ cmd: 4 });
       }
     };
     var proxiedJSCallArgs = [];
@@ -2168,7 +2187,7 @@
       if (!ENVIRONMENT_IS_PTHREAD)
         cleanupThread(thread);
       else
-        postMessage({ cmd: "cleanupThread", thread });
+        postMessage({ cmd: 6, thread });
     };
     var __emscripten_thread_set_strongref = (thread) => {
     };
@@ -2448,54 +2467,54 @@
     init_ClassHandle();
     init_RegisteredPointer();
     var proxiedFunctionTable = [_proc_exit, pthreadCreateProxied, ___syscall_fcntl64, ___syscall_getdents64, ___syscall_ioctl, ___syscall_openat, __setitimer_js, _environ_get, _environ_sizes_get, _fd_close, _fd_read, _fd_seek, _fd_write];
-    var ASM_CONSTS = { 613693: ($0) => stringToNewUTF8(Emval.toValue($0)) };
+    var ASM_CONSTS = { 624229: ($0) => stringToNewUTF8(Emval.toValue($0)) };
     var __ZdlPvm, _pthread_self, __Znwm, _free, _malloc, _calloc, ___getTypeName, __embind_initialize_bindings, _emscripten_builtin_free, __emscripten_tls_init, __emscripten_thread_init, ___set_thread_state, __emscripten_thread_crashed, ___libc_free, _emscripten_builtin_malloc, ___libc_malloc, __emscripten_run_js_on_main_thread_done, __emscripten_run_js_on_main_thread, __emscripten_thread_free_data, __emscripten_thread_exit, __emscripten_timeout, __emscripten_check_mailbox, __ZdaPv, __ZdaPvm, __ZdlPv, __Znam, __ZnamSt11align_val_t, __ZnwmSt11align_val_t, ___libc_calloc, ___libc_realloc, _emscripten_builtin_calloc, _emscripten_builtin_realloc, _malloc_size, _malloc_usable_size, _reallocf, _setThrew, _emscripten_stack_set_limits, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, __indirect_function_table, wasmTable;
     function assignWasmExports(wasmExports) {
-      __ZdlPvm = Module2["__ZdlPvm"] = wasmExports["ia"];
-      _pthread_self = wasmExports["ja"];
-      __Znwm = Module2["__Znwm"] = wasmExports["ka"];
-      _free = wasmExports["la"];
-      _malloc = Module2["_malloc"] = wasmExports["ma"];
-      _calloc = Module2["_calloc"] = wasmExports["na"];
-      ___getTypeName = wasmExports["oa"];
-      __embind_initialize_bindings = wasmExports["pa"];
-      _emscripten_builtin_free = Module2["_emscripten_builtin_free"] = wasmExports["qa"];
-      __emscripten_tls_init = wasmExports["ra"];
-      __emscripten_thread_init = wasmExports["ta"];
-      ___set_thread_state = wasmExports["ua"];
-      __emscripten_thread_crashed = wasmExports["va"];
-      ___libc_free = Module2["___libc_free"] = wasmExports["wa"];
-      _emscripten_builtin_malloc = Module2["_emscripten_builtin_malloc"] = wasmExports["xa"];
-      ___libc_malloc = Module2["___libc_malloc"] = wasmExports["ya"];
-      __emscripten_run_js_on_main_thread_done = wasmExports["za"];
-      __emscripten_run_js_on_main_thread = wasmExports["Aa"];
-      __emscripten_thread_free_data = wasmExports["Ba"];
-      __emscripten_thread_exit = wasmExports["Ca"];
-      __emscripten_timeout = wasmExports["Da"];
-      __emscripten_check_mailbox = wasmExports["Ea"];
-      __ZdaPv = Module2["__ZdaPv"] = wasmExports["Fa"];
-      __ZdaPvm = Module2["__ZdaPvm"] = wasmExports["Ga"];
-      __ZdlPv = Module2["__ZdlPv"] = wasmExports["Ha"];
-      __Znam = Module2["__Znam"] = wasmExports["Ia"];
-      __ZnamSt11align_val_t = Module2["__ZnamSt11align_val_t"] = wasmExports["Ja"];
-      __ZnwmSt11align_val_t = Module2["__ZnwmSt11align_val_t"] = wasmExports["Ka"];
-      ___libc_calloc = Module2["___libc_calloc"] = wasmExports["La"];
-      ___libc_realloc = Module2["___libc_realloc"] = wasmExports["Ma"];
-      _emscripten_builtin_calloc = Module2["_emscripten_builtin_calloc"] = wasmExports["Na"];
-      _emscripten_builtin_realloc = Module2["_emscripten_builtin_realloc"] = wasmExports["Oa"];
-      _malloc_size = Module2["_malloc_size"] = wasmExports["Pa"];
-      _malloc_usable_size = Module2["_malloc_usable_size"] = wasmExports["Qa"];
-      _reallocf = Module2["_reallocf"] = wasmExports["Ra"];
-      _setThrew = wasmExports["Sa"];
-      _emscripten_stack_set_limits = wasmExports["Ta"];
-      __emscripten_stack_restore = wasmExports["Ua"];
-      __emscripten_stack_alloc = wasmExports["Va"];
-      _emscripten_stack_get_current = wasmExports["Wa"];
-      __indirect_function_table = wasmTable = wasmExports["sa"];
+      __ZdlPvm = Module2["__ZdlPvm"] = wasmExports["ha"];
+      _pthread_self = wasmExports["ia"];
+      __Znwm = Module2["__Znwm"] = wasmExports["ja"];
+      _free = wasmExports["ka"];
+      _malloc = Module2["_malloc"] = wasmExports["la"];
+      _calloc = Module2["_calloc"] = wasmExports["ma"];
+      ___getTypeName = wasmExports["na"];
+      __embind_initialize_bindings = wasmExports["oa"];
+      _emscripten_builtin_free = Module2["_emscripten_builtin_free"] = wasmExports["pa"];
+      __emscripten_tls_init = wasmExports["qa"];
+      __emscripten_thread_init = wasmExports["sa"];
+      ___set_thread_state = wasmExports["ta"];
+      __emscripten_thread_crashed = wasmExports["ua"];
+      ___libc_free = Module2["___libc_free"] = wasmExports["va"];
+      _emscripten_builtin_malloc = Module2["_emscripten_builtin_malloc"] = wasmExports["wa"];
+      ___libc_malloc = Module2["___libc_malloc"] = wasmExports["xa"];
+      __emscripten_run_js_on_main_thread_done = wasmExports["ya"];
+      __emscripten_run_js_on_main_thread = wasmExports["za"];
+      __emscripten_thread_free_data = wasmExports["Aa"];
+      __emscripten_thread_exit = wasmExports["Ba"];
+      __emscripten_timeout = wasmExports["Ca"];
+      __emscripten_check_mailbox = wasmExports["Da"];
+      __ZdaPv = Module2["__ZdaPv"] = wasmExports["Ea"];
+      __ZdaPvm = Module2["__ZdaPvm"] = wasmExports["Fa"];
+      __ZdlPv = Module2["__ZdlPv"] = wasmExports["Ga"];
+      __Znam = Module2["__Znam"] = wasmExports["Ha"];
+      __ZnamSt11align_val_t = Module2["__ZnamSt11align_val_t"] = wasmExports["Ia"];
+      __ZnwmSt11align_val_t = Module2["__ZnwmSt11align_val_t"] = wasmExports["Ja"];
+      ___libc_calloc = Module2["___libc_calloc"] = wasmExports["Ka"];
+      ___libc_realloc = Module2["___libc_realloc"] = wasmExports["La"];
+      _emscripten_builtin_calloc = Module2["_emscripten_builtin_calloc"] = wasmExports["Ma"];
+      _emscripten_builtin_realloc = Module2["_emscripten_builtin_realloc"] = wasmExports["Na"];
+      _malloc_size = Module2["_malloc_size"] = wasmExports["Oa"];
+      _malloc_usable_size = Module2["_malloc_usable_size"] = wasmExports["Pa"];
+      _reallocf = Module2["_reallocf"] = wasmExports["Qa"];
+      _setThrew = wasmExports["Ra"];
+      _emscripten_stack_set_limits = wasmExports["Sa"];
+      __emscripten_stack_restore = wasmExports["Ta"];
+      __emscripten_stack_alloc = wasmExports["Ua"];
+      _emscripten_stack_get_current = wasmExports["Va"];
+      __indirect_function_table = wasmTable = wasmExports["ra"];
     }
     var wasmImports;
     function assignWasmImports() {
-      wasmImports = { b: ___assert_fail, Q: ___pthread_create_js, y: ___syscall_fcntl64, P: ___syscall_getdents64, Y: ___syscall_ioctl, z: ___syscall_openat, L: __abort_js, B: __embind_register_bigint, ba: __embind_register_bool, ga: __embind_register_class, fa: __embind_register_class_constructor, d: __embind_register_class_function, da: __embind_register_class_property, $: __embind_register_emval, A: __embind_register_float, l: __embind_register_integer, e: __embind_register_memory_view, aa: __embind_register_std_string, t: __embind_register_std_wstring, ca: __embind_register_void, T: __emscripten_init_main_thread_js, M: __emscripten_notify_mailbox_postmessage, x: __emscripten_receive_on_main_thread_js, H: __emscripten_runtime_keepalive_clear, v: __emscripten_thread_cleanup, S: __emscripten_thread_mailbox_await, _: __emscripten_thread_set_strongref, F: __emscripten_throw_longjmp, h: __emval_create_invoker, c: __emval_decref, ea: __emval_get_property, i: __emval_incref, g: __emval_invoke, p: __emval_new_array, j: __emval_new_cstring, s: __emval_new_object, f: __emval_run_destructors, k: __emval_set_property, I: __setitimer_js, n: _emscripten_asm_const_ptr, w: _emscripten_check_blocking_allowed, m: _emscripten_date_now, u: _emscripten_err, Z: _emscripten_exit_with_live_runtime, N: _emscripten_get_heap_max, o: _emscripten_get_now, O: _emscripten_num_logical_cores, J: _emscripten_resize_heap, U: _environ_get, V: _environ_sizes_get, q: _exit, r: _fd_close, X: _fd_read, R: _fd_seek, W: _fd_write, E: invoke_iii, C: invoke_iiii, D: invoke_iiiii, a: wasmMemory, G: _proc_exit, K: _random_get };
+      wasmImports = { b: ___assert_fail, P: ___pthread_create_js, y: ___syscall_fcntl64, O: ___syscall_getdents64, X: ___syscall_ioctl, z: ___syscall_openat, K: __abort_js, B: __embind_register_bigint, aa: __embind_register_bool, fa: __embind_register_class, ea: __embind_register_class_constructor, d: __embind_register_class_function, ca: __embind_register_class_property, _: __embind_register_emval, A: __embind_register_float, l: __embind_register_integer, e: __embind_register_memory_view, $: __embind_register_std_string, t: __embind_register_std_wstring, ba: __embind_register_void, S: __emscripten_init_main_thread_js, L: __emscripten_notify_mailbox_postmessage, x: __emscripten_receive_on_main_thread_js, G: __emscripten_runtime_keepalive_clear, v: __emscripten_thread_cleanup, R: __emscripten_thread_mailbox_await, Z: __emscripten_thread_set_strongref, E: __emscripten_throw_longjmp, h: __emval_create_invoker, c: __emval_decref, da: __emval_get_property, i: __emval_incref, g: __emval_invoke, p: __emval_new_array, j: __emval_new_cstring, s: __emval_new_object, f: __emval_run_destructors, k: __emval_set_property, H: __setitimer_js, n: _emscripten_asm_const_ptr, w: _emscripten_check_blocking_allowed, m: _emscripten_date_now, u: _emscripten_err, Y: _emscripten_exit_with_live_runtime, M: _emscripten_get_heap_max, o: _emscripten_get_now, N: _emscripten_num_logical_cores, I: _emscripten_resize_heap, T: _environ_get, U: _environ_sizes_get, q: _exit, r: _fd_close, W: _fd_read, Q: _fd_seek, V: _fd_write, D: invoke_iii, C: invoke_iiiii, a: wasmMemory, F: _proc_exit, J: _random_get };
     }
     function invoke_iii(index, a1, a2) {
       var sp = stackSave();
@@ -2519,129 +2538,37 @@
         _setThrew(1, 0);
       }
     }
-    function invoke_iiii(index, a1, a2, a3) {
-      var sp = stackSave();
-      try {
-        return getWasmTableEntry(index)(a1, a2, a3);
-      } catch (e) {
-        stackRestore(sp);
-        if (!(e instanceof EmscriptenEH))
-          throw e;
-        _setThrew(1, 0);
-      }
-    }
     function initRuntime(wasmExports) {
       runtimeInitialized = true;
-      PThread.tlsInitFunctions.push(wasmExports["ra"]);
+      PThread.tlsInitFunctions.push(wasmExports["qa"]);
       if (ENVIRONMENT_IS_PTHREAD)
         return;
-      wasmExports["ha"]();
+      wasmExports["ga"]();
     }
+    var instantiatePromise;
     var wasmModule;
     function loadModule() {
       assignWasmImports();
       var imports = { a: wasmImports };
-      WebAssembly.instantiateStreaming(fetch(new URL("jassub-worker.wasm", self.location.href)), imports).then((output) => {
+      instantiatePromise = WebAssembly.instantiateStreaming(fetch(new URL("jassub-worker.wasm", self.location.href)), imports).then((output) => {
         var wasmExports = (output.instance || output).exports;
         wasmModule = output.module || Module2["wasm"];
         assignWasmExports(wasmExports);
         callRuntimeCallbacks(onPreRuns);
         initRuntime(wasmExports);
-        PThread.loadWasmModuleToAllWorkers().then(ready);
+        return PThread.loadWasmModuleToAllWorkers().then(ready);
       });
     }
     if (!ENVIRONMENT_IS_PTHREAD) {
       loadModule();
     }
-    if (runtimeInitialized) {
-      moduleRtn = Module2;
-    } else {
-      moduleRtn = new Promise((resolve, reject) => {
-        readyPromiseResolve = resolve;
-        readyPromiseReject = reject;
-      });
-    }
+    await instantiatePromise;
     ;
-    return moduleRtn;
+    return Module2;
   }
   var jassub_worker_default = Module;
   var isPthread = globalThis.name == "em-pthread";
   isPthread && Module();
-
-  // ../node_modules/jassub/dist/worker/renderers/2d-renderer.js
-  var Canvas2DRenderer = class {
-    canvas = null;
-    ctx = null;
-    bufferCanvas = new OffscreenCanvas(1, 1);
-    bufferCtx = this.bufferCanvas.getContext("2d", {
-      alpha: true,
-      desynchronized: true,
-      willReadFrequently: false
-    });
-    _scheduledResize;
-    resizeCanvas(width, height) {
-      if (!width || !height)
-        return;
-      if (this.canvas?.width === width && this.canvas?.height === height)
-        return;
-      this._scheduledResize = { width, height };
-    }
-    setCanvas(canvas) {
-      this.canvas = canvas;
-      this.ctx = canvas.getContext("2d", {
-        alpha: true,
-        desynchronized: true,
-        willReadFrequently: false
-      });
-      if (!this.ctx)
-        throw new Error("Could not get 2D context");
-    }
-    // not supported
-    // https://issues.chromium.org/u/1/issues/40910142
-    setColorMatrix(subtitleColorSpace, videoColorSpace) {
-    }
-    // this is horribly inefficient, but it's a fallback for systems without a GPU, this is the least of their problems
-    render(images, heap) {
-      if (!this.ctx || !this.canvas)
-        return;
-      if (this._scheduledResize) {
-        const { width, height } = this._scheduledResize;
-        this._scheduledResize = void 0;
-        this.canvas.width = width;
-        this.canvas.height = height;
-      } else {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      }
-      for (const img of images) {
-        if (img.w <= 0 || img.h <= 0)
-          continue;
-        const imageData = new ImageData(img.w, img.h);
-        const pixels = new Uint32Array(imageData.data.buffer);
-        const color = img.color << 8 & 16711680 | img.color >> 8 & 65280 | img.color >> 24 & 255;
-        const alpha = (255 - (img.color & 255)) / 255;
-        const stride = img.stride;
-        const h = img.h;
-        const w = img.w;
-        for (let y = h + 1, pos = img.bitmap, res = 0; --y; pos += stride) {
-          for (let z = 0; z < w; ++z, ++res) {
-            const k = heap[pos + z];
-            if (k !== 0)
-              pixels[res] = alpha * k << 24 | color;
-          }
-        }
-        this.bufferCanvas.width = w;
-        this.bufferCanvas.height = h;
-        this.bufferCtx.putImageData(imageData, 0, 0);
-        this.ctx.drawImage(this.bufferCanvas, img.dst_x, img.dst_y);
-      }
-    }
-    destroy() {
-      this.ctx = null;
-      this.canvas = null;
-      this.bufferCtx = null;
-      this.bufferCanvas = null;
-    }
-  };
 
   // ../node_modules/jassub/dist/worker/util.js
   var WEIGHT_MAP2 = [
@@ -2763,6 +2690,90 @@
     }
   };
 
+  // ../node_modules/jassub/dist/worker/renderers/2d-renderer.js
+  var clamp = (v) => v < 0 ? 0 : v > 1 ? 255 : Math.round(v * 255);
+  var Canvas2DRenderer = class {
+    canvas = null;
+    ctx = null;
+    bufferCanvas = new OffscreenCanvas(1, 1);
+    bufferCtx = this.bufferCanvas.getContext("2d", {
+      alpha: true,
+      desynchronized: true,
+      willReadFrequently: false
+    });
+    colorMatrix = IDENTITY_MATRIX;
+    _scheduledResize;
+    resizeCanvas(width, height) {
+      if (!width || !height)
+        return;
+      if (this.canvas?.width === width && this.canvas?.height === height)
+        return;
+      this._scheduledResize = { width, height };
+    }
+    setCanvas(canvas) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext("2d", {
+        alpha: true,
+        desynchronized: true,
+        willReadFrequently: false
+      });
+      if (!this.ctx)
+        throw new Error("Could not get 2D context");
+    }
+    // this should be an svg filter which is cheaper, but not supported
+    // https://issues.chromium.org/u/1/issues/40910142
+    setColorMatrix(subtitleColorSpace, videoColorSpace) {
+      this.colorMatrix = (subtitleColorSpace && videoColorSpace && colorMatrixConversionMap[subtitleColorSpace]?.[videoColorSpace]) ?? IDENTITY_MATRIX;
+    }
+    // this is horribly inefficient, but it's a fallback for systems without a GPU, this is the least of their problems
+    render(images, heap) {
+      if (!this.ctx || !this.canvas)
+        return;
+      if (this._scheduledResize) {
+        const { width, height } = this._scheduledResize;
+        this._scheduledResize = void 0;
+        this.canvas.width = width;
+        this.canvas.height = height;
+      }
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      for (const img of images) {
+        if (img.w <= 0 || img.h <= 0)
+          continue;
+        const imageData = new ImageData(img.w, img.h);
+        const pixels = new Uint32Array(imageData.data.buffer);
+        const m = this.colorMatrix;
+        const r = (img.color >>> 24 & 255) / 255;
+        const g = (img.color >>> 16 & 255) / 255;
+        const bl = (img.color >>> 8 & 255) / 255;
+        const cr = clamp(m[0] * r + m[3] * g + m[6] * bl);
+        const cg = clamp(m[1] * r + m[4] * g + m[7] * bl);
+        const cb = clamp(m[2] * r + m[5] * g + m[8] * bl);
+        const color = cb << 16 | cg << 8 | cr;
+        const alpha = (255 - (img.color & 255)) / 255;
+        const stride = img.stride;
+        const h = img.h;
+        const w = img.w;
+        for (let y = h + 1, pos = img.bitmap, res = 0; --y; pos += stride) {
+          for (let z = 0; z < w; ++z, ++res) {
+            const k = heap[pos + z];
+            if (k !== 0)
+              pixels[res] = Math.round(alpha * k) << 24 | color;
+          }
+        }
+        this.bufferCanvas.width = w;
+        this.bufferCanvas.height = h;
+        this.bufferCtx.putImageData(imageData, 0, 0);
+        this.ctx.drawImage(this.bufferCanvas, img.dst_x, img.dst_y);
+      }
+    }
+    destroy() {
+      this.ctx = null;
+      this.canvas = null;
+      this.bufferCtx = null;
+      this.bufferCanvas = null;
+    }
+  };
+
   // ../node_modules/jassub/dist/worker/renderers/webgl1-renderer.js
   var VERTEX_SHADER = (
     /* glsl */
@@ -2866,8 +2877,8 @@ void main() {
     instanceTexLayerData;
     // Texture cache (since WebGL1 doesn't support texture arrays)
     textureCache = /* @__PURE__ */ new Map();
-    textureWidth = 0;
-    textureHeight = 0;
+    // A reusable buffer for strided bitmap data
+    tightData = null;
     colorMatrix = IDENTITY_MATRIX;
     constructor() {
       this.instanceDestRectData = new Float32Array(MAX_INSTANCES * 4);
@@ -2883,6 +2894,14 @@ void main() {
       this._scheduledResize = { width, height };
     }
     setCanvas(canvas) {
+      this._initGL(canvas);
+      canvas.addEventListener("webglcontextlost", (e) => {
+        e.preventDefault();
+        this.gl = null;
+      });
+      canvas.addEventListener("webglcontextrestored", () => this._initGL(canvas));
+    }
+    _initGL(canvas) {
       this.canvas = canvas;
       this.gl = canvas.getContext("webgl", {
         alpha: true,
@@ -2892,7 +2911,7 @@ void main() {
         preserveDrawingBuffer: false,
         stencil: false,
         desynchronized: true,
-        powerPreference: "high-performance"
+        powerPreference: "default"
       });
       if (!this.gl) {
         throw new Error("Could not get WebGL context");
@@ -2965,6 +2984,8 @@ void main() {
       this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
       this.gl.clearColor(0, 0, 0, 0);
       this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.viewport(0, 0, canvas.width, canvas.height);
+      this.gl.uniform2f(this.u_resolution, canvas.width, canvas.height);
     }
     createShader(type, source) {
       const shader = this.gl.createShader(type);
@@ -3007,58 +3028,56 @@ void main() {
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
         this.gl.uniform2f(this.u_resolution, width, height);
-      } else {
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
       }
-      let maxW = this.textureWidth;
-      let maxH = this.textureHeight;
-      const validImages = [];
-      for (const img of images) {
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
         if (img.w <= 0 || img.h <= 0)
           continue;
-        validImages.push(img);
-        if (img.w > maxW)
-          maxW = img.w;
-        if (img.h > maxH)
-          maxH = img.h;
-      }
-      if (validImages.length === 0)
-        return;
-      if (maxW > this.textureWidth || maxH > this.textureHeight) {
-        this.textureWidth = maxW;
-        this.textureHeight = maxH;
-        for (const texture of this.textureCache.values()) {
-          this.gl.deleteTexture(texture);
+        let entry = this.textureCache.get(i);
+        if (!entry || entry.width !== img.w || entry.height !== img.h) {
+          if (entry)
+            this.gl.deleteTexture(entry.texture);
+          entry = { texture: this.createTexture(img.w, img.h), width: img.w, height: img.h };
+          this.textureCache.set(i, entry);
         }
-        this.textureCache.clear();
-      }
-      for (let i = 0; i < validImages.length; i++) {
-        const img = validImages[i];
-        let texture = this.textureCache.get(i);
-        if (!texture) {
-          texture = this.createTexture(this.textureWidth, this.textureHeight);
-          this.textureCache.set(i, texture);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, entry.texture);
+        if (img.stride === img.w) {
+          this.gl.texSubImage2D(
+            this.gl.TEXTURE_2D,
+            0,
+            0,
+            0,
+            // x, y offset
+            img.w,
+            img.h,
+            this.gl.LUMINANCE,
+            this.gl.UNSIGNED_BYTE,
+            heap.subarray(img.bitmap, img.bitmap + img.w * img.h)
+          );
+        } else {
+          const length = img.w * img.h;
+          let tightData = this.tightData;
+          if (!tightData || tightData.length < length)
+            tightData = this.tightData = new Uint8Array(length);
+          const sourceView = new Uint8Array(heap.buffer, img.bitmap, img.stride * img.h);
+          for (let y = 0; y < img.h; y++) {
+            const srcOffset = y * img.stride;
+            tightData.set(sourceView.subarray(srcOffset, srcOffset + img.w), y * img.w);
+          }
+          this.gl.texSubImage2D(
+            this.gl.TEXTURE_2D,
+            0,
+            0,
+            0,
+            // x, y offset
+            img.w,
+            img.h,
+            this.gl.LUMINANCE,
+            this.gl.UNSIGNED_BYTE,
+            tightData.subarray(0, length)
+          );
         }
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-        const sourceView = new Uint8Array(heap.buffer, img.bitmap, img.stride * img.h);
-        const tightData = new Uint8Array(img.w * img.h);
-        for (let y = 0; y < img.h; y++) {
-          const srcOffset = y * img.stride;
-          const dstOffset = y * img.w;
-          tightData.set(sourceView.subarray(srcOffset, srcOffset + img.w), dstOffset);
-        }
-        this.gl.texSubImage2D(
-          this.gl.TEXTURE_2D,
-          0,
-          0,
-          0,
-          // x, y offset
-          img.w,
-          img.h,
-          this.gl.LUMINANCE,
-          this.gl.UNSIGNED_BYTE,
-          tightData
-        );
         this.instanceDestRectData[0] = img.dst_x;
         this.instanceDestRectData[1] = img.dst_y;
         this.instanceDestRectData[2] = img.w;
@@ -3074,16 +3093,18 @@ void main() {
         this.gl.bufferData(this.gl.ARRAY_BUFFER, this.instanceColorData.subarray(0, 4), this.gl.DYNAMIC_DRAW);
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceTexLayerBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, this.instanceTexLayerData.subarray(0, 1), this.gl.DYNAMIC_DRAW);
-        this.gl.uniform2f(this.u_texDimensions, this.textureWidth, this.textureHeight);
+        this.gl.uniform2f(this.u_texDimensions, img.w, img.h);
         this.instancedArraysExt.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, 6, 1);
       }
+      this.gl.flush();
     }
     destroy() {
       if (this.gl) {
-        for (const texture of this.textureCache.values()) {
-          this.gl.deleteTexture(texture);
+        for (const entry of this.textureCache.values()) {
+          this.gl.deleteTexture(entry.texture);
         }
         this.textureCache.clear();
+        this.tightData = null;
         if (this.quadPosBuffer) {
           this.gl.deleteBuffer(this.quadPosBuffer);
           this.quadPosBuffer = null;
@@ -3129,7 +3150,6 @@ uniform vec2 u_resolution;
 // Instance attributes
 in vec4 a_destRect;  // x, y, w, h
 in vec4 a_color;     // r, g, b, a
-in float a_texLayer;
 
 flat out vec2 v_destXY;
 flat out vec4 v_color;
@@ -3146,7 +3166,8 @@ void main() {
   v_destXY = a_destRect.xy;
   v_color = a_color;
   v_texSize = a_destRect.zw;
-  v_texLayer = a_texLayer;
+  // The instance index in a batch equals its texture layer index.
+  v_texLayer = float(gl_InstanceID);
 }
 `
   );
@@ -3203,6 +3224,7 @@ void main() {
   var TEX_ARRAY_SIZE = 64;
   var TEX_INITIAL_SIZE = 256;
   var MAX_INSTANCES2 = 256;
+  var INSTANCE_STRIDE = 20;
   var WebGL2Renderer = class {
     canvas = null;
     gl = null;
@@ -3212,22 +3234,19 @@ void main() {
     u_resolution = null;
     u_texArray = null;
     u_colorMatrix = null;
-    // Instance attribute buffers
-    instanceDestRectBuffer = null;
-    instanceColorBuffer = null;
-    instanceTexLayerBuffer = null;
-    // Instance data arrays
-    instanceDestRectData;
-    instanceColorData;
-    instanceTexLayerData;
+    // Interleaved instance buffer: dest rect (4 floats) then color (4 normalized bytes)
+    instanceBuffer = null;
+    instanceData;
+    instanceFloats;
+    instanceBytes;
     texArray = null;
     texArrayWidth = 0;
     texArrayHeight = 0;
     colorMatrix = IDENTITY_MATRIX;
     constructor() {
-      this.instanceDestRectData = new Float32Array(MAX_INSTANCES2 * 4);
-      this.instanceColorData = new Float32Array(MAX_INSTANCES2 * 4);
-      this.instanceTexLayerData = new Float32Array(MAX_INSTANCES2);
+      this.instanceData = new ArrayBuffer(MAX_INSTANCES2 * INSTANCE_STRIDE);
+      this.instanceFloats = new Float32Array(this.instanceData);
+      this.instanceBytes = new Uint8Array(this.instanceData);
     }
     _scheduledResize;
     resizeCanvas(width, height) {
@@ -3239,6 +3258,15 @@ void main() {
     }
     setCanvas(canvas) {
       this.canvas = canvas;
+      this._initGL(canvas);
+      canvas.addEventListener("webglcontextlost", (e) => {
+        e.preventDefault();
+        this.gl = null;
+      });
+      canvas.addEventListener("webglcontextrestored", () => this._initGL(canvas));
+    }
+    _initGL(canvas) {
+      this.canvas = canvas;
       this.gl = canvas.getContext("webgl2", {
         alpha: true,
         premultipliedAlpha: true,
@@ -3247,7 +3275,7 @@ void main() {
         preserveDrawingBuffer: false,
         stencil: false,
         desynchronized: true,
-        powerPreference: "high-performance"
+        powerPreference: "default"
       });
       if (!this.gl) {
         throw new Error("Could not get WebGL2 context");
@@ -3270,26 +3298,19 @@ void main() {
       this.u_resolution = this.gl.getUniformLocation(this.program, "u_resolution");
       this.u_texArray = this.gl.getUniformLocation(this.program, "u_texArray");
       this.u_colorMatrix = this.gl.getUniformLocation(this.program, "u_colorMatrix");
-      this.instanceDestRectBuffer = this.gl.createBuffer();
-      this.instanceColorBuffer = this.gl.createBuffer();
-      this.instanceTexLayerBuffer = this.gl.createBuffer();
+      this.instanceBuffer = this.gl.createBuffer();
       this.vao = this.gl.createVertexArray();
       this.gl.bindVertexArray(this.vao);
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, MAX_INSTANCES2 * INSTANCE_STRIDE, this.gl.DYNAMIC_DRAW);
       const destRectLoc = this.gl.getAttribLocation(this.program, "a_destRect");
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceDestRectBuffer);
       this.gl.enableVertexAttribArray(destRectLoc);
-      this.gl.vertexAttribPointer(destRectLoc, 4, this.gl.FLOAT, false, 0, 0);
+      this.gl.vertexAttribPointer(destRectLoc, 4, this.gl.FLOAT, false, INSTANCE_STRIDE, 0);
       this.gl.vertexAttribDivisor(destRectLoc, 1);
       const colorLoc = this.gl.getAttribLocation(this.program, "a_color");
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceColorBuffer);
       this.gl.enableVertexAttribArray(colorLoc);
-      this.gl.vertexAttribPointer(colorLoc, 4, this.gl.FLOAT, false, 0, 0);
+      this.gl.vertexAttribPointer(colorLoc, 4, this.gl.UNSIGNED_BYTE, true, INSTANCE_STRIDE, 16);
       this.gl.vertexAttribDivisor(colorLoc, 1);
-      const texLayerLoc = this.gl.getAttribLocation(this.program, "a_texLayer");
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceTexLayerBuffer);
-      this.gl.enableVertexAttribArray(texLayerLoc);
-      this.gl.vertexAttribPointer(texLayerLoc, 1, this.gl.FLOAT, false, 0, 0);
-      this.gl.vertexAttribDivisor(texLayerLoc, 1);
       this.gl.enable(this.gl.BLEND);
       this.gl.blendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
       this.gl.useProgram(this.program);
@@ -3298,6 +3319,8 @@ void main() {
       this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
       this.gl.clearColor(0, 0, 0, 0);
       this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.viewport(0, 0, canvas.width, canvas.height);
+      this.gl.uniform2f(this.u_resolution, canvas.width, canvas.height);
       this.createTexArray(TEX_INITIAL_SIZE, TEX_INITIAL_SIZE);
     }
     createShader(type, source) {
@@ -3360,9 +3383,8 @@ void main() {
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
         this.gl.uniform2f(this.u_resolution, width, height);
-      } else {
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
       }
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
       let maxW = this.texArrayWidth;
       let maxH = this.texArrayHeight;
       const validImages = [];
@@ -3375,8 +3397,10 @@ void main() {
         if (img.h > maxH)
           maxH = img.h;
       }
-      if (validImages.length === 0)
+      if (validImages.length === 0) {
+        this.gl.flush();
         return;
+      }
       if (maxW > this.texArrayWidth || maxH > this.texArrayHeight) {
         this.createTexArray(maxW, maxH);
       }
@@ -3424,29 +3448,26 @@ void main() {
               img.bitmap
             );
           }
-          const idx = instanceCount * 4;
-          this.instanceDestRectData[idx] = img.dst_x;
-          this.instanceDestRectData[idx + 1] = img.dst_y;
-          this.instanceDestRectData[idx + 2] = img.w;
-          this.instanceDestRectData[idx + 3] = img.h;
-          this.instanceColorData[idx] = (img.color >>> 24 & 255) / 255;
-          this.instanceColorData[idx + 1] = (img.color >>> 16 & 255) / 255;
-          this.instanceColorData[idx + 2] = (img.color >>> 8 & 255) / 255;
-          this.instanceColorData[idx + 3] = (img.color & 255) / 255;
-          this.instanceTexLayerData[instanceCount] = layer;
+          const f = instanceCount * 5;
+          this.instanceFloats[f] = img.dst_x;
+          this.instanceFloats[f + 1] = img.dst_y;
+          this.instanceFloats[f + 2] = img.w;
+          this.instanceFloats[f + 3] = img.h;
+          const b2 = instanceCount * INSTANCE_STRIDE + 16;
+          this.instanceBytes[b2] = img.color >>> 24 & 255;
+          this.instanceBytes[b2 + 1] = img.color >>> 16 & 255;
+          this.instanceBytes[b2 + 2] = img.color >>> 8 & 255;
+          this.instanceBytes[b2 + 3] = img.color & 255;
           instanceCount++;
         }
         this.gl.pixelStorei(this.gl.UNPACK_ROW_LENGTH, 0);
         if (instanceCount === 0)
           continue;
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceDestRectBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, this.instanceDestRectData.subarray(0, instanceCount * 4), this.gl.DYNAMIC_DRAW);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceColorBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, this.instanceColorData.subarray(0, instanceCount * 4), this.gl.DYNAMIC_DRAW);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceTexLayerBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, this.instanceTexLayerData.subarray(0, instanceCount), this.gl.DYNAMIC_DRAW);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, this.instanceBytes, 0, instanceCount * INSTANCE_STRIDE);
         this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, instanceCount);
       }
+      this.gl.flush();
     }
     destroy() {
       if (this.gl) {
@@ -3454,17 +3475,9 @@ void main() {
           this.gl.deleteTexture(this.texArray);
           this.texArray = null;
         }
-        if (this.instanceDestRectBuffer) {
-          this.gl.deleteBuffer(this.instanceDestRectBuffer);
-          this.instanceDestRectBuffer = null;
-        }
-        if (this.instanceColorBuffer) {
-          this.gl.deleteBuffer(this.instanceColorBuffer);
-          this.instanceColorBuffer = null;
-        }
-        if (this.instanceTexLayerBuffer) {
-          this.gl.deleteBuffer(this.instanceTexLayerBuffer);
-          this.instanceTexLayerBuffer = null;
+        if (this.instanceBuffer) {
+          this.gl.deleteBuffer(this.instanceBuffer);
+          this.instanceBuffer = null;
         }
         if (this.vao) {
           this.gl.deleteVertexArray(this.vao);
@@ -3489,7 +3502,7 @@ void main() {
     _gpurender;
     debug = false;
     constructor(...args) {
-      return this[constructor](...args);
+      return this[constructor](...args).catch(console.error);
     }
     async [constructor](data, getFont, ctrl) {
       this._availableFonts = Object.fromEntries(Object.entries(data.availableFonts).map(([k, v]) => [k.trim().toLowerCase(), v]));
@@ -3529,6 +3542,11 @@ void main() {
     // useful for streaming subtitles
     processData(events) {
       this._wasm.processData(events);
+    }
+    // processes a single subtitle packet with ReadOrder, timecode and duration
+    // useful for streaming subtitles from Matroska-style demuxers
+    processChunk(data, timecode, duration) {
+      this._wasm.processChunk(data, timecode, duration);
     }
     createEvent(event) {
       this._wasm.createEvent(event);
@@ -3582,7 +3600,7 @@ void main() {
     }
     async _log(log) {
       console.debug(log);
-      const match = log.match(/JASSUB: fontselect:[^(]+: \(([^,]+), (\d{1,4}), \d\)/);
+      const match = log.match(/JASSUB: fontselect:[^(]+: \(([^,]+), (\d{1,4}), \d+\)/);
       if (match && !await this._findAvailableFont(match[1].trim().toLowerCase(), WEIGHT_MAP2[Math.ceil(parseInt(match[2]) / 100) - 1])) {
         await this._findAvailableFont(this._defaultFont);
       }
@@ -3681,6 +3699,21 @@ void main() {
       if (!images)
         return;
       this._gpurender.render(images, self.HEAPU8RAW);
+    }
+    // single-frame readback for tests
+    _drawCapture(time) {
+      const images = this._wasm.rawRender(time, 1) ?? [];
+      this._gpurender.render(images, self.HEAPU8RAW);
+      const canvas = this._gpurender.canvas;
+      if (!canvas)
+        return;
+      const { width, height } = canvas;
+      const surface = new OffscreenCanvas(width, height);
+      const ctx = surface.getContext("2d");
+      if (!ctx)
+        return;
+      ctx.drawImage(canvas, 0, 0);
+      return { data: ctx.getImageData(0, 0, width, height).data, width, height };
     }
     _setColorSpace(videoColorSpace) {
       if (videoColorSpace === "RGB")

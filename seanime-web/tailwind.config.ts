@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss"
+import scrollbarHide from "tailwind-scrollbar-hide"
 
 const config: Config = {
     darkMode: "class",
@@ -446,7 +447,8 @@ const config: Config = {
     plugins: [
         require("@tailwindcss/typography"),
         require("@tailwindcss/forms"),
-        require("tailwind-scrollbar-hide"),
+        // ESM-only since v4, so it cannot be require()d
+        scrollbarHide,
         require("tailwindcss-animate"),
         function ({ addVariant }: { addVariant: (variant: string, selector: string) => void }) {
             addVariant("firefox", ":-moz-any(&)")
