@@ -94,6 +94,7 @@ coverage.out
 # ...but keep the tracked installers that are part of the build
 !install-windows.ps1
 !install-linux.sh
+!packaging/appimage/*.sh
 
 # Local dev logs (helper output)
 .dev-logs/

@@ -1,0 +1,24 @@
+# Secret-scanning config for gitleaks, used by the release pipeline
+# (.github/workflows/release-draft-new.yml) on the source tree and on the contents of
+# every AppImage (packaging/appimage/verify.sh).
+#
+# Keep exceptions to an exact value or line shape. Never add `paths` to an allowlist:
+# gitleaks skips a matching file entirely, whatever `condition` says, so a path entry
+# would stop the binary or a whole source file from being scanned at all.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "AES test vector in internal/goja/goja_bindings/crypto_test.go; decrypts a fixed test payload, grants no access"
+regexes = ['''^6315b93606d60f48c964b67b14701f3848ef25af01296cf7e6a98c9460e1d2ac$''']
+
+# Go build info embedded in every binary, seen by verify.sh in `strings` output: module
+# checksums ("dep <module> <version> h1:<base64>=") and the commit hash. Public data.
+[[allowlists]]
+description = "Go build info: module checksums and vcs.revision"
+regexTarget = "line"
+regexes = [
+  '''(dep|mod|=>)\t\S+\t\S+\th1:[A-Za-z0-9+/]{43}=''',
+  '''build\tvcs\.revision=[0-9a-f]{40}''',
+]

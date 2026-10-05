@@ -1,0 +1,78 @@
+#!/bin/sh
+# AppImage entrypoint for Seanime.
+#
+# The bundled binary is the systray build: it runs in the foreground with a tray icon,
+# and the tray's menu opens the web interface. The server must stay in the foreground —
+# the AppImage is unmounted as soon as this script's process exits, so a server
+# backgrounded with setsid (as seanime-launch does) would lose its own executable.
+#
+#   (no argument)   if a server already answers, open the UI and exit; otherwise run
+#                   the server and open the UI once it is ready
+#   any argument    passed to the server unchanged (e.g. --datadir, --help)
+#
+# Environment:
+#   SEANIME_APPIMAGE_NO_BROWSER=1   never open a browser
+#   SEANIME_LAUNCH_HOST / _PORT     where to probe before config.toml exists
+#                                   (default 127.0.0.1:43211, the server's default)
+#
+# No configuration, credentials or tokens ship inside the AppImage. Everything the
+# server needs is created on first run in its data directory (~/.config/Seanime).
+
+set -eu
+
+HERE=$(dirname "$(readlink -f "$0")")
+APPDIR=${APPDIR:-$HERE}
+BIN="$APPDIR/usr/bin/seanime"
+
+HOST=${SEANIME_LAUNCH_HOST:-127.0.0.1}
+PORT=${SEANIME_LAUNCH_PORT:-43211}
+URL="http://${HOST}:${PORT}"
+
+# Any HTTP status means the server answered (an OIDC-protected instance returns 401).
+probe() {
+	if command -v curl >/dev/null 2>&1; then
+		code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "$URL/api/v1/status" 2>/dev/null) || code=''
+		case "$code" in [1-5][0-9][0-9]) return 0 ;; esac
+		return 1
+	elif command -v wget >/dev/null 2>&1; then
+		rc=0
+		wget -q -O /dev/null -T 2 -t 1 "$URL/api/v1/status" >/dev/null 2>&1 || rc=$?
+		[ "$rc" -eq 0 ] || [ "$rc" -eq 8 ]
+	else
+		return 2
+	fi
+}
+
+open_ui() {
+	[ "${SEANIME_APPIMAGE_NO_BROWSER:-0}" = 1 ] && return 0
+	command -v xdg-open >/dev/null 2>&1 && xdg-open "$URL" >/dev/null 2>&1 || true
+}
+
+if [ "$#" -gt 0 ]; then
+	exec "$BIN" "$@"
+fi
+
+rc=0
+probe || rc=$?
+if [ "$rc" -eq 0 ]; then
+	open_ui
+	exit 0
+fi
+
+# Open the UI once the server answers. Without curl or wget there is nothing to wait
+# on, and the tray's "Open web interface" item is the way in.
+if [ "$rc" -ne 2 ]; then
+	(
+		i=0
+		while [ "$i" -lt 90 ]; do
+			if probe; then
+				open_ui
+				exit 0
+			fi
+			i=$((i + 1))
+			sleep 1
+		done
+	) &
+fi
+
+exec "$BIN"

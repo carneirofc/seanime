@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Seanime
+GenericName=Anime and Manga Media Server
+Comment=Manage your local anime library, stream episodes and read manga
+Exec=seanime
+Icon=seanime
+Terminal=false
+StartupNotify=false
+Categories=AudioVideo;Video;Player;
+Keywords=anime;manga;media;server;anilist;torrent;

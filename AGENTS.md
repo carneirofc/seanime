@@ -9,6 +9,8 @@ nearest `AGENTS.md`.
 - Frontend: `seanime-web/AGENTS.md`.
 - Arch Linux packaging (split PKGBUILD for seanime + the cloak-backend gateway):
   `packaging/arch/AGENTS.md`.
+- Linux AppImages (release build, artifact verification, secret scanning):
+  `packaging/appimage/AGENTS.md`.
 
 ## Scope
 
@@ -36,6 +38,7 @@ disclosure — live in `CONTRIBUTING.md`. This section covers only the automated
 | Vitest | `.github/workflows/test.yml` | Whole frontend |
 | Codegen freshness | `.github/workflows/test.yml` | Fails if `go generate ./codegen` changes the tree |
 | Vulnerability + secret scanning | `.github/workflows/security.yml` | Whole repo, plus a weekly schedule |
+| Release secret scan (gitleaks) | `.github/workflows/release-draft-new.yml` | Source tree + fork commits before publishing; every AppImage's contents |
 
 Two gates are deliberately narrower than they look, and both are documented where they live:
 
