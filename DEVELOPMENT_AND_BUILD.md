@@ -5,7 +5,7 @@ Stack: Go (Echo, GORM/SQLite, Goja plugins) and a React + Rsbuild + TanStack Rou
 
 ## Prerequisites
 
-- Go 1.26+ (`go.mod` sets `1.26.5`; CI builds on the same)
+- Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.1)
 - Node.js 20+ and npm
 
 ## Build

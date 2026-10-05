@@ -7,7 +7,7 @@ entrypoints, and how backend changes flow to the frontend.
 
 | Agent | Scope | Key Paths | Runtime | Typical Commands |
 | --- | --- | --- | --- | --- |
-| Core Server | Boot, flags, config, logging, updater | `main.go`, `internal/server/`, `internal/core/` | Go 1.26.5 | `go run .`, `go build -o seanime` |
+| Core Server | Boot, flags, config, logging, updater | `main.go`, `internal/server/`, `internal/core/` | Go 1.27 | `go run .`, `go build -o seanime` |
 | HTTP API + Events | REST endpoints and websocket events | `internal/handlers/`, `internal/core/echo.go` | Echo v4 | `go test ./internal/...` |
 | Embedded Web UI | Serve the built web UI | `web/`, `internal/core/echo.go` | Go embed FS | `npm run build` at repo root |
 | Background Jobs | Recurring sync/update loops | `internal/cron/` | Go | Runs with server startup |
