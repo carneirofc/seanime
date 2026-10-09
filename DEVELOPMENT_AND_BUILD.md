@@ -73,6 +73,29 @@ script directly to pass any — `./install-linux.sh --help`, or
   `setup.exe` packaging.
 - Exposing a server to the internet: [`WEB_DEPLOYMENT.md`](WEB_DEPLOYMENT.md).
 
+## Arch Linux
+
+`scripts/` holds the same five commands as the author's other Arch-packaged projects.
+They wrap the npm scripts above, run from any directory, and suit automation such as
+Ansible: they never prompt without a terminal, log on stderr and print only result paths
+on stdout, and exit 3 when pacman packages are missing.
+
+```bash
+sudo pacman -S --needed $(scripts/setup.sh --deps)
+scripts/setup.sh            # npm ci and the Go modules
+scripts/dev.sh              # npm run dev (scripts/dev.sh go|web|codegen for one part)
+scripts/build.sh            # npm run build; prints dist/seanime
+scripts/install.sh          # build, then install-linux.sh for this user (its flags pass through)
+scripts/package.sh -si      # packaging/arch/PKGBUILD from the committed HEAD, installed
+```
+
+`scripts/package.sh` builds the split package in `~/.cache/arch-build/seanime`, leaving
+the checkout clean: `seanime-git` (the server, launcher, desktop entry, icons and a
+systemd user unit, `systemctl --user enable --now seanime`) and
+`seanime-cloak-backend-git` (the stealth gateway); see
+[`packaging/arch/AGENTS.md`](packaging/arch/AGENTS.md). `scripts/lib.sh` is shared
+verbatim with those other repositories; `scripts/project.sh` holds what is seanime's.
+
 ## Development
 
 ### The whole stack, one terminal

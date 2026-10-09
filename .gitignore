@@ -93,6 +93,7 @@ coverage.out
 *.cmd
 # ...but keep the tracked installers that are part of the build
 !install-windows.ps1
+!/scripts/*.sh
 !install-linux.sh
 !packaging/appimage/*.sh
 

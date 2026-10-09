@@ -6,7 +6,8 @@
 #   seanime-cloak-backend-git   the stealth gateway (Camoufox + curl_cffi) in a
 #                               self-contained venv under /opt, with a user unit
 #
-# Build:   makepkg -si
+# Build:   makepkg -si, or scripts/package.sh -si to build this checkout's committed
+#          HEAD: it sets $PKG_SOURCE to the checkout. Plain makepkg builds GitHub.
 # Sources are the fork's git repositories; see packaging/arch/AGENTS.md.
 
 pkgbase=seanime-git
@@ -18,7 +19,7 @@ arch=(x86_64 aarch64)
 url="https://github.com/carneirofc/seanime"
 makedepends=(git go nodejs npm python uv imagemagick)
 source=(
-  "seanime::git+https://github.com/carneirofc/seanime.git"
+  "seanime::git+${PKG_SOURCE:-$url.git}"
   "seanime-extensions::git+https://github.com/carneirofc/seanime-extensions.git"
   "seanime-cloak-backend.service"
   "cloak-backend.sh"
