@@ -405,3 +405,23 @@ func isOidcIdentityAllowed(subject, username string, allowedSubjects, allowedUse
 func (h *Handler) resolveServerSession(req *http.Request) (*models.ServerSession, bool) {
 	return h.App.ResolveServerSession(req)
 }
+
+// HandleWebSessionCheck
+//
+//	@summary reports whether the browser may load the web UI bundle.
+//	@desc Forward-auth target for a web server that serves the UI separately from this
+//	@desc binary (Caddy forward_auth, nginx auth_request). Returns 204 to allow, a redirect
+//	@desc to /login for page loads without an OIDC session, and 401 otherwise. Always 204
+//	@desc outside OIDC mode. Registered outside the API auth middleware, which would
+//	@desc answer an unauthenticated page load with a 401 instead of the login redirect.
+//	@route /api/v1/auth/session-check [GET]
+//	@returns bool
+func (h *Handler) HandleWebSessionCheck(c echo.Context) error {
+	c.Response().Header().Set("Cache-Control", "no-store")
+
+	status, location := h.App.WebSessionGate(c.Request())
+	if location != "" {
+		return c.Redirect(status, location)
+	}
+	return c.NoContent(status)
+}

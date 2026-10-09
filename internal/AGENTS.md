@@ -15,7 +15,9 @@ entrypoints, and how backend changes flow to the frontend.
 
 ## Core Server
 
-- `main.go` embeds `web/` and `internal/icon/logo.png`, then calls `internal/server.StartServer`.
+- `main.go` embeds `internal/icon/logo.png` and calls `internal/server.StartServer`; `WebFS`
+  comes from `webfs_embed.go` (`//go:embed all:web`) or, with the `noembedweb` tag,
+  `webfs_noembed.go` (empty, API-only).
 - OS-specific server entrypoints in `internal/server/server_{unix,windows}.go`.
 - Flags parsed in `internal/core/app.go`; config and logging in `internal/core/config.go` and `internal/util/`.
 
@@ -91,8 +93,16 @@ entrypoints, and how backend changes flow to the frontend.
 
 ## Embedded Web UI
 
-- Static web UI embedded via `//go:embed all:web` in `main.go`.
+- Static web UI embedded via `//go:embed all:web` in `webfs_embed.go`.
 - `internal/core/echo.go` mounts the embedded `web/` filesystem with HTML5 fallback routing.
+  `embeddedWebDist` decides whether there is a UI by probing for `web/index.html`, since
+  `fs.Sub` never fails on missing content.
+- API-only (`-tags=noembedweb`): no static UI and no COOP/COEP headers; a separate web
+  server serves the bundle on the same origin (`../WEB_DEPLOYMENT.md`, "Serving the UI
+  separately"). In OIDC mode it gates the bundle through `GET /api/v1/auth/session-check`
+  (`App.WebSessionGate` in `echo_gate.go`, the same decision as `webBundleGateMiddleware`).
+  That route is registered outside the `/api/v1` auth middleware, which would answer with a
+  401 instead of the login redirect. Keep the two gates in sync.
 - Static mounts from config: `/assets` → `app.Config.Web.AssetDir`,
   `/manga-downloads` → `app.Config.Manga.DownloadDir`, `/offline-assets` → `app.Config.Offline.AssetDir`.
 - Don't edit `web/` by hand; it is a build artifact from `seanime-web/`, written by `npm run build` (or `build:embed`) at the repo root.

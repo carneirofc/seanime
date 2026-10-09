@@ -22,9 +22,14 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 	e.JSONSerializer = &CustomJSONSerializer{}
 	e.StdLogger = log.Default()
 
-	distFS, err := fs.Sub(webFS, "web")
-	if err != nil {
-		app.Logger.Warn().Msg("app: Web UI directory 'web' not found in embedded FS, running in API-only mode")
+	// A nil *embed.FS must not reach fs.FS as a non-nil interface holding a nil pointer
+	var webSrc fs.FS
+	if webFS != nil {
+		webSrc = webFS
+	}
+	distFS, serveWeb := embeddedWebDist(webSrc)
+	if !serveWeb {
+		app.Logger.Info().Msg("app: No embedded web UI, running in API-only mode")
 	}
 
 	if app.Config.Server.Tls.Enabled {
@@ -52,7 +57,7 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 
 	if app.Config.IsOidcMode() {
 		var shellFS fs.FS
-		if err == nil {
+		if serveWeb {
 			if sub, subErr := fs.Sub(distFS, "shell"); subErr == nil {
 				shellFS = sub
 			}
@@ -60,26 +65,30 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 		e.Use(webBundleGateMiddleware(app, shellFS))
 	}
 
-	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			cUrl := c.Request().URL.RequestURI()
+	// UI documents need cross-origin isolation for SharedArrayBuffer (jassub). Without an
+	// embedded UI, the web server that serves the bundle sets these headers instead.
+	if serveWeb {
+		e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+			return func(c echo.Context) error {
+				cUrl := c.Request().URL.RequestURI()
 
-			if strings.HasPrefix(cUrl, "/api") ||
-				strings.HasPrefix(cUrl, "/events") ||
-				strings.HasPrefix(cUrl, "/assets") ||
-				strings.HasPrefix(cUrl, "/manga-downloads") ||
-				strings.HasPrefix(cUrl, "/offline-assets") {
+				if strings.HasPrefix(cUrl, "/api") ||
+					strings.HasPrefix(cUrl, "/events") ||
+					strings.HasPrefix(cUrl, "/assets") ||
+					strings.HasPrefix(cUrl, "/manga-downloads") ||
+					strings.HasPrefix(cUrl, "/offline-assets") {
+					return next(c)
+				}
+
+				c.Response().Header().Set("Cross-Origin-Opener-Policy", "same-origin")
+				c.Response().Header().Set("Cross-Origin-Embedder-Policy", "credentialless")
+
 				return next(c)
 			}
+		})
+	}
 
-			c.Response().Header().Set("Cross-Origin-Opener-Policy", "same-origin")
-			c.Response().Header().Set("Cross-Origin-Embedder-Policy", "credentialless")
-
-			return next(c)
-		}
-	})
-
-	if err == nil {
+	if serveWeb {
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Filesystem: http.FS(distFS),
 			HTML5:      true,
@@ -113,6 +122,23 @@ func NewEchoApp(app *App, webFS *embed.FS) *echo.Echo {
 	e.Static("/offline-assets", app.Config.Offline.AssetDir)
 
 	return e
+}
+
+// embeddedWebDist returns the built web UI inside webFS, and whether there is one to
+// serve. fs.Sub only rejects malformed names, so an empty FS (a noembedweb build)
+// must be detected by probing for the entry document.
+func embeddedWebDist(webFS fs.FS) (fs.FS, bool) {
+	if webFS == nil {
+		return nil, false
+	}
+	distFS, err := fs.Sub(webFS, "web")
+	if err != nil {
+		return nil, false
+	}
+	if _, err := fs.Stat(distFS, "index.html"); err != nil {
+		return nil, false
+	}
+	return distFS, true
 }
 
 type CustomJSONSerializer struct{}

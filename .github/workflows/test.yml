@@ -54,6 +54,11 @@ jobs:
           EXCLUDED='^seanime/internal/(api/anilist|library/anime|library/autodownloader|library/scanner|local|testutil|notifier|goja/goja_bindings|handlers|platforms/shared_platform|platforms/simulated_platform)$'
           go test $(go list ./... | grep -vE "$EXCLUDED")
 
+      # The API-only binary served behind a separate web server (WEB_DEPLOYMENT.md,
+      # "Serving the UI separately"); nothing else compiles the noembedweb variant.
+      - name: go build (API-only)
+        run: CGO_ENABLED=0 go build -tags=nosystray,noembedweb -o /dev/null .
+
   web-test:
     name: Web (vitest)
     runs-on: ubuntu-latest

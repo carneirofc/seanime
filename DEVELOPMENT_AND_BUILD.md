@@ -28,14 +28,22 @@ It runs these steps in order, each also available on its own:
 
 `npm run build:all` also packages the Windows installer (see below).
 
-The order matters: `main.go` embeds the web interface with `//go:embed all:web`, so step 5
-fails with `pattern all:web: no matching files found` if `web/` is missing or empty.
+The order matters: `webfs_embed.go` embeds the web interface with `//go:embed all:web`, so
+step 5 fails with `pattern all:web: no matching files found` if `web/` is missing or empty.
 
 The binary lands at `dist/seanime` (`dist\seanime-windows-amd64.exe` on Windows). Step 5 is
 the headless, fully static build used by CI and both Dockerfiles:
 
 ```bash
 CGO_ENABLED=0 go build -tags=nosystray -trimpath -ldflags="-s -w" -o dist/seanime .
+```
+
+Add the `noembedweb` tag for an API-only binary that carries no web UI and needs no `web/`
+directory. It is for deployments where a separate web server serves the bundle on the same
+origin (see `WEB_DEPLOYMENT.md`, "Serving the UI separately"):
+
+```bash
+CGO_ENABLED=0 go build -tags=nosystray,noembedweb -trimpath -ldflags="-s -w" -o dist/seanime .
 ```
 
 The Windows system-tray variant needs CGO and a mingw toolchain and is only built in CI:
@@ -98,7 +106,9 @@ resolved against the directory you run the command from. Omit `--datadir` and th
 directory is used. `SEANIME_DATA_DIR` does the same job as the flag.
 
 The server needs a `web/` directory at the root to satisfy `//go:embed all:web`. Either run
-`npm run build:web && npm run build:embed`, or create `web/` with any one file in it.
+`npm run build:web && npm run build:embed`, create `web/` with any one file in it, or skip
+the UI with `go run -tags=noembedweb .` and use the Rsbuild dev server (`npm run dev` in
+`seanime-web/`).
 
 To reach the server from other devices, set `host` to `0.0.0.0` in the `config.toml` inside
 the data directory.

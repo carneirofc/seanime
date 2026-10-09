@@ -109,6 +109,26 @@ func webBundleGateMiddleware(app *App, shellFS fs.FS) echo.MiddlewareFunc {
 	}
 }
 
+// WebSessionGate is webBundleGateMiddleware's decision for a web UI served outside
+// this binary: a front proxy asks it, through a forward-auth subrequest that carries
+// the browser's cookies and Accept headers, whether to hand out the bundle.
+//
+// It returns 204 to allow, a redirect to the login shell for document requests, and
+// 401 otherwise. Outside OIDC mode the bundle is public, as when Go serves it, and
+// the API enforces authentication.
+func (a *App) WebSessionGate(req *http.Request) (status int, location string) {
+	if !a.IsOidcMode() {
+		return http.StatusNoContent, ""
+	}
+	if _, ok := a.ResolveServerSession(req); ok {
+		return http.StatusNoContent, ""
+	}
+	if isDocumentRequest(req) {
+		return http.StatusFound, "/login"
+	}
+	return http.StatusUnauthorized, ""
+}
+
 // serveShellFile serves a file from the login-shell bundle, falling back to a
 // minimal built-in login page when the web build does not include a shell.
 func serveShellFile(c echo.Context, shellFS fs.FS, name string) error {

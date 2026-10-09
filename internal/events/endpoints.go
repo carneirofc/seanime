@@ -301,4 +301,5 @@ const (
 	UploadLocalMangaArchiveEndpoint                    = "MANGA-LOCAL-upload-local-manga-archive"
 	VideoCoreInSightGetCharacterDetailsEndpoint        = "VIDEOCORE-video-core-in-sight-get-character-details"
 	VideoCoreSaveScreenshotEndpoint                    = "VIDEOCORE-video-core-save-screenshot"
+	WebSessionCheckEndpoint                            = "OIDC-AUTH-web-session-check"
 )

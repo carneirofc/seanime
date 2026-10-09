@@ -1,0 +1,88 @@
+# Caddy serving the Seanime web UI itself, in front of an API-only Seanime
+# (built with -tags=noembedweb, or server.Dockerfile --build-arg EMBED_WEB=false).
+# web.Dockerfile bakes this file and the built bundle (/srv) into one image.
+# For the default single-binary deployment use example.Caddyfile instead.
+#
+# The UI and the API must share this one origin: the OIDC session cookie is
+# __Host- scoped, and Seanime rejects cross-origin state-changing requests.
+#
+# Replace seanime.example.com with your domain. "seanime" resolves to the app
+# container and 43211 is its internal port.
+
+(ui_headers) {
+	header {
+		# Cross-origin isolation: the subtitle renderer (jassub) needs
+		# SharedArrayBuffer.
+		Cross-Origin-Opener-Policy same-origin
+		Cross-Origin-Embedder-Policy credentialless
+
+		# The headers Seanime sets on its own responses in OIDC mode.
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		Content-Security-Policy "frame-ancestors 'none'"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Strict-Transport-Security max-age=15552000
+	}
+}
+
+seanime.example.com {
+	encode zstd gzip
+
+	# Allow large uploads (e.g. local assets) if you use them; tune to taste.
+	request_body {
+		max_size 100MB
+	}
+
+	# Everything Seanime serves itself.
+	@seanime path /api/* /events /events/* /assets/* /manga-downloads/* /offline-assets/*
+	handle @seanime {
+		reverse_proxy seanime:43211 {
+			# Preserve the client's identity so Seanime's trustedproxies logic and
+			# rate limiting see the real address.
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Forwarded-Host {host}
+
+			# Media streaming and transcoding are long-lived.
+			flush_interval -1
+		}
+	}
+
+	# The OIDC login shell: a separate page in the bundle with no app code, and
+	# the only UI reachable without a session.
+	handle /shell/* {
+		import ui_headers
+		root * /srv
+		file_server
+	}
+	handle /login {
+		import ui_headers
+		rewrite * /shell/index.html
+		root * /srv
+		file_server
+	}
+
+	handle {
+		# The gate Seanime applies to an embedded UI: with OIDC on, no session
+		# means no bundle. Page loads are redirected to /login, anything else
+		# gets a 401. Without OIDC it always allows, as the API enforces auth.
+		forward_auth seanime:43211 {
+			uri /api/v1/auth/session-check
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Forwarded-Host {host}
+		}
+
+		import ui_headers
+
+		# The bundle sits behind the session gate, so keep shared caches out;
+		# content-hashed build output can be cached for good.
+		@hashed path /static/*
+		@unhashed not path /static/*
+		header @hashed Cache-Control "private, max-age=31536000, immutable"
+		header @unhashed Cache-Control private
+
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

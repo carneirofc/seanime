@@ -35,6 +35,7 @@ disclosure — live in `CONTRIBUTING.md`. This section covers only the automated
 | TypeScript typecheck (`tsgo`) | `.github/workflows/lint.yml` | Whole frontend; must stay at zero |
 | Biome lint | `.github/workflows/lint.yml` | Files changed in the PR only |
 | `go test` | `.github/workflows/test.yml` | All packages except a documented exclusion list |
+| API-only build (`noembedweb`) | `.github/workflows/test.yml` | Root package compiles without the embedded UI |
 | Vitest | `.github/workflows/test.yml` | Whole frontend |
 | Codegen freshness | `.github/workflows/test.yml` | Fails if `go generate ./codegen` changes the tree |
 | Vulnerability + secret scanning | `.github/workflows/security.yml` | Whole repo, plus a weekly schedule |

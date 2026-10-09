@@ -1,0 +1,24 @@
+# Override for docker-compose.example.yml: Caddy serves the web UI and Seanime
+# runs API-only. Same topology otherwise (Seanime stays on the internal network).
+#
+#   docker compose -f docker-compose.example.yml -f docker-compose.decoupled.example.yml up -d
+#
+# Set server.trustedProxies in config.toml to the Caddy container's address, as
+# for the default deployment.
+
+services:
+  seanime:
+    build:
+      args:
+        # noembedweb build: the binary carries no UI and skips the Node build
+        EMBED_WEB: "false"
+
+  caddy:
+    # Caddy with the built bundle at /srv and example.decoupled.Caddyfile baked in
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+    image: seanime-web:local
+    volumes: !override
+      - caddy_data:/data
+      - caddy_config:/config

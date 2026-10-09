@@ -146,6 +146,9 @@ func InitRoutes(app *core.App, e *echo.Echo) {
 
 	e.GET("/events", h.webSocketEventHandler)
 
+	// Forward-auth target for a separately served web UI; does its own session check
+	e.GET("/api/v1/auth/session-check", h.HandleWebSessionCheck)
+
 	v1 := e.Group("/api").Group("/v1")
 
 	//

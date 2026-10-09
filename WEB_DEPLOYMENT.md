@@ -190,6 +190,37 @@ docker compose -f docker-compose.example.yml up -d
 The image runs as a non-root user (uid 10001), so a bind-mounted data dir must
 be writable by it (the `chown` above). Named volumes are chowned automatically.
 
+## Serving the UI separately
+
+By default the Go binary serves the web UI itself. To serve the bundle from your own web
+server instead, run Seanime API-only and let the web server serve `seanime-web/out`:
+
+- Build with the `noembedweb` tag (`server.Dockerfile --build-arg EMBED_WEB=false`). The
+  server logs "running in API-only mode" and answers non-API page requests with 404.
+- UI and API **must share one origin**. The OIDC session cookie is `__Host-` scoped, and
+  state-changing requests from another origin are rejected.
+- Proxy these paths to Seanime: `/api/*`, `/events` (websocket), `/assets/*`,
+  `/manga-downloads/*`, `/offline-assets/*`. Serve everything else from the bundle, with
+  `index.html` as the fallback for unknown paths.
+- With OIDC on, gate the bundle with a forward-auth subrequest to
+  `GET /api/v1/auth/session-check`. It returns 204 with a valid session, a redirect to
+  `/login` for page loads without one, and 401 otherwise; without OIDC it always returns 204.
+  Serve `/login` (as `shell/index.html`) and `/shell/*` from the bundle without the gate.
+- Set `Cross-Origin-Opener-Policy: same-origin` and
+  `Cross-Origin-Embedder-Policy: credentialless` on UI responses. The subtitle renderer needs
+  `SharedArrayBuffer`, which browsers only allow on cross-origin-isolated pages.
+- `server.trustedProxies` must include the web server, as for any reverse proxy.
+
+Files for this setup:
+
+- `web.Dockerfile` — Caddy with the built bundle at `/srv` and the Caddyfile below.
+- `example.decoupled.Caddyfile` — the routing, gate and headers above.
+- `docker-compose.decoupled.example.yml` — override for `docker-compose.example.yml`:
+
+```sh
+docker compose -f docker-compose.example.yml -f docker-compose.decoupled.example.yml up -d
+```
+
 ## systemd (bare metal)
 
 `sudo ./install-linux.sh --system` is the non-container equivalent: a dedicated `seanime`

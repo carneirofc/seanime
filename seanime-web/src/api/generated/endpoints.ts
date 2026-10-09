@@ -2021,6 +2021,20 @@ export const API_ENDPOINTS = {
             methods: ["GET"],
             endpoint: "/api/v1/auth/ws-ticket",
         },
+        /**
+         *  @description
+         *  Route reports whether the browser may load the web UI bundle.
+         *  Forward-auth target for a web server that serves the UI separately from this
+         *  binary (Caddy forward_auth, nginx auth_request). Returns 204 to allow, a redirect
+         *  to /login for page loads without an OIDC session, and 401 otherwise. Always 204
+         *  outside OIDC mode. Registered outside the API auth middleware, which would
+         *  answer an unauthenticated page load with a 401 instead of the login redirect.
+         */
+        WebSessionCheck: {
+            key: "OIDC-AUTH-web-session-check",
+            methods: ["GET"],
+            endpoint: "/api/v1/auth/session-check",
+        },
     },
     ONLINESTREAM: {
         /**

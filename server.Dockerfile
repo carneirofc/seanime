@@ -4,7 +4,13 @@
 #
 #   docker build -t seanime:local -f server.Dockerfile .
 #
+# Pass --build-arg EMBED_WEB=false for an API-only binary (noembedweb build tag)
+# when the web UI is served separately; see web.Dockerfile and WEB_DEPLOYMENT.md.
+#
 # See docker-compose.example.yml for the recommended reverse-proxy topology.
+
+# "true" embeds the web bundle; "false" skips the Node build entirely.
+ARG EMBED_WEB=true
 
 # ---- Stage 1: build the web bundle (embedded into the Go binary) ----------
 FROM node:22-slim AS web
@@ -21,25 +27,37 @@ RUN npm ci
 COPY seanime-web ./seanime-web
 RUN npm run build:web
 
+# Only the stage named by EMBED_WEB is built, so an API-only image never runs npm.
+FROM scratch AS webout-true
+COPY --from=web /src/seanime-web/out /web
+
+FROM scratch AS webout-false
+
+FROM webout-${EMBED_WEB} AS webout
+
 # ---- Stage 2: build the static Go server ----------------------------------
-FROM golang:1.26 AS build
+FROM golang:1.27 AS build
+ARG EMBED_WEB
 WORKDIR /src
 
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY main.go ./
+COPY *.go ./
 COPY internal ./internal
 COPY codegen ./codegen
 COPY test ./test
 COPY docs ./docs
 
-# The web bundle is embedded via //go:embed all:web in main.go.
-COPY --from=web /src/seanime-web/out ./web
+# The web bundle is embedded via //go:embed all:web in webfs_embed.go. The
+# webout stage is empty when EMBED_WEB=false.
+COPY --from=webout / ./
 
 # Matches the CI server build: fully static (pure-Go sqlite + D-Bus), no CGO,
 # systray compiled out for a headless server.
-RUN CGO_ENABLED=0 go build -tags=nosystray -trimpath -ldflags="-s -w" -o /out/seanime .
+RUN tags=nosystray; \
+    if [ "$EMBED_WEB" != "true" ]; then tags="$tags,noembedweb"; fi; \
+    CGO_ENABLED=0 go build -tags="$tags" -trimpath -ldflags="-s -w" -o /out/seanime .
 
 # ---- Stage 3: runtime -----------------------------------------------------
 FROM debian:12-slim AS runtime
