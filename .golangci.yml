@@ -11,6 +11,13 @@ run:
 # incrementally: CI runs golangci-lint with --new-from-merge-base=upstream/main, which
 # reports findings only on lines this fork has added or changed. New fork work is held
 # to the full standard set; the inherited upstream backlog is not a merge blocker.
+issues:
+  # Report every finding. The defaults (50 per linter, 3 with identical text) hid
+  # part of the fork's own findings, so fixing what CI showed only surfaced the
+  # rest on the next run.
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
 linters:
   default: standard
   exclusions:

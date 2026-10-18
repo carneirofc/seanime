@@ -532,7 +532,7 @@ func NewApp(configOpts *ConfigOptions, selfupdater *updater.SelfUpdater) *App {
 			app.SetSecureMode("strict", false)
 			logger.Warn().Msg("app: OIDC login active, forcing secure mode to \"strict\" (set server.secureMode to override)")
 		}
-		if len(cfg.Server.TrustedProxies) == 0 && cfg.Server.Oidc.AllowInsecure == false {
+		if len(cfg.Server.TrustedProxies) == 0 && !cfg.Server.Oidc.AllowInsecure {
 			// Without this, every X-Forwarded-* header is either ignored or believed
 			// depending on nothing at all, and client IPs (hence rate limiting and
 			// audit logging) are whatever the caller says they are. An OIDC server is

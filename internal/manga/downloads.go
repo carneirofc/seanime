@@ -270,7 +270,7 @@ func (r *Repository) getDownloadedMangaPageContainer(
 			r.logger.Error().Err(err).Msg("manga: Failed to open registry file")
 			return nil, err
 		}
-		defer registryFile.Close()
+		defer func() { _ = registryFile.Close() }()
 
 		r.logger.Debug().Str("chapterId", chapterId).Msg("manga: Reading registry file")
 

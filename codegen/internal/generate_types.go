@@ -12,7 +12,7 @@ const (
 )
 
 // GenerateTypescriptFile generates a Typescript file containing the types for the API routes parameters and responses based on the Docs struct.
-func GenerateTypescriptFile(docsFilePath string, publicStructsFilePath string, outDir string, goStructStrs []string) error {
+func GenerateTypescriptFile(docsFilePath string, publicStructsFilePath string, outDir string, goStructStrs []string) (err error) {
 
 	handlers, err := LoadHandlers(docsFilePath)
 	if err != nil {
@@ -38,7 +38,7 @@ func GenerateTypescriptFile(docsFilePath string, publicStructsFilePath string, o
 	if err != nil {
 		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
-	defer osFile.Close()
+	defer closeFile(osFile, &err)
 	file := newErrWriter(osFile)
 
 	// Write the typescript file

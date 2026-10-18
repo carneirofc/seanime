@@ -52,7 +52,7 @@ func registerMangaDownloadsRoute(e *echo.Echo, downloadDir string) {
 			if err != nil {
 				return echo.NewHTTPError(http.StatusNotFound)
 			}
-			defer zr.Close()
+			defer func() { _ = zr.Close() }()
 
 			for _, f := range zr.File {
 				if f.Name != entryName {
@@ -62,7 +62,7 @@ func registerMangaDownloadsRoute(e *echo.Echo, downloadDir string) {
 				if err != nil {
 					return echo.NewHTTPError(http.StatusInternalServerError)
 				}
-				defer rc.Close()
+				defer func() { _ = rc.Close() }()
 
 				contentType := mime.TypeByExtension(filepath.Ext(entryName))
 				if contentType == "" {

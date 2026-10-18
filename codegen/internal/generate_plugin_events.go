@@ -18,7 +18,7 @@ import (
 
 // GeneratePluginEventFile parses the plugin UI events declared in inFilePath and
 // writes their TypeScript definitions to outDir/plugin-events.ts.
-func GeneratePluginEventFile(inFilePath string, outDir string) error {
+func GeneratePluginEventFile(inFilePath string, outDir string) (err error) {
 	// Parse the input file
 	file, err := parser.ParseFile(token.NewFileSet(), inFilePath, nil, parser.ParseComments)
 	if err != nil {
@@ -39,7 +39,7 @@ func GeneratePluginEventFile(inFilePath string, outDir string) error {
 	if err != nil {
 		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
-	defer osF.Close()
+	defer closeFile(osF, &err)
 	f := newErrWriter(osF)
 
 	// Write imports
@@ -304,20 +304,20 @@ type HookEventDefinition struct {
 // GeneratePluginHooksDefinitionFile generates the plugin hook definitions from the
 // Go types in srcDir, writing app.d.ts next to them and hooks.mdx / hooks.json
 // into genOutDir.
-func GeneratePluginHooksDefinitionFile(srcDir string, publicStructsFilePath string, genOutDir string) error {
+func GeneratePluginHooksDefinitionFile(srcDir string, publicStructsFilePath string, genOutDir string) (err error) {
 	// Create output file
 	osF, err := os.Create(filepath.Join(srcDir, "app.d.ts"))
 	if err != nil {
 		return fmt.Errorf("creating app.d.ts in %s: %w", srcDir, err)
 	}
-	defer osF.Close()
+	defer closeFile(osF, &err)
 	f := newErrWriter(osF)
 
 	osMdFile, err := os.Create(filepath.Join(genOutDir, "hooks.mdx"))
 	if err != nil {
 		return fmt.Errorf("creating hooks.mdx in %s: %w", genOutDir, err)
 	}
-	defer osMdFile.Close()
+	defer closeFile(osMdFile, &err)
 	mdFile := newErrWriter(osMdFile)
 
 	goStructs, err := LoadPublicStructs(publicStructsFilePath)
@@ -370,7 +370,7 @@ func GeneratePluginHooksDefinitionFile(srcDir string, publicStructsFilePath stri
 	if err != nil {
 		return fmt.Errorf("creating hooks.json in %s: %w", genOutDir, err)
 	}
-	defer jsonFile.Close()
+	defer closeFile(jsonFile, &err)
 	encoder := json.NewEncoder(jsonFile)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(hookEventDefinitions); err != nil {

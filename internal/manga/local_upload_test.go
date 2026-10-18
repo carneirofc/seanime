@@ -316,7 +316,7 @@ func readZipEntryContents(t *testing.T, path string) zipContents {
 
 	zipReader, err := zip.OpenReader(path)
 	require.NoError(t, err)
-	defer zipReader.Close()
+	defer func() { _ = zipReader.Close() }()
 
 	contents := zipContents{}
 	for _, file := range zipReader.File {

@@ -130,7 +130,7 @@ func (r *Repository) UploadLocalMangaArchive(opts *LocalMangaUploadOptions) (ret
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrLocalMangaUploadNotAnArchive, err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	chapters, err := planLocalMangaChapters(&reader.Reader, opts.Filename)
 	if err != nil {
@@ -547,7 +547,7 @@ func copyPageEntry(w io.Writer, page *zip.File) (chapter_downloader.ComicInfoPag
 	if err != nil {
 		return chapter_downloader.ComicInfoPage{}, err
 	}
-	defer src.Close()
+	defer func() { _ = src.Close() }()
 
 	return copyPageReader(w, src)
 }
