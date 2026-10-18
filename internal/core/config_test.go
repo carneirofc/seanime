@@ -73,7 +73,7 @@ func TestResolveCallerPathRejectsPathsThatNameNoDirectory(t *testing.T) {
 	// accepting these would scatter config.toml, database.db, logs/ and cache/ over
 	// whatever directory the process happened to be started from.
 	t.Chdir(t.TempDir())
-	os.Unsetenv("SEANIME_TEST_UNSET_VAR")
+	unsetenv(t, "SEANIME_TEST_UNSET_VAR")
 
 	for _, in := range []string{"", "  ", ".", "./", "sub/..", "$SEANIME_TEST_UNSET_VAR"} {
 		got, err := resolveCallerPath(in)
@@ -118,7 +118,7 @@ func TestResolveConfigPathExpandsDataDirPlaceholder(t *testing.T) {
 func TestResolveConfigPathKeepsEmptyValuesEmpty(t *testing.T) {
 	// validateConfig reports these with its own "cannot be empty" message; turning an
 	// empty value into the working directory would hide that.
-	os.Unsetenv("SEANIME_TEST_UNSET_VAR")
+	unsetenv(t, "SEANIME_TEST_UNSET_VAR")
 
 	for _, in := range []string{"", "$SEANIME_TEST_UNSET_VAR"} {
 		if got := resolveConfigPath(in, t.TempDir()); got != "" {
@@ -237,7 +237,7 @@ func TestInitAppDataDirRejectsPathsThatNameNoDirectory(t *testing.T) {
 	// Regression guard: the data directory must never silently become the caller's cwd.
 	wd := t.TempDir()
 	t.Chdir(wd)
-	os.Unsetenv("SEANIME_TEST_UNSET_VAR")
+	unsetenv(t, "SEANIME_TEST_UNSET_VAR")
 	logger := zerolog.Nop()
 
 	if _, _, err := initAppDataDir("$SEANIME_TEST_UNSET_VAR", &logger); err == nil {
@@ -276,5 +276,15 @@ func TestSetDataDirEnvOverwritesARelativeValue(t *testing.T) {
 	}
 	if got := os.Getenv("SEANIME_DATA_DIR"); got != dataDir {
 		t.Fatalf("SEANIME_DATA_DIR = %q, want %q", got, dataDir)
+	}
+}
+
+// unsetenv removes key for the rest of the test. There is no t.Unsetenv, so
+// t.Setenv is called first purely to register restoring the original value.
+func unsetenv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	if err := os.Unsetenv(key); err != nil {
+		t.Fatalf("unsetting %s: %v", key, err)
 	}
 }
