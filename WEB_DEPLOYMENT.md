@@ -221,6 +221,21 @@ Files for this setup:
 docker compose -f docker-compose.example.yml -f docker-compose.decoupled.example.yml up -d
 ```
 
+The `web.Dockerfile` image runs Caddy as a non-root user (uid 10001). A fresh named volume
+for `/data` or `/config` takes its ownership from the image, but `caddy_data` and
+`caddy_config` volumes created earlier by a root Caddy (the stock `caddy:2` of the default
+stack, or an older `web.Dockerfile`) stay root-owned, and Caddy then fails to store
+certificates. Chown them once before switching:
+
+```sh
+docker compose -f docker-compose.example.yml -f docker-compose.decoupled.example.yml \
+  run --rm --user root caddy chown -R 10001:10001 /data /config
+```
+
+Caddy binds ports 80 and 443 through the `cap_net_bind_service` file capability on its
+binary. `no-new-privileges` drops file capabilities, so if you add it to this service, also
+set the sysctl `net.ipv4.ip_unprivileged_port_start=0` (Docker's default since 20.10).
+
 ## systemd (bare metal)
 
 `sudo ./install-linux.sh --system` is the non-container equivalent: a dedicated `seanime`
