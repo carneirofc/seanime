@@ -35,7 +35,7 @@
     "postinstall": "patch-package || exit 0"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5",
+    "concurrently": "^10.0.6",
     "cross-env": "^10.1.0",
     "esbuild": "^0.28.2",
     "nodemon": "^3.1.14",
