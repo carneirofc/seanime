@@ -23,5 +23,15 @@ RUN npm run build:web
 # ---- Stage 2: Caddy with the bundle ---------------------------------------
 FROM caddy:2-alpine
 
+# Non-root runtime user, the same uid as the Seanime image. The caddy binary
+# carries cap_net_bind_service, so it still binds :80 and :443. Its only
+# writable state is /data (certificates) and /config (autosaved config); owning
+# them here means a fresh named volume mounted there inherits the ownership.
+RUN addgroup -S -g 10001 caddy \
+    && adduser -S -D -H -u 10001 -G caddy -s /sbin/nologin caddy \
+    && chown -R caddy:caddy /data /config
+
 COPY --from=web /src/seanime-web/out /srv
 COPY example.decoupled.Caddyfile /etc/caddy/Caddyfile
+
+USER caddy

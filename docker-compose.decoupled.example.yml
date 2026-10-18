@@ -14,7 +14,9 @@ services:
         EMBED_WEB: "false"
 
   caddy:
-    # Caddy with the built bundle at /srv and example.decoupled.Caddyfile baked in
+    # Caddy with the built bundle at /srv and example.decoupled.Caddyfile baked in.
+    # It runs as uid 10001: volumes a root Caddy already wrote to need a one-time
+    # chown, see "Serving the UI separately" in WEB_DEPLOYMENT.md.
     build:
       context: .
       dockerfile: web.Dockerfile
