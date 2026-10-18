@@ -60,9 +60,7 @@ func selectReferencedStructs(handlers []*RouteHandler, goStructs []*GoStruct, go
 		for _, embeddedStructType := range goStruct.EmbeddedStructTypes {
 			if embeddedStructType != "" {
 				if usedStruct, ok := goStructsMap[embeddedStructType]; ok {
-					for _, usedField := range usedStruct.Fields {
-						goStruct.Fields = append(goStruct.Fields, usedField)
-					}
+					goStruct.Fields = append(goStruct.Fields, usedStruct.Fields...)
 				}
 			}
 		}

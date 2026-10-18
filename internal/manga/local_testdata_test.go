@@ -84,7 +84,7 @@ func readZipEntryNames(t *testing.T, path string) []string {
 
 	reader, err := zip.OpenReader(path)
 	require.NoError(t, err)
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	names := make([]string, 0, len(reader.File))
 	for _, file := range reader.File {
@@ -116,7 +116,7 @@ func readComicInfo(t *testing.T, path string) *chapter_downloader.ComicInfo {
 
 	reader, err := zip.OpenReader(path)
 	require.NoError(t, err)
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	for _, file := range reader.File {
 		if file.Name != chapter_downloader.ComicInfoFilename {
@@ -124,7 +124,7 @@ func readComicInfo(t *testing.T, path string) *chapter_downloader.ComicInfo {
 		}
 		rc, err := file.Open()
 		require.NoError(t, err)
-		defer rc.Close()
+		defer func() { _ = rc.Close() }()
 
 		info, err := chapter_downloader.ParseComicInfo(rc)
 		require.NoError(t, err)

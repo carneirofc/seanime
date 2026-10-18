@@ -177,7 +177,7 @@ func TestWriteLocalMangaSeriesArchive(t *testing.T) {
 	// The entries must be real CBZ archives, not just renamed sources.
 	inner, err := reader.File[1].Open()
 	require.NoError(t, err)
-	defer inner.Close()
+	defer func() { _ = inner.Close() }()
 	data := new(bytes.Buffer)
 	_, err = data.ReadFrom(inner)
 	require.NoError(t, err)

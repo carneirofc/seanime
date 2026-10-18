@@ -372,7 +372,7 @@ func applyLocalMangaUploadField(opts *manga.LocalMangaUploadOptions, name string
 }
 
 func readMultipartValue(part *multipart.Part) (string, error) {
-	defer part.Close()
+	defer func() { _ = part.Close() }()
 
 	value, err := io.ReadAll(io.LimitReader(part, maxLocalMangaUploadFormValue))
 	if err != nil {

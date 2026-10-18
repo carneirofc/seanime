@@ -141,7 +141,7 @@ func archiveHasComicInfo(path string) bool {
 	if err != nil {
 		return false
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	for _, file := range reader.File {
 		if file.Name == chapter_downloader.ComicInfoFilename {
@@ -195,7 +195,7 @@ func (r *Repository) CheckLocalMangaChapterDownload(series string, chapter strin
 	if err != nil {
 		return ErrLocalMangaUploadNotAnArchive
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	_, err = planLocalMangaChapters(&reader.Reader, filepath.Base(chapterPath))
 	return err
@@ -285,7 +285,7 @@ func writeLocalChapterCBZTo(w io.Writer, path string, metadata *localMangaSeries
 	if err != nil {
 		return ErrLocalMangaUploadNotAnArchive
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	chapters, err := planLocalMangaChapters(&reader.Reader, filepath.Base(path))
 	if err != nil {

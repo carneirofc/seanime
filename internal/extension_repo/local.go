@@ -150,7 +150,7 @@ func (r *Repository) fetchExtensionBytes(ctx context.Context, uri string) ([]byt
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch resource, %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		hint := ""

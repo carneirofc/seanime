@@ -174,7 +174,7 @@ func ReadCBZ(path string) (entries []CBZEntry, info *ComicInfo, err error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	defer zr.Close()
+	defer func() { _ = zr.Close() }()
 
 	imageFiles := make([]*zip.File, 0, len(zr.File))
 	for _, f := range zr.File {

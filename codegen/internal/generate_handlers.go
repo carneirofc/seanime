@@ -47,11 +47,11 @@ type (
 
 // GenerateHandlers walks dir for route handler functions and writes their parsed
 // API contract to outDir/handlers.json.
-func GenerateHandlers(dir string, outDir string) error {
+func GenerateHandlers(dir string, outDir string) (err error) {
 
 	handlers := make([]*RouteHandler, 0)
 
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ func GenerateHandlers(dir string, outDir string) error {
 	if err != nil {
 		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
-	defer file.Close()
+	defer closeFile(file, &err)
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")

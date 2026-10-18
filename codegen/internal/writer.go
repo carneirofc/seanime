@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"io"
+	"os"
 )
 
 // errWriter is a thin io.Writer wrapper that remembers the first write error and
@@ -44,4 +45,15 @@ func (e *errWriter) Printf(format string, args ...any) {
 // Err returns the first write error, if any.
 func (e *errWriter) Err() error {
 	return e.err
+}
+
+// closeFile closes a generated file and, unless the function is already
+// returning an error, reports a failed close through *errp. It is deferred with
+// the function's named error result: a file is not known to be fully written
+// until Close succeeds, so dropping that error would bring back the truncated
+// output with a successful exit that errWriter exists to prevent.
+func closeFile(f *os.File, errp *error) {
+	if err := f.Close(); err != nil && *errp == nil {
+		*errp = fmt.Errorf("closing %s: %w", f.Name(), err)
+	}
 }

@@ -53,11 +53,11 @@ type GoStructField struct {
 
 // ExtractStructs walks dir for Go files, collects every exported type
 // declaration it finds, and writes them to outDir/public_structs.json.
-func ExtractStructs(dir string, outDir string) error {
+func ExtractStructs(dir string, outDir string) (err error) {
 
 	structs := make([]*GoStruct, 0)
 
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func ExtractStructs(dir string, outDir string) error {
 	if err != nil {
 		return fmt.Errorf("creating %s: %w", outPath, err)
 	}
-	defer file.Close()
+	defer closeFile(file, &err)
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
