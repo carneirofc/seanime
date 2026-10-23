@@ -3,7 +3,7 @@
 # container copies this file into the data volume on every start, which makes this
 # ConfigMap the source of truth and any in-place edit inside the pod ephemeral.
 #
-# See config.example.toml in the repository root for the full annotated reference.
+# See deploy/config.example.toml for the full annotated reference.
 apiVersion: v1
 kind: ConfigMap
 metadata:

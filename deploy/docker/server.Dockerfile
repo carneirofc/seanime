@@ -2,12 +2,12 @@
 # Builds the web bundle and the Go binary from source, then ships a slim,
 # non-root runtime. Intended to run behind a TLS-terminating reverse proxy.
 #
-#   docker build -t seanime:local -f server.Dockerfile .
+#   docker build -t seanime:local -f deploy/docker/server.Dockerfile .   # from the repo root
 #
 # Pass --build-arg EMBED_WEB=false for an API-only binary (noembedweb build tag)
-# when the web UI is served separately; see web.Dockerfile and WEB_DEPLOYMENT.md.
+# when the web UI is served separately; see web.Dockerfile and deploy/README.md.
 #
-# See docker-compose.example.yml for the recommended reverse-proxy topology.
+# See compose.yml (next to this file) for the recommended reverse-proxy topology.
 
 # "true" embeds the web bundle; "false" skips the Node build entirely.
 ARG EMBED_WEB=true

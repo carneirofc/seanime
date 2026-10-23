@@ -94,7 +94,7 @@ SEANIME_PID=""
 # Readiness
 # ---------------------------------------------------------------------------
 
-# /api/v1/status is the endpoint server.Dockerfile already uses as its healthcheck.
+# /api/v1/status is the endpoint deploy/docker/server.Dockerfile already uses as its healthcheck.
 # It is public in password mode, but an OIDC-protected instance answers 401 — which
 # still proves the server is up, so the probe accepts *any* HTTP response rather than
 # only a 2xx.

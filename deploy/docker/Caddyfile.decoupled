@@ -1,7 +1,7 @@
 # Caddy serving the Seanime web UI itself, in front of an API-only Seanime
 # (built with -tags=noembedweb, or server.Dockerfile --build-arg EMBED_WEB=false).
 # web.Dockerfile bakes this file and the built bundle (/srv) into one image.
-# For the default single-binary deployment use example.Caddyfile instead.
+# For the default single-binary deployment use Caddyfile instead.
 #
 # The UI and the API must share this one origin: the OIDC session cookie is
 # __Host- scoped, and Seanime rejects cross-origin state-changing requests.

@@ -1,5 +1,7 @@
 # Local development
 dev-datadir/
+# Data directory of the deploy/docker/compose.yml stack
+deploy/docker/data/
 
 # OS / editors
 .DS_Store

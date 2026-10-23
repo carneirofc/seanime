@@ -1,9 +1,9 @@
 # The Seanime web UI served by Caddy, for deployments where the Go server runs
 # API-only (server.Dockerfile --build-arg EMBED_WEB=false). Caddy terminates TLS,
 # serves the bundle and proxies the API on the same origin; see
-# example.decoupled.Caddyfile and docker-compose.decoupled.example.yml.
+# Caddyfile.decoupled and compose.decoupled.yml next to this file.
 #
-#   docker build -t seanime-web:local -f web.Dockerfile .
+#   docker build -t seanime-web:local -f deploy/docker/web.Dockerfile .   # from the repo root
 
 # ---- Stage 1: build the web bundle ----------------------------------------
 FROM node:22-slim AS web
@@ -24,4 +24,4 @@ RUN npm run build:web
 FROM caddy:2-alpine
 
 COPY --from=web /src/seanime-web/out /srv
-COPY example.decoupled.Caddyfile /etc/caddy/Caddyfile
+COPY deploy/docker/Caddyfile.decoupled /etc/caddy/Caddyfile

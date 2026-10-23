@@ -40,7 +40,7 @@ CGO_ENABLED=0 go build -tags=nosystray -trimpath -ldflags="-s -w" -o dist/seanim
 
 Add the `noembedweb` tag for an API-only binary that carries no web UI and needs no `web/`
 directory. It is for deployments where a separate web server serves the bundle on the same
-origin (see `WEB_DEPLOYMENT.md`, "Serving the UI separately"):
+origin (see [`deploy/README.md`](deploy/README.md), "Serving the UI separately"):
 
 ```bash
 CGO_ENABLED=0 go build -tags=nosystray,noembedweb -trimpath -ldflags="-s -w" -o dist/seanime .
@@ -71,7 +71,7 @@ script directly to pass any — `packaging/linux/install.sh --help`, or
   where, and the difference between the two systemd units.
 - Windows: [`packaging/windows/README.md`](packaging/windows/README.md) — the script, plus the Inno Setup
   `setup.exe` packaging.
-- Exposing a server to the internet: [`WEB_DEPLOYMENT.md`](WEB_DEPLOYMENT.md).
+- Exposing a server to the internet: [`deploy/README.md`](deploy/README.md).
 
 ## Arch Linux
 

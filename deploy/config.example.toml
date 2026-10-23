@@ -1,6 +1,6 @@
 # Example config.toml for an internet-facing, OIDC-protected Seanime server
 # fronted by a TLS-terminating reverse proxy. Place at <datadir>/config.toml
-# (with the docker-compose example that is ./data/config.toml).
+# (with deploy/docker/compose.yml that is deploy/docker/data/config.toml).
 #
 # Keys are case-insensitive. Secrets should come from the environment, not this
 # file — see clientsecret below.

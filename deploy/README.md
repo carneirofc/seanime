@@ -1,4 +1,16 @@
-# Exposing Seanime on the web
+# Deploying Seanime
+
+How to run Seanime as a server, and how to expose it to the internet safely. For building
+from source and the development loop, see [`../DEVELOPMENT_AND_BUILD.md`](../DEVELOPMENT_AND_BUILD.md).
+
+| Path | What |
+| --- | --- |
+| [`config.example.toml`](config.example.toml) | Annotated `config.toml` for an internet-facing, OIDC-protected server |
+| [`docker/`](docker/) | `server.Dockerfile`, `web.Dockerfile`, Compose stacks and Caddyfiles ([Docker](#docker)) |
+| [`k8s/`](k8s/) | Reference Kubernetes manifests ([`k8s/README.md`](k8s/README.md)) |
+| [`../packaging/linux/`](../packaging/linux/) | Bare-metal install with a hardened systemd unit ([systemd](#systemd-bare-metal)) |
+
+## Exposing Seanime on the web
 
 Seanime can be safely exposed to the internet when OIDC login is configured.
 Without it, keep the server bound to `127.0.0.1` (default) or protected by the
@@ -90,14 +102,14 @@ expect a `403` naming the missing capability until you do.
 Grant as little as the deployment actually uses. `extensions` and `exec` are each
 enough to run arbitrary code as the server user; if you need them, prefer granting
 them briefly, installing what you need, and taking them away again. See
-`config.example.toml` for the annotated version.
+[`config.example.toml`](config.example.toml) for the annotated version.
 
 ## Hardening checklist
 
 For an internet-facing deployment:
 
 - [ ] **Front it with a TLS-terminating reverse proxy** (Caddy/Traefik/nginx).
-      See `example.Caddyfile` and `docker-compose.example.yml`.
+      See `docker/Caddyfile` and `docker/compose.yml`.
 - [ ] **Do not expose the app port to the host/internet.** Bind loopback on bare
       metal, or in Docker keep the port on an internal-only network reachable
       solely by the proxy (the compose example does this).
@@ -173,18 +185,21 @@ port. Datacenter IPs are challenged more than home connections.
 
 A self-contained image and a reverse-proxy-fronted stack are provided:
 
-- `server.Dockerfile` — builds the web bundle and a static, non-root server image
+- `docker/server.Dockerfile` — builds the web bundle and a static, non-root server image
   with `ffmpeg` for transcoding and a `/api/v1/status` healthcheck.
-- `docker-compose.example.yml` — Seanime on an internal-only network behind Caddy;
+- `docker/compose.yml` — Seanime on an internal-only network behind Caddy;
   the app port is never published to the host.
 - `config.example.toml` — a starting `config.toml` for this topology.
-- `example.Caddyfile` — automatic-HTTPS reverse proxy to the app.
+- `docker/Caddyfile` — automatic-HTTPS reverse proxy to the app.
+
+Both Dockerfiles use the repository root as the build context. From the repository root:
 
 ```sh
-mkdir -p ./data && sudo chown -R 10001:10001 ./data   # container runs as uid 10001
-cp config.example.toml ./data/config.toml     # then edit [server.oidc]
-export SEANIME_OIDC_CLIENT_SECRET=...          # keep the secret out of config.toml
-docker compose -f docker-compose.example.yml up -d
+mkdir -p deploy/docker/data
+cp deploy/config.example.toml deploy/docker/data/config.toml     # then edit [server.oidc]
+sudo chown -R 10001:10001 deploy/docker/data                     # container runs as uid 10001
+export SEANIME_OIDC_CLIENT_SECRET=...                            # keep the secret out of config.toml
+docker compose -f deploy/docker/compose.yml up -d
 ```
 
 The image runs as a non-root user (uid 10001), so a bind-mounted data dir must
@@ -195,7 +210,7 @@ be writable by it (the `chown` above). Named volumes are chowned automatically.
 By default the Go binary serves the web UI itself. To serve the bundle from your own web
 server instead, run Seanime API-only and let the web server serve `seanime-web/out`:
 
-- Build with the `noembedweb` tag (`server.Dockerfile --build-arg EMBED_WEB=false`). The
+- Build with the `noembedweb` tag (`docker/server.Dockerfile --build-arg EMBED_WEB=false`). The
   server logs "running in API-only mode" and answers non-API page requests with 404.
 - UI and API **must share one origin**. The OIDC session cookie is `__Host-` scoped, and
   state-changing requests from another origin are rejected.
@@ -213,19 +228,19 @@ server instead, run Seanime API-only and let the web server serve `seanime-web/o
 
 Files for this setup:
 
-- `web.Dockerfile` — Caddy with the built bundle at `/srv` and the Caddyfile below.
-- `example.decoupled.Caddyfile` — the routing, gate and headers above.
-- `docker-compose.decoupled.example.yml` — override for `docker-compose.example.yml`:
+- `docker/web.Dockerfile` — Caddy with the built bundle at `/srv` and the Caddyfile below.
+- `docker/Caddyfile.decoupled` — the routing, gate and headers above.
+- `docker/compose.decoupled.yml` — override for `docker/compose.yml`:
 
 ```sh
-docker compose -f docker-compose.example.yml -f docker-compose.decoupled.example.yml up -d
+docker compose -f deploy/docker/compose.yml -f deploy/docker/compose.decoupled.yml up -d
 ```
 
 ## systemd (bare metal)
 
 `sudo packaging/linux/install.sh --system` is the non-container equivalent: a dedicated
-`seanime` user and a unit sandboxed like the pod in `deploy/k8s/deployment.yaml`. It seeds
+`seanime` user and a unit sandboxed like the pod in `k8s/deployment.yaml`. It seeds
 `capabilities = []` into a new config; configure the reverse proxy, `externalurl`,
 `trustedproxies` and `[server.oidc]` before exposing it. Unit trade-offs (`selfupdate`,
 `ReadWritePaths=` per media root) are in
-[`packaging/linux/README.md`](packaging/linux/README.md#system-wide---system).
+[`packaging/linux/README.md`](../packaging/linux/README.md#system-wide---system).

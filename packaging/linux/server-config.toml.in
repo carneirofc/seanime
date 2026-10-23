@@ -7,7 +7,7 @@
 
 [server]
 # Loopback by default. Put a TLS-terminating reverse proxy in front of it rather than
-# binding a public interface; see WEB_DEPLOYMENT.md and example.Caddyfile.
+# binding a public interface; see WEB_DEPLOYMENT.md and deploy/docker/Caddyfile in the source tree.
 host = "@HOST@"
 port = @PORT@
 

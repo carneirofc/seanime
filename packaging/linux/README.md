@@ -170,7 +170,7 @@ failure would surface as "the media player does nothing" with no error anywhere.
 
 Installed at `/etc/systemd/system/seanime.service`, running as a dedicated `seanime`
 system user, and hardened to match the posture `deploy/k8s/deployment.yaml` and
-`server.Dockerfile` already set: non-root, no ambient capabilities, a read-only system
+`deploy/docker/server.Dockerfile` already set: non-root, no ambient capabilities, a read-only system
 with the data directory as the only writable path.
 
 That lockdown is coherent **because** `--system` also seeds
@@ -190,9 +190,9 @@ Two things this costs you, both intentional:
   same change — otherwise the failure looks like a Seanime bug.
 
 Before exposing the server beyond the host, read
-[`WEB_DEPLOYMENT.md`](../../WEB_DEPLOYMENT.md): reverse proxy, TLS, OIDC and the
-capability model. `--system` copies it and `config.example.toml` to
-`/usr/local/share/doc/seanime/`.
+[`deploy/README.md`](../../deploy/README.md): reverse proxy, TLS, OIDC and the
+capability model. `--system` copies it (as `WEB_DEPLOYMENT.md`) and
+`deploy/config.example.toml` to `/usr/local/share/doc/seanime/`.
 
 ## Uninstalling
 

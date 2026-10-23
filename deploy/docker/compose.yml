@@ -5,17 +5,26 @@
 # container's port is NEVER published to the host — only the proxy is reachable
 # from outside.
 #
-#   1. cp config.example.toml ./data/config.toml   # then edit [server.oidc] etc.
-#   2. export SEANIME_OIDC_CLIENT_SECRET=...        # or use an .env / secret
-#   3. docker compose -f docker-compose.example.yml up -d
+# Paths below are relative to this file (deploy/docker/); the build context is the
+# repository root. From the repository root:
 #
-# Copy to docker-compose.yml and adjust to your environment before use.
+#   1. mkdir -p deploy/docker/data
+#      cp deploy/config.example.toml deploy/docker/data/config.toml   # then edit [server.oidc] etc.
+#      sudo chown -R 10001:10001 deploy/docker/data
+#   2. export SEANIME_OIDC_CLIENT_SECRET=...        # or use an .env / secret
+#   3. docker compose -f deploy/docker/compose.yml up -d
+#
+# deploy/docker/data/ is gitignored. Adjust domains, media paths and volumes to your
+# environment before use (or copy this directory elsewhere and point context: at a checkout).
+
+# Fixed project name: otherwise it is derived from this directory ("docker").
+name: seanime
 
 services:
   seanime:
     build:
-      context: .
-      dockerfile: server.Dockerfile
+      context: ../..
+      dockerfile: deploy/docker/server.Dockerfile
     # image: ghcr.io/carneirofc/seanime:latest   # or pull a published image
     restart: unless-stopped
     # No `ports:` mapping — the app is only reachable via the internal network.
@@ -29,9 +38,8 @@ services:
       SEANIME_SERVER_PORT: "43211"
     volumes:
       # Persistent state: db, logs, cache, extensions, assets, and config.toml.
-      # The container runs as uid 10001, so the host dir must be writable by it:
-      #   mkdir -p ./data && sudo chown -R 10001:10001 ./data
-      # (A named volume is chowned automatically; a bind mount is not.)
+      # The container runs as uid 10001, so the host dir must be writable by it
+      # (see step 1 above; a named volume is chowned automatically, a bind mount is not).
       - ./data:/data
       # Your media library (read-only is safest if the server never writes to it).
       - /srv/media:/media:ro
@@ -61,7 +69,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./example.Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
