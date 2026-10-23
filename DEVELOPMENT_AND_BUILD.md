@@ -64,12 +64,12 @@ npm run install:windows   # installs shortcuts and a user PATH entry
 ```
 
 Both run their installer with no options. Flags cannot travel through `npm run`, so call the
-script directly to pass any — `./install-linux.sh --help`, or
-`powershell -File .\install-windows.ps1`.
+script directly to pass any — `packaging/linux/install.sh --help`, or
+`powershell -File .\packaging\windows\install.ps1`.
 
-- Linux: [`installer/linux/README.md`](installer/linux/README.md) — full flag list, what lands
+- Linux: [`packaging/linux/README.md`](packaging/linux/README.md) — full flag list, what lands
   where, and the difference between the two systemd units.
-- Windows: [`installer/README.md`](installer/README.md) — the script, plus the Inno Setup
+- Windows: [`packaging/windows/README.md`](packaging/windows/README.md) — the script, plus the Inno Setup
   `setup.exe` packaging.
 - Exposing a server to the internet: [`WEB_DEPLOYMENT.md`](WEB_DEPLOYMENT.md).
 
@@ -85,7 +85,7 @@ sudo pacman -S --needed $(scripts/setup.sh --deps)
 scripts/setup.sh            # npm ci and the Go modules
 scripts/dev.sh              # npm run dev (scripts/dev.sh go|web|codegen for one part)
 scripts/build.sh            # npm run build; prints dist/seanime
-scripts/install.sh          # build, then install-linux.sh for this user (its flags pass through)
+scripts/install.sh          # build, then packaging/linux/install.sh for this user (its flags pass through)
 scripts/package.sh -si      # packaging/arch/PKGBUILD from the committed HEAD, installed
 ```
 

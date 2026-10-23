@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Installs a built Seanime server binary on Linux — the counterpart of
-# install-windows.ps1.
+# packaging/windows/install.ps1.
 #
 # Copies the binary into an install prefix, installs a launcher, an XDG desktop
 # entry with hicolor icons (so it shows up in the KDE/GNOME application menu), and
@@ -12,20 +12,21 @@
 #
 # Three shapes, one script:
 #
-#   ./install-linux.sh                                  per-user desktop install
-#   sudo ./install-linux.sh --system --systemd          host service install
-#   ./install-linux.sh --client-only --server-url URL   menu entry for a remote server
+#   packaging/linux/install.sh                                  per-user desktop install
+#   sudo packaging/linux/install.sh --system --systemd          host service install
+#   packaging/linux/install.sh --client-only --server-url URL   menu entry for a remote server
 #
-# See installer/linux/README.md for what lands where.
+# See packaging/linux/README.md for what lands where.
 
 set -eu
 
 SCRIPT_PATH=$0
 case "$SCRIPT_PATH" in
-*/*) ROOT_DIR=$(CDPATH= cd -- "${SCRIPT_PATH%/*}" && pwd) ;;
-*) ROOT_DIR=$(pwd) ;;
+*/*) TEMPLATE_DIR=$(CDPATH= cd -- "${SCRIPT_PATH%/*}" && pwd) ;;
+*) TEMPLATE_DIR=$(pwd) ;;
 esac
-TEMPLATE_DIR="${ROOT_DIR}/installer/linux"
+# This script lives in packaging/linux/, next to its templates; the checkout is two up.
+ROOT_DIR=$(CDPATH= cd -- "${TEMPLATE_DIR}/../.." && pwd)
 ICON_SOURCE="${ROOT_DIR}/internal/icon/logo.png"
 CONSTANTS_FILE="${ROOT_DIR}/internal/constants/constants.go"
 
@@ -61,7 +62,7 @@ usage() {
 	cat <<'EOF'
 Install Seanime on Linux.
 
-Usage: install-linux.sh [flags]
+Usage: packaging/linux/install.sh [flags]
 
 Flags:
   --binary PATH          server binary to install (default: dist/seanime, then
@@ -201,7 +202,7 @@ REMOTE_URL=$OPT_SERVER_URL
 
 VERSION=unknown
 if [ -r "$CONSTANTS_FILE" ]; then
-	# Same single source of truth installer/seanime.iss reads at compile time.
+	# Same single source of truth packaging/windows/seanime.iss reads at compile time.
 	parsed=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "$CONSTANTS_FILE" | head -n 1)
 	if [ -n "$parsed" ]; then VERSION=$parsed; fi
 fi

@@ -1,4 +1,4 @@
-# Seeded by install-linux.sh --system. Written only when no config.toml exists yet,
+# Seeded by packaging/linux/install.sh --system. Written only when no config.toml exists yet,
 # so your edits survive a reinstall.
 #
 # This is the minimum a headless deployment needs to be safe. For anything

@@ -91,11 +91,10 @@ coverage.out
 *.sh
 *.ps1
 *.cmd
-# ...but keep the tracked installers that are part of the build
-!install-windows.ps1
+# ...but keep the tracked scripts that are part of the build
 !/scripts/*.sh
-!install-linux.sh
-!packaging/appimage/*.sh
+!/packaging/**/*.sh
+!/packaging/**/*.ps1
 
 # Local dev logs (helper output)
 .dev-logs/

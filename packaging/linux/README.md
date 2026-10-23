@@ -1,7 +1,7 @@
 # Linux installer
 
-[`../../install-linux.sh`](../../install-linux.sh) is the Linux counterpart of
-[`install-windows.ps1`](../../install-windows.ps1): it takes a built server binary and
+[`install.sh`](install.sh) is the Linux counterpart of
+[`../windows/install.ps1`](../windows/install.ps1): it takes a built server binary and
 turns it into an installed application — an entry in the KDE/GNOME application menu,
 hicolor icons, an optional desktop icon and PATH entry, and an optional systemd
 service.
@@ -9,7 +9,8 @@ service.
 The Seanime server binary already embeds the web UI, so there is nothing to install
 besides the executable and the desktop integration around it.
 
-The files in this directory are templates. `@PLACEHOLDER@` tokens are substituted at
+The `*.in` files next to it are templates, also rendered by the Arch
+[`PKGBUILD`](../arch/PKGBUILD). `@PLACEHOLDER@` tokens are substituted at
 install time with the paths you chose.
 
 ## Prerequisites
@@ -40,19 +41,19 @@ limitation. To pass options, call the script directly:
 
 ```bash
 # Per-user, no root, with a desktop icon
-./install-linux.sh --desktop-icon
+packaging/linux/install.sh --desktop-icon
 
 # Somewhere else entirely, building first
-./install-linux.sh --build-first --prefix ~/apps/seanime --datadir /data/seanime
+packaging/linux/install.sh --build-first --prefix ~/apps/seanime --datadir /data/seanime
 
 # A host service: dedicated user, hardened unit, everything denied by default
-sudo ./install-linux.sh --system
+sudo packaging/linux/install.sh --system
 
 # A machine that only consumes a server elsewhere
-./install-linux.sh --client-only --server-url https://seanime.example.com
+packaging/linux/install.sh --client-only --server-url https://seanime.example.com
 
 # Remove it again (your library and settings are kept)
-./install-linux.sh --uninstall
+packaging/linux/install.sh --uninstall
 ```
 
 ## Flags
@@ -88,7 +89,7 @@ sudo ./install-linux.sh --system
 Everything derives from `--prefix`, so `--prefix /tmp/x` gives you a fully
 self-contained install you can delete in one `rm -rf`.
 
-**This differs from Windows on purpose.** `install-windows.ps1` puts the data
+**This differs from Windows on purpose.** `packaging/windows/install.ps1` puts the data
 directory next to the binary (`<install dir>\seanime_data_dir`). On Linux the default
 is `~/.config/Seanime`, which is where the server itself would put it with no
 `--datadir` at all (`os.UserConfigDir()/Seanime`, `internal/core/config.go`). Keeping
@@ -196,7 +197,7 @@ capability model. `--system` copies it and `config.example.toml` to
 ## Uninstalling
 
 ```bash
-./install-linux.sh --uninstall              # add --prefix/--system to match the install
+packaging/linux/install.sh --uninstall              # add --prefix/--system to match the install
 ```
 
 Removes the binary, the launcher, both desktop entries (menu and desktop), every

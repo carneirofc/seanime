@@ -17,10 +17,10 @@ Native Arch install of Seanime and its stealth gateway through one split `PKGBUI
 
 ## Local Contracts
 
-- The launcher, desktop entry and user unit are rendered from `../../installer/linux/*.in` by
+- The launcher, desktop entry and user unit are rendered from `../linux/*.in` by
   `_render`. They are not copied. A new `@PLACEHOLDER@` there needs a substitution in `_render`.
 - Package paths: the data dir is `~/.config/Seanime` and launcher settings are in
-  `~/.config/seanime/launcher.env`, matching `install-linux.sh` user mode. Gateway settings are
+  `~/.config/seanime/launcher.env`, matching `packaging/linux/install.sh` user mode. Gateway settings are
   in `~/.config/seanime/cloak-backend.env` (`CLOAK_*`).
 - `pkgver` comes from `internal/constants/constants.go`, not from tags. The fork's releases are
   not tagged on `main`.
