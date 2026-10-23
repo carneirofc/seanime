@@ -12,6 +12,22 @@ nearest `AGENTS.md`.
 - Linux AppImages (release build, artifact verification, secret scanning):
   `packaging/appimage/AGENTS.md`.
 
+## Layout
+
+Build, dev and test commands are `npm run` scripts at the root (cross-platform);
+`scripts/*.sh` wrap them for Arch automation. `DEVELOPMENT_AND_BUILD.md` is the
+command reference. Keep the root to source, manifests and top-level docs:
+
+- `deploy/` — running Seanime as a server: `config.example.toml`, `docker/`
+  (Dockerfiles, Compose, Caddyfiles; build context is the repo root), `k8s/`.
+  `deploy/README.md` is the deployment and security guide.
+- `packaging/` — installing it on a machine: `linux/` (install script + `*.in` templates
+  shared with the Arch PKGBUILD), `windows/` (install script + Inno Setup), `arch/`,
+  `appimage/`. Index in `packaging/README.md`.
+- A new deployment or packaging artifact goes in one of those, not at the root. Moving one
+  means updating `package.json`, `scripts/`, the PKGBUILD, the workflows and the docs that
+  reference it (`git grep` the old path).
+
 ## Scope
 
 - Repo-level coordination only.
