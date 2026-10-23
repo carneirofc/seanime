@@ -548,8 +548,10 @@ fi
 
 if [ "$DO_SYSTEM" -eq 1 ]; then
 	mkdir -p "$DOC_DIR"
-	for doc in WEB_DEPLOYMENT.md config.example.toml; do
-		if [ -r "${ROOT_DIR}/${doc}" ]; then cp -f "${ROOT_DIR}/${doc}" "${DOC_DIR}/${doc}"; fi
+	# Installed under their historical names, which the unit and the seeded config cite.
+	for doc in README.md:WEB_DEPLOYMENT.md config.example.toml:config.example.toml; do
+		src="${ROOT_DIR}/deploy/${doc%%:*}"
+		if [ -r "$src" ]; then cp -f "$src" "${DOC_DIR}/${doc#*:}"; fi
 	done
 
 	config_dest="${DATA_DIR}/config.toml"

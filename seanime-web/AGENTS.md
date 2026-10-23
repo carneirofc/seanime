@@ -110,7 +110,7 @@ Rules for the runtime schemas:
 - `npm run build` at the repo root — the full build: codegen, this build, copy into `../web/`
   for Go to embed, then the server binary.
 - `out/` can also be served by a separate web server in front of an API-only Go binary
-  (`../WEB_DEPLOYMENT.md`, "Serving the UI separately"). Keep paths root-relative and the
+  (`../deploy/README.md`, "Serving the UI separately"). Keep paths root-relative and the
   API same-origin; `out/shell/` is the OIDC login page and must stay free of app code.
 - Env vars must be prefixed `SEA_` to reach the client (`loadEnv` in `rsbuild.config.ts`).
 

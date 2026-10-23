@@ -12,9 +12,11 @@ dist
 
 # Local data / config that must never be baked into an image
 config.toml
-config.example.toml
+deploy/config.example.toml
 seanime_data_dir
 data
+dev-datadir
+deploy/docker/data
 certs
 
 # Editor / OS noise

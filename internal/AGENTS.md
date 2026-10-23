@@ -98,7 +98,7 @@ entrypoints, and how backend changes flow to the frontend.
   `embeddedWebDist` decides whether there is a UI by probing for `web/index.html`, since
   `fs.Sub` never fails on missing content.
 - API-only (`-tags=noembedweb`): no static UI and no COOP/COEP headers; a separate web
-  server serves the bundle on the same origin (`../WEB_DEPLOYMENT.md`, "Serving the UI
+  server serves the bundle on the same origin (`../deploy/README.md`, "Serving the UI
   separately"). In OIDC mode it gates the bundle through `GET /api/v1/auth/session-check`
   (`App.WebSessionGate` in `echo_gate.go`, the same decision as `webBundleGateMiddleware`).
   That route is registered outside the `/api/v1` auth middleware, which would answer with a

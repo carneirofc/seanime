@@ -2,7 +2,7 @@
 # Caddy obtains and renews TLS certificates automatically (ACME) for the domain
 # below and proxies to the Seanime container over the internal Docker network.
 #
-# Replace seanime.example.com with your domain. With docker-compose.example.yml,
+# Replace seanime.example.com with your domain. With compose.yml,
 # "seanime" resolves to the app container and 43211 is its internal port.
 
 seanime.example.com {

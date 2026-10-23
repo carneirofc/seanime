@@ -1,7 +1,7 @@
 # Seanime as a system service. Installed by packaging/linux/install.sh --system.
 #
 # The lockdown below mirrors the posture deploy/k8s/deployment.yaml and
-# server.Dockerfile already set for a server deployment: non-root, no ambient
+# deploy/docker/server.Dockerfile already set for a server deployment: non-root, no ambient
 # capabilities, a read-only system with the data directory as the only writable path.
 #
 # It is coherent ONLY because --system also seeds `capabilities = []` into
