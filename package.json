@@ -32,6 +32,9 @@
     "build:all": "npm run build && npm run build:installer",
     "build:web": "npm run build --workspace seanime-web",
     "test:go": "go test ./...",
+    "test:web": "npm run test --workspace seanime-web",
+    "typecheck": "npm run typecheck --workspace seanime-web",
+    "lint:web": "npm run lint --workspace seanime-web",
     "postinstall": "patch-package || exit 0"
   },
   "devDependencies": {
