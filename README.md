@@ -114,10 +114,20 @@ The maintenance of this project is made possible by the sponsors.
 
 ## Development and Build
 
-Building from source is straightforward, you'll need [Node.js](https://nodejs.org/en/download) and [Go](https://go.dev/doc/install) installed on your system.
-Development and testing might require additional configuration.
+You need [Go](https://go.dev/doc/install) 1.27+ and [Node.js](https://nodejs.org/en/download) 20+. From the repository root:
 
-[Read more here](DEVELOPMENT_AND_BUILD.md)
+```bash
+npm ci            # install dependencies
+npm run dev       # develop: Go server + web UI with reloading, open http://127.0.0.1:43210
+npm run build     # release build: dist/seanime, web UI embedded
+```
+
+| To... | Read |
+| --- | --- |
+| Build, develop, test, see every command | [DEVELOPMENT_AND_BUILD.md](DEVELOPMENT_AND_BUILD.md) |
+| Run it as a server (Docker, Kubernetes, reverse proxy, OIDC) | [deploy/README.md](deploy/README.md) |
+| Install it on a machine (Linux, Windows, Arch, AppImage) | [packaging/README.md](packaging/README.md) |
+| Contribute | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 <br>
 

@@ -3,36 +3,74 @@
 Stack: Go (Echo, GORM/SQLite, Goja plugins) and a React + Rsbuild + TanStack Router web UI.
 `hls.js` is pinned to `1.5.20`: 1.6.0 and above cause `appendBuffer` fatal errors.
 
-## Prerequisites
+## Quick start
 
-- Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.1)
-- Node.js 20+ and npm
+Needs Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.2) and Node.js 20+ with npm.
+Everything runs from the repository root; **`npm run` is the interface** on every OS.
+
+```bash
+npm ci            # once, and again whenever package-lock.json changes
+npm run dev       # develop: Go server :43000 + web UI :43210, both reloading
+npm run build     # release build: dist/seanime, web UI embedded
+```
+
+Open <http://127.0.0.1:43210> while `npm run dev` runs. `npm run` with no arguments lists
+every script.
+
+## Where things are
+
+| Path | What |
+| --- | --- |
+| `main.go`, `internal/` | The Go server ([`internal/AGENTS.md`](internal/AGENTS.md)) |
+| `seanime-web/` | The web UI ([`seanime-web/AGENTS.md`](seanime-web/AGENTS.md)) |
+| `codegen/` | Go → TypeScript contract generator ([`codegen/README.md`](codegen/README.md)) |
+| `web/` | Build output: the UI copied here to be embedded in the binary. Do not edit |
+| `dist/` | Build output: binaries and installers |
+| `dev-datadir/` | Data directory of the dev server (gitignored) |
+| `scripts/` | Arch Linux automation wrappers around the npm scripts ([Arch Linux](#arch-linux)) |
+| `deploy/` | Running it as a server: config example, Docker, Compose, Caddy, Kubernetes ([`deploy/README.md`](deploy/README.md)) |
+| `packaging/` | Installing it on a machine: Linux and Windows installers, Arch package, AppImage ([`packaging/README.md`](packaging/README.md)) |
+| `test/` | Test config template and AniList fixtures ([Testing](#testing)) |
+| `patches/` | `patch-package` patches, applied by the root `postinstall` |
+
+## Commands
+
+All from the repository root.
+
+| Goal | Command | Result |
+| --- | --- | --- |
+| Install dependencies | `npm ci` | npm workspace (root + `seanime-web`), patches applied |
+| Develop everything | `npm run dev` | codegen watcher, Go server `:43000`, web UI `:43210` |
+| Develop one part | `npm run dev:go` · `dev:web` · `dev:codegen` | that process alone |
+| Regenerate the API contract | `npm run codegen` | same as `go generate ./codegen` |
+| Build the release binary | `npm run build` | `dist/seanime` (`dist\seanime-windows-amd64.exe`) |
+| Build the web UI only | `npm run build:web` | `seanime-web/out/` |
+| Install on this machine | `npm run build:install` | Linux: XDG entry + icons; Windows: shortcuts |
+| Windows `setup.exe` | `npm run build:all` | `dist\seanime-setup-<version>.exe` (needs Inno Setup) |
+| Container image | `podman build --format docker -f deploy/docker/server.Dockerfile .` (or `docker build`) | see [`deploy/README.md`](deploy/README.md#docker-and-podman) |
+| Web checks | `npm run typecheck` · `test:web` · `lint:web` | tsgo, Vitest, Biome on `seanime-web` |
+| Go tests | `go test ./internal/<pkg>/...` | `npm run test:go` runs everything, including packages that need local fixtures; see [Testing](#testing) |
+
+Ports: the dev server listens on `43000` because the dev web client sends its localhost API
+calls there (`seanime-web/src/lib/server/config.ts`). A built binary defaults to `43211`.
 
 ## Build
 
-From the repository root, one command builds everything on Linux, macOS and Windows:
-
-```bash
-npm run build
-```
-
-It runs these steps in order, each also available on its own:
+`npm run build` runs these steps in order, each also available on its own:
 
 | Step | Script | What it does |
 | --- | --- | --- |
-| 1 | `npm run clean` | Removes `web/`, `dist/` and `seanime-web/out`. |
+| 1 | `npm run clean` | Empties `web/` (keeping the tracked `web/.gitkeep`), removes `dist/` and `seanime-web/out`. |
 | 2 | `npm run codegen` | Regenerates the Go → TypeScript contract (`go generate ./codegen`). |
 | 3 | `npm run build:web` | Typechecks and builds the web interface into `seanime-web/out`. |
 | 4 | `npm run build:embed` | Copies that output into the root `web/` directory. |
 | 5 | `npm run build:api` | Builds the server binary into `dist/`. |
 
-`npm run build:all` also packages the Windows installer (see below).
-
 The order matters: `webfs_embed.go` embeds the web interface with `//go:embed all:web`, so
 step 5 fails with `pattern all:web: no matching files found` if `web/` is missing or empty.
+`web/.gitkeep` is tracked so a clean checkout always compiles.
 
-The binary lands at `dist/seanime` (`dist\seanime-windows-amd64.exe` on Windows). Step 5 is
-the headless, fully static build used by CI and both Dockerfiles:
+Step 5 is the headless, fully static build used by CI and both Dockerfiles:
 
 ```bash
 CGO_ENABLED=0 go build -tags=nosystray -trimpath -ldflags="-s -w" -o dist/seanime .
@@ -53,25 +91,63 @@ CGO_ENABLED=1 GOOS=windows go build -o seanime.exe -trimpath \
     -ldflags="-s -w -H=windowsgui -extldflags '-static'"
 ```
 
-## Install
+## Development
+
+### The whole stack, one terminal
+
+`npm run dev` starts three processes:
+
+- a codegen watcher that reruns `go generate ./codegen` when Go/codegen sources change
+  (it ignores generated output, so it does not loop),
+- the Go server from the repository root on `127.0.0.1:43000`, using the gitignored
+  `dev-datadir/` as its data directory, reloading when Go sources change,
+- the `seanime-web` dev server on `127.0.0.1:43210`.
+
+`npm run dev:codegen`, `dev:go` and `dev:web` run each process alone.
+
+### Server only
+
+```bash
+go run . --datadir=path/to/datadir
+```
+
+The data directory is created and populated on first run. The path may be relative; it is
+resolved against the directory you run the command from. Omit `--datadir` and the OS config
+directory is used. `SEANIME_DATA_DIR` does the same job as the flag.
+
+`//go:embed all:web` is satisfied by the tracked `web/.gitkeep`, so the server always
+compiles; it serves a real UI only after `npm run build:web && npm run build:embed`. Or skip
+the UI with `go run -tags=noembedweb .` and use the web dev server.
+
+To reach the server from other devices, set `host` to `0.0.0.0` in the `config.toml` inside
+the data directory.
+
+### Web only
+
+```bash
+npm run dev:web
+```
+
+Serves on `127.0.0.1:43210` and expects a Go server on `43000`.
+`npm run dev:mobile --workspace seanime-web` builds against `.env.mobile` instead of `.env.web`.
+
+## Install and package
 
 Build and install in one step, or install an already-built binary:
 
 ```bash
 npm run build:install     # build, then run the installer for this platform
-npm run install:linux     # installs an XDG desktop entry, icons, optional systemd unit
-npm run install:windows   # installs shortcuts and a user PATH entry
+npm run install:linux     # packaging/linux/install.sh: XDG entry, icons, optional systemd unit
+npm run install:windows   # packaging/windows/install.ps1: shortcuts and a user PATH entry
 ```
 
 Both run their installer with no options. Flags cannot travel through `npm run`, so call the
 script directly to pass any — `packaging/linux/install.sh --help`, or
 `powershell -File .\packaging\windows\install.ps1`.
 
-- Linux: [`packaging/linux/README.md`](packaging/linux/README.md) — full flag list, what lands
-  where, and the difference between the two systemd units.
-- Windows: [`packaging/windows/README.md`](packaging/windows/README.md) — the script, plus the Inno Setup
-  `setup.exe` packaging.
-- Exposing a server to the internet: [`deploy/README.md`](deploy/README.md).
+Every installer and package format is listed in [`packaging/README.md`](packaging/README.md).
+Running it as a server (Docker, Kubernetes, reverse proxy, OIDC) is in
+[`deploy/README.md`](deploy/README.md).
 
 ## Arch Linux
 
@@ -95,56 +171,6 @@ systemd user unit, `systemctl --user enable --now seanime`) and
 `seanime-cloak-backend-git` (the stealth gateway); see
 [`packaging/arch/AGENTS.md`](packaging/arch/AGENTS.md). `scripts/lib.sh` is shared
 verbatim with those other repositories; `scripts/project.sh` holds what is seanime's.
-
-## Development
-
-### The whole stack, one terminal
-
-```bash
-npm install
-npm run dev
-```
-
-That starts three processes:
-
-- a codegen watcher that reruns `go generate ./codegen` when Go/codegen sources change
-  (it ignores generated output, so it does not loop),
-- the Go server from the repository root on `127.0.0.1:43000`, using the gitignored
-  `dev-datadir/` as its data directory, reloading when Go sources change,
-- the `seanime-web` dev server on `127.0.0.1:43210`.
-
-The web client routes its localhost requests to port `43000`
-(`seanime-web/src/lib/server/config.ts`), which is why the Go server uses it in development.
-
-`npm run dev:codegen`, `dev:go` and `dev:web` run each process alone.
-
-### Server only
-
-```bash
-go run . --datadir=path/to/datadir
-```
-
-The data directory is created and populated on first run. The path may be relative; it is
-resolved against the directory you run the command from. Omit `--datadir` and the OS config
-directory is used. `SEANIME_DATA_DIR` does the same job as the flag.
-
-The server needs a `web/` directory at the root to satisfy `//go:embed all:web`. Either run
-`npm run build:web && npm run build:embed`, create `web/` with any one file in it, or skip
-the UI with `go run -tags=noembedweb .` and use the Rsbuild dev server (`npm run dev` in
-`seanime-web/`).
-
-To reach the server from other devices, set `host` to `0.0.0.0` in the `config.toml` inside
-the data directory.
-
-### Web only
-
-```bash
-cd seanime-web
-npm install
-npm run dev
-```
-
-Serves on `127.0.0.1:43210` and expects a Go server on `43000`.
 
 ## Codebase architecture
 
