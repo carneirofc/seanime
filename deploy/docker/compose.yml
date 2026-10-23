@@ -1,18 +1,25 @@
-# Reverse-proxy-fronted Seanime deployment.
+# Reverse-proxy-fronted Seanime deployment. Works with Podman (podman compose /
+# podman-compose, rootless or rootful) and Docker (docker compose).
 #
 # Topology: the reverse proxy (Caddy here) terminates TLS on the public network
-# and reaches Seanime over a private, internal-only Docker network. The Seanime
+# and reaches Seanime over a private, internal-only container network. The Seanime
 # container's port is NEVER published to the host — only the proxy is reachable
 # from outside.
 #
 # Paths below are relative to this file (deploy/docker/); the build context is the
-# repository root. From the repository root:
+# repository root. From the repository root, rootless Podman:
 #
 #   1. mkdir -p deploy/docker/data
 #      cp deploy/config.example.toml deploy/docker/data/config.toml   # then edit [server.oidc] etc.
-#      sudo chown -R 10001:10001 deploy/docker/data
-#   2. export SEANIME_OIDC_CLIENT_SECRET=...        # or use an .env / secret
-#   3. docker compose -f deploy/docker/compose.yml up -d
+#   2. podman unshare chown -R 10001:10001 deploy/docker/data
+#      (Docker or rootful Podman: sudo chown -R 10001:10001 deploy/docker/data.) After this,
+#      edit the config through the same mapping: podman unshare $EDITOR deploy/docker/data/config.toml
+#   3. export SEANIME_OIDC_CLIENT_SECRET=...        # or use an .env / secret
+#   4. podman compose -f deploy/docker/compose.yml up -d    # or: docker compose ...
+#
+# Rootless Podman cannot bind ports below 1024 by default: set SEANIME_HTTP_PORT /
+# SEANIME_HTTPS_PORT (e.g. 8080/8443), or allow it host-wide with
+# `sysctl net.ipv4.ip_unprivileged_port_start=80`. See deploy/README.md ("Podman").
 #
 # deploy/docker/data/ is gitignored. Adjust domains, media paths and volumes to your
 # environment before use (or copy this directory elsewhere and point context: at a checkout).
@@ -39,9 +46,12 @@ services:
     volumes:
       # Persistent state: db, logs, cache, extensions, assets, and config.toml.
       # The container runs as uid 10001, so the host dir must be writable by it
-      # (see step 1 above; a named volume is chowned automatically, a bind mount is not).
-      - ./data:/data
+      # (see step 2 above; a named volume is chowned automatically, a bind mount is not).
+      # :z relabels it for SELinux hosts (Fedora, RHEL) and is ignored elsewhere.
+      - ./data:/data:z
       # Your media library (read-only is safest if the server never writes to it).
+      # No :z here on purpose: it would recursively relabel the whole library. On an
+      # SELinux host, label it once yourself: chcon -R -t container_file_t /srv/media
       - /srv/media:/media:ro
     networks:
       # Internal-only: the app is reachable solely from the proxy, never directly.
@@ -61,15 +71,16 @@ services:
 
   # TLS-terminating reverse proxy. Replace with Traefik/nginx if preferred.
   caddy:
-    image: caddy:2
+    # Fully qualified: Podman refuses or prompts on short names without a search registry.
+    image: docker.io/library/caddy:2
     restart: unless-stopped
     depends_on:
       - seanime
     ports:
-      - "80:80"
-      - "443:443"
+      - "${SEANIME_HTTP_PORT:-80}:80"
+      - "${SEANIME_HTTPS_PORT:-443}:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro,z
       - caddy_data:/data
       - caddy_config:/config
     networks:

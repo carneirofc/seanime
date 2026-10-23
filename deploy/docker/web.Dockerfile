@@ -3,10 +3,13 @@
 # serves the bundle and proxies the API on the same origin; see
 # Caddyfile.decoupled and compose.decoupled.yml next to this file.
 #
-#   docker build -t seanime-web:local -f deploy/docker/web.Dockerfile .   # from the repo root
+#   podman build -t seanime-web:local -f deploy/docker/web.Dockerfile .   # from the repo root
+#   docker build -t seanime-web:local -f deploy/docker/web.Dockerfile .
+#
+# Base images are fully qualified so Podman needs no short-name search registry.
 
 # ---- Stage 1: build the web bundle ----------------------------------------
-FROM node:22-slim AS web
+FROM docker.io/library/node:22-slim AS web
 WORKDIR /src
 
 # Install workspace dependencies first for better layer caching. patches/ is
@@ -21,7 +24,7 @@ COPY seanime-web ./seanime-web
 RUN npm run build:web
 
 # ---- Stage 2: Caddy with the bundle ---------------------------------------
-FROM caddy:2-alpine
+FROM docker.io/library/caddy:2-alpine
 
 COPY --from=web /src/seanime-web/out /srv
 COPY deploy/docker/Caddyfile.decoupled /etc/caddy/Caddyfile

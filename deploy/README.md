@@ -6,7 +6,7 @@ from source and the development loop, see [`../DEVELOPMENT_AND_BUILD.md`](../DEV
 | Path | What |
 | --- | --- |
 | [`config.example.toml`](config.example.toml) | Annotated `config.toml` for an internet-facing, OIDC-protected server |
-| [`docker/`](docker/) | `server.Dockerfile`, `web.Dockerfile`, Compose stacks and Caddyfiles ([Docker](#docker)) |
+| [`docker/`](docker/) | `server.Dockerfile`, `web.Dockerfile`, Compose stacks and Caddyfiles ([Docker and Podman](#docker-and-podman)) |
 | [`k8s/`](k8s/) | Reference Kubernetes manifests ([`k8s/README.md`](k8s/README.md)) |
 | [`../packaging/linux/`](../packaging/linux/) | Bare-metal install with a hardened systemd unit ([systemd](#systemd-bare-metal)) |
 
@@ -111,7 +111,7 @@ For an internet-facing deployment:
 - [ ] **Front it with a TLS-terminating reverse proxy** (Caddy/Traefik/nginx).
       See `docker/Caddyfile` and `docker/compose.yml`.
 - [ ] **Do not expose the app port to the host/internet.** Bind loopback on bare
-      metal, or in Docker keep the port on an internal-only network reachable
+      metal, or in a container keep the port on an internal-only network reachable
       solely by the proxy (the compose example does this).
 - [ ] **Keep `securemode = "strict"`** (the OIDC default) so outbound fetches
       cannot reach your internal network.
@@ -181,9 +181,10 @@ The gateway refuses a non-loopback bind without `CLOAK_AUTH_TOKEN`. In a compose
 put it on Seanime's internal network, set the token on both sides, and do not publish its
 port. Datacenter IPs are challenged more than home connections.
 
-## Docker
+## Docker and Podman
 
-A self-contained image and a reverse-proxy-fronted stack are provided:
+A self-contained image and a reverse-proxy-fronted stack are provided. They work with
+Podman (rootless or rootful, `podman compose` / `podman-compose`) and with Docker:
 
 - `docker/server.Dockerfile` — builds the web bundle and a static, non-root server image
   with `ffmpeg` for transcoding and a `/api/v1/status` healthcheck.
@@ -192,18 +193,55 @@ A self-contained image and a reverse-proxy-fronted stack are provided:
 - `config.example.toml` — a starting `config.toml` for this topology.
 - `docker/Caddyfile` — automatic-HTTPS reverse proxy to the app.
 
-Both Dockerfiles use the repository root as the build context. From the repository root:
+Both Dockerfiles use the repository root as the build context. From the repository root,
+with rootless Podman:
 
 ```sh
+podman build --format docker -t seanime:local -f deploy/docker/server.Dockerfile .   # the image alone
+
 mkdir -p deploy/docker/data
 cp deploy/config.example.toml deploy/docker/data/config.toml     # then edit [server.oidc]
-sudo chown -R 10001:10001 deploy/docker/data                     # container runs as uid 10001
+podman unshare chown -R 10001:10001 deploy/docker/data           # the container runs as uid 10001
 export SEANIME_OIDC_CLIENT_SECRET=...                            # keep the secret out of config.toml
-docker compose -f deploy/docker/compose.yml up -d
+export SEANIME_HTTP_PORT=8080 SEANIME_HTTPS_PORT=8443            # or lower the port floor, below
+podman compose -f deploy/docker/compose.yml up -d
 ```
 
-The image runs as a non-root user (uid 10001), so a bind-mounted data dir must
-be writable by it (the `chown` above). Named volumes are chowned automatically.
+With Docker or rootful Podman, replace `podman unshare chown` with
+`sudo chown -R 10001:10001 deploy/docker/data`, drop the port variables (they default to 80
+and 443), and use `docker compose` if you like. Named volumes are chowned automatically;
+bind mounts are not.
+
+### Podman notes
+
+- **Data directory ownership.** Rootless Podman maps container uid 10001 to one of your
+  subordinate uids, not to host uid 10001, so a plain `sudo chown` leaves the directory
+  unwritable. `podman unshare chown` applies the mapping. Afterwards, edit files in it the
+  same way: `podman unshare $EDITOR deploy/docker/data/config.toml`.
+- **Ports 80/443.** Rootless containers cannot bind ports below 1024. Either publish
+  high ports (`SEANIME_HTTP_PORT` / `SEANIME_HTTPS_PORT`) and forward to them at your
+  router or firewall, or lower the floor host-wide:
+  `echo 'net.ipv4.ip_unprivileged_port_start=80' | sudo tee /etc/sysctl.d/50-unprivileged-ports.conf && sudo sysctl --system`.
+  With high ports, Caddy cannot complete ACME's HTTP-01/TLS-ALPN-01 challenges unless
+  80/443 reach them from outside; otherwise use a DNS challenge.
+- **Client addresses.** Rootless Podman publishes ports through a user-space forwarder,
+  which can hide the client's address from Caddy, so everyone arrives as the same IP.
+  Seanime's per-client rate limiting and its logs then lose their meaning. Check the
+  addresses in Seanime's logs after the first remote login. If they all match, run the
+  stack with rootful Podman (`sudo podman compose ...`) or put the host's own reverse
+  proxy in front.
+- **Starting at boot.** Podman has no daemon, so `restart: unless-stopped` only covers
+  crashes. To bring the stack back after a reboot, enable
+  `systemctl --user enable --now podman-restart.service` and
+  `loginctl enable-linger "$USER"` (rootless), or generate Quadlet units for it.
+- **Image healthcheck.** Podman builds OCI images by default, which have no HEALTHCHECK
+  field; `--format docker` keeps it. The Compose files declare their own healthcheck,
+  so the stack does not depend on this.
+- **SELinux** (Fedora, RHEL): the data directory and Caddyfile mounts carry `:z`. The
+  media library deliberately does not, since that relabels the whole tree; label it once
+  with `chcon -R -t container_file_t /srv/media`.
+- Base images are fully qualified (`docker.io/library/...`), so no short-name search
+  registry or prompt is involved.
 
 ## Serving the UI separately
 
@@ -233,7 +271,7 @@ Files for this setup:
 - `docker/compose.decoupled.yml` — override for `docker/compose.yml`:
 
 ```sh
-docker compose -f deploy/docker/compose.yml -f deploy/docker/compose.decoupled.yml up -d
+podman compose -f deploy/docker/compose.yml -f deploy/docker/compose.decoupled.yml up -d   # or docker compose
 ```
 
 ## systemd (bare metal)

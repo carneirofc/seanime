@@ -2,7 +2,9 @@
 # Same topology otherwise (Seanime stays on the internal network). From the
 # repository root:
 #
-#   docker compose -f deploy/docker/compose.yml -f deploy/docker/compose.decoupled.yml up -d
+#   podman compose -f deploy/docker/compose.yml -f deploy/docker/compose.decoupled.yml up -d
+#   (or docker compose with the same flags; `volumes: !override` needs podman-compose
+#   1.1+ or Docker Compose 2.24+)
 #
 # Set server.trustedProxies in config.toml to the Caddy container's address, as
 # for the default deployment.
