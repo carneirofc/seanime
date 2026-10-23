@@ -82,7 +82,7 @@ check() {
 }
 
 _render() {
-  # _render <template> <destination> <mode>; fills the installer/linux templates
+  # _render <template> <destination> <mode>; fills the packaging/linux templates
   # with the paths a package install uses.
   local version
   version=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' \
@@ -118,7 +118,7 @@ package_seanime-git() {
   install -Dm755 dist/seanime "$pkgdir/usr/bin/seanime"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
-  local tpl="$srcdir/seanime/installer/linux"
+  local tpl="$srcdir/seanime/packaging/linux"
 
   # The launcher and desktop entry expand these at run time for whoever starts them.
   local _envfile='${XDG_CONFIG_HOME:-$HOME/.config}/seanime/launcher.env'

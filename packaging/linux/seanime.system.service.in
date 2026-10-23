@@ -1,4 +1,4 @@
-# Seanime as a system service. Installed by install-linux.sh --system.
+# Seanime as a system service. Installed by packaging/linux/install.sh --system.
 #
 # The lockdown below mirrors the posture deploy/k8s/deployment.yaml and
 # server.Dockerfile already set for a server deployment: non-root, no ambient

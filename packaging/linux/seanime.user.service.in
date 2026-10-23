@@ -1,4 +1,4 @@
-# Seanime as a systemd --user service. Installed by install-linux.sh --systemd.
+# Seanime as a systemd --user service. Installed by packaging/linux/install.sh --systemd.
 #
 # Deliberately NOT hardened. A local desktop install resolves to *all* privileged
 # capabilities (internal/security/capability.go, ResolveDefaultCapabilities), because

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Seanime launcher @VERSION@ — installed by install-linux.sh.
+# Seanime launcher @VERSION@ — installed by packaging/linux/install.sh.
 #
 # The server is headless. `seanime` serves the web interface and prints to stdout;
 # it opens no window of its own, so a desktop entry that ran it directly would look

@@ -300,7 +300,7 @@ jobs:
 
       - name: Compile installer 📦️
         run: |
-          & "${Env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ steps.version.outputs.version }}" "installer\seanime.iss"
+          & "${Env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ steps.version.outputs.version }}" "packaging\windows\seanime.iss"
         shell: pwsh
 
       - name: Upload installer artifact 📤

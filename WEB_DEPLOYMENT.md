@@ -238,9 +238,9 @@ set the sysctl `net.ipv4.ip_unprivileged_port_start=0` (Docker's default since 2
 
 ## systemd (bare metal)
 
-`sudo ./install-linux.sh --system` is the non-container equivalent: a dedicated `seanime`
-user and a unit sandboxed like the pod in `deploy/k8s/deployment.yaml`. It seeds
+`sudo packaging/linux/install.sh --system` is the non-container equivalent: a dedicated
+`seanime` user and a unit sandboxed like the pod in `deploy/k8s/deployment.yaml`. It seeds
 `capabilities = []` into a new config; configure the reverse proxy, `externalurl`,
 `trustedproxies` and `[server.oidc]` before exposing it. Unit trade-offs (`selfupdate`,
 `ReadWritePaths=` per media root) are in
-[`installer/linux/README.md`](installer/linux/README.md#system-wide---system).
+[`packaging/linux/README.md`](packaging/linux/README.md#system-wide---system).

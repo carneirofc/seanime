@@ -14,13 +14,13 @@
 ; The version is read automatically from internal/constants/constants.go (the single
 ; source of truth) at compile time, so it never needs to be edited here. To override it
 ; explicitly (e.g. in CI), pass a define:
-;   iscc /DAppVersion=9.9.9 installer\seanime.iss
+;   iscc /DAppVersion=9.9.9 packaging\windows\seanime.iss
 ;
 ; The output is written to dist\seanime-setup-<version>.exe.
 
 ; Derive AppVersion from internal/constants/constants.go unless one was passed via /DAppVersion.
 #ifndef AppVersion
-  #define ConstantsFile AddBackslash(SourcePath) + "..\internal\constants\constants.go"
+  #define ConstantsFile AddBackslash(SourcePath) + "..\..\internal\constants\constants.go"
   #define ConstFileHandle
   #define ConstFileLine ""
   #define AppVersion ""
@@ -72,8 +72,8 @@
 #define AppPublisher "Seanime"
 #define AppURL "https://github.com/carneirofc/seanime"
 #define AppExeName "seanime.exe"
-; Path is relative to this .iss file (installer\).
-#define SourceBinary "..\dist\seanime-windows-amd64.exe"
+; Path is relative to this .iss file (packaging\windows\).
+#define SourceBinary "..\..\dist\seanime-windows-amd64.exe"
 
 [Setup]
 ; A stable AppId keeps upgrades/uninstall consistent across versions. Do not change it.
@@ -93,9 +93,9 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-OutputDir=..\dist
+OutputDir=..\..\dist
 OutputBaseFilename=seanime-setup-{#AppVersion}
-SetupIconFile=..\internal\icon\iconwin.ico
+SetupIconFile=..\..\internal\icon\iconwin.ico
 UninstallDisplayIcon={app}\seanime.ico
 UninstallDisplayName={#AppName} {#AppVersion}
 Compression=lzma2/max
@@ -116,7 +116,7 @@ Name: "{app}\data"
 [Files]
 Source: "{#SourceBinary}"; DestDir: "{app}"; DestName: "{#AppExeName}"; Flags: ignoreversion
 ; The server binary has no embedded Win32 icon resource, so ship the .ico for the shortcuts.
-Source: "..\internal\icon\iconwin.ico"; DestDir: "{app}"; DestName: "seanime.ico"; Flags: ignoreversion
+Source: "..\..\internal\icon\iconwin.ico"; DestDir: "{app}"; DestName: "seanime.ico"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: "--datadir ""{app}\data"""; WorkingDir: "{app}"; IconFilename: "{app}\seanime.ico"

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Build this checkout and install it for the current user with install-linux.sh: the
-# binary in ~/.local/bin, the launcher, menu entry and icons in ~/.local/share. No sudo.
-# Run it again to update. Arguments go to install-linux.sh (see `./install-linux.sh
-# --help`); --system needs root, so run that one through sudo.
+# Build this checkout and install it for the current user with packaging/linux/install.sh:
+# the binary in ~/.local/bin, the launcher, menu entry and icons in ~/.local/share. No
+# sudo. Run it again to update. Arguments go to packaging/linux/install.sh (see
+# `packaging/linux/install.sh --help`); --system needs root, so run that one through sudo.
 #
 #   scripts/install.sh                  build, then install or update
 #   scripts/install.sh --systemd        also a systemd user unit
@@ -26,4 +26,4 @@ if $build; then
 fi
 binary=()
 [[ " ${args[*]-} " == *" --uninstall "* ]] || binary=(--binary "$ROOT/dist/seanime")
-sh "$ROOT/install-linux.sh" "${binary[@]}" "${args[@]}" >&2
+sh "$ROOT/packaging/linux/install.sh" "${binary[@]}" "${args[@]}" >&2

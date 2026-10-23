@@ -10,17 +10,17 @@
 
     The binary is expected to already exist. Run `npm run build` first (or pass
     -BuildFirst) to produce it. By default it looks for the artifact produced by
-    `build-api.ps1` / `npm run build:api` at dist\seanime-windows-amd64.exe, then
-    falls back to the systray binary at the repository root.
+    `npm run build:api` at dist\seanime-windows-amd64.exe, then falls back to the
+    systray binary at the repository root.
 
 .EXAMPLE
     npm run build:install
 
 .EXAMPLE
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1 -AddToPath -DesktopShortcut
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\windows\install.ps1 -AddToPath -DesktopShortcut
 
 .EXAMPLE
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1 -BuildFirst -InstallDir "D:\Apps\Seanime"
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\windows\install.ps1 -BuildFirst -InstallDir "D:\Apps\Seanime"
 #>
 [CmdletBinding()]
 param(
@@ -43,7 +43,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$rootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+# This script lives in packaging\windows\; the checkout is two levels up.
+$rootDir = (Resolve-Path (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "..\..")).Path
 $installedExeName = "seanime.exe"
 
 # Candidate locations for the built binary, in order of preference.

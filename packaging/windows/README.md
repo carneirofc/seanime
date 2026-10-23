@@ -1,7 +1,15 @@
 # Windows installer
 
-> For Linux, see [`linux/README.md`](./linux/README.md) — a shell installer that adds an
+> For Linux, see [`../linux/README.md`](../linux/README.md) — a shell installer that adds an
 > XDG desktop entry, hicolor icons and an optional systemd service.
+
+[`install.ps1`](./install.ps1) installs an already-built binary for the current user
+(shortcuts, optional PATH entry) without producing an installer:
+
+```powershell
+npm run install:windows                       # no options
+powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\windows\install.ps1 -AddToPath -DesktopShortcut
+```
 
 [`seanime.iss`](./seanime.iss) is an [Inno Setup](https://jrsoftware.org/isinfo.php) 6 script that
 packages the built Seanime server into a double-click `setup.exe` with an uninstaller, Start Menu /
@@ -34,7 +42,7 @@ npm run build:installer
 Or invoke the compiler directly (lets you pass the real version):
 
 ```bash
-iscc /DAppVersion=3.8.7 installer\seanime.iss
+iscc /DAppVersion=3.8.7 packaging\windows\seanime.iss
 ```
 
 The result is written to `dist\seanime-setup-<version>.exe`.
