@@ -75,11 +75,14 @@ seanime.example.com {
 		import ui_headers
 
 		# The bundle sits behind the session gate, so keep shared caches out;
-		# content-hashed build output can be cached for good.
+		# content-hashed build output can be cached for good. Everything else,
+		# index.html first, is revalidated on every load: file_server sends
+		# Last-Modified, which would otherwise let browsers heuristically keep
+		# a stale index.html that points at chunks a redeploy has removed.
 		@hashed path /static/*
 		@unhashed not path /static/*
 		header @hashed Cache-Control "private, max-age=31536000, immutable"
-		header @unhashed Cache-Control private
+		header @unhashed Cache-Control "private, no-cache"
 
 		root * /srv
 		try_files {path} /index.html
