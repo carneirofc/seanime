@@ -54,18 +54,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: seanime-web/package-lock.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm ci || npm install
+        run: pnpm install --frozen-lockfile
 
-      - name: npm audit (production deps, high+)
-        run: npm audit --omit=dev --audit-level=high
+      - name: pnpm audit (production deps, high+)
+        run: pnpm audit --prod --audit-level high
 
   # ---- Go SCA: lockfile-based, complements govulncheck's reachability analysis ----
   osv-scanner:
@@ -88,8 +91,7 @@ jobs:
       - name: Run OSV-Scanner
         # Scan the Go module only. npm dependencies are gated by the npm-audit job
         # (production, high+); scanning the frontend/desktop lockfiles here would only
-        # duplicate that with dev/transitive noise, and OSV-Scanner hard-errors on the
-        # non-strict-JSON seanime-web/package-lock.json.
+        # duplicate that with dev/transitive noise.
         # GODEBUG=gotypesalias=1 lets OSV-Scanner type-check dependencies that use
         # generic type aliases (e.g. github.com/anacrolix/btree); without it it aborts
         # with "generic type alias requires GODEBUG=gotypesalias=1 or unset".
@@ -118,7 +120,7 @@ jobs:
           ignore-unfixed: true
           # npm dependency vulns are gated by the npm-audit job (production, high+);
           # skip lockfiles here so Trivy focuses on Go, IaC (Dockerfiles) and secrets.
-          skip-files: '**/package-lock.json'
+          skip-files: '**/pnpm-lock.yaml'
           format: sarif
           output: trivy-results.sarif
 
@@ -139,7 +141,7 @@ jobs:
           ignore-unfixed: true
           # npm dependency vulns are gated by the npm-audit job (production, high+);
           # skip lockfiles here so Trivy focuses on Go, IaC (Dockerfiles) and secrets.
-          skip-files: '**/package-lock.json'
+          skip-files: '**/pnpm-lock.yaml'
           format: table
           exit-code: '1'
         env:

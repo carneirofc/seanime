@@ -49,6 +49,9 @@ jobs:
           fetch-depth: 0
 
       # Web
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -58,8 +61,8 @@ jobs:
       - name: Install dependencies and build web app
         run: |
           cd seanime-web/
-          npm install
-          npm run build
+          pnpm install --frozen-lockfile
+          pnpm run build
           cd ..
       # Upload the output to be used in the next job
       - name: Upload web folder
