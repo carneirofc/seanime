@@ -5,16 +5,17 @@ Stack: Go (Echo, GORM/SQLite, Goja plugins) and a React + Rsbuild + TanStack Rou
 
 ## Quick start
 
-Needs Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.2) and Node.js 20+ with npm.
-Everything runs from the repository root; **`npm run` is the interface** on every OS.
+Needs Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.2) and Node.js 20+ with pnpm
+12 (`packageManager` in `package.json` pins the exact version).
+Everything runs from the repository root; **`pnpm run` is the interface** on every OS.
 
 ```bash
-npm ci            # once, and again whenever package-lock.json changes
-npm run dev       # develop: Go server :43000 + web UI :43210, both reloading
-npm run build     # release build: dist/seanime, web UI embedded
+pnpm install      # once, and again whenever pnpm-lock.yaml changes
+pnpm run dev      # develop: Go server :43000 + web UI :43210, both reloading
+pnpm run build    # release build: dist/seanime, web UI embedded
 ```
 
-Open <http://127.0.0.1:43210> while `npm run dev` runs. `npm run` with no arguments lists
+Open <http://127.0.0.1:43210> while `pnpm run dev` runs. `pnpm run` with no arguments lists
 every script.
 
 ## Where things are
@@ -27,7 +28,7 @@ every script.
 | `web/` | Build output: the UI copied here to be embedded in the binary. Do not edit |
 | `dist/` | Build output: binaries and installers |
 | `dev-datadir/` | Data directory of the dev server (gitignored) |
-| `scripts/` | Arch Linux automation wrappers around the npm scripts ([Arch Linux](#arch-linux)) |
+| `scripts/` | Arch Linux automation wrappers around the pnpm scripts ([Arch Linux](#arch-linux)) |
 | `deploy/` | Running it as a server: config example, Docker, Compose, Caddy, Kubernetes ([`deploy/README.md`](deploy/README.md)) |
 | `packaging/` | Installing it on a machine: Linux and Windows installers, Arch package, AppImage ([`packaging/README.md`](packaging/README.md)) |
 | `test/` | Test config template and AniList fixtures ([Testing](#testing)) |
@@ -39,32 +40,32 @@ All from the repository root.
 
 | Goal | Command | Result |
 | --- | --- | --- |
-| Install dependencies | `npm ci` | npm workspace (root + `seanime-web`), patches applied |
-| Develop everything | `npm run dev` | codegen watcher, Go server `:43000`, web UI `:43210` |
-| Develop one part | `npm run dev:go` · `dev:web` · `dev:codegen` | that process alone |
-| Regenerate the API contract | `npm run codegen` | same as `go generate ./codegen` |
-| Build the release binary | `npm run build` | `dist/seanime` (`dist\seanime-windows-amd64.exe`) |
-| Build the web UI only | `npm run build:web` | `seanime-web/out/` |
-| Install on this machine | `npm run build:install` | Linux: XDG entry + icons; Windows: shortcuts |
-| Windows `setup.exe` | `npm run build:all` | `dist\seanime-setup-<version>.exe` (needs Inno Setup) |
+| Install dependencies | `pnpm install` | pnpm workspace (root + `seanime-web`), patches applied |
+| Develop everything | `pnpm run dev` | codegen watcher, Go server `:43000`, web UI `:43210` |
+| Develop one part | `pnpm run dev:go` · `dev:web` · `dev:codegen` | that process alone |
+| Regenerate the API contract | `pnpm run codegen` | same as `go generate ./codegen` |
+| Build the release binary | `pnpm run build` | `dist/seanime` (`dist\seanime-windows-amd64.exe`) |
+| Build the web UI only | `pnpm run build:web` | `seanime-web/out/` |
+| Install on this machine | `pnpm run build:install` | Linux: XDG entry + icons; Windows: shortcuts |
+| Windows `setup.exe` | `pnpm run build:all` | `dist\seanime-setup-<version>.exe` (needs Inno Setup) |
 | Container image | `podman build --format docker -f deploy/docker/server.Dockerfile .` (or `docker build`) | see [`deploy/README.md`](deploy/README.md#docker-and-podman) |
-| Web checks | `npm run typecheck` · `test:web` · `lint:web` | tsgo, Vitest, Biome on `seanime-web` |
-| Go tests | `go test ./internal/<pkg>/...` | `npm run test:go` runs everything, including packages that need local fixtures; see [Testing](#testing) |
+| Web checks | `pnpm run typecheck` · `test:web` · `lint:web` | tsgo, Vitest, Biome on `seanime-web` |
+| Go tests | `go test ./internal/<pkg>/...` | `pnpm run test:go` runs everything, including packages that need local fixtures; see [Testing](#testing) |
 
 Ports: the dev server listens on `43000` because the dev web client sends its localhost API
 calls there (`seanime-web/src/lib/server/config.ts`). A built binary defaults to `43211`.
 
 ## Build
 
-`npm run build` runs these steps in order, each also available on its own:
+`pnpm run build` runs these steps in order, each also available on its own:
 
 | Step | Script | What it does |
 | --- | --- | --- |
-| 1 | `npm run clean` | Empties `web/` (keeping the tracked `web/.gitkeep`), removes `dist/` and `seanime-web/out`. |
-| 2 | `npm run codegen` | Regenerates the Go → TypeScript contract (`go generate ./codegen`). |
-| 3 | `npm run build:web` | Typechecks and builds the web interface into `seanime-web/out`. |
-| 4 | `npm run build:embed` | Copies that output into the root `web/` directory. |
-| 5 | `npm run build:api` | Builds the server binary into `dist/`. |
+| 1 | `pnpm run clean` | Empties `web/` (keeping the tracked `web/.gitkeep`), removes `dist/` and `seanime-web/out`. |
+| 2 | `pnpm run codegen` | Regenerates the Go → TypeScript contract (`go generate ./codegen`). |
+| 3 | `pnpm run build:web` | Typechecks and builds the web interface into `seanime-web/out`. |
+| 4 | `pnpm run build:embed` | Copies that output into the root `web/` directory. |
+| 5 | `pnpm run build:api` | Builds the server binary into `dist/`. |
 
 The order matters: `webfs_embed.go` embeds the web interface with `//go:embed all:web`, so
 step 5 fails with `pattern all:web: no matching files found` if `web/` is missing or empty.
@@ -95,7 +96,7 @@ CGO_ENABLED=1 GOOS=windows go build -o seanime.exe -trimpath \
 
 ### The whole stack, one terminal
 
-`npm run dev` starts three processes:
+`pnpm run dev` starts three processes:
 
 - a codegen watcher that reruns `go generate ./codegen` when Go/codegen sources change
   (it ignores generated output, so it does not loop),
@@ -103,7 +104,7 @@ CGO_ENABLED=1 GOOS=windows go build -o seanime.exe -trimpath \
   `dev-datadir/` as its data directory, reloading when Go sources change,
 - the `seanime-web` dev server on `127.0.0.1:43210`.
 
-`npm run dev:codegen`, `dev:go` and `dev:web` run each process alone.
+`pnpm run dev:codegen`, `dev:go` and `dev:web` run each process alone.
 
 ### Server only
 
@@ -116,7 +117,7 @@ resolved against the directory you run the command from. Omit `--datadir` and th
 directory is used. `SEANIME_DATA_DIR` does the same job as the flag.
 
 `//go:embed all:web` is satisfied by the tracked `web/.gitkeep`, so the server always
-compiles; it serves a real UI only after `npm run build:web && npm run build:embed`. Or skip
+compiles; it serves a real UI only after `pnpm run build:web && pnpm run build:embed`. Or skip
 the UI with `go run -tags=noembedweb .` and use the web dev server.
 
 To reach the server from other devices, set `host` to `0.0.0.0` in the `config.toml` inside
@@ -125,24 +126,24 @@ the data directory.
 ### Web only
 
 ```bash
-npm run dev:web
+pnpm run dev:web
 ```
 
 Serves on `127.0.0.1:43210` and expects a Go server on `43000`.
-`npm run dev:mobile --workspace seanime-web` builds against `.env.mobile` instead of `.env.web`.
+`pnpm --filter seanime-web run dev:mobile` builds against `.env.mobile` instead of `.env.web`.
 
 ## Install and package
 
 Build and install in one step, or install an already-built binary:
 
 ```bash
-npm run build:install     # build, then run the installer for this platform
-npm run install:linux     # packaging/linux/install.sh: XDG entry, icons, optional systemd unit
-npm run install:windows   # packaging/windows/install.ps1: shortcuts and a user PATH entry
+pnpm run build:install    # build, then run the installer for this platform
+pnpm run install:linux    # packaging/linux/install.sh: XDG entry, icons, optional systemd unit
+pnpm run install:windows  # packaging/windows/install.ps1: shortcuts and a user PATH entry
 ```
 
-Both run their installer with no options. Flags cannot travel through `npm run`, so call the
-script directly to pass any — `packaging/linux/install.sh --help`, or
+Both run their installer with no options. Flags after the script name reach the Linux
+installer (`pnpm run install:linux --help`); for the Windows one, call the script directly —
 `powershell -File .\packaging\windows\install.ps1`.
 
 Every installer and package format is listed in [`packaging/README.md`](packaging/README.md).
@@ -152,15 +153,15 @@ Running it as a server (Docker, Kubernetes, reverse proxy, OIDC) is in
 ## Arch Linux
 
 `scripts/` holds the same five commands as the author's other Arch-packaged projects.
-They wrap the npm scripts above, run from any directory, and suit automation such as
+They wrap the pnpm scripts above, run from any directory, and suit automation such as
 Ansible: they never prompt without a terminal, log on stderr and print only result paths
 on stdout, and exit 3 when pacman packages are missing.
 
 ```bash
 sudo pacman -S --needed $(scripts/setup.sh --deps)
-scripts/setup.sh            # npm ci and the Go modules
-scripts/dev.sh              # npm run dev (scripts/dev.sh go|web|codegen for one part)
-scripts/build.sh            # npm run build; prints dist/seanime
+scripts/setup.sh            # pnpm install and the Go modules
+scripts/dev.sh              # pnpm run dev (scripts/dev.sh go|web|codegen for one part)
+scripts/build.sh            # pnpm run build; prints dist/seanime
 scripts/install.sh          # build, then packaging/linux/install.sh for this user (its flags pass through)
 scripts/package.sh -si      # packaging/arch/PKGBUILD from the committed HEAD, installed
 ```

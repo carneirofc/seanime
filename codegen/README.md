@@ -5,7 +5,7 @@ Generates the contract between the Go backend and the TypeScript frontend.
 Run it from the **repo root**:
 
 ```bash
-go generate ./codegen     # or: npm run codegen
+go generate ./codegen     # or: pnpm run codegen
 ```
 
 Use `go generate`, never `go run ./codegen` — the paths are resolved relative to
@@ -94,7 +94,7 @@ sets rather than whole types because a `.nullish()` field infers `X | null | und
 against the type's `X | undefined`; and it compares `.shape` rather than `z.infer` because a
 loose object's inferred type carries an index signature that widens `keyof` to `string`,
 which would make the assertion pass unconditionally. Add a field to a Go struct without
-regenerating and `npm run typecheck` fails.
+regenerating and `pnpm run typecheck` fails.
 
 Schemas are emitted in dependency order. Where a cycle makes that impossible the property
 that closes it becomes a getter, which is zod 4's form for a recursive schema — exactly one

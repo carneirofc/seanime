@@ -13,14 +13,14 @@ so contributors find the right entry point fast.
 
 | Agent | Scope | Key Paths | Runtime | Typical Commands |
 | --- | --- | --- | --- | --- |
-| App Shell | Root render, providers, routing | `src/main.tsx`, `src/routes/`, `src/app/client-providers.tsx` | React 19, TanStack Router | `npm run dev` |
+| App Shell | Root render, providers, routing | `src/main.tsx`, `src/routes/`, `src/app/client-providers.tsx` | React 19, TanStack Router | `pnpm run dev` |
 | Feature Modules | Domain UI, hooks, state | `src/app/(main)/**` | React 19, TanStack Query, Jotai | Co-located with features |
 | API Client | Typed access to Go handlers | `src/api/**` | TypeScript (partly generated) | Regenerate via `go generate ./codegen` at repo root |
 | Shared UI System | Design system, forms, primitives | `src/components/**` | Radix UI, Tailwind 4 | Consumed across features |
 | State & Utils | Global atoms, helpers | `src/lib/**`, `src/app/(main)/_atoms/**` | Jotai | Imported by features |
 | Validation | Schemas for untrusted input | `src/lib/validation/**` | zod 4 | See "Validation" below |
-| Build Targets | Per-target env config | `.env.web`, `.env.mobile`, `rsbuild.config.ts` | Rsbuild / Rspack | `npm run build` |
-| Testing | Unit tests | `src/**/*.test.ts` | Vitest 4 | `npm run test` |
+| Build Targets | Per-target env config | `.env.web`, `.env.mobile`, `rsbuild.config.ts` | Rsbuild / Rspack | `pnpm run build` |
+| Testing | Unit tests | `src/**/*.test.ts` | Vitest 4 | `pnpm run test` |
 | Static Assets | Icons, public files | `public/` | N/A | Served by Rsbuild |
 
 ## App Shell
@@ -105,9 +105,9 @@ Rules for the runtime schemas:
 
 ## Build Targets
 
-- `npm run dev` — Rsbuild dev server with `.env.web`. `npm run dev:mobile` uses `.env.mobile`.
-- `npm run build` — runs `typecheck` then `rsbuild build`, emitting to `out/`.
-- `npm run build` at the repo root — the full build: codegen, this build, copy into `../web/`
+- `pnpm run dev` — Rsbuild dev server with `.env.web`. `pnpm run dev:mobile` uses `.env.mobile`.
+- `pnpm run build` — runs `typecheck` then `rsbuild build`, emitting to `out/`.
+- `pnpm run build` at the repo root — the full build: codegen, this build, copy into `../web/`
   for Go to embed, then the server binary.
 - `out/` can also be served by a separate web server in front of an API-only Go binary
   (`../deploy/README.md`, "Serving the UI separately"). Keep paths root-relative and the
@@ -116,7 +116,7 @@ Rules for the runtime schemas:
 
 ## Code Quality
 
-- `npm run typecheck` (`tsgo`), `npm run test` (Vitest), `npm run lint` (Biome). CI scope for
+- `pnpm run typecheck` (`tsgo`), `pnpm run test` (Vitest), `pnpm run lint` (Biome). CI scope for
   each is described in the root `AGENTS.md`; typecheck must stay at zero.
 - The Biome formatter is safe to run on files you touch but is not a gate.
 - House style: 4-space indent, double quotes, no semicolons. Match the surrounding code.

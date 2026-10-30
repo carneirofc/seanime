@@ -14,7 +14,7 @@ nearest `AGENTS.md`.
 
 ## Layout
 
-Build, dev and test commands are `npm run` scripts at the root (cross-platform);
+Build, dev and test commands are `pnpm run` scripts at the root (cross-platform);
 `scripts/*.sh` wrap them for Arch automation. `DEVELOPMENT_AND_BUILD.md` is the
 command reference. Keep the root to source, manifests and top-level docs:
 

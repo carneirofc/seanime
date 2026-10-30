@@ -9,7 +9,7 @@ entrypoints, and how backend changes flow to the frontend.
 | --- | --- | --- | --- | --- |
 | Core Server | Boot, flags, config, logging, updater | `main.go`, `internal/server/`, `internal/core/` | Go 1.27 | `go run .`, `go build -o seanime` |
 | HTTP API + Events | REST endpoints and websocket events | `internal/handlers/`, `internal/core/echo.go` | Echo v4 | `go test ./internal/...` |
-| Embedded Web UI | Serve the built web UI | `web/`, `internal/core/echo.go` | Go embed FS | `npm run build` at repo root |
+| Embedded Web UI | Serve the built web UI | `web/`, `internal/core/echo.go` | Go embed FS | `pnpm run build` at repo root |
 | Background Jobs | Recurring sync/update loops | `internal/cron/` | Go | Runs with server startup |
 | Codegen | Emit frontend types from Go | `codegen/` | Go | `go generate ./codegen` |
 
@@ -105,7 +105,7 @@ entrypoints, and how backend changes flow to the frontend.
   401 instead of the login redirect. Keep the two gates in sync.
 - Static mounts from config: `/assets` → `app.Config.Web.AssetDir`,
   `/manga-downloads` → `app.Config.Manga.DownloadDir`, `/offline-assets` → `app.Config.Offline.AssetDir`.
-- Don't edit `web/` by hand; it is a build artifact from `seanime-web/`, written by `npm run build` (or `build:embed`) at the repo root.
+- Don't edit `web/` by hand; it is a build artifact from `seanime-web/`, written by `pnpm run build` (or `build:embed`) at the repo root.
 
 ## Backend → Frontend Codegen
 

@@ -117,9 +117,9 @@ The maintenance of this project is made possible by the sponsors.
 You need [Go](https://go.dev/doc/install) 1.27+ and [Node.js](https://nodejs.org/en/download) 20+. From the repository root:
 
 ```bash
-npm ci            # install dependencies
-npm run dev       # develop: Go server + web UI with reloading, open http://127.0.0.1:43210
-npm run build     # release build: dist/seanime, web UI embedded
+pnpm install      # install dependencies
+pnpm run dev      # develop: Go server + web UI with reloading, open http://127.0.0.1:43210
+pnpm run build    # release build: dist/seanime, web UI embedded
 ```
 
 | To... | Read |

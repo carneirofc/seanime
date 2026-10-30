@@ -7,7 +7,7 @@
 (shortcuts, optional PATH entry) without producing an installer:
 
 ```powershell
-npm run install:windows                       # no options
+pnpm run install:windows                      # no options
 powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\windows\install.ps1 -AddToPath -DesktopShortcut
 ```
 
@@ -25,7 +25,7 @@ executable.
   winget install JRSoftware.InnoSetup
   ```
   Make sure `ISCC.exe` is on `PATH` (or call it by full path).
-- A **built server binary** at `dist\seanime-windows-amd64.exe` (run `npm run build`).
+- A **built server binary** at `dist\seanime-windows-amd64.exe` (run `pnpm run build`).
 
 ## Building the installer
 
@@ -33,10 +33,10 @@ From the repository root:
 
 ```bash
 # Build the app, then package the installer
-npm run build:all
+pnpm run build:all
 
 # Or, if the binary is already built
-npm run build:installer
+pnpm run build:installer
 ```
 
 Or invoke the compiler directly (lets you pass the real version):

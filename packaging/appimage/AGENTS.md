@@ -48,7 +48,7 @@ Builds the Linux AppImages attached to every release (`seanime-<v>_Linux_x86_64.
 Needs `squashfs-tools`, `binutils`, `file`, `python3`, `curl` (CI installs them on Ubuntu).
 
 ```bash
-npm run build && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o dist/seanime-systray .
+pnpm run build && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o dist/seanime-systray .
 packaging/appimage/build.sh --binary dist/seanime-systray --arch x86_64   # builds + verifies
 packaging/appimage/scan-source.sh upstream/main
 ```

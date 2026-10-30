@@ -15,7 +15,7 @@ install time with the paths you chose.
 
 ## Prerequisites
 
-- A **built server binary** at `dist/seanime` — run `npm run build`, or pass
+- A **built server binary** at `dist/seanime` — run `pnpm run build`, or pass
   `--build-first`.
 - `ffmpeg` on `PATH` for on-the-fly transcoding. The installer warns if it is missing.
 - Optional: `imagemagick` for crisp icons at every size (see [Icons](#icons-desktop-icon-path)),
@@ -27,17 +27,14 @@ From the repository root:
 
 ```bash
 # Build the app, then install it for the current user
-npm run build:install
+pnpm run build:install
 
 # Or, if the binary is already built
-npm run install:linux
+pnpm run install:linux
 ```
 
-Those two run the installer with no options. **Flags cannot be passed through `npm
-run`** — `run-script-os` re-invokes `npm run` to dispatch on the platform, and npm
-rejects any flag it does not recognise before it ever reaches the script (`--prefix`
-is worse: npm consumes it as its own). `npm run install:windows` has the same
-limitation. To pass options, call the script directly:
+Those two run the installer with no options. Flags after the script name are passed
+through to it (`pnpm run install:linux --prefix ~/.local`), or call the script directly:
 
 ```bash
 # Per-user, no root, with a desktop icon
@@ -64,7 +61,7 @@ packaging/linux/install.sh --uninstall
 | `--prefix DIR` | `~/.local` (`/usr/local` with `--system`) | binary in `<prefix>/bin`, entry and icons in `<prefix>/share` |
 | `--datadir DIR` | `~/.config/Seanime` (`/var/lib/seanime` with `--system`) | must be absolute |
 | `--host ADDR` / `--port N` | `127.0.0.1` / `43211` | seeded into `config.toml` on a first install; see [Address](#address) |
-| `--build-first` | | run `npm run build` first |
+| `--build-first` | | run `pnpm run build` first |
 | `--add-to-path` | | see [PATH](#icons-desktop-icon-path) |
 | `--desktop-icon` | | also place a launcher on the desktop |
 | `--no-menu-entry` | | skip the application menu entry |
