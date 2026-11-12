@@ -41,7 +41,7 @@ require (
 	github.com/huin/goupnp v1.3.0
 	github.com/imroc/req/v3 v3.61.0
 	github.com/kr/pretty v0.3.1
-	github.com/labstack/echo/v4 v4.16.0
+	github.com/labstack/echo/v4 v4.16.4
 	github.com/mileusna/useragent v1.3.5
 	github.com/mmcdole/gofeed v1.5.0
 	github.com/modelcontextprotocol/go-sdk v1.8.0
