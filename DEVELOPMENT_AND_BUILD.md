@@ -5,7 +5,7 @@ Stack: Go (Echo, GORM/SQLite, Goja plugins) and a React + Rsbuild + TanStack Rou
 
 ## Quick start
 
-Needs Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.2) and Node.js 20+ with pnpm
+Needs Go 1.27+ (`go.mod` sets `1.27`; CI builds on 1.27.4) and Node.js 20+ with pnpm
 12 (`packageManager` in `package.json` pins the exact version).
 Everything runs from the repository root; **`pnpm run` is the interface** on every OS.
 

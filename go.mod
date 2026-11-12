@@ -2,6 +2,8 @@ module seanime
 
 go 1.27
 
+toolchain go1.27.4
+
 require (
 	fyne.io/systray v1.12.2
 	github.com/5rahim/go-astisub v0.2.1
