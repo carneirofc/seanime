@@ -90,7 +90,7 @@ require (
 	github.com/anacrolix/sync v0.6.0 // indirect
 	github.com/anacrolix/upnp v0.1.4 // indirect
 	github.com/anacrolix/utp v0.2.0 // indirect
-	github.com/andybalholm/brotli v1.2.6 // indirect
+	github.com/andybalholm/brotli v1.2.8 // indirect
 	github.com/andybalholm/cascadia v1.3.5 // indirect
 	github.com/asticode/go-astikit v0.59.0 // indirect
 	github.com/asticode/go-astits v1.16.0 // indirect

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- ⬆️ deps: andybalholm/brotli 1.2.8 (indirect) fixes GO-2026-6888, excessive memory allocation when decompressing crafted streams, which the HTTP read-seeker reaches through its Brotli reader. 1.2.7 has the fix; 1.2.8 is the latest 1.2 release, and 1.3.0 is left for a regular upgrade.
 - ⬆️ deps: klauspost/compress 1.20.4 (indirect) fixes GO-2026-6865, a panic on crafted two-block frames in its FSE coder, which the Nakama websocket and the zstd stream reader reach. 1.20.2 has the fix; 1.20.4 is the latest patch release.
 - ⬆️ deps: golang.org/x/net 0.62.0 fixes two `html` package vulnerabilities that the HTML scraping reaches through goquery: GO-2026-6866 (`html.Render` missed namespace transitions in ancestors when rendering raw text, reached from the extension document bindings) and GO-2026-6860 (quadratic time when `html.Parse` coalesces text nodes, reached from the filler list scraper among others). `go get` also moves the `golang.org/x` modules it requires: crypto 0.58.0, sync 0.24.0, sys 0.49.0, term 0.47.0, text 0.43.0 and tools 0.51.0.
 - ⬆️ deps: zod 4.6.7 fixes GHSA-mrhx-c7xc-m3w5 (high), where validating an oversized collection against a size constraint could exhaust memory. `seanime-web` now requires `^4.6.7`, so a fresh resolution cannot land on the vulnerable 4.6.5 that `^4.6.5` still allowed.
