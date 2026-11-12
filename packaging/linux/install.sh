@@ -7,7 +7,7 @@
 # entry with hicolor icons (so it shows up in the KDE/GNOME application menu), and
 # optionally a desktop icon, a PATH entry and a systemd service.
 #
-# The binary is expected to already exist. Run `npm run build` first (or pass
+# The binary is expected to already exist. Run `pnpm run build` first (or pass
 # --build-first) to produce it at dist/seanime.
 #
 # Three shapes, one script:
@@ -75,7 +75,7 @@ Flags:
                          --system). Must be an absolute path
   --host ADDR            bind address recorded in the launcher env file (default 127.0.0.1)
   --port N               port recorded in the launcher env file (default 43211)
-  --build-first          run `npm run build` before installing
+  --build-first          run `pnpm run build` before installing
   --add-to-path          make <prefix>/bin available on PATH if it is not already
   --desktop-icon         also put a launcher on the desktop
   --no-menu-entry        do not install the application menu entry
@@ -318,9 +318,9 @@ fi
 # ---------------------------------------------------------------------------
 
 if [ "$DO_BUILD" -eq 1 ]; then
-	have npm || die "npm was not found on PATH; cannot --build-first."
-	info "Building Seanime (npm run build)..."
-	(cd "$ROOT_DIR" && npm run build) || die "npm run build failed."
+	have pnpm || die "pnpm was not found on PATH; cannot --build-first."
+	info "Building Seanime (pnpm run build)..."
+	(cd "$ROOT_DIR" && pnpm run build) || die "pnpm run build failed."
 fi
 
 SOURCE_BINARY=''
@@ -343,7 +343,7 @@ if [ "$DO_CLIENT_ONLY" -eq 0 ]; then
 			fi
 		done
 		[ -n "$SOURCE_BINARY" ] ||
-			die "No Seanime binary found under ${ROOT_DIR}/dist. Build it with 'npm run build' or pass --build-first."
+			die "No Seanime binary found under ${ROOT_DIR}/dist. Build it with 'pnpm run build' or pass --build-first."
 	fi
 
 	# Cheap guard against pointing at a script, an archive or the wrong file entirely.

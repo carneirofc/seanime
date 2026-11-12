@@ -3,7 +3,7 @@
 #
 #   packaging/appimage/build.sh --binary PATH --arch x86_64|aarch64 [--version V] [--outdir DIR]
 #
-# The binary must already embed the web UI (npm run build does both). Use the systray
+# The binary must already embed the web UI (pnpm run build does both). Use the systray
 # build (no -tags=nosystray): AppRun relies on its tray icon, and it is the variant the
 # release ships as the standalone Linux download.
 #

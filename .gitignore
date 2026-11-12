@@ -111,6 +111,8 @@ __pycache__/
 
 # Node / web build output
 /node_modules/
+# pnpm-lock.yaml is the lockfile; keep a stray `npm install` from adding another.
+package-lock.json
 out/
 web/
 !web/

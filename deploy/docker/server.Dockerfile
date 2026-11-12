@@ -25,17 +25,19 @@ FROM docker.io/library/node:22-slim AS web
 WORKDIR /src
 
 # Install workspace dependencies first for better layer caching. patches/ is
-# required because the root postinstall runs patch-package.
-COPY package.json package-lock.json ./
+# required because pnpm-workspace.yaml patches dependencies on install. pnpm
+# itself is installed at the version package.json pins in packageManager.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
-COPY seanime-web/package.json seanime-web/package-lock.json ./seanime-web/
-RUN npm ci
+COPY seanime-web/package.json ./seanime-web/
+RUN npm install -g "$(node -p 'require("./package.json").packageManager')" \
+    && pnpm install --frozen-lockfile
 
 # Build the static web output (rsbuild -> seanime-web/out).
 COPY seanime-web ./seanime-web
-RUN npm run build:web
+RUN pnpm run build:web
 
-# Only the stage named by EMBED_WEB is built, so an API-only image never runs npm.
+# Only the stage named by EMBED_WEB is built, so an API-only image never runs pnpm.
 FROM scratch AS webout-true
 COPY --from=web /src/seanime-web/out /web
 

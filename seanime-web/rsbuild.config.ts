@@ -13,8 +13,8 @@ const { publicVars } = loadEnv({ prefixes: ["SEA_"] })
 const distPath = "out"
 
 /**
- * Resolves an installed package's directory, tolerating either npm layout:
- * nested in seanime-web/node_modules, or hoisted to the workspace root.
+ * Resolves an installed package's directory, tolerating either layout:
+ * linked into seanime-web/node_modules, or hoisted to the workspace root.
  * Falls back to the local path so the alias still points somewhere sane.
  */
 function resolvePackageDir(name: string): string {
@@ -91,9 +91,9 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
-            // Pin a single copy of React. npm workspaces hoist dependencies to the repo root,
-            // so resolve against whichever node_modules actually holds the package instead of
-            // assuming it is nested under seanime-web/.
+            // Pin a single copy of React. A hoisting install can place dependencies at the repo
+            // root, so resolve against whichever node_modules actually holds the package instead
+            // of assuming it is nested under seanime-web/.
             "react": resolvePackageDir("react"),
             "react-dom": resolvePackageDir("react-dom"),
             // jassub ships a default subtitle font we replace with Roboto.

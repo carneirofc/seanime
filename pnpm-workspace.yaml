@@ -1,0 +1,18 @@
+packages:
+  - seanime-web
+
+# Dependency install scripts run only for the packages listed true here.
+allowBuilds:
+  # Verifies, and on some platforms links, its platform binary.
+  esbuild: true
+  # Ships a prebuilt binary; its node-gyp script is not needed.
+  fsevents: false
+
+overrides:
+  protobufjs: ^7.6.4
+  semver: ^7.7.2
+
+patchedDependencies:
+  vaul@1.1.2: patches/vaul@1.1.2.patch
+  # Re-invoke pnpm, not npm, for the per-platform script it dispatches to.
+  run-script-os@1.1.6: patches/run-script-os@1.1.6.patch

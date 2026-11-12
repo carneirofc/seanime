@@ -1,0 +1,16 @@
+diff --git a/index.js b/index.js
+index 840f365..dbdc2b8 100755
+--- a/index.js
++++ b/index.js
+@@ -134,8 +134,9 @@ if (!args.includes('--no-arguments')) {
+  */
+ let packageManagerCommand;
+ 
+-packageManagerCommand = isYarn ? "yarn" : "npm";
+-if (platform === "win32") {
++const isPnpm = (process.env.npm_config_user_agent && process.env.npm_config_user_agent.includes('pnpm')) ? true : false;
++packageManagerCommand = isPnpm ? "pnpm" : isYarn ? "yarn" : "npm";
++if (platform === "win32" && !isPnpm) {
+   packageManagerCommand = packageManagerCommand + ".cmd";
+ }
+ 

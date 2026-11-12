@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Prepare the checkout for development and builds: the npm packages exactly as
-# package-lock.json pins them (`npm ci`, the web workspace included) and the Go modules.
+# Prepare the checkout for development and builds: the pnpm packages exactly as
+# pnpm-lock.yaml pins them (`pnpm install --frozen-lockfile`, the web workspace included) and the Go modules.
 # Safe to run again.
 #
 #   scripts/setup.sh                set it up
@@ -14,7 +14,7 @@ case ${1:-} in
 esac
 
 require_packages "${DEPS[@]}"
-log "npm packages"
-npm_in_root ci --no-audit --no-fund
+log "pnpm packages"
+pnpm_in_root install --frozen-lockfile
 log "Go modules"
 (cd "$ROOT" && go mod download >&2)

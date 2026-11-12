@@ -8,13 +8,13 @@
     creates a Start Menu / Desktop shortcut and adds the install directory to the
     user PATH.
 
-    The binary is expected to already exist. Run `npm run build` first (or pass
+    The binary is expected to already exist. Run `pnpm run build` first (or pass
     -BuildFirst) to produce it. By default it looks for the artifact produced by
-    `npm run build:api` at dist\seanime-windows-amd64.exe, then falls back to the
+    `pnpm run build:api` at dist\seanime-windows-amd64.exe, then falls back to the
     systray binary at the repository root.
 
 .EXAMPLE
-    npm run build:install
+    pnpm run build:install
 
 .EXAMPLE
     powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\windows\install.ps1 -AddToPath -DesktopShortcut
@@ -30,7 +30,7 @@ param(
     [string]$InstallDir = (Join-Path $env:LOCALAPPDATA "Programs\Seanime"),
     # Data directory passed to the binary via --datadir. Defaults to <InstallDir>\seanime_data_dir.
     [string]$DataDir,
-    # Build the web interface and server first (runs `npm run build`).
+    # Build the web interface and server first (runs `pnpm run build`).
     [switch]$BuildFirst,
     # Add the install directory to the current user's PATH.
     [switch]$AddToPath,
@@ -85,7 +85,7 @@ function Resolve-BinaryPath {
         }
     }
 
-    throw "No Seanime binary found. Looked in:`n  $($binaryCandidates -join "`n  ")`nBuild it first with 'npm run build' or pass -BuildFirst."
+    throw "No Seanime binary found. Looked in:`n  $($binaryCandidates -join "`n  ")`nBuild it first with 'pnpm run build' or pass -BuildFirst."
 }
 
 function New-Shortcut {
@@ -116,15 +116,15 @@ if (-not $DataDir) {
 }
 
 if ($BuildFirst) {
-    if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-        throw "npm not found on PATH; cannot -BuildFirst."
+    if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
+        throw "pnpm not found on PATH; cannot -BuildFirst."
     }
-    Write-Log "Building Seanime (npm run build)..."
+    Write-Log "Building Seanime (pnpm run build)..."
     Push-Location $rootDir
     try {
-        npm run build
+        pnpm run build
         if ($LASTEXITCODE -ne 0) {
-            throw "npm run build failed with exit code $LASTEXITCODE."
+            throw "pnpm run build failed with exit code $LASTEXITCODE."
         }
     }
     finally {

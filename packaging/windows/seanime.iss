@@ -5,11 +5,11 @@
 ;
 ; Prerequisites:
 ;   - Inno Setup 6 (ISCC.exe). Install with: winget install JRSoftware.InnoSetup
-;   - A built server binary at dist\seanime-windows-amd64.exe (run `npm run build`).
+;   - A built server binary at dist\seanime-windows-amd64.exe (run `pnpm run build`).
 ;
 ; Build:
-;   npm run build:installer            (compiles this script)
-;   npm run build:all                  (build the app, then the installer)
+;   pnpm run build:installer            (compiles this script)
+;   pnpm run build:all                  (build the app, then the installer)
 ;
 ; The version is read automatically from internal/constants/constants.go (the single
 ; source of truth) at compile time, so it never needs to be edited here. To override it

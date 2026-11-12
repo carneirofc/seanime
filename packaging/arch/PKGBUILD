@@ -17,7 +17,7 @@ pkgrel=1
 pkgdesc="Self-hosted anime and manga media server with AniList integration"
 arch=(x86_64 aarch64)
 url="https://github.com/carneirofc/seanime"
-makedepends=(git go nodejs npm python uv imagemagick)
+makedepends=(git go nodejs pnpm python uv imagemagick)
 source=(
   "seanime::git+${PKG_SOURCE:-$url.git}"
   "seanime-extensions::git+https://github.com/carneirofc/seanime-extensions.git"
@@ -47,7 +47,7 @@ prepare() {
   cd seanime
   export GOPATH="$srcdir/gopath" GOFLAGS="-modcacherw"
   go mod download
-  npm ci --no-audit --no-fund
+  pnpm install --frozen-lockfile
 }
 
 build() {
@@ -57,7 +57,7 @@ build() {
   export CGO_ENABLED=0
   export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
   # Runs clean, codegen, the web build, embedding, then go build into dist/.
-  npm run build
+  pnpm run build
 
   # --- cloak-backend --------------------------------------------------------
   # A relocatable venv built against the system Python, filled from uv.lock, so
