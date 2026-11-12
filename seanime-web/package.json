@@ -140,7 +140,7 @@
     "upath": "^3.0.8",
     "use-debounce": "^10.1.1",
     "vaul": "^1.1.2",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
